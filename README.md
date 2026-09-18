@@ -1,4 +1,4 @@
-# Project Name
+# BurnNEarn - FitFolio
 
 Developer Names:
 
