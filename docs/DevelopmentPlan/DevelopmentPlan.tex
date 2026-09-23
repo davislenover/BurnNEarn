@@ -132,12 +132,20 @@ project.  It may also help with early identification of areas where project
 members will need to augment their training.}
 
 \subsubsection{Operating Systems}
-The primary target operating systems for this app will be Android 17 and iOS 28 this is due to the nature of the testing equipment available
+The primary target operating systems for this app will be Android 17+ and iOS 27+ this is due to the nature of the testing equipment available
 for all group members and supervisor.
 
 \subsubsection{Languages}
-It is expected that React Native will be used for the front-end. This will allow the team to write code that works on both platforms at once.
-The backend will consist of Python mainly for its rich and optimal library support for the tasks the app may need to perform (ex, fetching stock data over the web).
+It is expected that React Native (TypeScript) will be used for the front-end. This will allow the team to write code that works on both platforms at once.
+The backend will consist of Python mainly for its rich and optimal library support for the tasks the app may need to perform (ex, fetching stock data over the web). Moreover, Pythons numpy and
+pandas will be useful for modeling data within the market simulation engine.
+
+\subsubsection{Libraries}
+The following libraries are expected to be used for Python
+\begin{itemize}
+    \item numpy - Handles numerical computing quickly (e.g., vector operations)
+    \item pandas - Data manipulation and analytics
+\end{itemize}
 
 \subsubsection{Testing}
 For unit testing, Jest will be used for the front-end as this works directly for React. For the backend, pytest as this works well with Python and doesn't require a lot of boilerplate class code
@@ -145,7 +153,11 @@ therefore allowing the team to test much quicker
 
 \subsubsection{Continuous Integration}
 CI will happen for code merged onto the main branch, after review (via PR), there will be a standard set of tests which will be run to ensure no regression occurs.
-For the tests themselves, they will be developed overtime and integrated into the suite as seen fit. Justification must be provided for any new test cases.
+For the tests themselves, they will be developed overtime and integrated into the suite as new features are developed. New test cases are required for a feature to be merged to main unless otherwise
+specified. Justification also must be provided for any new test cases.
+
+\subsubsection{Tools}
+Git and GitHub will serve as the main version control software.
 
 Topics to discuss include the following:
 
