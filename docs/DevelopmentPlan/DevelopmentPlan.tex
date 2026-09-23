@@ -141,11 +141,19 @@ The backend will consist of Python mainly for its rich and optimal library suppo
 pandas will be useful for modeling data within the market simulation engine.
 
 \subsubsection{Libraries}
+The following libraries are expected to be used for React
+\begin{itemize}
+    \item HealthKit on iOS - Connected via a mediator for React
+    \item Health Connect on Android - Connected via a mediator for React
+\end{itemize}
 The following libraries are expected to be used for Python
 \begin{itemize}
     \item numpy - Handles numerical computing quickly (e.g., vector operations)
     \item pandas - Data manipulation and analytics
 \end{itemize}
+
+\subsubsection{Databases}
+User data, portfolios, the social feed and cache market data (as pulling constantly from an API will likely be expensive) will be stored in Postgres.
 
 \subsubsection{Testing}
 For unit testing, Jest will be used for the front-end as this works directly for React. For the backend, pytest as this works well with Python and doesn't require a lot of boilerplate class code
@@ -157,7 +165,7 @@ For the tests themselves, they will be developed overtime and integrated into th
 specified. Justification also must be provided for any new test cases.
 
 \subsubsection{Tools}
-Git and GitHub will serve as the main version control software.
+Git and GitHub will serve as the main version control software. GitHub Projects will be used to keep track of current issues and to link PR's.
 
 Topics to discuss include the following:
 
