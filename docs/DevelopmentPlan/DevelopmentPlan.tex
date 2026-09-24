@@ -403,6 +403,24 @@ their TA, or the instructor?  Are there incentives for reaching targets early?}
     \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit
 \end{itemize}
 
+\textbf{Triggers}
+Triggers are used as a means of detecting if there is a performance issue with one or more team members.
+The following triggers are to be reported in each productivity report. Absences or missed deadlines with an acceptable excuse (see Attendance) do not count.
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Trigger} & \textbf{Threshold} & \textbf{Measured from}\\
+\midrule
+Meeting attendance & Below 80\% of team meetings in a deliverable period, or 2 unexcused misses in a row & Meeting issues\\
+Missed internal deadline & 2 or more in a term & Issues and Pull Requests\\
+Review turnaround & Requested review not completed within 72 hours, 2 or more times in a deliverable period & pull request timestamps\\
+Responsiveness & Mentions not acknowledged within the time set in the Communication Plan, 3 or more times in a deliverable period & GitHub and Teams\\
+Contribution & No closed issues, merged PRs or reviews for 2 consecutive weeks & GitHub\\
+\bottomrule
+    \end{tabularx}
+\end{table}
+
 \subsubsection*{Team Building}
 
 \wss{How will you build team cohesion (fun time, group rituals, etc.)? }
