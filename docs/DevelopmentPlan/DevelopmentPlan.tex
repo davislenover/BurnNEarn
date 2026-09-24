@@ -163,6 +163,7 @@ therefore allowing the team to test much quicker
 CI will happen for code merged onto the main branch, after review (via PR), there will be a standard set of tests which will be run to ensure no regression occurs.
 For the tests themselves, they will be developed overtime and integrated into the suite as new features are developed. New test cases are required for a feature to be merged to main unless otherwise
 specified. Justification also must be provided for any new test cases.
+For anything backend related, a Postgres container will be ran such that any feature/system that utilizes queries can be tested.
 
 \subsubsection{Tools}
 Git and GitHub will serve as the main version control software. GitHub Projects will be used to keep track of current issues and to link PR's.
