@@ -2,6 +2,7 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{float}
 
 \title{Problem Statement and Goals\\\progname}
 
@@ -72,21 +73,33 @@ Use abstraction so that you can avoid details.}
 \item{System notifications (i.e., user status from in-app social feeds)}
 \end{itemize}
 \subsection{Stakeholders}
-In this section, we identify the stakeholders of FitFolio and their roles and interests in the project. \\
-\begin{tabular}{p{0.35\textwidth} p{0.55\textwidth}}
+This section identifies the stakeholders of FitFolio and describes their roles and interests in the project. Stakeholders are grouped into three categories: primary stakeholders, who directly use the product or define its direction; secondary stakeholders, who are indirectly affected by it; and external stakeholders, who are outside organizations whose services and rules constrain its design.
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.35\textwidth} >{\raggedright\arraybackslash}p{0.55\textwidth}}
 \toprule
 \textbf{Stakeholder} & \textbf{Role / Interest} \\
 \midrule
-Beginner Investors / Fitness-Motivated Users & Primary users who track activity, earn virtual currency, and manage a virtual portfolio; want an engaging, easy-to-understand way to build habits and learn investing without real financial risk. \\
-Friends / Social Connections &  Secondary users who view shared workouts and portfolio metrics; expect to see only what users choose to share. \\
-Project Supervisor / TA (Chris Schankula) &  \\
-Course Instructor &  \\
-Development Team &  Designs, builds, tests, and documents FitFolio; aims to deliver a working product within the academic timeline.\\
-Health Platform Providers (Apple HealthKit, Google Health Connect) &  \\
-Market Data Providers &  \\
-App Stores / Privacy Regulators (PIPEDA) & Set rules for handling health data and financial content that the app must follow.  \\
+\multicolumn{2}{l}{\textit{Primary Stakeholders}} \\
+\midrule
+Beginner Investors / Fitness-Motivated Users & Primary users who track their physical activity, earn virtual currency, and manage a virtual portfolio; want an engaging, easy-to-understand way to build healthy habits and learn investing without real financial risk. \\
+Project Supervisor / Client (Chris Schankula) & Proposed the project and defines its vision of gamifying exercise and teaching investing in a low-stakes environment; approves the project's scope and validates that the product meets this vision. \\
+\midrule
+\multicolumn{2}{l}{\textit{Secondary Stakeholders}} \\
+\midrule
+Friends / Social Connections & View shared workouts and portfolio metrics through the social feed; expect to see only the information that users choose to share. \\
+\midrule
+\multicolumn{2}{l}{\textit{External Stakeholders}} \\
+\midrule
+Health Platform Providers (Apple HealthKit, Google Health Connect) & Supply step and workout data; their Application Programming Interfaces (APIs), permission models, and terms of use limit what the app can track. \\
+Market Data Providers & Supply real asset prices; their accuracy, request limits, and cost affect how closely the virtual portfolio can follow the real market. \\
+App Stores and Privacy Regulators & Set the rules for handling health data and financial content, including Canada's Personal Information Protection and Electronic Documents Act (PIPEDA), which the app must follow. \\
 \bottomrule
 \end{tabular}
+\caption{FitFolio stakeholders grouped by level of involvement}
+\label{tab:stakeholders}
+\end{table}
 
 \subsection{Environment}
 
