@@ -2,6 +2,7 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{float}
 
 \title{Development Plan\\\progname}
 
@@ -91,64 +92,290 @@ likely change throughout the year.}
 
 \section{Workflow Plan}
 
+% \begin{itemize}
+% 	\item How will you be using git, including branches, pull request, etc.?
+% 	\item How will you be managing issues, including template issues, issue
+% 	classification, etc.?
+%   \item Use of CI/CD
+% \end{itemize}
+
+This section describes how the team will use Git and GitHub to collaborate on both source code and documentation, how work will be tracked through issues, and how Continuous Integration and Continuous Deployment (CI/CD) will keep the project stable. 
+It is written to serve as a guide for current and future contributors. The repository is available at \href{https://github.com/davislenover/BurnNEarn}{BurnNEarn GitHub Repository}.
+
+\subsection{Branches}
+
+The repository will have exactly one permanent branch:
+
 \begin{itemize}
-	\item How will you be using git, including branches, pull request, etc.?
-	\item How will you be managing issues, including template issues, issue
-	classification, etc.?
-  \item Use of CI/CD
+  \item \texttt{main}: the protected, stable branch representing the latest reviewed state of the project. Direct pushes are not permitted. 
+  All changes must arrive through a pull request that has been approved by at least one other team member and has passed all CI checks.
 \end{itemize}
 
+All other branches are short-lived and must follow the naming convention \texttt{<type>/<name>-<description>}, where \texttt{type} is one of the categories in Table~\ref{TblBranchTypes}, \texttt{name} is the author's first name in lowercase, and \texttt{description} is a brief summary of the work in two to four words, separated by hyphens.
+
+\begin{table}[hp]
+\caption{Branch Types and Naming Examples} \label{TblBranchTypes}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Type} & \textbf{Used For} & \textbf{Example}\\
+\midrule
+\texttt{docs} & Documentation sections & \texttt{docs/farid-dev-plan-workflow}\\
+\texttt{feature} & New app functionality & \texttt{feature/davis-step-sync}\\
+\texttt{fix} & Bug fixes & \texttt{fix/angad-portfolio-rounding}\\
+\texttt{chore} & CI, configuration, and repository maintenance & \texttt{chore/preston-latex-build}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Branches are not shared between members; each member creates their own branch for each unit of work. 
+For documentation, each member creates one branch per deliverable covering the sections assigned to them. For code, each feature or fix gets its own branch. Once a branch's pull request is merged into \texttt{main}, the branch is deleted. Before opening a pull request, the author updates their branch with the latest changes from \texttt{main} and resolves any merge conflicts locally, so that conflicts are never resolved during review.
+
+\subsection{Commits}
+
+Commits should be small and focused on a single change, rather than combining unrelated edits. 
+Commit messages should begin with a short summary in the imperative mood (e.g., ``Add step count permission request'') and reference the related issue number where applicable (e.g., \texttt{\#14}), which links the commit to that issue on GitHub. 
+Issues are closed through the pull request rather than individual commits, as described in Section~\ref{SecPullRequests}.
+
+\subsection{Pull Requests} \label{SecPullRequests}
+
+When the work on a branch is complete, the author follows these steps:
+
+\begin{enumerate}
+  \item Open a pull request into \texttt{main} with a title summarizing the change and a description of what was changed and why. The description must link the related issue using a closing keyword (e.g., \texttt{Closes \#14}), which automatically closes the issue when the pull request is merged.
+  \item Request at least one reviewer. The reviewer should be a member working in a related area, or the whole team if the change affects everyone, such as shared document sections or the overall architecture.
+  \item Address the reviewer's comments, which are left directly on the relevant lines of code or documentation.
+  \item Once the pull request has one approval and all CI checks pass, the author merges it using a \textit{merge commit}, which preserves every individual commit from the branch on \texttt{main}. This keeps a complete record of each member's contributions throughout the project. The author then deletes the branch.
+\end{enumerate}
+
+Reviewers are expected to respond to a review request within 48 hours, or within 24 hours during the final three days before a deadline. 
+For documentation, reviewers also check the changes against the deliverable's checklist and rubric before approving.
+
+\subsection{Tags}
+
+Deliverables are marked directly from the \texttt{main} branch, so a Git tag will be created on \texttt{main} at each deliverable's deadline to record exactly what was marked. 
+Document deadlines use the format \texttt{<document>-<revision>} (e.g., \texttt{dev-plan-rev0}, \texttt{srs-rev0}, \texttt{design-rev-1}), and demonstrations use the format \texttt{<demo>-demo} (e.g., \texttt{poc-demo}, \texttt{rev0-demo}, \texttt{final-demo}). 
+The team member who merges the final pull request before a deadline is responsible for creating its tag. 
+Tags allow the team to return to the exact state of the project at each deadline, and to compare revisions when addressing feedback.
+
+\subsection{Issue Management}
+
+GitHub Issues will serve as the team's ticketing system, so that all work is visible, assigned, and traceable.
+
+\begin{itemize}
+  \item \textbf{Issue size:} Each issue should represent work that can be completed in a single sitting of roughly two to three hours. Larger tasks are split into multiple issues. For documentation, every section of each document has its own issue, titled with its deliverable and section (e.g., \texttt{[Development Plan] 7 Workflow Plan}).
+  \item \textbf{Ownership:} Every task issue is assigned to one owner, who is responsible for completing it and moving it through the project board described in Section~\ref{SecGitHubProjects}.
+  \item \textbf{Milestones:} Each deliverable is a milestone whose due date matches the deadline in Table~\ref{TblSchedule}. Every issue related to a deliverable is added to its milestone, so the team can see how much work remains before each deadline.
+  \item \textbf{Meetings and lectures:} An issue is created for every team meeting, supervisor meeting, and lecture, and is tracked in its own column on the project board. At least 24 hours before a meeting, the agenda and any questions are added to the issue. Afterwards, notes and action items are recorded, each action item becomes its own issue, and the meeting issue is closed. Lecture issues record the topic, date and time, and attendance.
+\end{itemize}
+
+The repository includes the issue templates listed in Table~\ref{TblIssueTemplates}, so that every issue contains consistent information.
+
+\begin{table}[H]
+  \caption{Issue Templates} \label{TblIssueTemplates}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Template} & \textbf{Contents}\\
+    \midrule
+      Documentation Task & Deliverable, section, and the checklist items the section must satisfy\\
+      Feature & Description of the functionality and acceptance criteria\\
+      Bug Report & Steps to reproduce, expected and actual behaviour, and device and operating system\\
+      Meeting & Meeting type, date and time, attendance, agenda, questions, notes, and action items\\
+      Lecture & Topic, date and time, and attendance\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Issues are classified using the labels in Table~\ref{TblLabels}. Every issue that belongs to a deliverable receives that deliverable's label, and every issue receives one type label and, where relevant, one area label. 
+Together, these allow the team to filter issues by deliverable, by kind of work, or by part of the app.
+
+\begin{table}[H]
+  \caption{Issue Labels} \label{TblLabels}
+  \begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Category} & \textbf{Label} & \textbf{Meaning}\\
+    \midrule
+      % Deliverable & \texttt{Problem Statement \& Goals} & Problem Statement and Goals document\\
+      Deliverable & \begin{tabular}[t]{@{}l@{}}\texttt{Problem Statement}\\\texttt{and Goals}\end{tabular} & Problem Statement and Goals document\\
+      & \texttt{Development Plan} & Development Plan and Proof of Concept Plan\\
+      & \texttt{Requirements} & Software Requirements Specification\\
+      & \texttt{Hazard Analysis} & Hazard Analysis document\\
+      & \texttt{V\&V Plan} & Verification and Validation Plan\\
+      & \texttt{Design Document} & Design Document (all revisions)\\
+      & \texttt{V\&V Report} & Verification and Validation Report\\
+      & \texttt{Demo} & Proof of Concept, Revision 0, Final, and EXPO demonstrations\\
+      \midrule
+      Type & \texttt{documentation} & Writing or revising a document section\\
+      & \texttt{reflection} & Reflection components of a deliverable\\
+      & \texttt{feature} & New functionality\\
+      & \texttt{enhancement} & Improvement to existing functionality\\
+      & \texttt{bug} & A defect that must be fixed\\
+      & \texttt{meeting} & Team or supervisor meeting\\
+      & \texttt{lecture} & Course lecture\\
+      \midrule
+      Area & \texttt{frontend} & User interface of the mobile app\\
+      & \texttt{backend} & Server, database, and accounts\\
+      & \texttt{health-data} & Fitness tracking and health platform integration\\
+      & \texttt{market-engine} & Asset prices, portfolios, and market scenarios\\
+      & \texttt{social} & Social feed and sharing\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Continuous Integration and Continuous Deployment}
+
+GitHub Actions will run automated checks on the repository, so that errors are caught when a change is proposed rather than after it reaches \texttt{main}:
+
+\begin{itemize}
+  \item \textbf{Documentation:} On every pull request that changes the \texttt{docs} folder, all \LaTeX{} documents are compiled. 
+  The check fails if any document does not build, and the generated PDFs are saved as downloadable artifacts of the workflow run, linked from the pull request, so reviewers can read the rendered changes.
+  \item \textbf{Code:} Once development begins, every pull request and every push to \texttt{main} runs a linter and the automated test suite in the \texttt{test} folder. 
+  Branch protection prevents a pull request from being merged if any check fails.
+  \item \textbf{Deployment:} Once the core features are stable, targeted for Revision~0, every merge into \texttt{main} will automatically produce an internal test build of the mobile app, so the team and supervisor can always install the latest version on their phones.
+\end{itemize}
+
+If a check fails, the pull request's author is responsible for fixing it before requesting another review.
+
+
 \section{Project Decomposition and Scheduling}
-\subsection{GitHub Projects}
 
-The team will use a GitHub Project board to track all issues. The board will have the columns \textit{Backlog}, \textit{In Progress}, \textit{In Review}, and \textit{Done}. Issues move to \textit{In Review} when a pull request is opened, and to \textit{Done} automatically when the linked issue is closed by a merged pull request. The board can be filtered by milestone, assignee, or label, giving the team and supervisor a clear view of who is working on what and what remains before each deadline.
+% \begin{itemize} 
+%   \item How will you be using GitHub projects? 
+%   \item Include a link to your GitHub project 
+% \end{itemize}
 
-The GitHub Project can be found here: \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}.
+% \wss{How will the project be scheduled? This is the big picture schedule, not
+% details. You will need to reproduce information that is in the course outline
+% for deadlines.}
+
+This section describes how the team will use GitHub Projects to track work, how each deliverable will be broken down into manageable tasks, 
+and how the project will be scheduled around both course deadlines and earlier team deadlines.
+
+
+\subsection{GitHub Projects} \label{SecGitHubProjects}
+
+The team will use a GitHub Project board, \textit{BurnNEarn-TrackingBoard}, as the central place to track all issues. It is available at \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}. 
+Every task issue moves through the first four columns in Table~\ref{TblBoardColumns} in order, while meeting and lecture issues are kept in their own columns so they do not clutter the task workflow.
+
+\begin{table}[H]
+  \caption{Project Tracking Board Columns} \label{TblBoardColumns}
+  \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
+    \toprule
+    \textbf{Column} & \textbf{Description}\\
+    \midrule
+      Backlog & Tasks that have been identified but not yet started. New issues are added here automatically.\\
+      In Progress & Tasks being actively worked on. The owner moves an issue here when they create its branch.\\
+      In Review & Tasks with an open pull request awaiting review. The owner moves an issue here when they open the pull request.\\
+      Done & Tasks whose pull request has been approved and merged. Issues move here automatically when they are closed.\\
+      Meetings & Team and supervisor meetings, with their agendas, notes, and action items.\\
+      Lectures & Course lectures, with their topic, date and time, and attendance.\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The board can be filtered by milestone, assignee, or label. Filtering by the current milestone shows how much work remains before the next deadline, and filtering by assignee shows each member's workload, which helps the team balance tasks during weekly meetings.
+
+\subsection{Task Decomposition}
+
+At the start of each deliverable, the team breaks the work into issues and adds them to that deliverable's milestone. Work is decomposed differently depending on its type:
+
+\begin{itemize}
+  \item \textbf{Documentation} is broken down by section, with one issue per section titled with its deliverable and section number (e.g., \texttt{[Development Plan] 8 Project Decomposition and Scheduling}). Each section can then be written, reviewed, and merged independently.
+  \item \textbf{Software} is broken down by feature, and each feature is split further into issues that fit within a single sitting and can be tested on their own.
+\end{itemize}
+
+Issues are assigned during the weekly team meeting, so that every member knows who is responsible for what. Assignments balance two goals: using each member's strengths to maintain quality, and giving every member experience across different parts of the project, so that no part of FitFolio depends on a single person. When a member takes on a task in an unfamiliar area, they are paired with a member who has experience in that area and can offer guidance.
 
 \subsection{Schedule}
 
-The project will be scheduled around the course deliverables, with each deliverable set as a GitHub milestone. The major deadlines, taken from the course outline, are:
+The project is scheduled around the course deliverables, each of which is a GitHub milestone. 
+For every deliverable, the team sets a team deadline three days before the course deadline. 
+All work must be merged into \texttt{main} by the team deadline, and the remaining three days are reserved for peer review, a quality assurance check of the full deliverable against its checklist and rubric, and final edits. 
+For demonstrations, the team deadline is a full rehearsal of the demonstration, held three days before the first demonstration day. 
+Table~\ref{TblSchedule} lists both deadlines for every deliverable. Unless otherwise stated, all course deadlines are at 11:59 p.m.
 
-\begin{table}[h]
-\centering
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{l c}
-\toprule
-\textbf{Deliverable} & \textbf{Week} \\
-\midrule
-Team Formed, Project Selected & Week 03 \\
-Problem Statement, POC Plan, Development Plan  & Week 04 \\
-Req. Doc. and Hazard Analysis Revision 0 & Week 06 \\
-V\&V Plan Revision 0 &  Week 08 \\
-Design Document Rev -1 and CD-Fall Rev 0 & Week 10 \\
-Proof of Concept Demo + Interviews &  Weeks 11--12 \\
-Design Document Revision 0 &  Week 16 \\
-Revision 0 Demo + Interviews &  Weeks 18--19 \\
-V\&V Report Rev 0 and CD-Winter Rev 0 & Week 22 \\
-Final Demonstration (Revision 1) & Week 24 \\
-EXPO Demonstration & Week 26 \\
-Final Documentation (Revision 1) & Week 26 \\
-\bottomrule
-\end{tabular}
-\caption{Major project deadlines from the course outline}
-\label{tab:schedule}
+\begin{table}[H]
+  \caption{Team and Course Deadlines} \label{TblSchedule}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}Xll}
+    \toprule
+    \textbf{Deliverable} & \textbf{Team Deadline} & \textbf{Course Deadline}\\
+    \midrule
+      Problem Statement, POC Plan, Development Plan & Sep 25, 2026 & Sep 28, 2026\\
+      Requirements Document and Hazard Analysis Revision 0 & Oct 16, 2026 & Oct 19, 2026\\
+      V\&V Plan Revision 0 & Oct 30, 2026 & Nov 2, 2026\\
+      Design Document Revision $-1$ and CD-Fall Revision 0 & Nov 13, 2026 & Nov 16, 2026\\
+      Proof of Concept Demonstration & Nov 20, 2026 & Nov 23 - Dec 4, 2026\\
+      Design Document Revision 0 & Jan 15, 2027 & Jan 18, 2027\\
+      Revision 0 Demonstration & Jan 29, 2027 & Feb 1 - Feb 12, 2027\\
+      V\&V Report Revision 0 and CD-Winter Revision 0 & Mar 5, 2027 & Mar 8, 2027\\
+      Final Demonstration (Revision 1) & Mar 12, 2027 & Mar 15 - Mar 25, 2027\\
+      EXPO Demonstration (poster due) & Mar 28, 2027 & Mar 31, 2027\\
+      Final Video & Mar 28, 2027 & Mar 31, 2027\\
+      Final Documentation (Revision 1) & Mar 28, 2027 & Mar 31, 2027\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
-\newpage{}
 
-\begin{itemize}
-  \item How will you be using GitHub projects?
-  \item Include a link to your GitHub project
-\end{itemize}
 
-\wss{How will the project be scheduled?  This is the big picture schedule, not
-details. You will need to reproduce information that is in the course outline
-for deadlines.}
+To keep work on track between deadlines, each member reports progress and any blockers on their assigned issues during the weekly team meeting. 
+A member who expects to miss a team deadline must tell the team in the group chat at least 24 hours beforehand, so that the task can be supported or reassigned. 
+Feedback on each Revision 0 deliverable will be recorded as issues and addressed throughout the year, rather than left until the Final Documentation.
+
 
 \section{Proof of Concept Demonstration Plan}
 
-What is the main risk, or risks, for the success of your project?  What will you
-demonstrate during your proof of concept demonstration to convince yourself that
-you will be able to overcome this risk?
+% What is the main risk, or risks, for the success of your project?  What will you
+% demonstrate during your proof of concept demonstration to convince yourself that
+% you will be able to overcome this risk?
+
+This section identifies the main risks to the success of FitFolio, 
+describes what the proof of concept (PoC) demonstration will show to convince the team that these risks can be overcome, 
+and outlines what the team will do if the demonstration shows that a risk cannot be overcome as planned.
+
+\subsection{Main Risks}
+
+FitFolio depends on two external systems that no team member has worked with before. 
+Both are implementation risks: if either cannot be made to work, the app's core loop of earning currency through activity and investing it in real assets cannot be built.
+
+\begin{enumerate}
+  \item \textbf{Reading fitness data from the phone's health platform.} FitFolio's core promise is that activity is tracked automatically. 
+  This requires reading step data through Google Health Connect on Android and Apple HealthKit on iOS, which each have their own Application Programming Interfaces (APIs), permission models, and restrictions on when data can be read. 
+  If step data cannot be read reliably, the app cannot award currency fairly.
+  \item \textbf{Valuing portfolios with real market prices.} The virtual portfolio must follow real asset prices, but market data providers limit how many requests can be made, especially on free plans. 
+  If prices cannot be retrieved often enough within these limits, portfolio values will not follow the market closely enough to teach users how investing works.
+\end{enumerate}
+
+\subsection{Demonstration}
+
+The PoC will show one minimal path through FitFolio's core loop, running on a physical Android phone:
+
+\begin{enumerate}
+  \item \textbf{Read the day's step count} (Risk 1). After the user grants permission, the app reads the current day's steps from Google Health Connect and displays them. This succeeds if the count matches the phone's own health app, and updates after the team member walks and reopens the app.
+  \item \textbf{Convert steps into virtual currency} (connects Risks 1 and 2). The step count is converted into currency using a simple fixed rule, and the balance is displayed.
+  \item \textbf{Buy a real asset with virtual currency} (Risk 2). The user spends their balance on shares of one real asset, such as a stock or Exchange-Traded Fund (ETF), at its current market price.
+  \item \textbf{Show the portfolio's value following the market} (Risk 2). The portfolio's value is recalculated each time a new price is retrieved. This succeeds if the displayed value matches the asset's public market price at each update, and the number of requests used shows that the chosen update interval fits within the provider's free limits.
+\end{enumerate}
+
+If time allows, the same steps will also be shown on an iPhone using Apple HealthKit. This is a stretch goal rather than a requirement, so that the core demonstration stays achievable.
+
+The PoC is deliberately not a prototype. It will have a minimal user interface and will not include user accounts, workouts, the social feed, or market scenarios. 
+Its only purpose is to show that the two main risks can be overcome. The team will rehearse the full demonstration by the team deadline in Table~\ref{TblSchedule}, and the demonstrated version will be tagged \texttt{poc-demo} on \texttt{main}.
+
+\subsection{If the PoC Fails}
+
+If the demonstration shows that a risk cannot be overcome as planned, the team will adjust the project's scope rather than its core idea:
+
+\begin{itemize}
+  \item \textbf{If step data cannot be read reliably:} The team would first limit syncing to when the user opens the app, rather than in the background, which avoids most platform restrictions. 
+  If one platform still cannot be supported, FitFolio would support only the platform that works, and the team would discuss with the supervisor whether the second platform should become a future goal. 
+  If neither platform works, users would enter their activity manually as a last resort. Since this weakens FitFolio's promise of automatic tracking, the team would discuss this change in scope with the supervisor before adopting it.
+  \item \textbf{If market data limits are too restrictive:} The team would reduce how often prices are updated (e.g., every 15 minutes, or once per day), have a server retrieve each price once and share it across all users rather than requesting it per user, and limit the app to a curated list of assets. 
+  If a provider's limits or cost are still unworkable, the team would switch to a different provider.
+\end{itemize}
+
+\subsection{Secondary Risk}
+
+A secondary risk is that the market scenarios, such as replays of past downturns, depend on historical price data that may be limited or costly to access. 
+Since this feature is not part of the core loop, it will not be included in the PoC. If historical data proves difficult to obtain, the team would reduce the number of scenarios offered, or build them from a small set of stored historical datasets.
 
 \section{Expected Technology}
 
@@ -318,11 +545,36 @@ their TA, or the instructor?  Are there incentives for reaching targets early?}
 
 \subsubsection*{Team Building}
 
-\wss{How will you build team cohesion (fun time, group rituals, etc.)? }
+% \wss{How will you build team cohesion (fun time, group rituals, etc.)? } \\
+The team will build cohesion through regular, low-effort rituals rather than occasional large events, since consistent contact matters more than one-off activities.
+
+\begin{itemize}
+  \item \textbf{Weekly check-in:} The first five minutes of every weekly team meeting are reserved for an informal check-in, where each member shares how they are doing, both within the project and outside it. 
+  This helps the team notice early when a member is overloaded, and adjust workloads before deadlines are affected.
+  \item \textbf{Deliverable retrospectives:} After each deliverable is submitted, the team holds a 20-minute retrospective during the next weekly meeting. 
+  Each member shares one thing that went well and one thing to improve, and the team agrees on at least one change to try for the next deliverable. 
+  This gives every member an equal voice, keeps small frustrations from building up, and feeds directly into each deliverable's reflection.
+  \item \textbf{Using our own product:} Once the proof of concept is working, the team will hold a weekly step challenge using FitFolio itself. 
+  This builds friendly competition within the team, and gives every member real experience as a user of the product, which will help identify usability issues early.
+\end{itemize}
 
 \subsubsection*{Decision Making} 
 
-\wss{How will you make decisions in your group? Consensus?  Vote? How will you
-handle disagreements? }
+% \wss{How will you make decisions in your group? Consensus?  Vote? How will you
+% handle disagreements? }
+
+The team will aim to make decisions by consensus, since decisions that every member agrees with are more likely to be followed through. Decisions are made during the weekly team meeting, or in the group chat for decisions that cannot wait.
+
+\begin{itemize}
+  \item \textbf{Voting:} If consensus is not reached after 15 minutes of discussion, the decision is made by majority vote. 
+  A vote requires at least four of the five members to be present or to respond in the group chat, and passes with at least three votes in favour, so that no decision is made by a minority of the team.
+  \item \textbf{Area decisions:} Technical decisions within a specific area of the app (e.g., the health data integration or the market engine) are made by the members working on that area, who inform the rest of the team. 
+  Any member may ask for such a decision to be brought to a team vote.
+  \item \textbf{Scope decisions:} Decisions that change the product's scope or vision, such as removing a feature, are brought to the supervisor before being adopted.
+  \item \textbf{Recording decisions:} Every decision and its reasoning is recorded in the relevant meeting issue, so that settled decisions are not revisited without new information.
+\end{itemize}
+
+When disagreements arise, each side will explain their position with a focus on what is best for the project rather than personal preference. 
+If the same disagreement remains unresolved after two consecutive team meetings, it will be raised with the supervisor, who will help the team reach a decision.
 
 \end{document}
