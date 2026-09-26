@@ -132,6 +132,17 @@ Commits should be small and focused on a single change, rather than combining un
 
 \subsection{Pull Requests} \label{SecPullRequests}
 
+When the work on a branch is complete, the author follows these steps:
+
+\begin{enumerate}
+  \item Open a pull request into \texttt{main} with a title summarizing the change and a description of what was changed and why. The description must link the related issue using a closing keyword (e.g., \texttt{Closes \#14}), which automatically closes the issue when the pull request is merged.
+  \item Request at least one reviewer. The reviewer should be a member working in a related area, or the whole team if the change affects everyone, such as shared document sections or the overall architecture.
+  \item Address the reviewer's comments, which are left directly on the relevant lines of code or documentation.
+  \item Once the pull request has one approval and all CI checks pass, the author merges it using a \textit{merge commit}, which preserves every individual commit from the branch on \texttt{main}. This keeps a complete record of each member's contributions throughout the project. The author then deletes the branch.
+\end{enumerate}
+
+Reviewers are expected to respond to a review request within 48 hours, or within 24 hours during the final three days before a deadline. For documentation, reviewers also check the changes against the deliverable's checklist and rubric before approving.
+
 \subsection{Tags}
 
 \subsection{Issue Management}
