@@ -98,14 +98,16 @@ likely change throughout the year.}
   \item Use of CI/CD
 \end{itemize}
 
-This section describes how the team will use Git and GitHub to collaborate on both source code and documentation, how work will be tracked through issues, and how Continuous Integration and Continuous Deployment (CI/CD) will keep the project stable. It is written to serve as a guide for current and future contributors. The repository is available at \href{https://github.com/davislenover/BurnNEarn}{BurnNEarn GitHub Repository}.
+This section describes how the team will use Git and GitHub to collaborate on both source code and documentation, how work will be tracked through issues, and how Continuous Integration and Continuous Deployment (CI/CD) will keep the project stable. 
+It is written to serve as a guide for current and future contributors. The repository is available at \href{https://github.com/davislenover/BurnNEarn}{BurnNEarn GitHub Repository}.
 
 \subsection{Branches}
 
 The repository will have exactly one permanent branch:
 
 \begin{itemize}
-  \item \texttt{main}: the protected, stable branch representing the latest reviewed state of the project. Direct pushes are not permitted. All changes must arrive through a pull request that has been approved by at least one other team member and has passed all CI checks.
+  \item \texttt{main}: the protected, stable branch representing the latest reviewed state of the project. Direct pushes are not permitted. 
+  All changes must arrive through a pull request that has been approved by at least one other team member and has passed all CI checks.
 \end{itemize}
 
 All other branches are short-lived and must follow the naming convention \texttt{<type>/<name>-<description>}, where \texttt{type} is one of the categories in Table~\ref{TblBranchTypes}, \texttt{name} is the author's first name in lowercase, and \texttt{description} is a brief summary of the work in two to four words, separated by hyphens.
@@ -124,11 +126,14 @@ All other branches are short-lived and must follow the naming convention \texttt
 \end{tabularx}
 \end{table}
 
-Branches are not shared between members; each member creates their own branch for each unit of work. For documentation, each member creates one branch per deliverable covering the sections assigned to them. For code, each feature or fix gets its own branch. Once a branch's pull request is merged into \texttt{main}, the branch is deleted. Before opening a pull request, the author updates their branch with the latest changes from \texttt{main} and resolves any merge conflicts locally, so that conflicts are never resolved during review.
+Branches are not shared between members; each member creates their own branch for each unit of work. 
+For documentation, each member creates one branch per deliverable covering the sections assigned to them. For code, each feature or fix gets its own branch. Once a branch's pull request is merged into \texttt{main}, the branch is deleted. Before opening a pull request, the author updates their branch with the latest changes from \texttt{main} and resolves any merge conflicts locally, so that conflicts are never resolved during review.
 
 \subsection{Commits}
 
-Commits should be small and focused on a single change, rather than combining unrelated edits. Commit messages should begin with a short summary in the imperative mood (e.g., ``Add step count permission request'') and reference the related issue number where applicable (e.g., \texttt{\#14}), which links the commit to that issue on GitHub. Issues are closed through the pull request rather than individual commits, as described in Section~\ref{SecPullRequests}.
+Commits should be small and focused on a single change, rather than combining unrelated edits. 
+Commit messages should begin with a short summary in the imperative mood (e.g., ``Add step count permission request'') and reference the related issue number where applicable (e.g., \texttt{\#14}), which links the commit to that issue on GitHub. 
+Issues are closed through the pull request rather than individual commits, as described in Section~\ref{SecPullRequests}.
 
 \subsection{Pull Requests} \label{SecPullRequests}
 
@@ -141,9 +146,15 @@ When the work on a branch is complete, the author follows these steps:
   \item Once the pull request has one approval and all CI checks pass, the author merges it using a \textit{merge commit}, which preserves every individual commit from the branch on \texttt{main}. This keeps a complete record of each member's contributions throughout the project. The author then deletes the branch.
 \end{enumerate}
 
-Reviewers are expected to respond to a review request within 48 hours, or within 24 hours during the final three days before a deadline. For documentation, reviewers also check the changes against the deliverable's checklist and rubric before approving.
+Reviewers are expected to respond to a review request within 48 hours, or within 24 hours during the final three days before a deadline. 
+For documentation, reviewers also check the changes against the deliverable's checklist and rubric before approving.
 
 \subsection{Tags}
+
+Deliverables are marked directly from the \texttt{main} branch, so a Git tag will be created on \texttt{main} at each deliverable's deadline to record exactly what was marked. 
+Document deadlines use the format \texttt{<document>-<revision>} (e.g., \texttt{dev-plan-rev0}, \texttt{srs-rev0}, \texttt{design-rev-1}), and demonstrations use the format \texttt{<demo>-demo} (e.g., \texttt{poc-demo}, \texttt{rev0-demo}, \texttt{final-demo}). 
+The team member who merges the final pull request before a deadline is responsible for creating its tag. 
+Tags allow the team to return to the exact state of the project at each deadline, and to compare revisions when addressing feedback.
 
 \subsection{Issue Management}
 
