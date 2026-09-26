@@ -84,11 +84,37 @@ There should be an agenda for all meetings.}
 
 \section{Team Member Roles}
 
-\wss{You should identify the types of roles you anticipate, like notetaker,
-leader, meeting chair, reviewer.  Assigning specific people to those roles is
-not necessary at this stage.  In a student team the role of the individuals will
-likely change throughout the year.}
+The team will use adapting roles over the course of the project. 
+Instead of assigning each member to one responsibility for the entire project timeline, 
+roles can change between meetings, development phases, and deliverables
+depending on the needs of the team and the members.
 
+The anticipated team roles include: 
+
+\begin{itemize} 
+    \item \textbf{Meeting Chair:} Leads team meetings to ensure that the agenda is followed
+    as well as keeping discussions focused to ensure action items are assigned
+
+    \item \textbf{Notetaker:} Records important decisions, deadlines, and questions asked during meetings
+    as well as information discussed during lectures
+
+    \item \textbf{Project Coordinator:} Monitors GitHub issues, milestones and the GitHub project board to ensure the work
+    remains aligned with the upcoming dealines.
+
+    \item \textbf{Developer:} Implements assigned features, resolves technical issues, contributes
+    to relevant implementation documentation.
+
+    \item \textbf{Reviewer:} Reviews pull requests submitted by other team members and ensures any documentation
+    or code is consistent with the team's coding standard.
+
+    \item \textbf{Testing and Quality Assurance:} Develops and executes tests, identifies defects, and verifies
+    that implemented functionality satisfies the corresponding requirements.
+\end{itemize}
+
+All team members will contribute to development, testing, documentation, and code review
+throughout the project and the aforementioned roles will rotate between members so that
+responsibility is shared across the team.
+    
 \section{Workflow Plan}
 
 \begin{itemize}
@@ -193,7 +219,30 @@ What tools will you be using?  How will you verify the output of your LLMs?}
 
 \section{Coding Standard}
 
-\wss{What coding standard will you adopt?}
+The development team will adopt a similar standard to the Microsoft TypeScript Coding Guidelines
+as the primary guideline for any code written throughout the project.
+
+The team will follow applicable conventions from this guideline, including:
+
+
+\begin{itemize}
+    \item Using PascalCase for type names and enum values
+    \item Using camelCase for functions, properties, and local variables
+    \item Avoiding the use of the I prefix for interface names
+    \item Separating logical components into appropriate files
+    \item Exporting types and functions only when they are required by other modules
+    \item Placing type definitions before their use where practical
+    \item Preferring undefined over null
+    \item Using double quotation marks for strings.
+    \item Using four spaces for indentation
+\end{itemize}
+
+Some standards in the Microsoft TypeScript Coding Guidelines do not 
+apply directly to BurnNEarn, the team will adopt the conventions
+that are relevant to the project instead of following every specific 
+recommendation
+
+
 
 \newpage{}
 
