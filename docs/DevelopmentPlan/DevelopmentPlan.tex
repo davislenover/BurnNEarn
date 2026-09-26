@@ -360,6 +360,19 @@ If time allows, the same steps will also be shown on an iPhone using Apple Healt
 The PoC is deliberately not a prototype. It will have a minimal user interface and will not include user accounts, workouts, the social feed, or market scenarios. 
 Its only purpose is to show that the two main risks can be overcome. The team will rehearse the full demonstration by the team deadline in Table~\ref{TblSchedule}, and the demonstrated version will be tagged \texttt{poc-demo} on \texttt{main}.
 
+\subsection{If the PoC Fails}
+
+If the demonstration shows that a risk cannot be overcome as planned, the team will adjust the project's scope rather than its core idea:
+
+\begin{itemize}
+  \item \textbf{If step data cannot be read reliably:} The team would first limit syncing to when the user opens the app, rather than in the background, which avoids most platform restrictions. 
+  If one platform still cannot be supported, FitFolio would support only the platform that works, and the team would discuss with the supervisor whether the second platform should become a future goal. 
+  If neither platform works, users would enter their activity manually as a last resort. Since this weakens FitFolio's promise of automatic tracking, the team would discuss this change in scope with the supervisor before adopting it.
+  \item \textbf{If market data limits are too restrictive:} The team would reduce how often prices are updated (e.g., every 15 minutes, or once per day), have a server retrieve each price once and share it across all users rather than requesting it per user, and limit the app to a curated list of assets. 
+  If a provider's limits or cost are still unworkable, the team would switch to a different provider.
+\end{itemize}
+
+
 \section{Expected Technology}
 
 \wss{What programming language or languages do you expect to use?  What external
