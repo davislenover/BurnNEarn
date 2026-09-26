@@ -238,14 +238,32 @@ If a check fails, the pull request's author is responsible for fixing it before 
 
 \section{Project Decomposition and Scheduling}
 
-The team will use a GitHub Project board, \textit{BurnNEarn-TrackingBoard}, as the central place to track all issues. It is available at \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}. 
-Every task issue moves through the first four columns in Table~\ref{TblBoardColumns} in order, while meeting and lecture issues are kept in their own columns so they do not clutter the task workflow.
+This section describes how the team will use GitHub Projects to track work, how each deliverable will be broken down into manageable tasks, 
+and how the project will be scheduled around both course deadlines and earlier team deadlines.
+
 
 \subsection{GitHub Projects} \label{SecGitHubProjects}
 
-The team will use a GitHub Project board to track all issues. The board will have the columns \textit{Backlog}, \textit{In Progress}, \textit{In Review}, and \textit{Done}. Issues move to \textit{In Review} when a pull request is opened, and to \textit{Done} automatically when the linked issue is closed by a merged pull request. The board can be filtered by milestone, assignee, or label, giving the team and supervisor a clear view of who is working on what and what remains before each deadline.
+The team will use a GitHub Project board, \textit{BurnNEarn-TrackingBoard}, as the central place to track all issues. It is available at \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}. 
+Every task issue moves through the first four columns in Table~\ref{TblBoardColumns} in order, while meeting and lecture issues are kept in their own columns so they do not clutter the task workflow.
 
-The GitHub Project can be found here: \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}.
+\begin{table}[H]
+  \caption{Project Tracking Board Columns} \label{TblBoardColumns}
+  \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
+    \toprule
+    \textbf{Column} & \textbf{Description}\\
+    \midrule
+      Backlog & Tasks that have been identified but not yet started. New issues are added here automatically.\\
+      In Progress & Tasks being actively worked on. The owner moves an issue here when they create its branch.\\
+      In Review & Tasks with an open pull request awaiting review. The owner moves an issue here when they open the pull request.\\
+      Done & Tasks whose pull request has been approved and merged. Issues move here automatically when they are closed.\\
+      Meetings & Team and supervisor meetings, with their agendas, notes, and action items.\\
+      Lectures & Course lectures, with their topic, date and time, and attendance.\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The board can be filtered by milestone, assignee, or label. Filtering by the current milestone shows how much work remains before the next deadline, and filtering by assignee shows each member's workload, which helps the team balance tasks during weekly meetings.
 
 \subsection{Schedule}
 
