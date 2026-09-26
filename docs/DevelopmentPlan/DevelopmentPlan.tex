@@ -102,6 +102,30 @@ This section describes how the team will use Git and GitHub to collaborate on bo
 
 \subsection{Branches}
 
+The repository will have exactly one permanent branch:
+
+\begin{itemize}
+  \item \texttt{main}: the protected, stable branch representing the latest reviewed state of the project. Direct pushes are not permitted. All changes must arrive through a pull request that has been approved by at least one other team member and has passed all CI checks.
+\end{itemize}
+
+All other branches are short-lived and must follow the naming convention \texttt{<type>/<name>-<description>}, where \texttt{type} is one of the categories in Table~\ref{TblBranchTypes}, \texttt{name} is the author's first name in lowercase, and \texttt{description} is a brief summary of the work in two to four words, separated by hyphens.
+
+\begin{table}[hp]
+\caption{Branch Types and Naming Examples} \label{TblBranchTypes}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Type} & \textbf{Used For} & \textbf{Example}\\
+\midrule
+\texttt{docs} & Documentation sections & \texttt{docs/farid-dev-plan-workflow}\\
+\texttt{feature} & New app functionality & \texttt{feature/davis-step-sync}\\
+\texttt{fix} & Bug fixes & \texttt{fix/angad-portfolio-rounding}\\
+\texttt{chore} & CI, configuration, and repository maintenance & \texttt{chore/preston-latex-build}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Branches are not shared between members; each member creates their own branch for each unit of work. For documentation, each member creates one branch per deliverable covering the sections assigned to them. For code, each feature or fix gets its own branch. Once a branch's pull request is merged into \texttt{main}, the branch is deleted. Before opening a pull request, the author updates their branch with the latest changes from \texttt{main} and resolves any merge conflicts locally, so that conflicts are never resolved during review.
+
 \subsection{Commits}
 
 \subsection{Pull Requests}
