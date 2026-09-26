@@ -2,6 +2,7 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{float}
 
 \title{Development Plan\\\progname}
 
@@ -158,11 +159,73 @@ Tags allow the team to return to the exact state of the project at each deadline
 
 \subsection{Issue Management}
 
+GitHub Issues will serve as the team's ticketing system, so that all work is visible, assigned, and traceable.
+
+\begin{itemize}
+  \item \textbf{Issue size:} Each issue should represent work that can be completed in a single sitting of roughly two to three hours. Larger tasks are split into multiple issues. For documentation, every section of each document has its own issue, titled with its deliverable and section (e.g., \texttt{[Development Plan] 7 Workflow Plan}).
+  \item \textbf{Ownership:} Every task issue is assigned to one owner, who is responsible for completing it and moving it through the project board described in Section~\ref{SecGitHubProjects}.
+  \item \textbf{Milestones:} Each deliverable is a milestone whose due date matches the deadline in Table~\ref{TblSchedule}. Every issue related to a deliverable is added to its milestone, so the team can see how much work remains before each deadline.
+  \item \textbf{Meetings and lectures:} An issue is created for every team meeting, supervisor meeting, and lecture, and is tracked in its own column on the project board. At least 24 hours before a meeting, the agenda and any questions are added to the issue. Afterwards, notes and action items are recorded, each action item becomes its own issue, and the meeting issue is closed. Lecture issues record the topic, date and time, and attendance.
+\end{itemize}
+
+The repository includes the issue templates listed in Table~\ref{TblIssueTemplates}, so that every issue contains consistent information.
+
+\begin{table}[H]
+  \caption{Issue Templates} \label{TblIssueTemplates}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Template} & \textbf{Contents}\\
+    \midrule
+      Documentation Task & Deliverable, section, and the checklist items the section must satisfy\\
+      Feature & Description of the functionality and acceptance criteria\\
+      Bug Report & Steps to reproduce, expected and actual behaviour, and device and operating system\\
+      Meeting & Meeting type, date and time, attendance, agenda, questions, notes, and action items\\
+      Lecture & Topic, date and time, and attendance\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Issues are classified using the labels in Table~\ref{TblLabels}. Every issue that belongs to a deliverable receives that deliverable's label, and every issue receives one type label and, where relevant, one area label. 
+Together, these allow the team to filter issues by deliverable, by kind of work, or by part of the app.
+
+\begin{table}[H]
+  \caption{Issue Labels} \label{TblLabels}
+  \begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Category} & \textbf{Label} & \textbf{Meaning}\\
+    \midrule
+      % Deliverable & \texttt{Problem Statement \& Goals} & Problem Statement and Goals document\\
+      Deliverable & \begin{tabular}[t]{@{}l@{}}\texttt{Problem Statement}\\\texttt{and Goals}\end{tabular} & Problem Statement and Goals document\\
+      & \texttt{Development Plan} & Development Plan and Proof of Concept Plan\\
+      & \texttt{Requirements} & Software Requirements Specification\\
+      & \texttt{Hazard Analysis} & Hazard Analysis document\\
+      & \texttt{V\&V Plan} & Verification and Validation Plan\\
+      & \texttt{Design Document} & Design Document (all revisions)\\
+      & \texttt{V\&V Report} & Verification and Validation Report\\
+      & \texttt{Demo} & Proof of Concept, Revision 0, Final, and EXPO demonstrations\\
+      \midrule
+      Type & \texttt{documentation} & Writing or revising a document section\\
+      & \texttt{reflection} & Reflection components of a deliverable\\
+      & \texttt{feature} & New functionality\\
+      & \texttt{enhancement} & Improvement to existing functionality\\
+      & \texttt{bug} & A defect that must be fixed\\
+      & \texttt{meeting} & Team or supervisor meeting\\
+      & \texttt{lecture} & Course lecture\\
+      \midrule
+      Area & \texttt{frontend} & User interface of the mobile app\\
+      & \texttt{backend} & Server, database, and accounts\\
+      & \texttt{health-data} & Fitness tracking and health platform integration\\
+      & \texttt{market-engine} & Asset prices, portfolios, and market scenarios\\
+      & \texttt{social} & Social feed and sharing\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
 \subsection{Continuous Integration and Continuous Deployment}
 
 
 \section{Project Decomposition and Scheduling}
-\subsection{GitHub Projects}
+\subsection{GitHub Projects} \label{SecGitHubProjects}
 
 The team will use a GitHub Project board to track all issues. The board will have the columns \textit{Backlog}, \textit{In Progress}, \textit{In Review}, and \textit{Done}. Issues move to \textit{In Review} when a pull request is opened, and to \textit{Done} automatically when the linked issue is closed by a merged pull request. The board can be filtered by milestone, assignee, or label, giving the team and supervisor a clear view of who is working on what and what remains before each deadline.
 
@@ -172,7 +235,7 @@ The GitHub Project can be found here: \href{https://github.com/users/davislenove
 
 The project will be scheduled around the course deliverables, with each deliverable set as a GitHub milestone. The major deadlines, taken from the course outline, are:
 
-\begin{table}[h]
+\begin{table}[H] \label{TblSchedule}
 \centering
 \renewcommand{\arraystretch}{1.3}
 \begin{tabular}{l c}
@@ -193,7 +256,7 @@ EXPO Demonstration & Week 26 \\
 Final Documentation (Revision 1) & Week 26 \\
 \bottomrule
 \end{tabular}
-\caption{Major project deadlines from the course outline}
+\caption{Major project deadlines from the course outline} \label{TblSchedule}
 \label{tab:schedule}
 \end{table}
 \newpage{}
