@@ -223,6 +223,18 @@ Together, these allow the team to filter issues by deliverable, by kind of work,
 
 \subsection{Continuous Integration and Continuous Deployment}
 
+GitHub Actions will run automated checks on the repository, so that errors are caught when a change is proposed rather than after it reaches \texttt{main}:
+
+\begin{itemize}
+  \item \textbf{Documentation:} On every pull request that changes the \texttt{docs} folder, all \LaTeX{} documents are compiled. 
+  The check fails if any document does not build, and the generated PDFs are saved as downloadable artifacts of the workflow run, linked from the pull request, so reviewers can read the rendered changes.
+  \item \textbf{Code:} Once development begins, every pull request and every push to \texttt{main} runs a linter and the automated test suite in the \texttt{test} folder. 
+  Branch protection prevents a pull request from being merged if any check fails.
+  \item \textbf{Deployment:} Once the core features are stable, targeted for Revision~0, every merge into \texttt{main} will automatically produce an internal test build of the mobile app, so the team and supervisor can always install the latest version on their phones.
+\end{itemize}
+
+If a check fails, the pull request's author is responsible for fixing it before requesting another review.
+
 
 \section{Project Decomposition and Scheduling}
 \subsection{GitHub Projects} \label{SecGitHubProjects}
