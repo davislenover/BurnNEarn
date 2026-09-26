@@ -344,6 +344,22 @@ Both are implementation risks: if either cannot be made to work, the app's core 
   If prices cannot be retrieved often enough within these limits, portfolio values will not follow the market closely enough to teach users how investing works.
 \end{enumerate}
 
+\subsection{Demonstration}
+
+The PoC will show one minimal path through FitFolio's core loop, running on a physical Android phone:
+
+\begin{enumerate}
+  \item \textbf{Read the day's step count} (Risk 1). After the user grants permission, the app reads the current day's steps from Google Health Connect and displays them. This succeeds if the count matches the phone's own health app, and updates after the team member walks and reopens the app.
+  \item \textbf{Convert steps into virtual currency} (connects Risks 1 and 2). The step count is converted into currency using a simple fixed rule, and the balance is displayed.
+  \item \textbf{Buy a real asset with virtual currency} (Risk 2). The user spends their balance on shares of one real asset, such as a stock or Exchange-Traded Fund (ETF), at its current market price.
+  \item \textbf{Show the portfolio's value following the market} (Risk 2). The portfolio's value is recalculated each time a new price is retrieved. This succeeds if the displayed value matches the asset's public market price at each update, and the number of requests used shows that the chosen update interval fits within the provider's free limits.
+\end{enumerate}
+
+If time allows, the same steps will also be shown on an iPhone using Apple HealthKit. This is a stretch goal rather than a requirement, so that the core demonstration stays achievable.
+
+The PoC is deliberately not a prototype. It will have a minimal user interface and will not include user accounts, workouts, the social feed, or market scenarios. 
+Its only purpose is to show that the two main risks can be overcome. The team will rehearse the full demonstration by the team deadline in Table~\ref{TblSchedule}, and the demonstrated version will be tagged \texttt{poc-demo} on \texttt{main}.
+
 \section{Expected Technology}
 
 \wss{What programming language or languages do you expect to use?  What external
