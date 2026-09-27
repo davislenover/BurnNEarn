@@ -2,6 +2,7 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{float}
 
 \title{Problem Statement and Goals\\\progname}
 
@@ -65,6 +66,33 @@ As a result, many people put off both until later, when poor habits are already 
     \item{User learning progress (i.e., which concepts have been covered and understood)}
 \end{itemize}
 \subsection{Stakeholders}
+This section identifies the stakeholders of FitFolio and describes their roles and interests in the project. Stakeholders are grouped into three categories: primary stakeholders, who directly use the product or define its direction; secondary stakeholders, who are indirectly affected by it; and external stakeholders, who are outside organizations whose services and rules constrain its design.
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.35\textwidth} >{\raggedright\arraybackslash}p{0.55\textwidth}}
+\toprule
+\textbf{Stakeholder} & \textbf{Role / Interest} \\
+\midrule
+\multicolumn{2}{l}{\textit{Primary Stakeholders}} \\
+\midrule
+Beginner Investors / Fitness-Motivated Users & Primary users who track their physical activity, earn virtual currency, and manage a virtual portfolio; want an engaging, easy-to-understand way to build healthy habits and learn investing without real financial risk. \\
+Project Supervisor / Client (Chris Schankula) & Proposed the project and defines its vision of gamifying exercise and teaching investing in a low-stakes environment; approves the project's scope and validates that the product meets this vision. \\
+\midrule
+\multicolumn{2}{l}{\textit{Secondary Stakeholders}} \\
+\midrule
+Friends / Social Connections & View shared workouts and portfolio metrics through the social feed; expect to see only the information that users choose to share. \\
+\midrule
+\multicolumn{2}{l}{\textit{External Stakeholders}} \\
+\midrule
+Health Platform Providers (Apple HealthKit, Google Health Connect) & Supply step and workout data; their Application Programming Interfaces (APIs), permission models, and terms of use limit what the app can track. \\
+Market Data Providers & Supply real asset prices; their accuracy, request limits, and cost affect how closely the virtual portfolio can follow the real market. \\
+App Stores and Privacy Regulators & Set the rules for handling health data and financial content, including Canada's Personal Information Protection and Electronic Documents Act (PIPEDA), which the app must follow. \\
+\bottomrule
+\end{tabular}
+\caption{FitFolio stakeholders grouped by level of involvement}
+\label{tab:stakeholders}
+\end{table}
 
 \subsection{Environment}
 
@@ -109,11 +137,27 @@ instructor, can be modified over the course of the term.}
 
 \begin{enumerate}
     \item What went well while writing this deliverable? 
+    \\ Starting from a clear project brief from our supervisor helped us write the problem statement efficiently, since the core idea and its motivation were already well defined. This allowed us to spend most of our time on the decisions that made the project our own, such as naming it FitFolio and deciding which features to add beyond the brief. Dividing each document by section, with every member responsible for specific parts, let us work in parallel and made each person accountable for their contributions. Writing the Development Plan alongside the problem statement also helped, because it made us agree early on how we will work together, including our branching strategy, how issues are created and assigned, and how deadlines are tracked as milestones. Settling these processes at the start means less time spent coordinating later in the year.
+    
     \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
+    did you resolve them?\\ \\
+    \textbf{Davis:}
+    \\
+    \textbf{Preston:}
+    \\
+    \textbf{Angad:}
+    
+    \textbf{Farid:} The first pain point I experienced was deciding who actually counts as a stakeholder. My first draft listed everyone connected to the project, including our development team, our supervisor, and the course TAs. I then realized this mixed up stakeholders of the course with stakeholders of the product. The course staff grade our work but have no stake in FitFolio itself, and since our TA is also our supervisor, the list was counting the same person twice. I also had to decide how to present organizations such as Apple and Google's health platforms, market data providers, and privacy regulators, which never use the app but still limit what FitFolio can do: the health platforms decide what fitness data we can access, and the data providers decide how closely our prices follow the real market.
+    To resolve this, I focused the section on the product and grouped its stakeholders into primary, secondary, and external categories. This made the section clearer, and it will also help in later documents, since these external constraints will reappear as risks in the Hazard Analysis and as assumptions in the Requirements Document.
+    
+    My second pain point was formatting in \LaTeX{}. My stakeholder table initially appeared in the middle of a sentence and extended past the page margin. Each fix was simple once I understood the cause (a table placed directly after text is treated as part of that paragraph, and column widths must account for the spacing between columns), but I spent more time on formatting than on content. Next time, I will set up a working table template early and reuse it across documents, so that formatting does not take time away from writing.
+    \\
+    
+    \textbf{Zaid:}
     \item How did you and your team adjust the scope of your goals to ensure
     they are suitable for a Capstone project (not overly ambitious but also of
     appropriate complexity for a senior design project)?
+    \\ Our project began from a supervisor-proposed brief, so the core of the project was already defined: users earn virtual currency through fitness goals and invest it in a virtual portfolio that follows real market prices. Our scoping work focused on two questions: what to add to make the project appropriately complex, and what to limit so that it remains achievable. To increase complexity, we added two features beyond the original brief: simulated market scenarios, such as replays of past downturns, and a social feed that shares selected statistics without exposing raw health data. Both introduce meaningful engineering challenges, including a custom market engine and privacy-aware data sharing, which we felt were appropriate for a senior design project. To keep the project achievable, we limited automatic fitness tracking to data available from the phone's built-in health platform, treating additional devices as a future extension rather than a core requirement. We also committed to portfolio values that follow the market in near real time rather than strictly real time, since market data providers limit how often prices can be requested. These decisions allow us to deliver a complete core product first, while leaving room to expand if time allows.
 \end{enumerate}  
 
 \end{document}
