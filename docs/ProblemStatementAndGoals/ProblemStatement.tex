@@ -105,8 +105,21 @@ App Stores and Privacy Regulators & Set the rules for handling health data and f
 
 \subsection{Environment}
 
-\wss{Hardware and Software Environment for the users.  The developer environment
-is summarized as part of the developer plan.}
+\vspace{1em}
+
+\subsubsection{Hardware Environment}
+
+Users will need an Android or iOS smartphone that supports the application's fitness features and provides step count data. The device must provide step count and have sufficient storage and processing capabilities to install and run the application.
+Wearable device support may be considered in the future.
+
+
+\subsubsection{Software Environment}
+
+Users' devices must be running a supported version of Android or IOS. Users will also need to give permissions required for fitness tracking.
+The application requires users to create an account and have a stable Internet connection. Users also provide personal fitness info, such as age, height, and weight.\\
+
+
+Within the application all currency has no real world monetary value. Users will not need to link a bank or brokerage account.
 
 \section{Goals}
 This section describes the high-level goals for users of ``FitFolio''. \newline
@@ -124,17 +137,21 @@ scope of the original project needs to be expanded.}
 
 \section{Custom Documents (CDs)}
 
-\wss{For CAS 741: State whether the project is a research project. This
-designation, with the approval (or request) of the instructor, can be modified
-over the course of the term.}
+\subsection{Custom Documentation (Fall)}
+\textbf{Design Thinking Report} 
 
-\wss{For SE Capstone: List your custom documents (CDs).  Potential CDs include
-usability testing, code walkthroughs, user documentation, formal proof,
-GenderMag personas, Design Thinking, etc.  (The full list is on the course
-outline and in Lecture 02.) Normally the number of CDs will be two (one per
-term).  Approval of the CDs will be part of the discussion with the instructor
-for approving the project. The CDs, with the approval (or request) of the
-instructor, can be modified over the course of the term.}
+\vspace{1em}
+
+We will use a Design Thinking Report to get a better understanding of the application we are building from the user’s perspective . In the report, we will explore what aspects individuals want to track about their fitness activities and what they hope to learn about investing, then use those insights to guide our development of the application. 
+
+
+\subsection{Custom Documentation (Winter)}
+\textbf{Usability Report}
+
+\vspace{1em}
+
+We will use a Usability Report to document real world testing of the application . We will allow users to test different aspects of the application such as onboarding, fitness tracking, and investing. We will gather their feedback in the report and use their experiences to guide improvements 
+
 
 \newpage{}
 
@@ -147,12 +164,13 @@ instructor, can be modified over the course of the term.}
 \begin{enumerate}
     \item What went well while writing this deliverable? 
     \\ Starting from a clear project brief from our supervisor helped us write the problem statement efficiently, since the core idea and its motivation were already well defined. This allowed us to spend most of our time on the decisions that made the project our own, such as naming it FitFolio and deciding which features to add beyond the brief. Dividing each document by section, with every member responsible for specific parts, let us work in parallel and made each person accountable for their contributions. Writing the Development Plan alongside the problem statement also helped, because it made us agree early on how we will work together, including our branching strategy, how issues are created and assigned, and how deadlines are tracked as milestones. Settling these processes at the start means less time spent coordinating later in the year.
-    
+    \\
+    \\
+    \textbf{Preston:} What went well was how we organized and divided the work. We created issues within the repository for each subsection of both deliverables, then we each selected seven or eight sections to work on.
+
     \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\ \\
     \textbf{Davis:}
-    \\
-    \textbf{Preston:}
     \\
     \textbf{Angad:}
     
@@ -167,6 +185,10 @@ instructor, can be modified over the course of the term.}
     they are suitable for a Capstone project (not overly ambitious but also of
     appropriate complexity for a senior design project)?
     \\ Our project began from a supervisor-proposed brief, so the core of the project was already defined: users earn virtual currency through fitness goals and invest it in a virtual portfolio that follows real market prices. Our scoping work focused on two questions: what to add to make the project appropriately complex, and what to limit so that it remains achievable. To increase complexity, we added two features beyond the original brief: simulated market scenarios, such as replays of past downturns, and a social feed that shares selected statistics without exposing raw health data. Both introduce meaningful engineering challenges, including a custom market engine and privacy-aware data sharing, which we felt were appropriate for a senior design project. To keep the project achievable, we limited automatic fitness tracking to data available from the phone's built-in health platform, treating additional devices as a future extension rather than a core requirement. We also committed to portfolio values that follow the market in near real time rather than strictly real time, since market data providers limit how often prices can be requested. These decisions allow us to deliver a complete core product first, while leaving room to expand if time allows.
+    \\
+    \\
+    \textbf{Preston:} We initially considered wearable support, but decided it was too ambitious for this project. We kept the scope focused on mobile devices - which was originally outlined in the project description.  
+
 \end{enumerate}  
 
 \end{document}
