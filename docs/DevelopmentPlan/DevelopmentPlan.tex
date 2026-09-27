@@ -81,30 +81,30 @@ in-person.}
 There should be an agenda for all meetings.}
 
 \section{Team Communication Plan}
-This section outlines how the team is expected to communicate both internally and externally \newline
+This section outlines how the team is expected to communicate both internally and externally. \newline
 \subsection{General intra-team Communication}
-This subsection outlines how internal team communication shall be handled \newline
+This subsection outlines how internal team communication shall be handled. \newline
 \begin{itemize}
   \item \textbf{Microsoft Teams} is used for day-to-day discussion, scheduling, and
-    virtual meetings
+    virtual meetings.
   \item \textbf{GitHub Issues} are used for all development tasks, bugs, and
     feature discussion. Every meeting (team, supervisor, TA) has an issue
     created from the corresponding template, with the agenda posted beforehand
-    and minutes added afterwards
-  \item \textbf{Pull requests} are used for all code and document review. Discussion about a change stays on its pull request unless otherwise noted
+    and minutes added afterwards.
+  \item \textbf{Pull requests} are used for all code and document review. Discussion about a change stays on its pull request unless otherwise noted.
   \item Any decision that affects the project must be recorded in the
     relevant GitHub issue or meeting minutes. The only way a decision is deemed final is via a push (after a pull Request) to main. Decisions that exist only in
-    Teams chat are NOT considered final
+    Teams chat are \emph{not} considered final.
   \item Team members are expected to acknowledge messages that mention/concern them within
-    12 hours (24 hours on weekends). It is expected that team members are proactive in reading any team communication regardless of platform
-  \item Pull request reviews shall be completed within 24--72 hours of the request
+    12 hours (24 hours on weekends). It is expected that team members are proactive in reading any team communication regardless of platform.
+  \item Pull request reviews shall be completed within 24--72 hours of the request.
 \end{itemize}
 
 \subsection{External Communication}
-This subsection outlines external communication between the team and outside sources \newline
+This subsection outlines external communication between the team and outside sources. \newline
 \begin{itemize}
-    \item Communication between supervisor and team will be mediated by Davis. It is their responsibility to forward information to/from the supervisor within 12 hours
-    \item Should Davis be unavailable to handle supervisor communication for whatever reason, they must inform the group with as much advance notice as possible. A temporary liaison will be appointed by the entire group along with communication to the supervisor that states this change
+    \item Communication between supervisor and team will be mediated by Davis. It is their responsibility to forward information to/from the supervisor within 12 hours.
+    \item Should Davis be unavailable to handle supervisor communication for whatever reason, they must inform the group with as much advance notice as possible. A temporary liaison will be appointed by the entire group along with communication to the supervisor that states this change.
 \end{itemize}
 
 \section{Team Member Roles}
@@ -176,7 +176,7 @@ demonstrate during your proof of concept demonstration to convince yourself that
 you will be able to overcome this risk?
 
 \section{Expected Technology}
-The following section details the expected technologies for the systems the team will be developing \newline
+The following section details the expected technologies for the systems the team will be developing. \newline
 \subsubsection{Operating Systems}
 The primary target operating systems for this app will be Android 17+ and iOS 27+. This is due to the nature of the testing equipment available
 for all group members and the supervisor.
@@ -203,15 +203,15 @@ cached in the database (see Databases).
 without notice whenever Yahoo changes its website.
 
 \subsubsection{Libraries}
-The following libraries are expected to be used for React Native
+The following libraries are expected to be used for React Native:
 \begin{itemize}
-    \item \href{https://github.com/kingstinct/react-native-healthkit}{@kingstinct/react-native-healthkit} - Provides access to HealthKit on iOS
-    \item \href{https://github.com/matinzd/react-native-health-connect}{react-native-health-connect} - Provides access to Health Connect on Android
+    \item \href{https://github.com/kingstinct/react-native-healthkit}{@kingstinct/react-native-healthkit} - Provides access to HealthKit on iOS.
+    \item \href{https://github.com/matinzd/react-native-health-connect}{react-native-health-connect} - Provides access to Health Connect on Android.
 \end{itemize}
-The following libraries are expected to be used for Python
+The following libraries are expected to be used for Python:
 \begin{itemize}
-    \item \href{https://numpy.org}{NumPy} - Handles numerical computing quickly (e.g., vector operations)
-    \item \href{https://pandas.pydata.org}{pandas} - Data manipulation and analytics
+    \item \href{https://numpy.org}{NumPy} - Handles numerical computing quickly (e.g., vector operations).
+    \item \href{https://pandas.pydata.org}{pandas} - Data manipulation and analytics.
 \end{itemize}
 
 \textit{Alternative considered:} Writing custom native modules (in Swift and Kotlin) to access HealthKit and Health Connect directly was considered, but existing bridge libraries avoid the need to
@@ -318,6 +318,8 @@ whether material was generated by a human or an AI system.}
 \href{https://engineering.up.edu/industry_partnerships/files/team-charter.pdf}
 {University of Portland Team Charter}}
 
+This appendix sets out the expectations that team members have agreed to hold each other to throughout the project.
+
 \subsection*{External Goals}
 
 \wss{What are your team's external goals for this project? These are not the
@@ -347,73 +349,85 @@ deliverable?}
 
 \subsection*{Accountability and Teamwork}
 
+This subsection sets out what team members can expect from each other in terms of the quality of their work, their attitude, and staying on track.
+
 \subsubsection*{Quality}
 \phantomsection\label{sec:quality}
 
+This subsection describes the standard of preparation and work expected from every team member.
+
 \textbf{Meeting Preparation and In-Progress}
 \begin{itemize}
-    \item The meeting chair posts the agenda as a GitHub issue using an appropriate template (dependent on the meeting) at least 24 hours before the meeting. The meeting date must be visible within the issue title. Team members add their items/questions before it starts
-    \item Everyone arrives with a short update (done since last time, what's next, any blockers) and has their GitHub Projects cards up to date
-    \item Anything linked in the agenda, like a pull request or a draft section, is read before the meeting
-    \item All items discussed with their resulting outcome are documented in the GitHub issue, once the meeting is complete, it shall be marked as done
+    \item The meeting chair posts the agenda as a GitHub issue using an appropriate template (dependent on the meeting) at least 24 hours before the meeting. The meeting date must be visible within the issue title. Team members add their items/questions before it starts.
+    \item Everyone arrives with a short update (done since last time, what's next, any blockers) and has their GitHub Projects cards up to date.
+    \item Anything linked in the agenda, like a pull request or a draft section, is read before the meeting.
+    \item All items discussed with their resulting outcome are documented in the GitHub issue, once the meeting is complete, it shall be marked as done.
 \end{itemize}
 
-\textbf{Quality Assurance}
+\textbf{Quality Assurance} \newline
+The following steps ensure each deliverable meets the course checklist and rubric before it is submitted:
 \begin{itemize}
-    \item Before starting any deliverable, every team member responsible for the feature must read through the checklist and rubric. Any questions and/or doubts must be raised as soon as possible
-    \item Each deliverable is assigned a QA reviewer, who must not be the main author. This role rotates between team members for each deliverable
-    \item At least 24h before the submission, the QA reviewer will go through the checklist and rubric to ensure all items are at least being met
-    \item Should an issue with the checklist and/or rubric arise, they must communicate through the GitHub issues and/or Teams channel for extra help from other team members
-    \item Team members may also request periodic check-ins with another team member who mutually agrees
+    \item Before starting any deliverable, every team member responsible for the feature must read through the checklist and rubric. Any questions and/or doubts must be raised as soon as possible.
+    \item Each deliverable is assigned a QA reviewer, who must not be the main author. This role rotates between team members for each deliverable.
+    \item At least 24h before the submission, the QA reviewer will go through the checklist and rubric to ensure all items are at least being met.
+    \item Should an issue with the checklist and/or rubric arise, they must communicate through the GitHub issues and/or Teams channel for extra help from other team members.
+    \item Team members may also request periodic check-ins with another team member who mutually agrees.
 \end{itemize}
 
 \textbf{Definition of Done} \newline
 Every feature that is considered to have reached a certain goal/milestone needs the following within a pull request:
 \begin{itemize}
-    \item Linked to a specific GitHub issue
-    \item Passes all CI tests and formatting checks
-    \item (Unless otherwise stated) Tests for the new features with brief justification on why they exist and that they pass
-    \item Approved by at least one other team member who isn't the main author. In the case where all team members worked on a feature, everyone must approve it
+    \item Linked to a specific GitHub issue.
+    \item Passes all CI tests and formatting checks.
+    \item (Unless otherwise stated) Tests for the new features with brief justification on why they exist and that they pass.
+    \item Approved by at least one other team member who isn't the main author. In the case where all team members worked on a feature, everyone must approve it.
 \end{itemize}
 
 \subsubsection*{Attitude}
 
-\textbf{Code of Conduct}
+This subsection describes how team members are expected to treat each other and work together.
+
+\textbf{Code of Conduct} \newline
+The following sets the standard of behaviour expected from every team member:
 \begin{itemize}
     \item The team adopts the \href{https://www.contributor-covenant.org/version/2/1/code_of_conduct/}{Contributor Covenant v2.1}
-    as its code of conduct, linked from \texttt{CodeOfConduct.md} in the repository
+    as its code of conduct, linked from \texttt{CodeOfConduct.md} in the repository.
     \item All team members are expected to treat each other, the supervisor, TAs and
-    instructors with respect, regardless of experience level or background
+    instructors with respect, regardless of experience level or background.
 \end{itemize}
 
-\textbf{Ideas and Feedback}
+\textbf{Ideas and Feedback} \newline
+The following describes how ideas and feedback are shared within the team:
 \begin{itemize}
-    \item Every idea is welcome and will be heard out before it is judged. No idea is dismissed without a stated reason
-    \item Feedback critiques the work, NEVER the person. Review comments should be specific and explain \emph{why} a change is suggested
-    \item Disagreements should be raised openly during meetings or on the relevant issue/pull request
-    \item Once the team makes a decision (see \hyperref[sec:decision-making]{Decision Making}), every team member must support it
+    \item Every idea is welcome and will be heard out before it is judged. No idea is dismissed without a stated reason.
+    \item Feedback critiques the work, \emph{never} the person. Review comments should be specific and explain \emph{why} a change is suggested.
+    \item Disagreements should be raised openly during meetings or on the relevant issue/pull request.
+    \item Once the team makes a decision (see \hyperref[sec:decision-making]{Decision Making}), every team member must support it.
 \end{itemize}
 
 \textbf{Conflict Resolution} \newline
-The following describes the steps for how conflicts between team members shall be handled
+The following describes the steps for how conflicts between team members shall be handled:
 \begin{enumerate}
-    \item Members involved first try to resolve the conflict directly and privately within 48 hours
-    \item If unresolved, the issue is brought to the next team meeting, where a team member not involved acts as mediator
-    \item The mediator and the agreed outcome (NOT the details of the argument) are recorded in the meeting minutes
-    \item If still unresolved, or in the case of a Code of Conduct violation, the team escalates to the TA for investigation
-    \item If all else fails and with agreement from the TA, the course instructor shall be notified
+    \item Members involved first try to resolve the conflict directly and privately within 48 hours.
+    \item If unresolved, the issue is brought to the next team meeting, where a team member not involved acts as mediator.
+    \item The mediator and the agreed outcome (\emph{not} the details of the argument) are recorded in the meeting minutes.
+    \item If still unresolved, or in the case of a Code of Conduct violation, the team escalates to the TA for investigation.
+    \item If all else fails and with agreement from the TA, the course instructor shall be notified.
 \end{enumerate}
 
 \subsubsection*{Stay on Track}
 
-\textbf{Tracking Progress}
+This subsection describes how the team tracks progress, detects when a team member is falling behind, and responds.
+
+\textbf{Tracking Progress} \newline
+The following describes how progress is tracked throughout the project:
 \begin{itemize}
-    \item The GitHub Projects board is the single source of truth for who is working on what. Every task must have a specific issue, an assignee and a target date
-    \item At each team meeting, the chair reviews the board. While blockers are the most important agenda item, any item that has been in progress for over a week without an update is discussed
-    \item Anything progress related discussed within the team meeting is noted within the specific meeting issue on GitHub
-    \item ALL deliverables have an internal deadline: a pull request must be opened at least 48 hours before the course deadline, leaving time for review and the checklist pass (see \hyperref[sec:quality]{Quality})
-    \item There may be a case in which a pull request for a feature may not be ready for review 48 hours prior to the deadline. The pull request can be opened regardless with a note indicating it isn't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time
-    \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc.). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit, which is why these numbers are not treated as scores
+    \item The GitHub Projects board is the single source of truth for who is working on what. Every task must have a specific issue, an assignee and a target date.
+    \item At each team meeting, the chair reviews the board. While blockers are the most important agenda item, any item that has been in progress for over a week without an update is discussed.
+    \item Anything progress related discussed within the team meeting is noted within the specific meeting issue on GitHub.
+    \item \emph{All} deliverables have an internal deadline: a pull request must be opened at least 48 hours before the course deadline, leaving time for review and the checklist pass (see \hyperref[sec:quality]{Quality}).
+    \item There may be a case in which a pull request for a feature may not be ready for review 48 hours prior to the deadline. The pull request can be opened regardless with a note indicating it isn't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time.
+    \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc.). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit, which is why these numbers are not treated as scores.
 \end{itemize}
 
 \textbf{Triggers} \newline
@@ -441,16 +455,17 @@ Contribution & No closed issues, merged PRs or reviews for 2 consecutive weeks &
 \end{table}
 
 \textbf{Consequences} \newline
-The consequences for hitting triggers as described above
+The consequences for hitting the triggers described above are as follows:
 \begin{enumerate}
-    \item \textbf{First trigger:} A teammate privately checks in with the member to find out what is going on. Work is redistributed or help is offered if needed
-    \item \textbf{Second trigger:} The issue is raised at a team meeting and recorded in the minutes. The member and team agree on a written plan with specific tasks and dates
-    \item \textbf{Continued triggers:} The team books a meeting with the TA, and then the course instructor if all else fails
+    \item \textbf{First trigger:} A teammate privately checks in with the member to find out what is going on. Work is redistributed or help is offered if needed.
+    \item \textbf{Second trigger:} The issue is raised at a team meeting and recorded in the minutes. The member and team agree on a written plan with specific tasks and dates.
+    \item \textbf{Continued triggers:} The team books a meeting with the TA, and then the course instructor if all else fails.
 \end{enumerate}
 
-\textbf{Recognition}
+\textbf{Recognition} \newline
+Team members who perform well are recognized as follows:
 \begin{itemize}
-    \item Team members who hit every target over a deliverable period get first pick of tasks for the next deliverable
+    \item Team members who hit every target over a deliverable period get first pick of tasks for the next deliverable.
 \end{itemize}
 
 \subsubsection*{Team Building}
