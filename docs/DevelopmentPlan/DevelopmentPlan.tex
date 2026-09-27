@@ -176,44 +176,72 @@ demonstrate during your proof of concept demonstration to convince yourself that
 you will be able to overcome this risk?
 
 \section{Expected Technology}
-
+The following section details the expected technologies for the systems the team will be developing \newline
 \subsubsection{Operating Systems}
-The primary target operating systems for this app will be Android 17+ and iOS 27+ this is due to the nature of the testing equipment available
-for all group members and supervisor.
+The primary target operating systems for this app will be Android 17+ and iOS 27+. This is due to the nature of the testing equipment available
+for all group members and the supervisor.
 
 \subsubsection{Languages}
 It is expected that React Native (TypeScript) will be used for the front-end. This will allow the team to write code that works on both platforms at once.
-The backend will consist of Python mainly for its rich and optimal library support for the tasks the app may need to perform (ex, fetching stock data over the web). Moreover, Pythons numpy and
+The backend will consist of Python mainly for its rich and optimal library support for the tasks the app may need to perform (e.g., fetching stock data over the web). Moreover, Python's NumPy and
 pandas will be useful for modeling data within the market simulation engine.
 
+\textit{Alternatives considered:} Flutter was considered for the front-end, but it uses Dart, a language less familiar to the team than TypeScript.
+TypeScript (Node.js) was considered for the backend so the whole codebase would share one language, but Python's numerical libraries (NumPy and pandas) are better suited to the market simulation engine.
+
+\subsubsection{Backend Framework}
+The app will communicate with the Python backend through a REST API over HTTPS, exchanging data as JSON. The backend will be built with FastAPI, which validates requests using Python type hints
+and automatically generates API documentation, helping keep the front-end and backend in agreement on what data is sent. Its support for asynchronous requests also suits fetching market data from external APIs.
+
+\textit{Alternative considered:} Django (with Django REST Framework) was considered, but it includes many features the project does not need (e.g., server-rendered pages), which adds setup and boilerplate.
+
+\subsubsection{Market Data}
+Real-world stock market data will be retrieved from the Finnhub API, whose free tier provides current stock prices and company information. To stay within its request limits, fetched data will be
+cached in the database (see Databases).
+
+\textit{Alternative considered:} yfinance, an unofficial library that reads Yahoo Finance data, was considered as it is free and simple to use. However, it is not an official API and can stop working
+without notice whenever Yahoo changes its website.
+
 \subsubsection{Libraries}
-The following libraries are expected to be used for React
+The following libraries are expected to be used for React Native
 \begin{itemize}
-    \item HealthKit on iOS - Connected via a mediator for React
-    \item Health Connect on Android - Connected via a mediator for React
+    \item \href{https://github.com/kingstinct/react-native-healthkit}{@kingstinct/react-native-healthkit} - Provides access to HealthKit on iOS
+    \item \href{https://github.com/matinzd/react-native-health-connect}{react-native-health-connect} - Provides access to Health Connect on Android
 \end{itemize}
 The following libraries are expected to be used for Python
 \begin{itemize}
-    \item numpy - Handles numerical computing quickly (e.g., vector operations)
-    \item pandas - Data manipulation and analytics
+    \item \href{https://numpy.org}{NumPy} - Handles numerical computing quickly (e.g., vector operations)
+    \item \href{https://pandas.pydata.org}{pandas} - Data manipulation and analytics
 \end{itemize}
 
+\textit{Alternative considered:} Writing custom native modules (in Swift and Kotlin) to access HealthKit and Health Connect directly was considered, but existing bridge libraries avoid the need to
+write and maintain code in two additional languages.
+
 \subsubsection{Databases}
-User data, portfolios, the social feed and cache market data (as pulling constantly from an API will likely be expensive) will be stored in Postgres.
+User data, portfolios, the social feed and cached market data (as pulling constantly from an API will likely be expensive) will be stored in PostgreSQL.
+
+\textit{Alternative considered:} MongoDB was considered for its flexible document storage. However, the app's data is highly relational (e.g., users, their portfolios, trades and friends), and trades must be
+recorded reliably, which PostgreSQL's relations and transactions handle well.
 
 \subsubsection{Testing}
-For unit testing, Jest will be used for the front-end as this works directly for React. For the backend, pytest as this works well with Python and doesn't require a lot of boilerplate class code
-therefore allowing the team to test much quicker
+For unit testing, Jest will be used for the front-end as this works directly for React. For the backend, pytest will be used as this works well with Python and doesn't require a lot of boilerplate class code
+(unlike Python's built-in unittest), therefore allowing the team to test much quicker.
+
+\subsubsection{Linting and Formatting}
+ESLint and Prettier will be used for the front-end: ESLint catches common mistakes in TypeScript code, and Prettier formats code automatically. For the backend, Ruff will be used as a single tool that
+both lints and formats Python code. These checks will run in CI on every pull request and must pass before it can be merged (see Definition of Done).
+
+\textit{Alternative considered:} For Python, Black (formatting) with Flake8 (linting) was considered, but Ruff covers both in one tool and runs considerably faster.
 
 \subsubsection{Continuous Integration}
 The following subsection outlines how CI/CD will be utilized within this project: \newline
-CI will happen within a pull request before code is merged on the main branch, there will be a standard set of tests which will be run to ensure no regression occurs.
-For the tests themselves, they will be developed overtime and integrated into the suite as new features are developed. New test cases are required for a feature to be merged to main unless otherwise
+CI will happen within a pull request, using GitHub Actions, before code is merged on the main branch, there will be a standard set of tests which will be run to ensure no regression occurs.
+For the tests themselves, they will be developed over time and integrated into the suite as new features are developed. New test cases are required for a feature to be merged to main unless otherwise
 specified. Justification also must be provided for any new test cases.
-For anything backend related, a Postgres container will be ran such that any feature/system that utilizes queries can be tested.
+For anything backend related, a PostgreSQL container will be run such that any feature/system that utilizes queries can be tested.
 
 \subsubsection{Tools}
-Git and GitHub will serve as the main version control software. GitHub Projects will be used to keep track of current issues and to link PR's.
+Git and GitHub will serve as the main version control software. GitHub Projects will be used to keep track of current issues and to link PRs.
 
 \section{Use of AI and LLMs}
 
