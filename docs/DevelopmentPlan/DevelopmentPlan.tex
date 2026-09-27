@@ -327,6 +327,7 @@ to win a prize at the Capstone EXPO, or to have something to talk about in
 interviews, or to get an A+, etc.}
 
 \subsection*{Attendance}
+\phantomsection\label{sec:attendance}
 
 \subsubsection*{Expectations}
 
@@ -347,6 +348,7 @@ deliverable?}
 \subsection*{Accountability and Teamwork}
 
 \subsubsection*{Quality}
+\phantomsection\label{sec:quality}
 
 \textbf{Meeting Preparation and In-Progress}
 \begin{itemize}
@@ -359,7 +361,8 @@ deliverable?}
 \textbf{Quality Assurance}
 \begin{itemize}
     \item Before starting any deliverable, every team member responsible for the feature must read through the checklist and rubric. Any questions and/or doubts must be raised as soon as possible
-    \item At least 24h before the submission, the team member mainly responsible for the feature will go through the checklist and rubric to ensure all items are at least being met
+    \item Each deliverable is assigned a QA reviewer, who must not be the main author. This role rotates between team members for each deliverable
+    \item At least 24h before the submission, the QA reviewer will go through the checklist and rubric to ensure all items are at least being met
     \item Should an issue with the checklist and/or rubric arise, they must communicate through the GitHub issues and/or Teams channel for extra help from other team members
     \item Team members may also request periodic check-ins with another team member who mutually agrees
 \end{itemize}
@@ -388,11 +391,11 @@ Every feature that is considered to have reached a certain goal/milestone needs 
     \item Every idea is welcome and will be heard out before it is judged. No idea is dismissed without a stated reason
     \item Feedback critiques the work, NEVER the person. Review comments should be specific and explain \emph{why} a change is suggested
     \item Disagreements should be raised openly during meetings or on the relevant issue/pull request
-    \item Once the team makes a decision (see Decision Making), every team member must support it
+    \item Once the team makes a decision (see \hyperref[sec:decision-making]{Decision Making}), every team member must support it
 \end{itemize}
 
 \textbf{Conflict Resolution} \newline
-The following describes a step by step on how conflicts between team members shall be handled
+The following describes the steps for how conflicts between team members shall be handled
 \begin{enumerate}
     \item Members involved first try to resolve the conflict directly and privately within 48 hours
     \item If unresolved, the issue is brought to the next team meeting, where a team member not involved acts as mediator
@@ -408,27 +411,33 @@ The following describes a step by step on how conflicts between team members sha
     \item The GitHub Projects board is the single source of truth for who is working on what. Every task must have a specific issue, an assignee and a target date
     \item At each team meeting, the chair reviews the board. While blockers are the most important agenda item, any item that has been in progress for over a week without an update is discussed
     \item Anything progress related discussed within the team meeting is noted within the specific meeting issue on GitHub
-    \item ALL deliverables have an internal deadline: a pull request must be opened at least 48 hours before the course deadline, leaving time for review and the checklist pass (see Quality)
-    \item There may be a case in which a pull request for a feature may not be ready for review 48 hours prior to the deadline. The pull request can be opened regardless with a note indicating it isin't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time
-    \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit
+    \item ALL deliverables have an internal deadline: a pull request must be opened at least 48 hours before the course deadline, leaving time for review and the checklist pass (see \hyperref[sec:quality]{Quality})
+    \item There may be a case in which a pull request for a feature may not be ready for review 48 hours prior to the deadline. The pull request can be opened regardless with a note indicating it isn't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time
+    \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc.). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit, which is why these numbers are not treated as scores
 \end{itemize}
 
 \textbf{Triggers} \newline
 Triggers are used as a means of detecting if there is a performance issue with one or more team members.
-The following triggers are to be reported in each productivity report. Absences or missed deadlines with an acceptable excuse (see Attendance) do not count.
+The triggers in Table~\ref{tab:triggers} are to be reported in each productivity report. Absences or missed deadlines with an acceptable excuse (see \hyperref[sec:attendance]{Attendance}) do not count.
 \begin{table}[H]
     \centering
-    \begin{tabularx}{\textwidth}{lXl}
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.22\textwidth} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{0.2\textwidth}}
 \toprule
 \textbf{Trigger} & \textbf{Threshold} & \textbf{Measured from}\\
 \midrule
 Meeting attendance & Below 80\% of team meetings in a deliverable period, or 2 unexcused misses in a row & Meeting issues\\
+\addlinespace
 Missed internal deadline & 2 or more in a term & Issues and Pull Requests\\
+\addlinespace
 Review turnaround & Requested review not completed within 72 hours, 2 or more times in a deliverable period & pull request timestamps\\
+\addlinespace
 Responsiveness & Mentions not acknowledged within the time set in the Communication Plan, 3 or more times in a deliverable period & GitHub and Teams\\
+\addlinespace
 Contribution & No closed issues, merged PRs or reviews for 2 consecutive weeks & GitHub\\
 \bottomrule
     \end{tabularx}
+    \caption{Triggers for detecting performance issues within the team}
+    \label{tab:triggers}
 \end{table}
 
 \textbf{Consequences} \newline
@@ -448,7 +457,8 @@ The consequences for hitting triggers as described above
 
 \wss{How will you build team cohesion (fun time, group rituals, etc.)? }
 
-\subsubsection*{Decision Making} 
+\subsubsection*{Decision Making}
+\phantomsection\label{sec:decision-making}
 
 \wss{How will you make decisions in your group? Consensus?  Vote? How will you
 handle disagreements? }
