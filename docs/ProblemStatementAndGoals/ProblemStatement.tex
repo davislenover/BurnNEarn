@@ -32,17 +32,16 @@ Date2 & Name(s) & Description of change\\
 
 \section{Problem Statement}
 
-This section describes the problem FitFolio addresses, along with its inputs and outputs, stakeholders and environment.
+FitFolio is a mobile app in which users earn virtual currency from their physical activity and invest it in a simulated market that follows real-world prices. This section describes the problem FitFolio addresses, along with its inputs and outputs, stakeholders and environment.
 
 \subsection{Problem}
-The problem is as follows: \newline
 Building good fitness and financial habits early pays off for decades, because
 both compound over time. Regular exercise builds on itself and so does money
 invested early. Poor habits compound in the same way. Yet many young adults,
 particularly students and those starting their first jobs, struggle to begin
 either one.
-Learning how to deal with finances in an informed manner can be difficult and tedious. There are many different resources to managing finances however they are scattered across many sources, often contradicting each other.
-Learning by doing is also risky, since beginners' mistakes cost real money. Likewise with fitness, it can be daunting to get started.
+Learning how to deal with finances in an informed manner can be difficult and tedious. Advice on managing finances is scattered across many sources, which often contradict each other.
+Learning by doing is also risky, since beginners' mistakes cost real money. Likewise with fitness, it can be daunting to get started. Many beginners lose motivation before they see results.
 As a result, many people put off both until later, when poor habits are already established and harder to change. There is no approachable, low-risk way for beginners to build both fitness and financial habits while staying motivated.
 
 \subsection{Inputs and Outputs}
@@ -52,8 +51,8 @@ This subsection characterizes the problem in terms of its high-level inputs and 
 \subsubsection{Inputs}
 The system takes the following inputs:
 \begin{itemize}
-    \item{Biometric sensor data (e.g., steps counted, heart rate).}
-    \item{Manual user biometric data input (e.g., weight, height).}
+    \item{Activity data from the phone's health platform (e.g., steps counted, workouts).}
+    \item{Manual user data input (e.g., age, height, weight).}
     \item{Real-world market data (e.g., current value of stocks).}
     \item{User decisions in the simulated market (e.g., buying or selling shares).}
     \item{Educational reference content (i.e., explanations of financial and fitness concepts).}
@@ -69,8 +68,8 @@ The system produces the following outputs:
     \item{User market portfolio value (i.e., current value of owned shares).}
     \item{User market portfolio trends and milestones.}
     \item{User workout trends and milestones.}
-    \item{Market simulation results (i.e., simulated market values given reference input).}
-    \item{Explanations of concepts where they appear (e.g., what an ETF is when viewing one).}
+    \item{Simulated prices of assets and scenarios (e.g., a replay of a past market downturn).}
+    \item{Explanations of concepts where they appear (e.g., what an exchange-traded fund (ETF) is when viewing one).}
     \item{Feedback on user decisions (e.g., why a portfolio's value changed, how diversified it is).}
     \item{User learning progress (i.e., which concepts have been covered and understood).}
 \end{itemize}
@@ -122,13 +121,13 @@ The application requires users to create an account and have a stable Internet c
 Within the application all currency has no real world monetary value. Users will not need to link a bank or brokerage account.
 
 \section{Goals}
-This section describes the high-level goals for users of ``FitFolio''. \newline
+This section describes the high-level goals for users of FitFolio. \newline
 \begin{itemize}
-    \item{\textbf{Learning by doing} - Users learn core financial and fitness concepts through hands-on, low-risk practice with each decision paired with feedback explaining what happened and why. Measured by a before-and-after knowledge check on a defined set of core concepts.}
-    \item{\textbf{A human-centered, all-in-one experience} - Bring fitness progress and financial learning together in one place, minimize the need for users to need to leave the app to understand what they are looking at. Measured through usability testing: (e.g., at least [80]\% of first-time participants complete the core tasks without outside help).}
-    \item{\textbf{A social feed} - A social feed that lets users share statistics from their ``FitFolio'' to other users they choose.}
-    \item{\textbf{Stock Market Simulation Engine} - A simulated market based on real-world market data that lets users practice investing without risking real money. Users can trade at least [50] real-world stocks, with simulated prices within [15 minutes] of real market prices.}
-    \item{\textbf{Rewards for any activity, from any source} - Users are rewarded for the activities they already do, whichever device records them. At least [5] activity types are supported, using data from health platforms, and a new activity type or data source can be added without changing anything outside the part of the system that handles it.}
+    \item{\textbf{Learning by doing:} Users learn core financial and fitness concepts through hands-on, low-risk practice with each decision paired with feedback explaining what happened and why. Measured by a before-and-after knowledge check on a defined set of core concepts.}
+    \item{\textbf{A human-centered, all-in-one experience:} Bring fitness progress and financial learning together in one place, so users rarely need to leave the app to understand what they are looking at. Measured through usability testing: at least 80\% of first-time participants complete the core tasks without outside help.}
+    \item{\textbf{A social feed:} Users stay motivated by sharing their progress with friends, while keeping control of their data. Users control who sees each shared statistic, and no raw health data is shared unless the user selects it.}
+    \item{\textbf{Stock Market Simulation Engine:} A simulated market based on real-world market data that lets users practice investing without risking real money. Users can trade at least 50 real-world stocks at prices within 15 minutes of the real market, and can practice in market scenarios such as a replay of a past market downturn.}
+    \item{\textbf{Rewards for any activity:} Users are rewarded for the activities they already do, as recorded by their phone's health platform. At least 5 activity types are supported.}
 \end{itemize}
 \section{Stretch Goals}
 
