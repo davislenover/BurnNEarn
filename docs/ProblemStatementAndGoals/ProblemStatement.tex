@@ -132,8 +132,17 @@ This section describes the high-level goals for users of ``FitFolio''. \newline
 \end{itemize}
 \section{Stretch Goals}
 
-\wss{Goals you hope to get to, but not necessary.  They are also helpful if the
-scope of the original project needs to be expanded.}
+The following are considered as potential extensions to FitFolio and
+are not required for the successful completion of the core system:
+
+\begin{itemize}
+    \item \textbf{Wearable Device Integration:} Support for fitness tracking beyond the use of a smartphone 
+    by introducing support for wearable devices such as Apple Watch and other compatible
+    fitness trackers. This can allow the application to collect additional activity data such as
+    calories burned, workout duration and other metrics.
+    \item \textbf{Social Challenges and Leaderboards:} Allow users to participate in fitness challenges with friends
+    and other users and compare fitness or portfolio statistics through leaderboards
+\end{itemize}
 
 \section{Custom Documents (CDs)}
 
@@ -170,9 +179,10 @@ We will use a Usability Report to document real world testing of the application
 
     \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\ \\
+
     \textbf{Davis:} The main pain point I had was writing the Expected Technology section. Our team members have technical experience in many different areas, so it was challenging to align on a single set of technologies. My first draft also only listed \emph{what} we would use, not \emph{why}, and the feedback I received asked for details such as how the app would communicate with the backend and which alternatives we had considered. I resolved this by checking in with the team early and often (e.g., in team meetings and on Teams), and by writing down, for each main choice, one alternative and why we did not pick it. Writing out the reasons made the trade-offs visible, which made them much easier to agree on. I learned that raising decisions early avoids conflict later, since a technology choice becomes much harder to change once other work depends on it.
     Another pain point was making the goals measurable before our initial design decisions were made. For example, how closely the simulated market can follow real prices depends on whether it uses real or generated price data, which we had not yet decided. What helped was our GitHub issue tracking: since each section of the document had its own issue, I could quickly see which design decisions were still open and coordinate them with the team. From there, I gave each goal a ``measured by'' clause with placeholder values that we can refine once those decisions are made, and reworded goals such as modularity around what users actually experience. This showed me that goals and early design decisions depend on each other, so they are best developed together rather than one after the other.
-    \\
+
     \textbf{Angad:}
     
     \textbf{Farid:} The first pain point I experienced was deciding who actually counts as a stakeholder. My first draft listed everyone connected to the project, including our development team, our supervisor, and the course TAs. I then realized this mixed up stakeholders of the course with stakeholders of the product. The course staff grade our work but have no stake in FitFolio itself, and since our TA is also our supervisor, the list was counting the same person twice. I also had to decide how to present organizations such as Apple and Google's health platforms, market data providers, and privacy regulators, which never use the app but still limit what FitFolio can do: the health platforms decide what fitness data we can access, and the data providers decide how closely our prices follow the real market.

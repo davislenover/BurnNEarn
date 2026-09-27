@@ -92,11 +92,39 @@ This subsection outlines external communication between the team and outside sou
 
 \section{Team Member Roles}
 
-\wss{You should identify the types of roles you anticipate, like notetaker,
-leader, meeting chair, reviewer.  Assigning specific people to those roles is
-not necessary at this stage.  In a student team the role of the individuals will
-likely change throughout the year.}
+The team will use adapting roles over the course of the project. 
+Instead of assigning each member to one responsibility for the entire project timeline, 
+roles can change between meetings, development phases, and deliverables
+depending on the needs of the team and the members.
 
+The anticipated team roles include: 
+
+\begin{itemize} 
+    \item \textbf{Team Liaison : Davis Lenover} Acts as the primary point of communication between the team, supervisor, and course staff when necessary.
+
+    \item \textbf{Notetaker:} Records important decisions, deadlines, and questions asked during meetings
+    as well as information discussed during lectures
+
+    \item \textbf{Health Data Integration:} Responsible for integrating smartphone health platform data, processing fitness activity
+    and connecting completed fitness goals to the reward system.
+
+    \item \textbf{Market Engine and Finacial Data:} Responsible for virtual portfolio calculations, transaction processing,
+    market data integration, and portfolio history
+
+    \item \textbf{Front-End Developer:} Responsible for the mobile application's user interface and
+    presentation of fitness and portfolio information.
+
+    \item \textbf{Back-End Developer:} Responsible for server-side application logic, APIs, authentication, and communication
+    between the client and external services
+
+    \item \textbf{Testing and Quality Assurance:} Develops and executes tests, identifies defects, and verifies
+    that implemented functionality satisfies the corresponding requirements.
+\end{itemize}
+
+All team members will contribute to development, testing, documentation, and code review
+throughout the project and the aforementioned roles will rotate between members so that
+responsibility is shared across the team.
+    
 \section{Workflow Plan}
 
 % \begin{itemize}
@@ -464,8 +492,40 @@ Before a team member including AI code, the team member will read it and underst
 
 \section{Coding Standard}
 
-\wss{What coding standard will you adopt?}
+The development team will adopt a standard based on the Microsoft TypeScript Coding Guidelines
+as the primary guideline for TypeScript code written throughout the project.
+\href{https://github.com/microsoft/TypeScript/wiki/Coding-guidelines}
+{Microsoft TypeScript Coding Guidelines}
 
+The team will follow applicable conventions from this guideline, including:
+
+
+\begin{itemize}
+    \item Using PascalCase for type names and enum values
+    \item Using camelCase for functions, properties, and local variables
+    \item Avoiding the use of the I prefix for interface names
+    \item Separating logical components into appropriate files
+    \item Exporting types and functions only when they are required by other modules
+    \item Placing type definitions before their use where practical
+    \item Preferring undefined over null
+    \item Using double quotation marks for strings.
+    \item Using four spaces for indentation
+\end{itemize}
+
+Some standards in the Microsoft TypeScript Coding Guidelines do not 
+apply directly to FitFolio. The team will adopt the conventions
+that are relevant to the project instead of following every specific 
+recommendation
+
+
+For Python code, the team will follow
+\href{https://peps.python.org/pep-0008/}{PEP 8 -- Style Guide for Python Code}.
+which includes conventions for indentation, naming, whitespace, imports, and the general code layout.
+
+
+Coding standards will be enforced through automated formatting and the use of linting checks where applicable.
+These checks will be included in the project's CI workflow and must pass. Pull request reviewers will also verify that code
+follows the team's coding standards before approving a merge.
 \newpage{}
 
 \section{Appendix --- Generative AI Use Disclosure}
@@ -522,38 +582,64 @@ In cases where AI-assisted changes affected factual or technical statements, we 
 
 \section*{Appendix --- Team Charter}
 
-\wss{borrows from
-\href{https://engineering.up.edu/industry_partnerships/files/team-charter.pdf}
-{University of Portland Team Charter}}
 
 This appendix sets out the expectations that team members have agreed to hold each other to throughout the project.
 
 \subsection*{External Goals}
 
-\wss{What are your team's external goals for this project? These are not the
-goals related to the functionality or quality fo the project.  These are the
-goals on what the team wishes to achieve with the project.  Potential goals are
-to win a prize at the Capstone EXPO, or to have something to talk about in
-interviews, or to get an A+, etc.}
+The team's external goals are to use FitFolio as an opportunity to showcase the 
+technical skills developed throughout the entirety of the Software Engineering program 
+while producing a project that can be presented outside of the course.
+
+The team aims to:
+
+\begin{itemize}
+  \item Produce a high-quality project that performs well against the evaluation criteria
+  \item Develop a polished, usable high-quality application that is able to be demonstrated at the Capstone EXPO.
+  \item Gain experience developing large software systems over multiple iterative development phases.
+  \item Strengthen experience with software architecture, testing, code review, requirements, and project management.
+  \item Create a project that team members can discuss during future technical interviews and include in portfolios.
+  \item Gain experience working with and integrating real-world external services and managing the limitations that come with those services.
+\end{itemize}
 
 \subsection*{Attendance}
 \phantomsection\label{sec:attendance}
 
 \subsubsection*{Expectations}
 
-\wss{What are your team's expectations regarding meeting attendance (being on
-time, leaving early, missing meetings, etc.)?}
+It is expected that team members attend scheduled meetings, arrive on time, and be prepared to discuss
+work assigned to them. Members should make an effort to attend all meetings with the project supervisor.
+
+If a member expects that they will arrive late, leave early, or miss a meeting, they must notify the team
+as early as possible through Microsoft Teams. 
+Any member who misses a meeting is responsible for reviewing the meeting notes and following up on any 
+decisions, assigned tasks, or deadlines that affect their work.
+
+Repeated attendence issues will be handled according to the thresholds defined in Table~\ref{tab:triggers}. Attendance falling below
+the team's defined 80 percent threshold or two consecutive unexcused absences will trigger the 
+corresponding team response.
 
 \subsubsection*{Acceptable Excuse}
 
-\wss{What constitutes an acceptable excuse for missing a meeting or a deadline?
-What types of excuses will not be considered acceptable?}
+Acceptable reasons for missing a meeting or deadline include illness, family or personal emergencies,
+major academic conflicts, interviews or employment obligations, and other
+unexpected circumstances that prevent a member from attending or completing
+work.
+
+For expected/forseeable conflicts, team members should provide notice prior whenever possible.
+Repeated unexplained absences, or failure to complete assigned work without communicating with
+the team will be considered unacceptable.
 
 \subsubsection*{In Case of Emergency}
 
-\wss{What process will team members follow if they have an emergency and cannot
-attend a team meeting or complete their individual work promised for a team
-deliverable?}
+If a team member experiences an emergency that prevents them from attending a meeting
+or completing assigned work, they should inform the team as soon as it is reasonably possible
+to do so.
+
+The team can then determine if the affected work should be reassigned, delayed, or adjusted
+based on the urgency of the task and the upcoming deadline. Once the team member is able to return
+they are responsible for reviewing desicions made during their absence and coordinating with the team 
+about any remaining responsibilities.
 
 \subsection*{Accountability and Teamwork}
 
