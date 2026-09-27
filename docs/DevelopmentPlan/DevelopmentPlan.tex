@@ -2,6 +2,8 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{float}
 
 \title{Development Plan\\\progname}
 
@@ -38,49 +40,55 @@ what is contained in the report.}
 \href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/L02b_POCAndDevPlan/POCAndDevPlan.pdf?ref_type=heads}
 {lecture slides}.}
 
-\section{Confidential Information?}
+\section{Confidential Information}
+There is no confidential industry information to protect.
 
-\wss{State whether your project has confidential information from industry, or
-not.  If there is confidential information, point to the agreement you have in
-place.}
 
-\wss{For most teams this section will just state that there is no confidential
-information to protect.}
 \section{IP to Protect}
 
-\wss{State whether there is IP to protect.  If there is, point to the agreement.
-All students who are working on a project that requires an IP agreement are also
-required to sign the ``Intellectual Property Guide Acknowledgement.''}
+There is no IP to protect.
 
 \section{Copyright License}
 
-\wss{What copyright license is your team adopting.  Point to the license in your
-repo.}
+Our team is using the \href{https://github.com/davislenover/BurnNEarn/blob/main/LICENSE}{MIT License}.
 
 \section{Team Meeting Plan}
 
-\wss{This section is for meetings between the team members, and meetings between 
-the team and their supervisor/advisor (as appropriate).}
+The team will meet every Monday after the lecture at 6:30 PM. It is encouraged within the team to show up in person to meet on campus, but those who cannot make it can join through Microsoft Teams.
+\vspace{1em}
 
-\wss{How often will the team meet? where? when?}
 
-\wss{If the meeting is a physical location (not virtual), out of an abundance of
-caution for safety reasons you shouldn't put the location online}
+We discussed the schedule of meetings with our supervisor who is available to meet with the team on an ad hoc basis with two days of notice. We will aim to meet in person when possible and use Microsoft Teams when in person meetings are not practical.
+\vspace{1em}
 
-\wss{To help schedule meetings, you can use the lecture/tutorial time when we do 
-not have anything else scheduled.}
-
-\wss{How often will you meet with your supervisor/advisor?  when?  where?}
-
-\wss{Will meetings be virtual?  At least some meetings should likely be
-in-person.}
-
-\wss{How will the meetings be structured?  There should be a chair for all meetings.  
-There should be an agenda for all meetings.}
+Meetings will follow an agenda prepared in advance that lists questions and topics for discussion. The meeting chair posts the agenda as a GitHub issue 24 hours before, and meeting minutes go in that issue
 
 \section{Team Communication Plan}
+This section outlines how the team is expected to communicate both internally and externally. \newline
+\subsection{General intra-team Communication}
+This subsection outlines how internal team communication shall be handled. \newline
+\begin{itemize}
+  \item \textbf{Microsoft Teams} is used for day-to-day discussion, scheduling, and
+    virtual meetings.
+  \item \textbf{GitHub Issues} are used for all development tasks, bugs, and
+    feature discussion. Every meeting (team, supervisor, TA) has an issue
+    created from the corresponding template, with the agenda posted beforehand
+    and minutes added afterwards.
+  \item \textbf{Pull requests} are used for all code and document review. Discussion about a change stays on its pull request unless otherwise noted.
+  \item Any decision that affects the project must be recorded in the
+    relevant GitHub issue or meeting minutes. The only way a decision is deemed final is via a push (after a pull Request) to main. Decisions that exist only in
+    Teams chat are \emph{not} considered final.
+  \item Team members are expected to acknowledge messages that mention/concern them within
+    12 hours (24 hours on weekends). It is expected that team members are proactive in reading any team communication regardless of platform.
+  \item Pull request reviews shall be completed within 24--72 hours of the request.
+\end{itemize}
 
-\wss{Issues on GitHub should be part of your communication plan.}
+\subsection{External Communication}
+This subsection outlines external communication between the team and outside sources. \newline
+\begin{itemize}
+    \item Communication between supervisor and team will be mediated by Davis. It is their responsibility to forward information to/from the supervisor within 12 hours.
+    \item Should Davis be unavailable to handle supervisor communication for whatever reason, they must inform the group with as much advance notice as possible. A temporary liaison will be appointed by the entire group along with communication to the supervisor that states this change.
+\end{itemize}
 
 \section{Team Member Roles}
 
@@ -119,98 +127,359 @@ responsibility is shared across the team.
     
 \section{Workflow Plan}
 
+% \begin{itemize}
+% 	\item How will you be using git, including branches, pull request, etc.?
+% 	\item How will you be managing issues, including template issues, issue
+% 	classification, etc.?
+%   \item Use of CI/CD
+% \end{itemize}
+
+This section describes how the team will use Git and GitHub to collaborate on both source code and documentation, how work will be tracked through issues, and how Continuous Integration and Continuous Deployment (CI/CD) will keep the project stable. 
+It is written to serve as a guide for current and future contributors. The repository is available at \href{https://github.com/davislenover/BurnNEarn}{BurnNEarn GitHub Repository}.
+
+\subsection{Branches}
+
+The repository will have exactly one permanent branch:
+
 \begin{itemize}
-	\item How will you be using git, including branches, pull request, etc.?
-	\item How will you be managing issues, including template issues, issue
-	classification, etc.?
-  \item Use of CI/CD
+  \item \texttt{main}: the protected, stable branch representing the latest reviewed state of the project. Direct pushes are not permitted. 
+  All changes must arrive through a pull request that has been approved by at least one other team member and has passed all CI checks.
 \end{itemize}
 
+All other branches are short-lived and must follow the naming convention \texttt{<type>/<name>-<description>}, where \texttt{type} is one of the categories in Table~\ref{TblBranchTypes}, \texttt{name} is the author's first name in lowercase, and \texttt{description} is a brief summary of the work in two to four words, separated by hyphens.
+
+\begin{table}[hp]
+\caption{Branch Types and Naming Examples} \label{TblBranchTypes}
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Type} & \textbf{Used For} & \textbf{Example}\\
+\midrule
+\texttt{docs} & Documentation sections & \texttt{docs/farid-dev-plan-workflow}\\
+\texttt{feature} & New app functionality & \texttt{feature/davis-step-sync}\\
+\texttt{fix} & Bug fixes & \texttt{fix/angad-portfolio-rounding}\\
+\texttt{chore} & CI, configuration, and repository maintenance & \texttt{chore/preston-latex-build}\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Branches are not shared between members; each member creates their own branch for each unit of work. 
+For documentation, each member creates one branch per deliverable covering the sections assigned to them. For code, each feature or fix gets its own branch. Once a branch's pull request is merged into \texttt{main}, the branch is deleted. Before opening a pull request, the author updates their branch with the latest changes from \texttt{main} and resolves any merge conflicts locally, so that conflicts are never resolved during review.
+
+\subsection{Commits}
+
+Commits should be small and focused on a single change, rather than combining unrelated edits. 
+Commit messages should begin with a short summary in the imperative mood (e.g., ``Add step count permission request'') and reference the related issue number where applicable (e.g., \texttt{\#14}), which links the commit to that issue on GitHub. 
+Issues are closed through the pull request rather than individual commits, as described in Section~\ref{SecPullRequests}.
+
+\subsection{Pull Requests} \label{SecPullRequests}
+
+When the work on a branch is complete, the author follows these steps:
+
+\begin{enumerate}
+  \item Open a pull request into \texttt{main} with a title summarizing the change and a description of what was changed and why. The description must link the related issue using a closing keyword (e.g., \texttt{Closes \#14}), which automatically closes the issue when the pull request is merged.
+  \item Request at least one reviewer. The reviewer should be a member working in a related area, or the whole team if the change affects everyone, such as shared document sections or the overall architecture.
+  \item Address the reviewer's comments, which are left directly on the relevant lines of code or documentation.
+  \item Once the pull request has one approval and all CI checks pass, the author merges it using a \textit{merge commit}, which preserves every individual commit from the branch on \texttt{main}. This keeps a complete record of each member's contributions throughout the project. The author then deletes the branch.
+\end{enumerate}
+
+Reviewers are expected to respond to a review request within 48 hours, or within 24 hours during the final three days before a deadline. 
+For documentation, reviewers also check the changes against the deliverable's checklist and rubric before approving.
+
+\subsection{Tags}
+
+Deliverables are marked directly from the \texttt{main} branch, so a Git tag will be created on \texttt{main} at each deliverable's deadline to record exactly what was marked. 
+Document deadlines use the format \texttt{<document>-<revision>} (e.g., \texttt{dev-plan-rev0}, \texttt{srs-rev0}, \texttt{design-rev-1}), and demonstrations use the format \texttt{<demo>-demo} (e.g., \texttt{poc-demo}, \texttt{rev0-demo}, \texttt{final-demo}). 
+The team member who merges the final pull request before a deadline is responsible for creating its tag. 
+Tags allow the team to return to the exact state of the project at each deadline, and to compare revisions when addressing feedback.
+
+\subsection{Issue Management}
+
+GitHub Issues will serve as the team's ticketing system, so that all work is visible, assigned, and traceable.
+
+\begin{itemize}
+  \item \textbf{Issue size:} Each issue should represent work that can be completed in a single sitting of roughly two to three hours. Larger tasks are split into multiple issues. For documentation, every section of each document has its own issue, titled with its deliverable and section (e.g., \texttt{[Development Plan] 7 Workflow Plan}).
+  \item \textbf{Ownership:} Every task issue is assigned to one owner, who is responsible for completing it and moving it through the project board described in Section~\ref{SecGitHubProjects}.
+  \item \textbf{Milestones:} Each deliverable is a milestone whose due date matches the deadline in Table~\ref{TblSchedule}. Every issue related to a deliverable is added to its milestone, so the team can see how much work remains before each deadline.
+  \item \textbf{Meetings and lectures:} An issue is created for every team meeting, supervisor meeting, and lecture, and is tracked in its own column on the project board. At least 24 hours before a meeting, the agenda and any questions are added to the issue. Afterwards, notes and action items are recorded, each action item becomes its own issue, and the meeting issue is closed. Lecture issues record the topic, date and time, and attendance.
+\end{itemize}
+
+The repository includes the issue templates listed in Table~\ref{TblIssueTemplates}, so that every issue contains consistent information.
+
+\begin{table}[H]
+  \caption{Issue Templates} \label{TblIssueTemplates}
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Template} & \textbf{Contents}\\
+    \midrule
+      Documentation Task & Deliverable, section, and the checklist items the section must satisfy\\
+      Feature & Description of the functionality and acceptance criteria\\
+      Bug Report & Steps to reproduce, expected and actual behaviour, and device and operating system\\
+      Meeting & Meeting type, date and time, attendance, agenda, questions, notes, and action items\\
+      Lecture & Topic, date and time, and attendance\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+Issues are classified using the labels in Table~\ref{TblLabels}. Every issue that belongs to a deliverable receives that deliverable's label, and every issue receives one type label and, where relevant, one area label. 
+Together, these allow the team to filter issues by deliverable, by kind of work, or by part of the app.
+
+\begin{table}[H]
+  \caption{Issue Labels} \label{TblLabels}
+  \begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Category} & \textbf{Label} & \textbf{Meaning}\\
+    \midrule
+      % Deliverable & \texttt{Problem Statement \& Goals} & Problem Statement and Goals document\\
+      Deliverable & \begin{tabular}[t]{@{}l@{}}\texttt{Problem Statement}\\\texttt{and Goals}\end{tabular} & Problem Statement and Goals document\\
+      & \texttt{Development Plan} & Development Plan and Proof of Concept Plan\\
+      & \texttt{Requirements} & Software Requirements Specification\\
+      & \texttt{Hazard Analysis} & Hazard Analysis document\\
+      & \texttt{V\&V Plan} & Verification and Validation Plan\\
+      & \texttt{Design Document} & Design Document (all revisions)\\
+      & \texttt{V\&V Report} & Verification and Validation Report\\
+      & \texttt{Demo} & Proof of Concept, Revision 0, Final, and EXPO demonstrations\\
+      \midrule
+      Type & \texttt{documentation} & Writing or revising a document section\\
+      & \texttt{reflection} & Reflection components of a deliverable\\
+      & \texttt{feature} & New functionality\\
+      & \texttt{enhancement} & Improvement to existing functionality\\
+      & \texttt{bug} & A defect that must be fixed\\
+      & \texttt{meeting} & Team or supervisor meeting\\
+      & \texttt{lecture} & Course lecture\\
+      \midrule
+      Area & \texttt{frontend} & User interface of the mobile app\\
+      & \texttt{backend} & Server, database, and accounts\\
+      & \texttt{health-data} & Fitness tracking and health platform integration\\
+      & \texttt{market-engine} & Asset prices, portfolios, and market scenarios\\
+      & \texttt{social} & Social feed and sharing\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{Continuous Integration and Continuous Deployment}
+
+GitHub Actions will run automated checks on the repository, so that errors are caught when a change is proposed rather than after it reaches \texttt{main}:
+
+\begin{itemize}
+  \item \textbf{Documentation:} On every pull request that changes the \texttt{docs} folder, all \LaTeX{} documents are compiled. 
+  The check fails if any document does not build, and the generated PDFs are saved as downloadable artifacts of the workflow run, linked from the pull request, so reviewers can read the rendered changes.
+  \item \textbf{Code:} Once development begins, every pull request and every push to \texttt{main} runs a linter and the automated test suite in the \texttt{test} folder. 
+  Branch protection prevents a pull request from being merged if any check fails.
+  \item \textbf{Deployment:} Once the core features are stable, targeted for Revision~0, every merge into \texttt{main} will automatically produce an internal test build of the mobile app, so the team and supervisor can always install the latest version on their phones.
+\end{itemize}
+
+If a check fails, the pull request's author is responsible for fixing it before requesting another review.
+
+
 \section{Project Decomposition and Scheduling}
-\subsection{GitHub Projects}
 
-The team will use a GitHub Project board to track all issues. The board will have the columns \textit{Backlog}, \textit{In Progress}, \textit{In Review}, and \textit{Done}. Issues move to \textit{In Review} when a pull request is opened, and to \textit{Done} automatically when the linked issue is closed by a merged pull request. The board can be filtered by milestone, assignee, or label, giving the team and supervisor a clear view of who is working on what and what remains before each deadline.
+% \begin{itemize} 
+%   \item How will you be using GitHub projects? 
+%   \item Include a link to your GitHub project 
+% \end{itemize}
 
-The GitHub Project can be found here: \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}.
+% \wss{How will the project be scheduled? This is the big picture schedule, not
+% details. You will need to reproduce information that is in the course outline
+% for deadlines.}
+
+This section describes how the team will use GitHub Projects to track work, how each deliverable will be broken down into manageable tasks, 
+and how the project will be scheduled around both course deadlines and earlier team deadlines.
+
+
+\subsection{GitHub Projects} \label{SecGitHubProjects}
+
+The team will use a GitHub Project board, \textit{BurnNEarn-TrackingBoard}, as the central place to track all issues. It is available at \href{https://github.com/users/davislenover/projects/4/views/1}{FitFolio GitHub Project}. 
+Every task issue moves through the first four columns in Table~\ref{TblBoardColumns} in order, while meeting and lecture issues are kept in their own columns so they do not clutter the task workflow.
+
+\begin{table}[H]
+  \caption{Project Tracking Board Columns} \label{TblBoardColumns}
+  \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
+    \toprule
+    \textbf{Column} & \textbf{Description}\\
+    \midrule
+      Backlog & Tasks that have been identified but not yet started. New issues are added here automatically.\\
+      In Progress & Tasks being actively worked on. The owner moves an issue here when they create its branch.\\
+      In Review & Tasks with an open pull request awaiting review. The owner moves an issue here when they open the pull request.\\
+      Done & Tasks whose pull request has been approved and merged. Issues move here automatically when they are closed.\\
+      Meetings & Team and supervisor meetings, with their agendas, notes, and action items.\\
+      Lectures & Course lectures, with their topic, date and time, and attendance.\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The board can be filtered by milestone, assignee, or label. Filtering by the current milestone shows how much work remains before the next deadline, and filtering by assignee shows each member's workload, which helps the team balance tasks during weekly meetings.
+
+\subsection{Task Decomposition}
+
+At the start of each deliverable, the team breaks the work into issues and adds them to that deliverable's milestone. Work is decomposed differently depending on its type:
+
+\begin{itemize}
+  \item \textbf{Documentation} is broken down by section, with one issue per section titled with its deliverable and section number (e.g., \texttt{[Development Plan] 8 Project Decomposition and Scheduling}). Each section can then be written, reviewed, and merged independently.
+  \item \textbf{Software} is broken down by feature, and each feature is split further into issues that fit within a single sitting and can be tested on their own.
+\end{itemize}
+
+Issues are assigned during the weekly team meeting, so that every member knows who is responsible for what. Assignments balance two goals: using each member's strengths to maintain quality, and giving every member experience across different parts of the project, so that no part of FitFolio depends on a single person. When a member takes on a task in an unfamiliar area, they are paired with a member who has experience in that area and can offer guidance.
 
 \subsection{Schedule}
 
-The project will be scheduled around the course deliverables, with each deliverable set as a GitHub milestone. The major deadlines, taken from the course outline, are:
+The project is scheduled around the course deliverables, each of which is a GitHub milestone. 
+For every deliverable, the team sets a team deadline three days before the course deadline. 
+All work must be merged into \texttt{main} by the team deadline, and the remaining three days are reserved for peer review, a quality assurance check of the full deliverable against its checklist and rubric, and final edits. 
+For demonstrations, the team deadline is a full rehearsal of the demonstration, held three days before the first demonstration day. 
+Table~\ref{TblSchedule} lists both deadlines for every deliverable. Unless otherwise stated, all course deadlines are at 11:59 p.m.
 
-\begin{table}[h]
-\centering
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{l c}
-\toprule
-\textbf{Deliverable} & \textbf{Week} \\
-\midrule
-Team Formed, Project Selected & Week 03 \\
-Problem Statement, POC Plan, Development Plan  & Week 04 \\
-Req. Doc. and Hazard Analysis Revision 0 & Week 06 \\
-V\&V Plan Revision 0 &  Week 08 \\
-Design Document Rev -1 and CD-Fall Rev 0 & Week 10 \\
-Proof of Concept Demo + Interviews &  Weeks 11--12 \\
-Design Document Revision 0 &  Week 16 \\
-Revision 0 Demo + Interviews &  Weeks 18--19 \\
-V\&V Report Rev 0 and CD-Winter Rev 0 & Week 22 \\
-Final Demonstration (Revision 1) & Week 24 \\
-EXPO Demonstration & Week 26 \\
-Final Documentation (Revision 1) & Week 26 \\
-\bottomrule
-\end{tabular}
-\caption{Major project deadlines from the course outline}
-\label{tab:schedule}
+\begin{table}[H]
+  \caption{Team and Course Deadlines} \label{TblSchedule}
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}Xll}
+    \toprule
+    \textbf{Deliverable} & \textbf{Team Deadline} & \textbf{Course Deadline}\\
+    \midrule
+      Problem Statement, POC Plan, Development Plan & Sep 25, 2026 & Sep 28, 2026\\
+      Requirements Document and Hazard Analysis Revision 0 & Oct 16, 2026 & Oct 19, 2026\\
+      V\&V Plan Revision 0 & Oct 30, 2026 & Nov 2, 2026\\
+      Design Document Revision $-1$ and CD-Fall Revision 0 & Nov 13, 2026 & Nov 16, 2026\\
+      Proof of Concept Demonstration & Nov 20, 2026 & Nov 23 - Dec 4, 2026\\
+      Design Document Revision 0 & Jan 15, 2027 & Jan 18, 2027\\
+      Revision 0 Demonstration & Jan 29, 2027 & Feb 1 - Feb 12, 2027\\
+      V\&V Report Revision 0 and CD-Winter Revision 0 & Mar 5, 2027 & Mar 8, 2027\\
+      Final Demonstration (Revision 1) & Mar 12, 2027 & Mar 15 - Mar 25, 2027\\
+      EXPO Demonstration (poster due) & Mar 28, 2027 & Mar 31, 2027\\
+      Final Video & Mar 28, 2027 & Mar 31, 2027\\
+      Final Documentation (Revision 1) & Mar 28, 2027 & Mar 31, 2027\\
+    \bottomrule
+  \end{tabularx}
 \end{table}
-\newpage{}
 
-\begin{itemize}
-  \item How will you be using GitHub projects?
-  \item Include a link to your GitHub project
-\end{itemize}
 
-\wss{How will the project be scheduled?  This is the big picture schedule, not
-details. You will need to reproduce information that is in the course outline
-for deadlines.}
+To keep work on track between deadlines, each member reports progress and any blockers on their assigned issues during the weekly team meeting. 
+A member who expects to miss a team deadline must tell the team in the group chat at least 24 hours beforehand, so that the task can be supported or reassigned. 
+Feedback on each Revision 0 deliverable will be recorded as issues and addressed throughout the year, rather than left until the Final Documentation.
+
 
 \section{Proof of Concept Demonstration Plan}
 
-What is the main risk, or risks, for the success of your project?  What will you
-demonstrate during your proof of concept demonstration to convince yourself that
-you will be able to overcome this risk?
+% What is the main risk, or risks, for the success of your project?  What will you
+% demonstrate during your proof of concept demonstration to convince yourself that
+% you will be able to overcome this risk?
 
-\section{Expected Technology}
+This section identifies the main risks to the success of FitFolio, 
+describes what the proof of concept (PoC) demonstration will show to convince the team that these risks can be overcome, 
+and outlines what the team will do if the demonstration shows that a risk cannot be overcome as planned.
 
-\wss{What programming language or languages do you expect to use?  What external
-libraries?  What frameworks?  What technologies.  Are there major components of
-the implementation that you expect you will implement, despite the existence of
-libraries that provide the required functionality.  For projects with machine
-learning, will you use pre-trained models, or be training your own model?  }
+\subsection{Main Risks}
 
-\wss{The implementation decisions can, and likely will, change over the course
-of the project.  The initial documentation should be written in an abstract way;
-it should be agnostic of the implementation choices, unless the implementation
-choices are project constraints.  However, recording our initial thoughts on
-implementation helps understand the challenge level and feasibility of a
-project.  It may also help with early identification of areas where project
-members will need to augment their training.}
+FitFolio depends on two external systems that no team member has worked with before. 
+Both are implementation risks: if either cannot be made to work, the app's core loop of earning currency through activity and investing it in real assets cannot be built.
 
-Topics to discuss include the following:
+\begin{enumerate}
+  \item \textbf{Reading fitness data from the phone's health platform.} FitFolio's core promise is that activity is tracked automatically. 
+  This requires reading step data through Google Health Connect on Android and Apple HealthKit on iOS, which each have their own Application Programming Interfaces (APIs), permission models, and restrictions on when data can be read. 
+  Since FitFolio will be built with React Native, it cannot access these platforms directly, and will depend on third-party libraries to bridge between the app and each platform. 
+  These libraries may be incomplete, poorly maintained, or out of date with the latest platform versions, which the team does not control. If step data cannot be read reliably, the app cannot award currency fairly.
+  \item \textbf{Valuing portfolios with real market prices.} The virtual portfolio must follow real asset prices, but market data providers limit how many requests can be made, especially on free plans. 
+  If prices cannot be retrieved often enough within these limits, portfolio values will not follow the market closely enough to teach users how investing works.
+\end{enumerate}
+
+\subsection{Demonstration}
+
+The PoC will show one minimal path through FitFolio's core loop, running on a physical Android phone:
+
+\begin{enumerate}
+  \item \textbf{Read the day's step count} (Risk 1). After the user grants permission, the app reads the current day's steps from Google Health Connect and displays them. This succeeds if the count matches the phone's own health app, and updates after the team member walks and reopens the app.
+  \item \textbf{Convert steps into virtual currency} (connects Risks 1 and 2). The step count is converted into currency using a simple fixed rule, and the balance is displayed.
+  \item \textbf{Buy a real asset with virtual currency} (Risk 2). The user spends their balance on shares of one real asset, such as a stock or Exchange-Traded Fund (ETF), at its current market price.
+  \item \textbf{Show the portfolio's value following the market} (Risk 2). The portfolio's value is recalculated each time a new price is retrieved. This succeeds if the displayed value matches the asset's public market price at each update, and the number of requests used shows that the chosen update interval fits within the provider's free limits.
+\end{enumerate}
+
+If time allows, the same steps will also be shown on an iPhone using Apple HealthKit. This is a stretch goal rather than a requirement, so that the core demonstration stays achievable.
+
+The PoC is deliberately not a prototype. It will have a minimal user interface and will not include user accounts, workouts, the social feed, or market scenarios. 
+Its only purpose is to show that the two main risks can be overcome. The team will rehearse the full demonstration by the team deadline in Table~\ref{TblSchedule}, and the demonstrated version will be tagged \texttt{poc-demo} on \texttt{main}.
+
+\subsection{If the PoC Fails}
+
+If the demonstration shows that a risk cannot be overcome as planned, the team will adjust the project's scope rather than its core idea:
 
 \begin{itemize}
-\item Specific programming language
-\item Specific libraries
-\item Pre-trained models
-\item Specific linter tool (if appropriate)
-\item Specific unit testing framework
-\item Investigation of code coverage measuring tools
-\item Specific plans for Continuous Integration (CI), or an explanation that CI
-  is not being done
-\item Specific performance measuring tools (like Valgrind), if
-  appropriate
-\item Tools you will likely be using?
+  \item \textbf{If step data cannot be read reliably:} The team would first limit syncing to when the user opens the app, rather than in the background, which avoids most platform restrictions. If a third-party library proves unreliable, the team would switch to an alternative library, or write a small amount of platform-specific code to access the health platform directly.
+  If one platform still cannot be supported, FitFolio would support only the platform that works, and the team would discuss with the supervisor whether the second platform should become a future goal. 
+  If neither platform works, users would enter their activity manually as a last resort. Since this weakens FitFolio's promise of automatic tracking, the team would discuss this change in scope with the supervisor before adopting it.
+  \item \textbf{If market data limits are too restrictive:} The team would reduce how often prices are updated (e.g., every 15 minutes, or once per day), have a server retrieve each price once and share it across all users rather than requesting it per user, and limit the app to a curated list of assets. 
+  If a provider's limits or cost are still unworkable, the team would switch to a different provider.
 \end{itemize}
 
-\wss{git, GitHub and GitHub projects should be part of your technology.}
+\subsection{Secondary Risk}
+
+A secondary risk is that the market scenarios, such as replays of past downturns, depend on historical price data that may be limited or costly to access. 
+Since this feature is not part of the core loop, it will not be included in the PoC. If historical data proves difficult to obtain, the team would reduce the number of scenarios offered, or build them from a small set of stored historical datasets.
+
+\section{Expected Technology}
+The following section details the expected technologies for the systems the team will be developing. \newline
+\subsubsection{Operating Systems}
+The primary target operating systems for this app will be Android 17+ and iOS 27+. This is due to the nature of the testing equipment available
+for all group members and the supervisor.
+
+\subsubsection{Languages}
+It is expected that React Native (TypeScript) will be used for the front-end. This will allow the team to write code that works on both platforms at once.
+The backend will consist of Python mainly for its rich and optimal library support for the tasks the app may need to perform (e.g., fetching stock data over the web). Moreover, Python's NumPy and
+pandas will be useful for modeling data within the market simulation engine.
+
+\textit{Alternatives considered:} Flutter was considered for the front-end, but it uses Dart, a language less familiar to the team than TypeScript.
+TypeScript (Node.js) was considered for the backend so the whole codebase would share one language, but Python's numerical libraries (NumPy and pandas) are better suited to the market simulation engine.
+
+\subsubsection{Backend Framework}
+The app will communicate with the Python backend through a REST API over HTTPS, exchanging data as JSON. The backend will be built with FastAPI, which validates requests using Python type hints
+and automatically generates API documentation, helping keep the front-end and backend in agreement on what data is sent. Its support for asynchronous requests also suits fetching market data from external APIs.
+
+\textit{Alternative considered:} Django (with Django REST Framework) was considered, but it includes many features the project does not need (e.g., server-rendered pages), which adds setup and boilerplate.
+
+\subsubsection{Market Data}
+Real-world stock market data will be retrieved from the Finnhub API, whose free tier provides current stock prices and company information. To stay within its request limits, fetched data will be
+cached in the database (see Databases).
+
+\textit{Alternative considered:} yfinance, an unofficial library that reads Yahoo Finance data, was considered as it is free and simple to use. However, it is not an official API and can stop working
+without notice whenever Yahoo changes its website.
+
+\subsubsection{Libraries}
+The following libraries are expected to be used for React Native:
+\begin{itemize}
+    \item \href{https://github.com/kingstinct/react-native-healthkit}{@kingstinct/react-native-healthkit} - Provides access to HealthKit on iOS.
+    \item \href{https://github.com/matinzd/react-native-health-connect}{react-native-health-connect} - Provides access to Health Connect on Android.
+\end{itemize}
+The following libraries are expected to be used for Python:
+\begin{itemize}
+    \item \href{https://numpy.org}{NumPy} - Handles numerical computing quickly (e.g., vector operations).
+    \item \href{https://pandas.pydata.org}{pandas} - Data manipulation and analytics.
+\end{itemize}
+
+\textit{Alternative considered:} Writing custom native modules (in Swift and Kotlin) to access HealthKit and Health Connect directly was considered, but existing bridge libraries avoid the need to
+write and maintain code in two additional languages.
+
+\subsubsection{Databases}
+User data, portfolios, the social feed and cached market data (as pulling constantly from an API will likely be expensive) will be stored in PostgreSQL.
+
+\textit{Alternative considered:} MongoDB was considered for its flexible document storage. However, the app's data is highly relational (e.g., users, their portfolios, trades and friends), and trades must be
+recorded reliably, which PostgreSQL's relations and transactions handle well.
+
+\subsubsection{Testing}
+For unit testing, Jest will be used for the front-end as this works directly for React. For the backend, pytest will be used as this works well with Python and doesn't require a lot of boilerplate class code
+(unlike Python's built-in unittest), therefore allowing the team to test much quicker.
+
+\subsubsection{Linting and Formatting}
+ESLint and Prettier will be used for the front-end: ESLint catches common mistakes in TypeScript code, and Prettier formats code automatically. For the backend, Ruff will be used as a single tool that
+both lints and formats Python code. These checks will run in CI on every pull request and must pass before it can be merged (see Definition of Done).
+
+\textit{Alternative considered:} For Python, Black (formatting) with Flake8 (linting) was considered, but Ruff covers both in one tool and runs considerably faster.
+
+\subsubsection{Continuous Integration}
+The following subsection outlines how CI/CD will be utilized within this project: \newline
+CI will happen within a pull request, using GitHub Actions, before code is merged on the main branch, there will be a standard set of tests which will be run to ensure no regression occurs.
+For the tests themselves, they will be developed over time and integrated into the suite as new features are developed. New test cases are required for a feature to be merged to main unless otherwise
+specified. Justification also must be provided for any new test cases.
+For anything backend related, a PostgreSQL container will be run such that any feature/system that utilizes queries can be tested.
+
+\subsubsection{Tools}
+Git and GitHub will serve as the main version control software. GitHub Projects will be used to keep track of current issues and to link PRs.
 
 \section{Use of AI and LLMs}
 
@@ -316,6 +585,8 @@ whether material was generated by a human or an AI system.}
 \section*{Appendix --- Team Charter}
 
 
+This appendix sets out the expectations that team members have agreed to hold each other to throughout the project.
+
 \subsection*{External Goals}
 
 The team's external goals are to use FitFolio as an opportunity to showcase the 
@@ -334,6 +605,7 @@ The team aims to:
 \end{itemize}
 
 \subsection*{Attendance}
+\phantomsection\label{sec:attendance}
 
 \subsubsection*{Expectations}
 
@@ -373,42 +645,158 @@ about any remaining responsibilities.
 
 \subsection*{Accountability and Teamwork}
 
-\subsubsection*{Quality} 
+This subsection sets out what team members can expect from each other in terms of the quality of their work, their attitude, and staying on track.
 
-\wss{What are your team's expectations regarding the quality
-of team members' preparation for team meetings and the quality of the
-deliverables that members bring to the team?}
+\subsubsection*{Quality}
+\phantomsection\label{sec:quality}
+
+This subsection describes the standard of preparation and work expected from every team member.
+
+\textbf{Meeting Preparation and In-Progress}
+\begin{itemize}
+    \item The meeting chair posts the agenda as a GitHub issue using an appropriate template (dependent on the meeting) at least 24 hours before the meeting. The meeting date must be visible within the issue title. Team members add their items/questions before it starts.
+    \item Everyone arrives with a short update (done since last time, what's next, any blockers) and has their GitHub Projects cards up to date.
+    \item Anything linked in the agenda, like a pull request or a draft section, is read before the meeting.
+    \item All items discussed with their resulting outcome are documented in the GitHub issue, once the meeting is complete, it shall be marked as done.
+\end{itemize}
+
+\textbf{Quality Assurance} \newline
+The following steps ensure each deliverable meets the course checklist and rubric before it is submitted:
+\begin{itemize}
+    \item Before starting any deliverable, every team member responsible for the feature must read through the checklist and rubric. Any questions and/or doubts must be raised as soon as possible.
+    \item Each deliverable is assigned a QA reviewer, who must not be the main author. This role rotates between team members for each deliverable.
+    \item At least 24h before the submission, the QA reviewer will go through the checklist and rubric to ensure all items are at least being met.
+    \item Should an issue with the checklist and/or rubric arise, they must communicate through the GitHub issues and/or Teams channel for extra help from other team members.
+    \item Team members may also request periodic check-ins with another team member who mutually agrees.
+\end{itemize}
+
+\textbf{Definition of Done} \newline
+Every feature that is considered to have reached a certain goal/milestone needs the following within a pull request:
+\begin{itemize}
+    \item Linked to a specific GitHub issue.
+    \item Passes all CI tests and formatting checks.
+    \item (Unless otherwise stated) Tests for the new features with brief justification on why they exist and that they pass.
+    \item Approved by at least one other team member who isn't the main author. In the case where all team members worked on a feature, everyone must approve it.
+\end{itemize}
 
 \subsubsection*{Attitude}
 
-\wss{What are your team's expectations regarding team members' ideas,
-interactions with the team, cooperation, attitudes, and anything else regarding
-team member contributions?  Do you want to introduce a code of conduct?  Do you
-want a conflict resolution plan?  Can adopt existing codes of conduct.}
+This subsection describes how team members are expected to treat each other and work together.
+
+\textbf{Code of Conduct} \newline
+The following sets the standard of behaviour expected from every team member:
+\begin{itemize}
+    \item The team adopts the \href{https://www.contributor-covenant.org/version/2/1/code_of_conduct/}{Contributor Covenant v2.1}
+    as its code of conduct, linked from \texttt{CodeOfConduct.md} in the repository.
+    \item All team members are expected to treat each other, the supervisor, TAs and
+    instructors with respect, regardless of experience level or background.
+\end{itemize}
+
+\textbf{Ideas and Feedback} \newline
+The following describes how ideas and feedback are shared within the team:
+\begin{itemize}
+    \item Every idea is welcome and will be heard out before it is judged. No idea is dismissed without a stated reason.
+    \item Feedback critiques the work, \emph{never} the person. Review comments should be specific and explain \emph{why} a change is suggested.
+    \item Disagreements should be raised openly during meetings or on the relevant issue/pull request.
+    \item Once the team makes a decision (see \hyperref[sec:decision-making]{Decision Making}), every team member must support it.
+\end{itemize}
+
+\textbf{Conflict Resolution} \newline
+The following describes the steps for how conflicts between team members shall be handled:
+\begin{enumerate}
+    \item Members involved first try to resolve the conflict directly and privately within 48 hours.
+    \item If unresolved, the issue is brought to the next team meeting, where a team member not involved acts as mediator.
+    \item The mediator and the agreed outcome (\emph{not} the details of the argument) are recorded in the meeting minutes.
+    \item If still unresolved, or in the case of a Code of Conduct violation, the team escalates to the TA for investigation.
+    \item If all else fails and with agreement from the TA, the course instructor shall be notified.
+\end{enumerate}
 
 \subsubsection*{Stay on Track}
 
-\wss{What methods will be used to keep the team on track? How will your team
-ensure that members contribute as expected to the team and that the team
-performs as expected? How will your team reward members who do well and manage
-members whose performance is below expectations?  What are the consequences for
-someone not contributing their fair share?}
+This subsection describes how the team tracks progress, detects when a team member is falling behind, and responds.
 
-\wss{You may wish to use the project management metrics collected for the TA and
-instructor for this.}
+\textbf{Tracking Progress} \newline
+The following describes how progress is tracked throughout the project:
+\begin{itemize}
+    \item The GitHub Projects board is the single source of truth for who is working on what. Every task must have a specific issue, an assignee and a target date.
+    \item At each team meeting, the chair reviews the board. While blockers are the most important agenda item, any item that has been in progress for over a week without an update is discussed.
+    \item Anything progress related discussed within the team meeting is noted within the specific meeting issue on GitHub.
+    \item \emph{All} deliverables have an internal deadline: a pull request must be opened at least 48 hours before the course deadline, leaving time for review and the checklist pass (see \hyperref[sec:quality]{Quality}).
+    \item There may be a case in which a pull request for a feature may not be ready for review 48 hours prior to the deadline. The pull request can be opened regardless with a note indicating it isn't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time.
+    \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc.). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit, which is why these numbers are not treated as scores.
+\end{itemize}
 
-\wss{You can set target metrics for attendance, commits, etc.  What are the
-consequences if someone doesn't hit their targets?  Do they need to bring the
-coffee to the next team meeting?  Does the team need to make an appointment with
-their TA, or the instructor?  Are there incentives for reaching targets early?}
+\textbf{Triggers} \newline
+Triggers are used as a means of detecting if there is a performance issue with one or more team members.
+The triggers in Table~\ref{tab:triggers} are to be reported in each productivity report. Absences or missed deadlines with an acceptable excuse (see \hyperref[sec:attendance]{Attendance}) do not count.
+\begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.22\textwidth} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{0.2\textwidth}}
+\toprule
+\textbf{Trigger} & \textbf{Threshold} & \textbf{Measured from}\\
+\midrule
+Meeting attendance & Below 80\% of team meetings in a deliverable period, or 2 unexcused misses in a row & Meeting issues\\
+\addlinespace
+Missed internal deadline & 2 or more in a term & Issues and Pull Requests\\
+\addlinespace
+Review turnaround & Requested review not completed within 72 hours, 2 or more times in a deliverable period & pull request timestamps\\
+\addlinespace
+Responsiveness & Mentions not acknowledged within the time set in the Communication Plan, 3 or more times in a deliverable period & GitHub and Teams\\
+\addlinespace
+Contribution & No closed issues, merged PRs or reviews for 2 consecutive weeks & GitHub\\
+\bottomrule
+    \end{tabularx}
+    \caption{Triggers for detecting performance issues within the team}
+    \label{tab:triggers}
+\end{table}
+
+\textbf{Consequences} \newline
+The consequences for hitting the triggers described above are as follows:
+\begin{enumerate}
+    \item \textbf{First trigger:} A teammate privately checks in with the member to find out what is going on. Work is redistributed or help is offered if needed.
+    \item \textbf{Second trigger:} The issue is raised at a team meeting and recorded in the minutes. The member and team agree on a written plan with specific tasks and dates.
+    \item \textbf{Continued triggers:} The team books a meeting with the TA, and then the course instructor if all else fails.
+\end{enumerate}
+
+\textbf{Recognition} \newline
+Team members who perform well are recognized as follows:
+\begin{itemize}
+    \item Team members who hit every target over a deliverable period get first pick of tasks for the next deliverable.
+\end{itemize}
 
 \subsubsection*{Team Building}
 
-\wss{How will you build team cohesion (fun time, group rituals, etc.)? }
+% \wss{How will you build team cohesion (fun time, group rituals, etc.)? } \\
+The team will build cohesion through regular, low-effort rituals rather than occasional large events, since consistent contact matters more than one-off activities.
 
-\subsubsection*{Decision Making} 
+\begin{itemize}
+  \item \textbf{Weekly check-in:} The first five minutes of every weekly team meeting are reserved for an informal check-in, where each member shares how they are doing, both within the project and outside it. 
+  This helps the team notice early when a member is overloaded, and adjust workloads before deadlines are affected.
+  \item \textbf{Deliverable retrospectives:} After each deliverable is submitted, the team holds a 20-minute retrospective during the next weekly meeting. 
+  Each member shares one thing that went well and one thing to improve, and the team agrees on at least one change to try for the next deliverable. 
+  This gives every member an equal voice, keeps small frustrations from building up, and feeds directly into each deliverable's reflection.
+  \item \textbf{Using our own product:} Once the proof of concept is working, the team will hold a weekly step challenge using FitFolio itself. 
+  This builds friendly competition within the team, and gives every member real experience as a user of the product, which will help identify usability issues early.
+\end{itemize}
 
-\wss{How will you make decisions in your group? Consensus?  Vote? How will you
-handle disagreements? }
+\subsubsection*{Decision Making}
+\phantomsection\label{sec:decision-making}
+
+% \wss{How will you make decisions in your group? Consensus?  Vote? How will you
+% handle disagreements? }
+
+The team will aim to make decisions by consensus, since decisions that every member agrees with are more likely to be followed through. Decisions are made during the weekly team meeting, or in the group chat for decisions that cannot wait.
+
+\begin{itemize}
+  \item \textbf{Voting:} If consensus is not reached after 15 minutes of discussion, the decision is made by majority vote. 
+  A vote requires at least four of the five members to be present or to respond in the group chat, and passes with at least three votes in favour, so that no decision is made by a minority of the team.
+  \item \textbf{Area decisions:} Technical decisions within a specific area of the app (e.g., the health data integration or the market engine) are made by the members working on that area, who inform the rest of the team. 
+  Any member may ask for such a decision to be brought to a team vote.
+  \item \textbf{Scope decisions:} Decisions that change the product's scope or vision, such as removing a feature, are brought to the supervisor before being adopted.
+  \item \textbf{Recording decisions:} Every decision and its reasoning is recorded in the relevant meeting issue, so that settled decisions are not revisited without new information.
+\end{itemize}
+
+When disagreements arise, each side will explain their position with a focus on what is best for the project rather than personal preference. 
+If the same disagreement remains unresolved after two consecutive team meetings, it will be raised with the supervisor, who will help the team reach a decision.
 
 \end{document}
