@@ -568,18 +568,22 @@ In cases where AI-assisted changes affected factual or technical statements, we 
 
 \section*{Appendix --- Reflection}
 
-\wss{Not required for CAS 741}
+% \wss{Not required for CAS 741}
 
 \input{../Reflection.text}
 
-\begin{enumerate}
-    \item Why is it important to create a development plan prior to starting the
-    project?
-    \item In your opinion, what are the advantages and disadvantages of using
-    CI/CD?
-    \item What disagreements did your group have in this deliverable, if any,
-    and how did you resolve them?
-\end{enumerate}
+
+\subsection*{1. Why is it important to create a development plan prior to starting the project?}
+
+Creating the development plan before writing any code forced us to make decisions while they were still cheap to change. The clearest example came from reviewing this document itself: sections written by different members initially gave three different time limits for pull request reviews and two different definitions of an internal deadline, and one section assumed the app would run only on Android while another planned for both Android and iOS. Finding these contradictions on paper took a few minutes to fix. Finding them after development had started would have meant missed reviews, confusion about deadlines, or code written for the wrong platform.
+
+The plan also made us identify our biggest risks before committing to the project's core design. Writing the proof of concept plan showed that FitFolio depends on two systems none of us had used before, the phones' health platforms and a market data provider with request limits, so we can test both early instead of discovering problems mid-year. Similarly, agreeing on the team charter's triggers and consequences now, while everyone is on good terms, means that if a problem does arise, we already have a fair process that no one has to invent under pressure.
+
+At the same time, we see the plan as a starting point rather than a fixed contract. Some decisions, such as our target market data provider, may change after the proof of concept. Because every change to this document goes through a reviewed pull request, the plan can evolve while keeping a clear record of what changed and why.
+
+\subsection*{2. In your opinion, what are the advantages and disadvantages of using CI/CD?}
+
+\subsection*{3. What disagreements did your group have in this deliverable, if any, and how did you resolve them?}
 
 \newpage{}
 
