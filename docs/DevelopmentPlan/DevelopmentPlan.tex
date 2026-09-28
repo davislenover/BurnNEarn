@@ -19,6 +19,7 @@
 \maketitle
 
 \begin{table}[hp]
+\small
 \caption{Revision History} \label{TblRevisionHistory}
 \begin{tabularx}{\textwidth}{llX}
 \toprule
@@ -33,18 +34,27 @@ Sep 26--27, 2026 & Preston Grewal & Initial revision of 1 Confidential Informati
 Sep 26--27, 2026 & Angad Chhabra & Initial revision of 6 Team Member Roles, 12 Coding Standard, and the Team Charter's External Goals and Attendance.\\
 \addlinespace
 Sep 26--27, 2026 & Zaid Alsaadi & Initial revision of 11 Use of AI and LLMs and 13 Generative AI Use Disclosure.\\
+\addlinespace
+Sep 27, 2026 & Farid Bastoros & Reflection answers for Questions 1-3.\\
+\addlinespace
+Sep 27--28, 2026 & Farid Bastoros & Full review of the document against the rubric and checklist, identifying inconsistencies and formatting issues for revision.\\
+\addlinespace
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \newpage{}
 
-\wss{Put your introductory blurb here.  Often the blurb is a brief roadmap of
-what is contained in the report.}
+% \wss{Put your introductory blurb here.  Often the blurb is a brief roadmap of
+% what is contained in the report.}
 
-\wss{Additional information on the development plan can be found in the
-\href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/L02b_POCAndDevPlan/POCAndDevPlan.pdf?ref_type=heads}
-{lecture slides}.}
+
+% \wss{Additional information on the development plan can be found in the
+% \href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/L02b_POCAndDevPlan/POCAndDevPlan.pdf?ref_type=heads}
+% {lecture slides}.}
+
+This document describes how the team will develop FitFolio. It records the team's decisions on meetings, communication, roles, and Git workflow, breaks the project into scheduled tasks, and outlines the proof of concept demonstration, the expected technologies, and the coding standard. The appendices contain the team's disclosure of generative AI use, reflections, and team charter.
+
 
 \section{Confidential Information}
 There is no confidential industry information to protect.
@@ -52,26 +62,26 @@ There is no confidential industry information to protect.
 
 \section{IP to Protect}
 
-There is no IP to protect.
+There is no intellectual property (IP) to protect.
 
 \section{Copyright License}
 
-Our team is using the \href{https://github.com/davislenover/BurnNEarn/blob/main/LICENSE}{MIT License}.
+Our team is using the MIT License, which can be found in the \href{https://github.com/davislenover/BurnNEarn/blob/main/LICENSE}{LICENSE file} of the repository.
 
 \section{Team Meeting Plan}
 
-The team will meet on an ad hoc basis on Monday after the lecture at 6:30 PM. It is encouraged within the team to show up in person to meet on campus, but those who cannot make it can join through Microsoft Teams.
+The team will meet every Monday after the lecture at 6:30 PM. If there is nothing to discuss in a given week, such as right after a deliverable is submitted, the meeting chair may cancel that week's meeting by notifying the team on Microsoft Teams at least 24 hours in advance. Members are encouraged to meet in person on campus, but those who cannot attend can join through Microsoft Teams.
 \vspace{1em}
 
 
-We discussed the schedule of meetings with our supervisor who is available to meet with the team on an ad hoc basis with two days of notice. We will aim to meet in person when possible and use Microsoft Teams when in person meetings are not practical.
+Meetings with the supervisor, Chris Schankula, are arranged as needed with at least two days' notice, through the team liaison. They will be held in person when possible, and on Microsoft Teams otherwise.
 \vspace{1em}
 
-Meetings will follow an agenda prepared in advance that lists questions and topics for discussion. The meeting chair posts the agenda as a GitHub issue 24 hours before, and meeting minutes go in that issue
+Meetings follow an agenda that lists questions and topics for discussion. The meeting chair posts the agenda as a GitHub issue at least 24 hours before the meeting, and the minutes are recorded in that issue.
 
 \section{Team Communication Plan}
 This section outlines how the team is expected to communicate both internally and externally. \newline
-\subsection{General intra-team Communication}
+\subsection{General Intra-team Communication}
 This subsection outlines how internal team communication shall be handled. \newline
 \begin{itemize}
   \item \textbf{Microsoft Teams} is used for day-to-day discussion, scheduling, and
@@ -98,38 +108,41 @@ This subsection outlines external communication between the team and outside sou
 
 \section{Team Member Roles}
 
-The team will use adapting roles over the course of the project. 
-Instead of assigning each member to one responsibility for the entire project timeline, 
-roles can change between meetings, development phases, and deliverables
-depending on the needs of the team and the members.
+The team will use adaptive roles over the course of the project. Instead of assigning each member to one responsibility for the entire project, roles can change between deliverables and development phases, depending on the needs of the team and its members. Table~\ref{tab:roles} lists the initial assignments.
 
-The anticipated team roles include: 
+\begin{table}[H]
+\centering
+\caption{Initial role assignments}
+\label{tab:roles}
+\begin{tabular}{ll}
+\toprule
+\textbf{Role} & \textbf{Initial Member(s)} \\
+\midrule
+Team Liaison & Davis \\
+Meeting Chair & Farid \\
+Notetaker & Zaid\\
+QA Reviewer (see \hyperref[sec:quality-assurance]{Quality Assurance}) & Farid, Angad \\
+Health Data Integration & Preston, Zaid \\
+Market Engine and Financial Data & Davis, Farid \\
+Front-End Developer & Angad, Zaid \\
+Back-End Developer & Farid, Davis \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{itemize} 
-    \item \textbf{Team Liaison : Davis Lenover} Acts as the primary point of communication between the team, supervisor, and course staff when necessary.
-
-    \item \textbf{Notetaker:} Records important decisions, deadlines, and questions asked during meetings
-    as well as information discussed during lectures
-
-    \item \textbf{Health Data Integration:} Responsible for integrating smartphone health platform data, processing fitness activity
-    and connecting completed fitness goals to the reward system.
-
-    \item \textbf{Market Engine and Finacial Data:} Responsible for virtual portfolio calculations, transaction processing,
-    market data integration, and portfolio history
-
-    \item \textbf{Front-End Developer:} Responsible for the mobile application's user interface and
-    presentation of fitness and portfolio information.
-
-    \item \textbf{Back-End Developer:} Responsible for server-side application logic, APIs, authentication, and communication
-    between the client and external services
-
-    \item \textbf{Testing and Quality Assurance:} Develops and executes tests, identifies defects, and verifies
-    that implemented functionality satisfies the corresponding requirements.
+The responsibilities of each role are as follows:
+\begin{itemize}
+  \item \textbf{Team Liaison:} Acts as the primary point of communication between the team, the supervisor, and course staff.
+  \item \textbf{Meeting Chair:} Posts each meeting's agenda, leads team meetings, keeps discussion focused, and makes sure action items are assigned.
+  \item \textbf{Notetaker:} Records decisions, deadlines, and questions in the meeting's GitHub issue, as well as information discussed during lectures.
+  \item \textbf{QA Reviewer:} Checks the full deliverable against its checklist and rubric before submission, as described in the Team Charter.
+  \item \textbf{Health Data Integration:} Integrates smartphone health platform data, processes fitness activity, and connects completed activity to the reward system.
+  \item \textbf{Market Engine and Financial Data:} Handles virtual portfolio calculations, transaction processing, market data integration, and portfolio history.
+  \item \textbf{Front-End Developer:} Builds the mobile application's user interface and the presentation of fitness and portfolio information.
+  \item \textbf{Back-End Developer:} Builds server-side application logic, APIs, authentication, and communication between the client and external services.
 \end{itemize}
 
-All team members will contribute to development, testing, documentation, and code review
-throughout the project and the aforementioned roles will rotate between members so that
-responsibility is shared across the team.
+Roles rotate as follows. The Meeting Chair, Notetaker, and QA Reviewer rotate at the start of each deliverable, so every member takes on each role during the year. Technical roles stay with the same members for continuity, but each area has at least two members, so no part of FitFolio depends on a single person. A member can ask to change technical roles at any weekly meeting, and the change is decided using the team's decision-making process. All members contribute to development, testing, documentation, and code review regardless of their assigned roles.
     
 \section{Workflow Plan} \label{SecWorkflow}
 
@@ -358,7 +371,7 @@ Table~\ref{TblSchedule} lists both deadlines for every deliverable. Unless other
 
 
 To keep work on track between deadlines, each member reports progress and any blockers on their assigned issues during the weekly team meeting. 
-A member who expects to miss a team deadline must tell the team in the group chat at least 24 hours beforehand, so that the task can be supported or reassigned. 
+A member who expects to miss a team deadline must tell the team on Microsoft Teams at least 24 hours beforehand, so that the task can be supported or reassigned. 
 Feedback on each Revision 0 deliverable will be recorded as issues and addressed throughout the year, rather than left until the Final Documentation.
 
 
@@ -441,7 +454,7 @@ and automatically generates API documentation, helping keep the front-end and ba
 
 \subsection{Market Data}
 Real-world stock market data will be retrieved from the Finnhub API, whose free tier provides current stock prices and company information. To stay within its request limits, fetched data will be
-cached in the database (see Databases).
+cached in the database (see Section~\ref{sec:databases}).
 
 \textit{Alternative considered:} yfinance, an unofficial library that reads Yahoo Finance data, was considered as it is free and simple to use. However, it is not an official API and can stop working
 without notice whenever Yahoo changes its website.
@@ -461,7 +474,7 @@ The following libraries are expected to be used for Python:
 \textit{Alternative considered:} Writing custom native modules (in Swift and Kotlin) to access HealthKit and Health Connect directly was considered, but existing bridge libraries avoid the need to
 write and maintain code in two additional languages.
 
-\subsection{Databases}
+\subsection{Databases} \label{sec:databases}
 User data, portfolios, the social feed and cached market data (as pulling constantly from an API will likely be expensive) will be stored in PostgreSQL.
 
 \textit{Alternative considered:} MongoDB was considered for its flexible document storage. However, the app's data is highly relational (e.g., users, their portfolios, trades and friends), and trades must be
@@ -471,7 +484,7 @@ recorded reliably, which PostgreSQL's relations and transactions handle well.
 For unit testing, Jest will be used for the front-end as this works directly with React Native. For the backend, pytest will be used as this works well with Python and doesn't require a lot of boilerplate class code
 (unlike Python's built-in unittest), therefore allowing the team to test much quicker.
 
-\subsection{Linting and Formatting}
+\subsection{Linting and Formatting} \label{sec:linting}
 ESLint and Prettier will be used for the front-end: ESLint catches common mistakes in TypeScript code, and Prettier formats code automatically. Prettier will be configured to use four spaces for
 indentation, matching the Coding Standard (see Section~\ref{SecCodingStandard}). For the backend, Ruff will be used as a single tool that
 both lints and formats Python code. These checks will run in CI on every pull request and must pass before it can be merged (see Definition of Done).
@@ -488,47 +501,39 @@ Git and GitHub will be used for version control, and GitHub Projects for trackin
 
 The team plans to use Artificial Intelligence (AI) and Large Language Models (LLMs) to help with both code and documentation development throughout the FitFolio project. When working on code we may use them to explain unfamiliar libraries, compare possible approaches, understand error messages, and suggest fixes or test cases. Team members will review these suggestions and decide whether they fit the project. For the documentation of this project, we may use LLMs to brainstorm ideas, organize sections, improve unclear wording, and identify missing information or contradictions. The final content will reflect our team's decisions and the work we have actually completed.
 
-We plan to use ChatGPT and Claude for these tasks. Team members may use either tool depending on what they need help with. For example, someone might will use ChatGPT to understand an error message or Claude to review a section of code. We will record the tools and model versions used where available along with any AI assistance that meaningfully contributes to each deliverable. 
+We plan to use ChatGPT and Claude for these tasks. Team members may use either tool depending on what they need help with. For example, someone might use ChatGPT to understand an error message or Claude to review a section of code. We will record the tools and model versions used where available along with any AI assistance that meaningfully contributes to each deliverable. 
 
-Before a team member including AI code, the team member will read it and understand how it works, and then check that it meets the intended requirements for the project. We will run relevant tests which including normal cases and situations where inputs are missing or invalid. For example, code that calculates fitness rewards or virtual portfolio values will be checked using inputs with known expected results. We will also check claims about libraries and services against their documentation. For written contents, we will check factual claims and references against the original sources and make sure the text agrees with our project scope and team decisions. Changes will go through teammate review in a pull request, with corresponding justification for including the generated content, before being merged. We will correct or remove any suggestions that we cannot verify. 
+Before including AI-generated code, a team member will read it and understand how it works, and then check that it meets the intended requirements for the project. We will run relevant tests that include normal cases and situations where inputs are missing or invalid. For example, code that calculates fitness rewards or virtual portfolio values will be checked using inputs with known expected results. We will also check claims about libraries and services against their documentation. For written content, we will check factual claims and references against the original sources and make sure the text agrees with our project scope and team decisions. Changes will go through teammate review in a pull request, with corresponding justification for including the generated content, before being merged. We will correct or remove any suggestions that we cannot verify. 
 
 
 \section{Coding Standard} \label{SecCodingStandard}
 
-The development team will adopt a standard based on the Microsoft TypeScript Coding Guidelines
-as the primary guideline for TypeScript code written throughout the project.
-\href{https://github.com/microsoft/TypeScript/wiki/Coding-guidelines}
-{Microsoft TypeScript Coding Guidelines}
-
-The team will follow applicable conventions from this guideline, including:
+The development team will adopt a standard based on the \href{https://github.com/microsoft/TypeScript/wiki/Coding-guidelines}{Microsoft TypeScript Coding Guidelines} as the primary guideline for TypeScript code written throughout the project. The team will follow applicable conventions from this guideline, including:
 
 
 \begin{itemize}
-    \item Using PascalCase for type names and enum values
-    \item Using camelCase for functions, properties, and local variables
-    \item Avoiding the use of the I prefix for interface names
-    \item Separating logical components into appropriate files
-    \item Exporting types and functions only when they are required by other modules
-    \item Placing type definitions before their use where practical
-    \item Preferring undefined over null
+    \item Using PascalCase for type names and enum values.
+    \item Using camelCase for functions, properties, and local variables.
+    \item Avoiding the use of the I prefix for interface names.
+    \item Separating logical components into appropriate files.
+    \item Exporting types and functions only when they are required by other modules.
+    \item Placing type definitions before their use where practical.
+    \item Preferring undefined over null.
     \item Using double quotation marks for strings.
-    \item Using four spaces for indentation
+    \item Using four spaces for indentation.
 \end{itemize}
 
 Some standards in the Microsoft TypeScript Coding Guidelines do not 
 apply directly to FitFolio. The team will adopt the conventions
 that are relevant to the project instead of following every specific 
-recommendation
+recommendation.
 
 
 For Python code, the team will follow
-\href{https://peps.python.org/pep-0008/}{PEP 8 -- Style Guide for Python Code}.
-which includes conventions for indentation, naming, whitespace, imports, and the general code layout.
+\href{https://peps.python.org/pep-0008/}{PEP 8 -- Style Guide for Python Code}, which includes conventions for indentation, naming, whitespace, imports, and the general code layout.
 
 
-Coding standards will be enforced through automated formatting and the use of linting checks where applicable.
-These checks will be included in the project's CI workflow and must pass. Pull request reviewers will also verify that code
-follows the team's coding standards before approving a merge.
+Coding standards will be enforced through automated formatting and linting checks, as described in Section~\ref{sec:linting}. These checks are included in the project's CI workflow and must pass before merging. Pull request reviewers will also verify that code follows the team's coding standards before approving a merge.
 \newpage{}
 
 \section{Appendix --- Generative AI Use Disclosure}
@@ -568,18 +573,38 @@ In cases where AI-assisted changes affected factual or technical statements, we 
 
 \section*{Appendix --- Reflection}
 
-\wss{Not required for CAS 741}
+% \wss{Not required for CAS 741}
 
 \input{../Reflection.text}
 
-\begin{enumerate}
-    \item Why is it important to create a development plan prior to starting the
-    project?
-    \item In your opinion, what are the advantages and disadvantages of using
-    CI/CD?
-    \item What disagreements did your group have in this deliverable, if any,
-    and how did you resolve them?
-\end{enumerate}
+
+\subsection*{1. Why is it important to create a development plan prior to starting the project?}
+
+Creating the development plan before writing any code forced us to make decisions while they were still cheap to change. The clearest example came from reviewing this document itself: sections written by different members initially gave three different time limits for pull request reviews and two different definitions of an internal deadline, and one section assumed the app would run only on Android while another planned for both Android and iOS. Finding these contradictions on paper took a few minutes to fix. Finding them after development had started would have meant missed reviews, confusion about deadlines, or code written for the wrong platform.
+
+The plan also made us identify our biggest risks before committing to the project's core design. Writing the proof of concept plan showed that FitFolio depends on two systems none of us had used before, the phones' health platforms and a market data provider with request limits, so we can test both early instead of discovering problems mid-year. Similarly, agreeing on the team charter's triggers and consequences now, while everyone is on good terms, means that if a problem does arise, we already have a fair process that no one has to invent under pressure.
+
+At the same time, we see the plan as a starting point rather than a fixed contract. Some decisions, such as our target market data provider, may change after the proof of concept. Because every change to this document goes through a reviewed pull request, the plan can evolve while keeping a clear record of what changed and why.
+
+\subsection*{2. In your opinion, what are the advantages and disadvantages of using CI/CD?}
+
+The main advantage of CI/CD is that problems are caught when a change is proposed, not after it reaches main. For our documents, this is already useful: every pull request compiles the \LaTeX{} files and attaches the generated PDFs, so a reviewer can see a broken table or a missing reference in the rendered document instead of discovering it on submission day. Once development begins, running the linter and test suite on every pull request means that no one's change can quietly break someone else's feature, which matters in a team of five working on separate parts of the app at the same time. Continuous deployment adds a further benefit for us: an automatic test build on every merge lets our supervisor try the latest version on his own phone, so we can get feedback throughout the year rather than only at demonstrations.
+
+The disadvantages are real, however. First, CI/CD takes time to set up before it produces any value, and time spent configuring workflows is time not spent on features. Deployment is especially demanding for a mobile app, since building for iOS and Android requires signing keys and developer accounts that must be stored securely. Second, a failing or unreliable check blocks merging, which can slow the team down right before a deadline if a test fails for reasons unrelated to the change. Third, and most importantly, CI/CD can create a false sense of security, because it only catches what it is designed to check. Our documentation checks passed while this document still contained contradictions between sections, since compiling successfully says nothing about whether the content is consistent. For this reason, we treat CI as a complement to human review rather than a replacement for it.
+
+\subsection*{3. What disagreements did your group have in this deliverable, if any, and how did you resolve them?}
+
+Most of our disagreements did not come from arguments in meetings, but from members writing their sections separately and making different assumptions. They only became visible when we reviewed both documents together.
+
+The first was the product's name. Our repository and team name use ``Burn n' Earn'', while other sections called the product FitFolio, so both names appeared across the documents. We agreed to use FitFolio as the product name everywhere, and keep Burn n' Earn as the team and repository name.
+
+The second was which platforms to support. One section described FitFolio as an Android app, while Expected Technology planned for both Android and iOS. Since we chose React Native so that one codebase could run on both platforms, and the team has testing devices for both, we agreed to support both. To keep the proof of concept achievable, it will be demonstrated on Android first, with iOS as a stretch goal for the demonstration.
+
+The third was which technologies to use. Our members have experience in different languages and frameworks, so each main choice had supporters of different options. Instead of deciding by preference, we wrote down one alternative for each main choice and why we did not pick it. Seeing the trade-offs side by side made the decisions much easier to agree on.
+
+Finally, we disagreed on whether wearable devices should be part of the core project. Some members saw wearables as a natural fit for a fitness app, while others felt that supporting additional devices on top of two phone platforms was too ambitious. We made wearables a stretch goal, so the core product can be completed first.
+
+The main lesson was that sections written in parallel can drift apart without anyone noticing. For future deliverables, we will agree on key assumptions, such as names and platforms, before dividing the work, and review the full document together before the team deadline.
 
 \newpage{}
 
@@ -597,7 +622,7 @@ while producing a project that can be presented outside of the course.
 The team aims to:
 
 \begin{itemize}
-  \item Produce a high-quality project that performs well against the evaluation criteria
+  \item Produce a high-quality project that performs well against the evaluation criteria.
   \item Develop a polished, usable high-quality application that is able to be demonstrated at the Capstone EXPO.
   \item Gain experience developing large software systems over multiple iterative development phases.
   \item Strengthen experience with software architecture, testing, code review, requirements, and project management.
@@ -618,7 +643,7 @@ as early as possible through Microsoft Teams.
 Any member who misses a meeting is responsible for reviewing the meeting notes and following up on any 
 decisions, assigned tasks, or deadlines that affect their work.
 
-Repeated attendence issues will be handled according to the thresholds defined in Table~\ref{tab:triggers}. Attendance falling below
+Repeated attendance issues will be handled according to the thresholds defined in Table~\ref{tab:triggers}. Attendance falling below
 the team's defined 80 percent threshold or two consecutive unexcused absences will trigger the 
 corresponding team response.
 
@@ -629,7 +654,7 @@ major academic conflicts, interviews or employment obligations, and other
 unexpected circumstances that prevent a member from attending or completing
 work.
 
-For expected/forseeable conflicts, team members should provide notice prior whenever possible.
+For foreseeable conflicts, team members should provide notice in advance whenever possible.
 Repeated unexplained absences, or failure to complete assigned work without communicating with
 the team will be considered unacceptable.
 
@@ -641,7 +666,7 @@ to do so.
 
 The team can then determine if the affected work should be reassigned, delayed, or adjusted
 based on the urgency of the task and the upcoming deadline. Once the team member is able to return
-they are responsible for reviewing desicions made during their absence and coordinating with the team 
+they are responsible for reviewing decisions made during their absence and coordinating with the team 
 about any remaining responsibilities.
 
 \subsection*{Accountability and Teamwork}
@@ -662,7 +687,7 @@ The following describes how team members prepare for and document meetings:
     \item All items discussed and their outcomes are documented in the meeting's GitHub issue. Once the meeting is complete, the issue shall be marked as done.
 \end{itemize}
 
-\textbf{Quality Assurance} \newline
+\phantomsection\label{sec:quality-assurance}\textbf{Quality Assurance} \newline
 The following steps ensure each deliverable meets the course checklist and rubric before it is submitted:
 \begin{itemize}
     \item Before starting any deliverable, every team member responsible for the feature must read through the checklist and rubric. Any questions and/or doubts must be raised as soon as possible.
@@ -784,11 +809,11 @@ The team will build cohesion through regular, low-effort rituals rather than occ
 % \wss{How will you make decisions in your group? Consensus?  Vote? How will you
 % handle disagreements? }
 
-The team will aim to make decisions by consensus, since decisions that every member agrees with are more likely to be followed through. Decisions are made during the weekly team meeting, or in the group chat for decisions that cannot wait.
+The team will aim to make decisions by consensus, since decisions that every member agrees with are more likely to be followed through. Decisions are made during the weekly team meeting, or on Microsoft Teams for decisions that cannot wait.
 
 \begin{itemize}
   \item \textbf{Voting:} If consensus is not reached after 15 minutes of discussion, the decision is made by majority vote. 
-  A vote requires at least four of the five members to be present or to respond in the group chat, and passes with at least three votes in favour, so that no decision is made by a minority of the team.
+  A vote requires at least four of the five members to be present or to respond on Microsoft Teams, and passes with at least three votes in favour, so that no decision is made by a minority of the team.
   \item \textbf{Area decisions:} Technical decisions within a specific area of the app (e.g., the health data integration or the market engine) are made by the members working on that area, who inform the rest of the team. 
   Any member may ask for such a decision to be brought to a team vote.
   \item \textbf{Scope decisions:} Decisions that change the product's scope or vision, such as removing a feature, are brought to the supervisor before being adopted.
