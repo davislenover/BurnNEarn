@@ -583,6 +583,10 @@ At the same time, we see the plan as a starting point rather than a fixed contra
 
 \subsection*{2. In your opinion, what are the advantages and disadvantages of using CI/CD?}
 
+The main advantage of CI/CD is that problems are caught when a change is proposed, not after it reaches main. For our documents, this is already useful: every pull request compiles the \LaTeX{} files and attaches the generated PDFs, so a reviewer can see a broken table or a missing reference in the rendered document instead of discovering it on submission day. Once development begins, running the linter and test suite on every pull request means that no one's change can quietly break someone else's feature, which matters in a team of five working on separate parts of the app at the same time. Continuous deployment adds a further benefit for us: an automatic test build on every merge lets our supervisor try the latest version on his own phone, so we can get feedback throughout the year rather than only at demonstrations.
+
+The disadvantages are real, however. First, CI/CD takes time to set up before it produces any value, and time spent configuring workflows is time not spent on features. Deployment is especially demanding for a mobile app, since building for iOS and Android requires signing keys and developer accounts that must be stored securely. Second, a failing or unreliable check blocks merging, which can slow the team down right before a deadline if a test fails for reasons unrelated to the change. Third, and most importantly, CI/CD can create a false sense of security, because it only catches what it is designed to check. Our documentation checks passed while this document still contained contradictions between sections, since compiling successfully says nothing about whether the content is consistent. For this reason, we treat CI as a complement to human review rather than a replacement for it.
+
 \subsection*{3. What disagreements did your group have in this deliverable, if any, and how did you resolve them?}
 
 \newpage{}
