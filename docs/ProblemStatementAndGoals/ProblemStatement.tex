@@ -38,7 +38,7 @@ Sep 27, 2026 & Zaid Alsaadi & Reflection answer (Q2).\\
 
 \section{Problem Statement}
 
-FitFolio is a mobile app in which users earn virtual currency from their physical activity and invest it in a simulated market that follows real-world prices. This section describes the problem FitFolio addresses, along with its inputs and outputs, stakeholders and environment.
+FitFolio is a mobile app in which users earn virtual currency from their physical activity and invest it in a simulated market that follows real-world prices. This section describes the problem FitFolio addresses, along with its inputs and outputs, stakeholders, and environment.
 
 \subsection{Problem}
 Building good fitness and financial habits early pays off for decades, because
@@ -47,7 +47,7 @@ invested early. Poor habits compound in the same way. Yet many young adults,
 particularly students and those starting their first jobs, struggle to begin
 either one.
 Learning how to deal with finances in an informed manner can be difficult and tedious. Advice on managing finances is scattered across many sources, which often contradict each other.
-Learning by doing is also risky, since beginners' mistakes cost real money. Likewise with fitness, it can be daunting to get started. Many beginners lose motivation before they see results.
+Learning by doing is also risky, since beginners' mistakes cost real money. Fitness is similarly daunting to start. Many beginners lose motivation before they see results.
 As a result, many people put off both until later, when poor habits are already established and harder to change. There is no approachable, low-risk way for beginners to build both fitness and financial habits while staying motivated.
 
 \subsection{Inputs and Outputs}
@@ -80,8 +80,10 @@ The system produces the following outputs:
     \item{User learning progress (i.e., which concepts have been covered and understood).}
 \end{itemize}
 \subsection{Stakeholders}
-This section identifies the stakeholders of FitFolio and describes their roles and interests in the project. Stakeholders are grouped into three categories: primary stakeholders, who directly use the product or define its direction; secondary stakeholders, who are indirectly affected by it; and external stakeholders, who are outside organizations whose services and rules constrain its design.
+This subsection identifies the stakeholders of FitFolio and describes their roles and interests in the project, as summarized in Table~\ref{tab:stakeholders}. Stakeholders are grouped into three categories: primary stakeholders, who directly use the product or define its direction; secondary stakeholders, who are indirectly affected by it; and external stakeholders, who are outside organizations whose services and rules constrain its design.
 \begin{table}[H]
+\caption{FitFolio stakeholders grouped by level of involvement}
+\small
 \centering
 \renewcommand{\arraystretch}{1.3}
 \begin{tabular}{>{\raggedright\arraybackslash}p{0.35\textwidth} >{\raggedright\arraybackslash}p{0.55\textwidth}}
@@ -104,112 +106,93 @@ Market Data Providers & Supply real asset prices; their accuracy, request limits
 App Stores and Privacy Regulators & Set the rules for handling health data and financial content, including Canada's Personal Information Protection and Electronic Documents Act (PIPEDA), which the app must follow. \\
 \bottomrule
 \end{tabular}
-\caption{FitFolio stakeholders grouped by level of involvement}
 \label{tab:stakeholders}
 \end{table}
 
 \subsection{Environment}
 
 \vspace{1em}
-
+This subsection describes the hardware and software that users need to run FitFolio.
 \subsubsection{Hardware Environment}
 
-Users will need an Android or iOS smartphone that supports the application's fitness features and provides step count data. The device must provide step count and have sufficient storage and processing capabilities to install and run the application.
-Wearable device support may be considered in the future.
-
-
+Users will need an Android or iOS smartphone that provides step count data and has sufficient storage and processing capabilities to install and run the application. Wearable device support is a stretch goal (see Section~\ref{sec:stretch-goals}).
 \subsubsection{Software Environment}
 
-Users' devices must be running a supported version of Android or IOS. Users will also need to give permissions required for fitness tracking.
-The application requires users to create an account and have a stable Internet connection. Users also provide personal fitness info, such as age, height, and weight.\\
+Users' devices must be running Android 17 or later, or iOS 27 or later. Users will also need to grant the permissions required for fitness tracking. The application requires users to create an account and have a stable Internet connection.
 
-
-Within the application all currency has no real world monetary value. Users will not need to link a bank or brokerage account.
+Within the application, all currency has no real-world monetary value. Users will not need to link a bank or brokerage account.
 
 \section{Goals}
-This section describes the high-level goals for users of FitFolio. \newline
+This section describes the high-level goals for users of FitFolio. Each goal is a key selling point of the product and includes a measure of its success.
 \begin{itemize}
-    \item{\textbf{Learning by doing:} Users learn core financial and fitness concepts through hands-on, low-risk practice with each decision paired with feedback explaining what happened and why. Measured by a before-and-after knowledge check on a defined set of core concepts.}
-    \item{\textbf{A human-centered, all-in-one experience:} Bring fitness progress and financial learning together in one place, so users rarely need to leave the app to understand what they are looking at. Measured through usability testing: at least 80\% of first-time participants complete the core tasks without outside help.}
-    \item{\textbf{A social feed:} Users stay motivated by sharing their progress with friends, while keeping control of their data. Users control who sees each shared statistic, and no raw health data is shared unless the user selects it.}
-    \item{\textbf{Stock Market Simulation Engine:} A simulated market based on real-world market data that lets users practice investing without risking real money. Users can trade at least 50 real-world stocks at prices within 15 minutes of the real market, and can practice in market scenarios such as a replay of a past market downturn.}
-    \item{\textbf{Rewards for any activity:} Users are rewarded for the activities they already do, as recorded by their phone's health platform. At least 5 activity types are supported.}
+    \item \textbf{Learning by doing:} Users learn core financial and fitness concepts through hands-on, low-risk practice, with each decision paired with feedback explaining what happened and why. \textit{Measured by:} a before-and-after knowledge check on a defined set of core concepts, where at least 70\% of usability test participants improve their score.
+    \item \textbf{A human-centered, all-in-one experience:} Users see their fitness progress and financial learning together in one place, so they rarely need to leave the app to understand what they are looking at. \textit{Measured by:} usability testing, where at least 80\% of first-time participants complete the core tasks without outside help.
+    \item \textbf{Motivation through friends, with privacy:} Users stay motivated by sharing their progress with friends, while keeping control of their data. \textit{Measured by:} users control who sees each shared statistic, and no raw health data is shared unless the user selects it.
+    \item \textbf{Risk-free investing practice:} Users practice investing in a simulated market based on real-world market data, without risking real money. \textit{Measured by:} users can trade at least 50 real-world stocks at prices within 15 minutes of the real market, and can practice in market scenarios such as a replay of a past market downturn.
+    \item \textbf{Rewards for everyday activity:} Users are rewarded for the activities they already do, as recorded by their phone's health platform. \textit{Measured by:} at least five activity types are supported.
 \end{itemize}
-\section{Stretch Goals}
+\section{Stretch Goals}\label{sec:stretch-goals}
 
-The following are considered as potential extensions to FitFolio and
-are not required for the successful completion of the core system:
+The following are potential extensions to FitFolio. 
+They are not required for the successful completion of the core system.
 
 \begin{itemize}
-    \item \textbf{Wearable Device Integration:} Support for fitness tracking beyond the use of a smartphone 
-    by introducing support for wearable devices such as Apple Watch and other compatible
-    fitness trackers. This can allow the application to collect additional activity data such as
-    calories burned, workout duration and other metrics.
-    \item \textbf{Social Challenges and Leaderboards:} Allow users to participate in fitness challenges with friends
-    and other users and compare fitness or portfolio statistics through leaderboards
+    \item \textbf{Wearable Device Integration:} Support fitness tracking beyond the smartphone by adding support for wearable devices 
+    such as the Apple Watch and other compatible fitness trackers. 
+    This would allow the application to collect additional activity data, 
+    such as calories burned, workout duration, and other metrics.
+    \item \textbf{Social Challenges and Leaderboards:} Allow users to take part in fitness challenges with friends and other users, 
+    and to compare fitness or portfolio statistics through leaderboards.
 \end{itemize}
 
 \section{Custom Documents (CDs)}
+This section describes the two custom documents the team will produce, one in each term.
 
-\subsection{Custom Documentation (Fall)}
-\textbf{Design Thinking Report} 
-
-\vspace{1em}
-
-We will use a Design Thinking Report to get a better understanding of the application we are building from the user’s perspective . In the report, we will explore what aspects individuals want to track about their fitness activities and what they hope to learn about investing, then use those insights to guide our development of the application. 
+\subsection{Design Thinking Report (Fall)}
 
 
-\subsection{Custom Documentation (Winter)}
-\textbf{Usability Report}
+The team will use a Design Thinking Report to better understand the application from the user's perspective. In the report, the team will explore what individuals want to track about their fitness activities and what they hope to learn about investing, then use those insights to guide the development of the application.
 
-\vspace{1em}
 
-We will use a Usability Report to document real world testing of the application . We will allow users to test different aspects of the application such as onboarding, fitness tracking, and investing. We will gather their feedback in the report and use their experiences to guide improvements 
+\subsection{Usability Report (Winter)}
 
+The team will use a Usability Report to document real-world testing of the application. Users will test different aspects of the application, such as onboarding, fitness tracking, and investing. Their feedback will be recorded in the report and used to guide improvements.
 
 \newpage{}
 
 \section*{Appendix --- Reflection}
 
-\wss{Not required for CAS 741}
+% \wss{Not required for CAS 741}
 
 \input{../Reflection.text}
 
-\begin{enumerate}
-    \item What went well while writing this deliverable? 
-    \\ Starting from a clear project brief from our supervisor helped us write the problem statement efficiently, since the core idea and its motivation were already well defined. This allowed us to spend most of our time on the decisions that made the project our own, such as naming it FitFolio and deciding which features to add beyond the brief. Dividing each document by section, with every member responsible for specific parts, let us work in parallel and made each person accountable for their contributions. Writing the Development Plan alongside the problem statement also helped, because it made us agree early on how we will work together, including our branching strategy, how issues are created and assigned, and how deadlines are tracked as milestones. Settling these processes at the start means less time spent coordinating later in the year.
-    \\
-    \\
-    \textbf{Preston:} What went well was how we organized and divided the work. We created issues within the repository for each subsection of both deliverables, then we each selected seven or eight sections to work on.
-
-    \item What pain points did you experience during this deliverable, and how
-    did you resolve them?\\ \\
-
-    \textbf{Davis:} The main pain point I had was writing the Expected Technology section. Our team members have technical experience in many different areas, so it was challenging to align on a single set of technologies. My first draft also only listed \emph{what} we would use, not \emph{why}, and the feedback I received asked for details such as how the app would communicate with the backend and which alternatives we had considered. I resolved this by checking in with the team early and often (e.g., in team meetings and on Teams), and by writing down, for each main choice, one alternative and why we did not pick it. Writing out the reasons made the trade-offs visible, which made them much easier to agree on. I learned that raising decisions early avoids conflict later, since a technology choice becomes much harder to change once other work depends on it.
-    Another pain point was making the goals measurable before our initial design decisions were made. For example, how closely the simulated market can follow real prices depends on whether it uses real or generated price data, which we had not yet decided. What helped was our GitHub issue tracking: since each section of the document had its own issue, I could quickly see which design decisions were still open and coordinate them with the team. From there, I gave each goal a ``measured by'' clause with placeholder values that we can refine once those decisions are made, and reworded goals such as modularity around what users actually experience. This showed me that goals and early design decisions depend on each other, so they are best developed together rather than one after the other.
-
-    \textbf{Angad:}
+\subsection*{1. What went well while writing this deliverable?}
+Starting from a clear project brief from our supervisor helped us write the problem statement efficiently, since the core idea and its motivation were already well defined. This allowed us to spend most of our time on the decisions that made the project our own, such as naming it FitFolio and deciding which features to add beyond the brief. Dividing each document by section, with every member responsible for specific parts, let us work in parallel and made each person accountable for their contributions. Writing the Development Plan alongside the problem statement also helped, because it made us agree early on how we will work together, including our branching strategy, how issues are created and assigned, and how deadlines are tracked as milestones. Settling these processes at the start means less time spent coordinating later in the year.
     
-    \textbf{Farid:} The first pain point I experienced was deciding who actually counts as a stakeholder. My first draft listed everyone connected to the project, including our development team, our supervisor, and the course TAs. I then realized this mixed up stakeholders of the course with stakeholders of the product. The course staff grade our work but have no stake in FitFolio itself, and since our TA is also our supervisor, the list was counting the same person twice. I also had to decide how to present organizations such as Apple and Google's health platforms, market data providers, and privacy regulators, which never use the app but still limit what FitFolio can do: the health platforms decide what fitness data we can access, and the data providers decide how closely our prices follow the real market.
-    To resolve this, I focused the section on the product and grouped its stakeholders into primary, secondary, and external categories. This made the section clearer, and it will also help in later documents, since these external constraints will reappear as risks in the Hazard Analysis and as assumptions in the Requirements Document.
+\textbf{Preston:} What went well was how we organized and divided the work. We created issues within the repository for each subsection of both deliverables, then we each selected seven or eight sections to work on.
+
+\subsection*{2. What pain points did you experience during this deliverable, and how did you resolve them?}
+
+\textbf{Davis:} The main pain point I had was writing the Expected Technology section. Our team members have technical experience in many different areas, so it was challenging to align on a single set of technologies. My first draft also only listed \emph{what} we would use, not \emph{why}, and the feedback I received asked for details such as how the app would communicate with the backend and which alternatives we had considered. I resolved this by checking in with the team early and often (e.g., in team meetings and on Teams), and by writing down, for each main choice, one alternative and why we did not pick it. Writing out the reasons made the trade-offs visible, which made them much easier to agree on. I learned that raising decisions early avoids conflict later, since a technology choice becomes much harder to change once other work depends on it. Another pain point was making the goals measurable before our initial design decisions were made. For example, how closely the simulated market can follow real prices depends on whether it uses real or generated price data, which we had not yet decided. What helped was our GitHub issue tracking: since each section of the document had its own issue, I could quickly see which design decisions were still open and coordinate them with the team. From there, I gave each goal a ``measured by'' clause with placeholder values that we can refine once those decisions are made, and reworded goals such as modularity around what users actually experience. This showed me that goals and early design decisions depend on each other, so they are best developed together rather than one after the other.
+\newline \\
+\textbf{Angad:} 
+\newline \\
+\textbf{Preston:} 
+\newline \\
+\textbf{Farid:} The first pain point I experienced was deciding who actually counts as a stakeholder. My first draft listed everyone connected to the project, including our development team, our supervisor, and the course TAs. I then realized this mixed up stakeholders of the course with stakeholders of the product. The course staff grade our work but have no stake in FitFolio itself, and since our TA is also our supervisor, the list was counting the same person twice. I also had to decide how to present organizations such as Apple and Google's health platforms, market data providers, and privacy regulators, which never use the app but still limit what FitFolio can do: the health platforms decide what fitness data we can access, and the data providers decide how closely our prices follow the real market.
+To resolve this, I focused the section on the product and grouped its stakeholders into primary, secondary, and external categories. This made the section clearer, and it will also help in later documents, since these external constraints will reappear as risks in the Hazard Analysis and as assumptions in the Requirements Document.
     
-    My second pain point was formatting in \LaTeX{}. My stakeholder table initially appeared in the middle of a sentence and extended past the page margin. Each fix was simple once I understood the cause (a table placed directly after text is treated as part of that paragraph, and column widths must account for the spacing between columns), but I spent more time on formatting than on content. Next time, I will set up a working table template early and reuse it across documents, so that formatting does not take time away from writing.
-    \\
-    
-    \textbf{Zaid:} One difficulty I faced was understanding the difference between Section 11, which describes our planned use of AI during the project, and Section 13, which records how AI was actually used to prepare the document. At first, the questions seemed similar, and I was unsure where each detail belonged. I worked through the instructions and compared them with the rubric. This helped me understand that describing a plan does not show what we actually did or how we checked the results.
+My second pain point was formatting in \LaTeX{}. My stakeholder table initially appeared in the middle of a sentence and extended past the page margin. Each fix was simple once I understood the cause (a table placed directly after text is treated as part of that paragraph, and column widths must account for the spacing between columns), but I spent more time on formatting than on content. Next time, I will set up a working table template early and reuse it across documents, so that formatting does not take time away from writing.
+\newline \\
+\textbf{Zaid:} One difficulty I faced was understanding the difference between Section 11, which describes our planned use of AI during the project, and Section 13, which records how AI was actually used to prepare the document. At first, the questions seemed similar, and I was unsure where each detail belonged. I worked through the instructions and compared them with the rubric. This helped me understand that describing a plan does not show what we actually did or how we checked the results.
 
-    Another challenge was collecting accurate information about the team's AI use across both documents. I could explain my own work, but I needed each teammate's input to describe theirs accurately. I created a GitHub issue asking which tools and versions they used, which sections were affected, what they used AI for, and how they checked the output. Having the responses in one place helped me organize the information and avoid guessing about someone else's work. 
+Another challenge was collecting accurate information about the team's AI use across both documents. I could explain my own work, but I needed each teammate's input to describe theirs accurately. I created a GitHub issue asking which tools and versions they used, which sections were affected, what they used AI for, and how they checked the output. Having the responses in one place helped me organize the information and avoid guessing about someone else's work. 
 
-    I learned that preparing an AI disclosure depends on keeping clear records throughout the work. A general response such as ``I reviewed the output'' can still leave questions about what was checked. For future deliverables, I would create the issue when we divide the tasks and ask everyone to update it as they work, including specific checks they performed. This would give us more time to clarify missing details and make the final disclosure easier to prepare.
+ I learned that preparing an AI disclosure depends on keeping clear records throughout the work. A general response such as ``I reviewed the output'' can still leave questions about what was checked. For future deliverables, I would create the issue when we divide the tasks and ask everyone to update it as they work, including specific checks they performed. This would give us more time to clarify missing details and make the final disclosure easier to prepare.
+\subsection*{3. How did you and your team adjust the scope of your goals to ensure they are suitable for a Capstone project (not overly ambitious but also of appropriate complexity for a senior design project)?}
+Our project began from a supervisor-proposed brief, so the core of the project was already defined: users earn virtual currency through fitness goals and invest it in a virtual portfolio that follows real market prices. Our scoping work focused on two questions: what to add to make the project appropriately complex, and what to limit so that it remains achievable. To increase complexity, we added two features beyond the original brief: simulated market scenarios, such as replays of past downturns, and a social feed that shares selected statistics without exposing raw health data. Both introduce meaningful engineering challenges, including a custom market engine and privacy-aware data sharing, which we felt were appropriate for a senior design project. To keep the project achievable, we limited automatic fitness tracking to data available from the phone's built-in health platform, treating additional devices as a future extension rather than a core requirement. We also committed to portfolio values that follow the market in near real time rather than strictly real time, since market data providers limit how often prices can be requested. These decisions allow us to deliver a complete core product first, while leaving room to expand if time allows.
+\newline \\
+\textbf{Preston:} We initially considered wearable support, but decided it was too ambitious for this project. We kept the scope focused on mobile devices - which was originally outlined in the project description.  
 
-    \item How did you and your team adjust the scope of your goals to ensure
-    they are suitable for a Capstone project (not overly ambitious but also of
-    appropriate complexity for a senior design project)?
-    \\ Our project began from a supervisor-proposed brief, so the core of the project was already defined: users earn virtual currency through fitness goals and invest it in a virtual portfolio that follows real market prices. Our scoping work focused on two questions: what to add to make the project appropriately complex, and what to limit so that it remains achievable. To increase complexity, we added two features beyond the original brief: simulated market scenarios, such as replays of past downturns, and a social feed that shares selected statistics without exposing raw health data. Both introduce meaningful engineering challenges, including a custom market engine and privacy-aware data sharing, which we felt were appropriate for a senior design project. To keep the project achievable, we limited automatic fitness tracking to data available from the phone's built-in health platform, treating additional devices as a future extension rather than a core requirement. We also committed to portfolio values that follow the market in near real time rather than strictly real time, since market data providers limit how often prices can be requested. These decisions allow us to deliver a complete core product first, while leaving room to expand if time allows.
-    \\
-    \\
-    \textbf{Preston:} We initially considered wearable support, but decided it was too ambitious for this project. We kept the scope focused on mobile devices - which was originally outlined in the project description.  
-
-\end{enumerate}  
 
 \end{document}
