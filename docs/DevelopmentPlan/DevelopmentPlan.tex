@@ -448,7 +448,7 @@ and automatically generates API documentation, helping keep the front-end and ba
 
 \subsection{Market Data}
 Real-world stock market data will be retrieved from the Finnhub API, whose free tier provides current stock prices and company information. To stay within its request limits, fetched data will be
-cached in the database (see Databases).
+cached in the database (see Section~\ref{sec:databases}).
 
 \textit{Alternative considered:} yfinance, an unofficial library that reads Yahoo Finance data, was considered as it is free and simple to use. However, it is not an official API and can stop working
 without notice whenever Yahoo changes its website.
@@ -468,7 +468,7 @@ The following libraries are expected to be used for Python:
 \textit{Alternative considered:} Writing custom native modules (in Swift and Kotlin) to access HealthKit and Health Connect directly was considered, but existing bridge libraries avoid the need to
 write and maintain code in two additional languages.
 
-\subsection{Databases}
+\subsection{Databases} \label{sec:databases}
 User data, portfolios, the social feed and cached market data (as pulling constantly from an API will likely be expensive) will be stored in PostgreSQL.
 
 \textit{Alternative considered:} MongoDB was considered for its flexible document storage. However, the app's data is highly relational (e.g., users, their portfolios, trades and friends), and trades must be
