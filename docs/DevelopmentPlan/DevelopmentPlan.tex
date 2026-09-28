@@ -76,17 +76,17 @@ This subsection outlines how internal team communication shall be handled. \newl
     and minutes added afterwards.
   \item \textbf{Pull requests} are used for all code and document review. Discussion about a change stays on its pull request unless otherwise noted.
   \item Any decision that affects the project must be recorded in the
-    relevant GitHub issue or meeting minutes. The only way a decision is deemed final is via a push (after a pull Request) to main. Decisions that exist only in
+    relevant GitHub issue or meeting minutes. A decision is final once it is recorded there. Decisions that exist only in
     Teams chat are \emph{not} considered final.
   \item Team members are expected to acknowledge messages that mention/concern them within
     12 hours (24 hours on weekends). It is expected that team members are proactive in reading any team communication regardless of platform.
-  \item Pull request reviews shall be completed within 24--72 hours of the request.
+  \item Pull request reviews shall be completed within 48 hours of the request, or within 24 hours during the final three days before a deadline (see Section~\ref{SecPullRequests}).
 \end{itemize}
 
 \subsection{External Communication}
 This subsection outlines external communication between the team and outside sources. \newline
 \begin{itemize}
-    \item Communication between supervisor and team will be mediated by Davis. It is their responsibility to forward information to/from the supervisor within 12 hours.
+    \item Communication between the supervisor (Chris Schankula) and the team will be mediated by Davis. It is their responsibility to forward information to/from the supervisor within 12 hours.
     \item Should Davis be unavailable to handle supervisor communication for whatever reason, they must inform the group with as much advance notice as possible. A temporary liaison will be appointed by the entire group along with communication to the supervisor that states this change.
 \end{itemize}
 
@@ -125,7 +125,7 @@ All team members will contribute to development, testing, documentation, and cod
 throughout the project and the aforementioned roles will rotate between members so that
 responsibility is shared across the team.
     
-\section{Workflow Plan}
+\section{Workflow Plan} \label{SecWorkflow}
 
 % \begin{itemize}
 % 	\item How will you be using git, including branches, pull request, etc.?
@@ -256,7 +256,7 @@ Together, these allow the team to filter issues by deliverable, by kind of work,
   \end{tabularx}
 \end{table}
 
-\subsection{Continuous Integration and Continuous Deployment}
+\subsection{Continuous Integration and Continuous Deployment} \label{SecCICD}
 
 GitHub Actions will run automated checks on the repository, so that errors are caught when a change is proposed rather than after it reaches \texttt{main}:
 
@@ -271,7 +271,7 @@ GitHub Actions will run automated checks on the repository, so that errors are c
 If a check fails, the pull request's author is responsible for fixing it before requesting another review.
 
 
-\section{Project Decomposition and Scheduling}
+\section{Project Decomposition and Scheduling} \label{SecDecomposition}
 
 % \begin{itemize} 
 %   \item How will you be using GitHub projects? 
@@ -320,7 +320,7 @@ At the start of each deliverable, the team breaks the work into issues and adds 
 
 Issues are assigned during the weekly team meeting, so that every member knows who is responsible for what. Assignments balance two goals: using each member's strengths to maintain quality, and giving every member experience across different parts of the project, so that no part of FitFolio depends on a single person. When a member takes on a task in an unfamiliar area, they are paired with a member who has experience in that area and can offer guidance.
 
-\subsection{Schedule}
+\subsection{Schedule} \label{SecSchedule}
 
 The project is scheduled around the course deliverables, each of which is a GitHub milestone. 
 For every deliverable, the team sets a team deadline three days before the course deadline. 
@@ -415,32 +415,32 @@ Since this feature is not part of the core loop, it will not be included in the 
 
 \section{Expected Technology}
 The following section details the expected technologies for the systems the team will be developing. \newline
-\subsubsection{Operating Systems}
+\subsection{Operating Systems}
 The primary target operating systems for this app will be Android 17+ and iOS 27+. This is due to the nature of the testing equipment available
 for all group members and the supervisor.
 
-\subsubsection{Languages}
+\subsection{Languages}
 It is expected that React Native (TypeScript) will be used for the front-end. This will allow the team to write code that works on both platforms at once.
-The backend will consist of Python mainly for its rich and optimal library support for the tasks the app may need to perform (e.g., fetching stock data over the web). Moreover, Python's NumPy and
-pandas will be useful for modeling data within the market simulation engine.
+The backend will be written in Python because its libraries cover the backend's main tasks: requesting stock data from web APIs, serving the app's API (see Section~\ref{SecBackendFramework}), and modeling
+price data within the market simulation engine using NumPy and pandas.
 
 \textit{Alternatives considered:} Flutter was considered for the front-end, but it uses Dart, a language less familiar to the team than TypeScript.
 TypeScript (Node.js) was considered for the backend so the whole codebase would share one language, but Python's numerical libraries (NumPy and pandas) are better suited to the market simulation engine.
 
-\subsubsection{Backend Framework}
+\subsection{Backend Framework} \label{SecBackendFramework}
 The app will communicate with the Python backend through a REST API over HTTPS, exchanging data as JSON. The backend will be built with FastAPI, which validates requests using Python type hints
 and automatically generates API documentation, helping keep the front-end and backend in agreement on what data is sent. Its support for asynchronous requests also suits fetching market data from external APIs.
 
 \textit{Alternative considered:} Django (with Django REST Framework) was considered, but it includes many features the project does not need (e.g., server-rendered pages), which adds setup and boilerplate.
 
-\subsubsection{Market Data}
+\subsection{Market Data}
 Real-world stock market data will be retrieved from the Finnhub API, whose free tier provides current stock prices and company information. To stay within its request limits, fetched data will be
 cached in the database (see Databases).
 
 \textit{Alternative considered:} yfinance, an unofficial library that reads Yahoo Finance data, was considered as it is free and simple to use. However, it is not an official API and can stop working
 without notice whenever Yahoo changes its website.
 
-\subsubsection{Libraries}
+\subsection{Libraries}
 The following libraries are expected to be used for React Native:
 \begin{itemize}
     \item \href{https://github.com/kingstinct/react-native-healthkit}{@kingstinct/react-native-healthkit} - Provides access to HealthKit on iOS.
@@ -455,31 +455,28 @@ The following libraries are expected to be used for Python:
 \textit{Alternative considered:} Writing custom native modules (in Swift and Kotlin) to access HealthKit and Health Connect directly was considered, but existing bridge libraries avoid the need to
 write and maintain code in two additional languages.
 
-\subsubsection{Databases}
+\subsection{Databases}
 User data, portfolios, the social feed and cached market data (as pulling constantly from an API will likely be expensive) will be stored in PostgreSQL.
 
 \textit{Alternative considered:} MongoDB was considered for its flexible document storage. However, the app's data is highly relational (e.g., users, their portfolios, trades and friends), and trades must be
 recorded reliably, which PostgreSQL's relations and transactions handle well.
 
-\subsubsection{Testing}
-For unit testing, Jest will be used for the front-end as this works directly for React. For the backend, pytest will be used as this works well with Python and doesn't require a lot of boilerplate class code
+\subsection{Testing}
+For unit testing, Jest will be used for the front-end as this works directly with React Native. For the backend, pytest will be used as this works well with Python and doesn't require a lot of boilerplate class code
 (unlike Python's built-in unittest), therefore allowing the team to test much quicker.
 
-\subsubsection{Linting and Formatting}
-ESLint and Prettier will be used for the front-end: ESLint catches common mistakes in TypeScript code, and Prettier formats code automatically. For the backend, Ruff will be used as a single tool that
+\subsection{Linting and Formatting}
+ESLint and Prettier will be used for the front-end: ESLint catches common mistakes in TypeScript code, and Prettier formats code automatically. Prettier will be configured to use four spaces for
+indentation, matching the Coding Standard (see Section~\ref{SecCodingStandard}). For the backend, Ruff will be used as a single tool that
 both lints and formats Python code. These checks will run in CI on every pull request and must pass before it can be merged (see Definition of Done).
 
 \textit{Alternative considered:} For Python, Black (formatting) with Flake8 (linting) was considered, but Ruff covers both in one tool and runs considerably faster.
 
-\subsubsection{Continuous Integration}
-The following subsection outlines how CI/CD will be utilized within this project: \newline
-CI will happen within a pull request, using GitHub Actions, before code is merged on the main branch, there will be a standard set of tests which will be run to ensure no regression occurs.
-For the tests themselves, they will be developed over time and integrated into the suite as new features are developed. New test cases are required for a feature to be merged to main unless otherwise
-specified. Justification also must be provided for any new test cases.
-For anything backend related, a PostgreSQL container will be run such that any feature/system that utilizes queries can be tested.
+\subsection{Continuous Integration}
+GitHub Actions will be used for continuous integration, as described in Section~\ref{SecCICD}. For backend tests, CI will also run a PostgreSQL container so that features that query the database can be tested.
 
-\subsubsection{Tools}
-Git and GitHub will serve as the main version control software. GitHub Projects will be used to keep track of current issues and to link PRs.
+\subsection{Tools}
+Git and GitHub will be used for version control, and GitHub Projects for tracking work, as described in Sections~\ref{SecWorkflow} and~\ref{SecDecomposition}.
 
 \section{Use of AI and LLMs}
 
@@ -490,7 +487,7 @@ We plan to use ChatGPT and Claude for these tasks. Team members may use either t
 Before a team member including AI code, the team member will read it and understand how it works, and then check that it meets the intended requirements for the project. We will run relevant tests which including normal cases and situations where inputs are missing or invalid. For example, code that calculates fitness rewards or virtual portfolio values will be checked using inputs with known expected results. We will also check claims about libraries and services against their documentation. For written contents, we will check factual claims and references against the original sources and make sure the text agrees with our project scope and team decisions. Changes will go through teammate review in a pull request, with corresponding justification for including the generated content, before being merged. We will correct or remove any suggestions that we cannot verify. 
 
 
-\section{Coding Standard}
+\section{Coding Standard} \label{SecCodingStandard}
 
 The development team will adopt a standard based on the Microsoft TypeScript Coding Guidelines
 as the primary guideline for TypeScript code written throughout the project.
@@ -650,12 +647,13 @@ This subsection sets out what team members can expect from each other in terms o
 
 This subsection describes the standard of preparation and work expected from every team member.
 
-\textbf{Meeting Preparation and In-Progress}
+\textbf{Meeting Preparation and In-Progress} \newline
+The following describes how team members prepare for and document meetings:
 \begin{itemize}
     \item The meeting chair posts the agenda as a GitHub issue using an appropriate template (dependent on the meeting) at least 24 hours before the meeting. The meeting date must be visible within the issue title. Team members add their items/questions before it starts.
     \item Everyone arrives with a short update (done since last time, what's next, any blockers) and has their GitHub Projects cards up to date.
     \item Anything linked in the agenda, like a pull request or a draft section, is read before the meeting.
-    \item All items discussed with their resulting outcome are documented in the GitHub issue, once the meeting is complete, it shall be marked as done.
+    \item All items discussed and their outcomes are documented in the meeting's GitHub issue. Once the meeting is complete, the issue shall be marked as done.
 \end{itemize}
 
 \textbf{Quality Assurance} \newline
@@ -663,7 +661,7 @@ The following steps ensure each deliverable meets the course checklist and rubri
 \begin{itemize}
     \item Before starting any deliverable, every team member responsible for the feature must read through the checklist and rubric. Any questions and/or doubts must be raised as soon as possible.
     \item Each deliverable is assigned a QA reviewer, who must not be the main author. This role rotates between team members for each deliverable.
-    \item At least 24h before the submission, the QA reviewer will go through the checklist and rubric to ensure all items are at least being met.
+    \item During the three days between the team deadline and the course deadline (see Section~\ref{SecSchedule}), the QA reviewer will go through the checklist and rubric to ensure all items are at least being met.
     \item Should an issue with the checklist and/or rubric arise, they must communicate through the GitHub issues and/or Teams channel for extra help from other team members.
     \item Team members may also request periodic check-ins with another team member who mutually agrees.
 \end{itemize}
@@ -719,8 +717,8 @@ The following describes how progress is tracked throughout the project:
     \item The GitHub Projects board is the single source of truth for who is working on what. Every task must have a specific issue, an assignee and a target date.
     \item At each team meeting, the chair reviews the board. While blockers are the most important agenda item, any item that has been in progress for over a week without an update is discussed.
     \item Anything progress related discussed within the team meeting is noted within the specific meeting issue on GitHub.
-    \item \emph{All} deliverables have an internal deadline: a pull request must be opened at least 48 hours before the course deadline, leaving time for review and the checklist pass (see \hyperref[sec:quality]{Quality}).
-    \item There may be a case in which a pull request for a feature may not be ready for review 48 hours prior to the deadline. The pull request can be opened regardless with a note indicating it isn't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time.
+    \item \emph{All} deliverables have a team deadline three days before the course deadline, by which all work must be merged into \texttt{main} (see Section~\ref{SecSchedule}). The remaining three days are reserved for the QA reviewer's checklist pass (see \hyperref[sec:quality]{Quality}).
+    \item There may be a case in which a pull request for a feature is not ready for review before the team deadline. The pull request can be opened regardless with a note indicating it isn't ready yet with reason as to why. The corresponding reviewer must also agree to review in short notice ahead of time.
     \item Before each productivity report, the team reviews the metrics collected for the TA and instructor (meeting attendance, commits, pull requests, issues, etc.). These are not treated as scores but rather signals for team performance. For example, a small documentation change and a large code change both count as one commit, which is why these numbers are not treated as scores.
 \end{itemize}
 
@@ -735,9 +733,9 @@ The triggers in Table~\ref{tab:triggers} are to be reported in each productivity
 \midrule
 Meeting attendance & Below 80\% of team meetings in a deliverable period, or 2 unexcused misses in a row & Meeting issues\\
 \addlinespace
-Missed internal deadline & 2 or more in a term & Issues and Pull Requests\\
+Missed team deadline & 2 or more in a term & Issues and Pull Requests\\
 \addlinespace
-Review turnaround & Requested review not completed within 72 hours, 2 or more times in a deliverable period & pull request timestamps\\
+Review turnaround & Requested review not completed within 72 hours, 2 or more times in a deliverable period & Pull request timestamps\\
 \addlinespace
 Responsiveness & Mentions not acknowledged within the time set in the Communication Plan, 3 or more times in a deliverable period & GitHub and Teams\\
 \addlinespace
@@ -757,10 +755,7 @@ The consequences for hitting the triggers described above are as follows:
 \end{enumerate}
 
 \textbf{Recognition} \newline
-Team members who perform well are recognized as follows:
-\begin{itemize}
-    \item Team members who hit every target over a deliverable period get first pick of tasks for the next deliverable.
-\end{itemize}
+Team members who hit every target over a deliverable period are recognized by getting first pick of tasks for the next deliverable.
 
 \subsubsection*{Team Building}
 
