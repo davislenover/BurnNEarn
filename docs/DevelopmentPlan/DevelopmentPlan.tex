@@ -478,7 +478,7 @@ recorded reliably, which PostgreSQL's relations and transactions handle well.
 For unit testing, Jest will be used for the front-end as this works directly with React Native. For the backend, pytest will be used as this works well with Python and doesn't require a lot of boilerplate class code
 (unlike Python's built-in unittest), therefore allowing the team to test much quicker.
 
-\subsection{Linting and Formatting}
+\subsection{Linting and Formatting} \label{sec:linting}
 ESLint and Prettier will be used for the front-end: ESLint catches common mistakes in TypeScript code, and Prettier formats code automatically. Prettier will be configured to use four spaces for
 indentation, matching the Coding Standard (see Section~\ref{SecCodingStandard}). For the backend, Ruff will be used as a single tool that
 both lints and formats Python code. These checks will run in CI on every pull request and must pass before it can be merged (see Definition of Done).
@@ -497,17 +497,12 @@ The team plans to use Artificial Intelligence (AI) and Large Language Models (LL
 
 We plan to use ChatGPT and Claude for these tasks. Team members may use either tool depending on what they need help with. For example, someone might use ChatGPT to understand an error message or Claude to review a section of code. We will record the tools and model versions used where available along with any AI assistance that meaningfully contributes to each deliverable. 
 
-Before including AI-generated code, a team member will read it and understand how it works, and then check that it meets the intended requirements for the project.We will run relevant tests that include normal cases and situations where inputs are missing or invalid. For example, code that calculates fitness rewards or virtual portfolio values will be checked using inputs with known expected results. We will also check claims about libraries and services against their documentation. For written content, we will check factual claims and references against the original sources and make sure the text agrees with our project scope and team decisions. Changes will go through teammate review in a pull request, with corresponding justification for including the generated content, before being merged. We will correct or remove any suggestions that we cannot verify. 
+Before including AI-generated code, a team member will read it and understand how it works, and then check that it meets the intended requirements for the project. We will run relevant tests that include normal cases and situations where inputs are missing or invalid. For example, code that calculates fitness rewards or virtual portfolio values will be checked using inputs with known expected results. We will also check claims about libraries and services against their documentation. For written content, we will check factual claims and references against the original sources and make sure the text agrees with our project scope and team decisions. Changes will go through teammate review in a pull request, with corresponding justification for including the generated content, before being merged. We will correct or remove any suggestions that we cannot verify. 
 
 
 \section{Coding Standard} \label{SecCodingStandard}
 
-The development team will adopt a standard based on the Microsoft TypeScript Coding Guidelines
-as the primary guideline for TypeScript code written throughout the project.
-\href{https://github.com/microsoft/TypeScript/wiki/Coding-guidelines}
-{Microsoft TypeScript Coding Guidelines}
-
-The team will follow applicable conventions from this guideline, including:
+The development team will adopt a standard based on the \href{https://github.com/microsoft/TypeScript/wiki/Coding-guidelines}{Microsoft TypeScript Coding Guidelines} as the primary guideline for TypeScript code written throughout the project. The team will follow applicable conventions from this guideline, including:
 
 
 \begin{itemize}
@@ -533,9 +528,7 @@ For Python code, the team will follow
 which includes conventions for indentation, naming, whitespace, imports, and the general code layout.
 
 
-Coding standards will be enforced through automated formatting and the use of linting checks where applicable.
-These checks will be included in the project's CI workflow and must pass. Pull request reviewers will also verify that code
-follows the team's coding standards before approving a merge.
+Coding standards will be enforced through automated formatting and linting checks, as described in Section~\ref{sec:linting}. These checks are included in the project's CI workflow and must pass before merging. Pull request reviewers will also verify that code follows the team's coding standards before approving a merge.
 \newpage{}
 
 \section{Appendix --- Generative AI Use Disclosure}
