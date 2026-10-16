@@ -145,6 +145,9 @@ security. Losses L1--L8 are defined in Section~2.
 
 \subsection{Physical and Psychological Well-being}
 
+\todo{Confirm with the SRS functional requirements (\#90) that daily activity
+goals and streaks are \progname{} features. SAF-1 to SAF-5 depend on it.}
+
 \begin{description}
 
 \hazreq{SAF-1}{Rest days protect streaks}
@@ -167,23 +170,57 @@ pushing through exercise regardless of pain (P02).}
 \hazreq{SAF-2}{No penalty for a lapse}
 {Missing an activity goal or ending a streak shall not reduce the user’s virtual currency balance or simulated holdings, and shall not be shown to other users.}
 {For a test user who misses their goal on day \textit{d}, the currency balance and simulated holdings at the start of day \textit{d+1} equal those at the end of day \textit{d}. No friend’s feed shows the missed goal or the ended streak.}
-{The only consequences of missing a goal are not earning that day’s currency and, without a rest day (SAF-1), the end of the streak. Interviews show that keeping a streak going is already a strong motivator (P01). Comparison becomes harmful mainly when a user falls far behind (P02). Taking away earned currency or holdings would also add pressure to exercise when unwell, and would mix fitness penalties into the investment results the user is trying to learn from}
-{FMEA }
-{\todo{}}
-{\todo{}}
+{The only consequences of missing a goal are not earning that day’s currency and, without a rest day (\reqref{SAF-1}), the end of the streak. Interviews show that keeping a streak going is already a strong motivator (P01). Comparison becomes harmful mainly when a user falls far behind (P02). Taking away earned currency or holdings would also add pressure to exercise when unwell, and would mix fitness penalties into the investment results the user is trying to learn from.}
+{FMEA \todo{row ID}, L1 (physical harm), L2 (psychological harm), L6 (financial-understanding harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SAF-3}{User-controlled goals}
-{\todo{Goals are optional the system never raises a goal without the user's
-confirmation; any suggested increase is at most \texttt{MAX\_GOAL\_INCREASE}.}}
-{\todo{}}
-{\todo{Automatic goal escalation pushes users past what is healthy for them.}}
-{FMEA \todo{}; \todo{L1, L2}}
-{\todo{}}
-{\todo{}}
+\hazreq{SAF-3}{Goals are optional}
+{The system shall not require the user to set an activity goal in order to earn
+currency for recorded activity.}
+{A test user with no activity goal set who records activity receives currency
+for it.}
+{Some users track their activity informally and set no goals (P02). Requiring a
+goal would push them into targets they did not choose, or shut them out of the
+reward that is central to \progname{}.}
+{FMEA \todo{row ID}, L1 (physical harm), L2 (psychological harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SAF-4}{Reminder limits}
-{\todo{No activity reminders during \texttt{QUIET\_HOURS}; each reminder
-category can be turned off no shaming wording.}}
+\hazreq{SAF-4}{No automatic goal changes}
+{The system shall not change a user's activity goal without the user's
+confirmation.}
+{A test user who exceeds their goal on \texttt{GOAL\_REVIEW\_PERIOD}
+consecutive days still has the same goal unless they confirm a change.}
+{Users fit their goals around their available time and energy. One participant
+deliberately keeps their step goal fixed, even though they regularly exceed it,
+because a higher goal takes too much time (P01). Raising goals automatically
+ignores these limits and leads to overexertion or to goals that are repeatedly
+missed.
+\todo{Decide whether users can lower a goal at any time. This helps an injured
+user, but could be used to keep a streak alive. One option is that a lowered
+goal applies from the next day.}}
+{FMEA \todo{row ID}, L1 (physical harm), L2 (psychological harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
+
+\hazreq{SAF-5}{Bounded goal suggestions}
+{Any goal increase the system suggests shall be no more than
+\texttt{MAX\_GOAL\_INCREASE} above the user's current goal.}
+{For every suggested increase, the suggested goal is at most the current goal
+multiplied by (1 + \texttt{MAX\_GOAL\_INCREASE}).}
+{Suggestions offer the adjustable challenge some users like (P01) without large
+jumps that encourage overexertion.
+\todo{Choose and justify \texttt{MAX\_GOAL\_INCREASE} in SRS Appendix C. A
+common rule of thumb is about 10\% per week, but cite a source or state that it
+is the team's choice.}}
+{FMEA \todo{row ID}, L1 (physical harm).}
+{\todo{SRS section and ID}}
+{\todo{Capstone if \progname{} suggests goal changes. Otherwise remove SAF-5.}}
+
+\hazreq{SAF-6}{Reminder limits}
+{\todo{No activity reminders during \texttt{QUIET\_HOURS}. Each reminder
+category can be turned off. No shaming wording.}}
 {\todo{}}
 {\todo{Late-night nudges encourage unsafe exercise; guilt-based messages harm
 well-being.}}
@@ -197,7 +234,7 @@ well-being.}}
 
 \begin{description}
 
-\hazreq{SAF-5}{Daily earning cap}
+\hazreq{SAF-7}{Daily earning cap}
 {\todo{No more than \texttt{MAX\_DAILY\_CURRENCY} currency is awarded per
 calendar day.}}
 {\todo{}}
@@ -227,7 +264,7 @@ after an activity ends (P01).}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-6}{Show data gaps}
+\hazreq{SAF-8}{Show data gaps}
 {\todo{Days with no activity data are shown to the user as missing, not as
 zero activity.}}
 {\todo{}}
@@ -243,7 +280,7 @@ not reveal whether read access was denied.}}
 
 \begin{description}
 
-\hazreq{SAF-7}{Simulation notice before the first trade}
+\hazreq{SAF-9}{Simulation notice before the first trade}
 {\todo{Before the user's first trade, show a notice that the market is
 simulated and that nothing in the app is financial advice.}}
 {\todo{}}
@@ -254,15 +291,15 @@ content online (P01).}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-8}{Notice on every trade confirmation}
-{\todo{Repeat the \reqref{SAF-7} notice on every trade confirmation screen.}}
+\hazreq{SAF-10}{Notice on every trade confirmation}
+{\todo{Repeat the \reqref{SAF-9} notice on every trade confirmation screen.}}
 {\todo{}}
 {\todo{}}
 {FMEA \todo{}; \todo{L6}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-9}{No personalised recommendations}
+\hazreq{SAF-11}{No personalised recommendations}
 {\todo{The system does not recommend buying or selling a specific asset to a
 specific user (no ``top picks'').}}
 {\todo{}}
@@ -271,7 +308,7 @@ specific user (no ``top picks'').}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-10}{Label simulated returns}
+\hazreq{SAF-12}{Label simulated returns}
 {\todo{Returns are labelled as simulated, with a link to what the simulation
 leaves out (fees, taxes, delays).}}
 {\todo{}}
@@ -399,7 +436,7 @@ post or removing a friend revokes access within \texttt{REVOKE\_DELAY}.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-11}{Limit harmful comparison}
+\hazreq{SAF-13}{Limit harmful comparison}
 {\todo{Decide: e.g.\ users can hide comparisons or rankings.}}
 {\todo{}}
 {\todo{Comparison is ``only ever bad'' when a user is far behind (P02); the HA
@@ -467,7 +504,10 @@ controls, and where it appears in the SRS.
 \textbf{ID} & \textbf{FMEA rows} & \textbf{Losses} & \textbf{SRS} & \textbf{Roadmap}\\
 \midrule
 \reqref{SAF-1} & \todo{} & L1, L2 & \todo{} & Capstone\\
-\reqref{SAF-2} & \todo{} & \todo{} & \todo{} & \todo{}\\
+\reqref{SAF-2} & \todo{} & L1, L2, L6 & \todo{} & Capstone\\
+\reqref{SAF-3} & \todo{} & L1, L2 & \todo{} & Capstone\\
+\reqref{SAF-4} & \todo{} & L1, L2 & \todo{} & Capstone\\
+\reqref{SAF-5} & \todo{} & L1 & \todo{} & \todo{}\\
 \bottomrule
 \end{tabularx}
 \end{table}
