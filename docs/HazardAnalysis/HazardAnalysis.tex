@@ -570,23 +570,38 @@ kept secure (P02).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-14}{Session expiry and sign-in audit}
-{\todo{Sessions expire after \texttt{SESSION\_TIMEOUT} of inactivity; sign-ins
-are recorded and visible to the user.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L4}}
-{\todo{}}
-{\todo{}}
+\hazreq{SEC-14}{Session expiry}
+{The system shall end a session that has not been used for
+\texttt{SESSION\_TIMEOUT}, after which the user must sign in again.}
+{A test session left unused for longer than \texttt{SESSION\_TIMEOUT} is
+rejected, and the user must sign in again to continue.}
+{A lost or shared phone, or a stolen session, gives access to a user's health,
+location and portfolio data for as long as the session stays valid. Ending
+unused sessions limits that window.
+\todo{Add \texttt{SESSION\_TIMEOUT} to SRS Appendix C (\#95).}}
+{FMEA \todo{row ID}, L3 (privacy loss), L4 (security loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-15}{In-app account deletion}
-{\todo{The user can delete their account and its data from inside the app.}}
-{\todo{}}
-{\todo{Required by Apple App Store guideline 5.1.1(v) for apps that allow
-account creation.}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+{The system shall let the user delete their account from within the app, and
+shall delete their account details, profile, activity totals, currency
+balance, holdings, trades and posts from the server within
+\texttt{DATA\_DELETION\_PERIOD} of the request.}
+{After a test user deletes their account in the app, they can no longer sign
+in. Within \texttt{DATA\_DELETION\_PERIOD}, the server holds none of their
+account details, profile, activity totals, currency balance, holdings, trades
+or posts, and none of their posts appear in friends' feeds.
+\todo{Remove ``profile'' from the requirement and this criterion if the profile
+is stored only on the phone.}}
+{PIPEDA lets people withdraw consent and limits keeping personal information
+longer than it is needed. The Apple App Store also requires apps that let users
+create an account to offer account deletion within the app (App Store Review
+Guideline 5.1.1(v)).
+\todo{Add \texttt{DATA\_DELETION\_PERIOD} to SRS Appendix C (\#95).}}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \end{description}
 
@@ -628,6 +643,8 @@ controls, and where it appears in the SRS.
 \reqref{SEC-11} & \todo{} & L1, L3 & \todo{} & Capstone\\
 \reqref{SEC-12} & \todo{} & L3, L4 & \todo{} & Capstone\\
 \reqref{SEC-13} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-14} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-15} & \todo{} & L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
