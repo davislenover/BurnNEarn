@@ -205,15 +205,17 @@ goal applies from the next day.}}
 {Capstone.}
 
 \hazreq{SAF-5}{Bounded goal suggestions}
-{Any goal increase the system suggests shall be no more than
-\texttt{MAX\_GOAL\_INCREASE} above the user's current goal.}
-{For every suggested increase, the suggested goal is at most the current goal
-multiplied by (1 + \texttt{MAX\_GOAL\_INCREASE}).}
-{Suggestions offer the adjustable challenge some users like (P01) without large
-jumps that encourage overexertion.
-\todo{Choose and justify \texttt{MAX\_GOAL\_INCREASE} in SRS Appendix C. A
-common rule of thumb is about 10\% per week, but cite a source or state that it
-is the team's choice.}}
+{The system shall not suggest increasing a user's activity goal by more than
+\texttt{MAX\_GOAL\_INCREASE} (10\%) in any one-week period.}
+{Over any 7-day period, every goal the system suggests to a test user is at
+most the user's goal at the start of that period multiplied by
+(1 + \texttt{MAX\_GOAL\_INCREASE}).}
+{Large jumps in a goal are not wanted. When raising a challenge, one participant
+does so only until it is hard but still winnable, and keeps their step goal
+fixed because a higher target takes too much time (P01). The system therefore
+suggests no more than a 10\% increase per week.
+\todo{Add \texttt{MAX\_GOAL\_INCREASE} = 10\% per week to SRS Appendix C
+(\#95).}}
 {FMEA \todo{row ID}, L1 (physical harm).}
 {\todo{SRS section and ID}}
 {\todo{Capstone if \progname{} suggests goal changes. Otherwise remove SAF-5.}}
