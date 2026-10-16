@@ -372,14 +372,22 @@ mistake them for results they would get with real money.}
 \begin{description}
 
 \hazreq{SEC-2}{Price freshness}
-{\todo{Show the time each price was obtained, and mark prices older than
-\texttt{QUOTE\_STALENESS\_LIMIT} as delayed.}}
-{\todo{}}
-{\todo{Provider request limits mean prices can lag; a lagging price shown as
-current teaches the wrong lesson.}}
-{FMEA \todo{}; \todo{L5, L6}}
-{\todo{}}
-{\todo{}}
+{The system shall display each asset price with the time it was obtained, and
+shall mark the price as delayed when it is older than
+\texttt{QUOTE\_STALENESS\_LIMIT}.}
+{A test price obtained more than \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown
+with its time and a ``Delayed'' marker. A price obtained within the limit is
+shown with its time and no marker.}
+{Market data request limits mean prices can lag the real market. A lagging
+price shown as current misrepresents how the market moved and how a trade
+performed. The limit matches Problem Statement Goal 4 (prices within 15 minutes
+of the real market).
+\todo{Add \texttt{QUOTE\_STALENESS\_LIMIT} = 15 minutes to SRS Appendix C
+(\#95).}}
+{FMEA \todo{row ID}, L5 (data loss and integrity), L6 (financial-understanding
+harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-3}{Complete or reject trades}
 {\todo{A trade is recorded completely or not at all, and a trade costing more
@@ -562,6 +570,7 @@ controls, and where it appears in the SRS.
 \reqref{SAF-9} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SAF-10} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
+\reqref{SEC-2} & \todo{} & L5, L6 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
