@@ -437,46 +437,46 @@ ask for (P01).}
 {Capstone.}
 
 \hazreq{SEC-6}{State the purpose of each permission}
-{Before requesting each health permission, the system shall tell the user which
+{Before requesting each permission, the system shall tell the user which
 feature uses that data.}
-{For every health permission request, a test user is shown the feature that
-uses that data before the request appears.}
+{For every permission request, a
+test user is shown the feature that uses that data before the request appears.}
 {Both participants said they are more willing to grant a permission when it is
-clear why the app is asking (P01, P02). A user who denies a permission
-earns nothing for that activity, since days with no data count as zero
-activity (Section~4).}
+clear why the app is asking (P01, P02). One participant accepts location access
+when its purpose is obvious, such as a bike-tracking app that needs GPS (P01).
+A user who denies a health permission earns nothing for that activity, since
+days with no data count as zero activity (Section~4).}
 {FMEA \todo{row ID}, L3 (privacy loss).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-7}{No location, contacts or clinical data}
-{\todo{The system requests no location or contacts permission and collects no
-medical history or diagnoses.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+\hazreq{SEC-7}{Consent and withdrawal}
+{The system shall obtain the user's consent before it first reads their health
+or location data, and shall stop reading that data when the user withdraws
+consent in the app.}
+{A new test user's health and location data are not read until they consent.
+After they withdraw consent in the app, no further health or location data is
+read.}
+{Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
+requires consent to collect personal information and lets people withdraw it.
+Health and location data are among the most sensitive data \progname{}
+handles.}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SEC-8}{Consent and withdrawal}
-{\todo{Obtain consent before the first health-data read; stop reading after the
-user withdraws consent in the app.}}
-{\todo{}}
-{\todo{PIPEDA requires informed consent.}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+\hazreq{SEC-8}{Data minimization}
+{The system shall send from the user's mobile device to its server only daily activity
+totals for each activity type, not individual health records.}
+{The data a test phone sends to the server contains daily totals for each
+activity type and no individual timestamped health records.}
+{Data that never leaves the phone cannot be exposed by a breach of the server. One participant prefers
+tools that keep their data on their own device rather than in the cloud (P01).}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SEC-9}{Data minimisation and retention}
-{\todo{Only activity summaries leave the phone; personal data is deleted after
-\texttt{DATA\_RETENTION\_PERIOD} or on request.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
-
-\hazreq{SEC-10}{No data to third parties}
+\hazreq{SEC-9}{No data to third parties}
 {\todo{No user identifiers or activity data are sent to third parties; the
 market data provider receives only asset identifiers.}}
 {\todo{}}
@@ -492,7 +492,7 @@ secure by a reputable company (P02).}}
 
 \begin{description}
 
-\hazreq{SEC-11}{Private by default}
+\hazreq{SEC-10}{Private by default}
 {\todo{Each statistic is visible only to its owner until shared, and only to
 the friends selected for it.}}
 {\todo{}}
@@ -501,7 +501,7 @@ the friends selected for it.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-12}{No identifying detail in posts}
+\hazreq{SEC-11}{No identifying detail in posts}
 {\todo{Shared posts carry no location, route or time-of-day data; deleting a
 post or removing a friend revokes access within \texttt{REVOKE\_DELAY}.}}
 {\todo{}}
@@ -525,7 +525,7 @@ checklist asks us to consider self-image.}}
 
 \begin{description}
 
-\hazreq{SEC-13}{Authenticated access only}
+\hazreq{SEC-12}{Authenticated access only}
 {\todo{Every request that reads or changes user data needs an authenticated
 session; another user's data is returned only if it was shared with the
 requester.}}
@@ -535,7 +535,7 @@ requester.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-14}{Protect data in transit and at rest}
+\hazreq{SEC-13}{Protect data in transit and at rest}
 {\todo{All data is encrypted in transit and when stored.}}
 {\todo{}}
 {\todo{}}
@@ -543,7 +543,7 @@ requester.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-15}{Session expiry and sign-in audit}
+\hazreq{SEC-14}{Session expiry and sign-in audit}
 {\todo{Sessions expire after \texttt{SESSION\_TIMEOUT} of inactivity; sign-ins
 are recorded and visible to the user.}}
 {\todo{}}
@@ -552,7 +552,7 @@ are recorded and visible to the user.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-16}{In-app account deletion}
+\hazreq{SEC-15}{In-app account deletion}
 {\todo{The user can delete their account and its data from inside the app.}}
 {\todo{}}
 {\todo{Required by Apple App Store guideline 5.1.1(v) for apps that allow
@@ -593,6 +593,8 @@ controls, and where it appears in the SRS.
 \reqref{SEC-4} & \todo{} & L5 & \todo{} & Capstone\\
 \reqref{SEC-5} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-6} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-7} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-8} & \todo{} & L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
