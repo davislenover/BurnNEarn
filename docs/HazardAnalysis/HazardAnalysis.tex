@@ -268,26 +268,27 @@ Social & A friend shared an update or sent a connection request & Social feed (P
 \begin{description}
 
 \hazreq{SAF-7}{Daily earning cap}
-{\todo{No more than \texttt{MAX\_DAILY\_CURRENCY} currency is awarded per
-calendar day.}}
-{\todo{}}
-{\todo{Removes any reason to exercise past a healthy amount, and limits what
-faked or non-exercise motion can earn.}}
-{FMEA \todo{}; \todo{L1, L4, L5}}
-{\todo{}}
-{\todo{}}
+{The system shall award a user no more than \texttt{MAX\_DAILY\_CURRENCY}
+virtual currency for recorded activity in any calendar day.}
+{For a test user whose recorded activity in one calendar day would otherwise
+earn more than \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by exactly
+\texttt{MAX\_DAILY\_CURRENCY} for that day. Calendar days follow the user's
+local time zone.}
+{Without a cap, more activity always earns more currency, which rewards
+exercising past a healthy amount. One participant admired pushing through
+exercise regardless of pain (P02). A cap also limits what non-exercise motion
+can earn: phones count steps while riding a bus, and one tracking app was left
+running for hours after a ride had ended (P01). The cap applies to currency
+rather than to any one activity, so it works the same way for every supported
+activity type (Problem Statement Goal 5).
+\todo{Choose \texttt{MAX\_DAILY\_CURRENCY} for SRS Appendix C (\#95) once the
+earning rate is defined in the SRS.}}
+{FMEA \todo{row ID}, L1 (physical harm), L4 (security loss), L5 (data loss and
+integrity).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SEC-1}{Count activity once}
-{\todo{When more than one source records the same period of activity, it earns
-currency once.}}
-{\todo{}}
-{\todo{A phone and a smartwatch can both record the same walk (P02 uses
-both).}}
-{FMEA \todo{}; \todo{L4, L5}}
-{\todo{}}
-{\todo{}}
-
-\hazreq{SEC-2}{Implausible activity earns nothing}
+\hazreq{SEC-1}{Implausible activity earns nothing}
 {\todo{Records above \texttt{MAX\_DAILY\_STEPS} or \texttt{MAX\_SESSION\_DURATION}
 earn no currency.}}
 {\todo{}}
@@ -356,7 +357,7 @@ leaves out (fees, taxes, delays).}}
 
 \begin{description}
 
-\hazreq{SEC-3}{Price freshness}
+\hazreq{SEC-2}{Price freshness}
 {\todo{Show the time each price was obtained, and mark prices older than
 \texttt{QUOTE\_STALENESS\_LIMIT} as delayed.}}
 {\todo{}}
@@ -366,7 +367,7 @@ current teaches the wrong lesson.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-4}{Complete or reject trades}
+\hazreq{SEC-3}{Complete or reject trades}
 {\todo{A trade is recorded completely or not at all, and a trade costing more
 than the balance is rejected.}}
 {\todo{}}
@@ -375,7 +376,7 @@ than the balance is rejected.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-5}{No duplicate trades}
+\hazreq{SEC-4}{No duplicate trades}
 {\todo{A repeated submission of the same trade is processed only once.}}
 {\todo{}}
 {\todo{Retries over a poor connection are the likely cause.}}
@@ -389,7 +390,7 @@ than the balance is rejected.}}
 
 \begin{description}
 
-\hazreq{SEC-6}{Least-privilege health access}
+\hazreq{SEC-5}{Least-privilege health access}
 {\todo{Request read-only access to only the health data types listed as
 activity inputs in the SRS Data Dictionary; never write to the health
 platform.}}
@@ -399,7 +400,7 @@ platform.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-7}{State the purpose of each permission}
+\hazreq{SEC-6}{State the purpose of each permission}
 {\todo{Before each permission prompt, show which feature uses that data.}}
 {\todo{}}
 {\todo{Both interviewees grant permissions only when the reason is clear (P01,
@@ -408,7 +409,7 @@ P02).}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-8}{No location, contacts or clinical data}
+\hazreq{SEC-7}{No location, contacts or clinical data}
 {\todo{The system requests no location or contacts permission and collects no
 medical history or diagnoses.}}
 {\todo{}}
@@ -417,7 +418,7 @@ medical history or diagnoses.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-9}{Consent and withdrawal}
+\hazreq{SEC-8}{Consent and withdrawal}
 {\todo{Obtain consent before the first health-data read; stop reading after the
 user withdraws consent in the app.}}
 {\todo{}}
@@ -426,7 +427,7 @@ user withdraws consent in the app.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-10}{Data minimisation and retention}
+\hazreq{SEC-9}{Data minimisation and retention}
 {\todo{Only activity summaries leave the phone; personal data is deleted after
 \texttt{DATA\_RETENTION\_PERIOD} or on request.}}
 {\todo{}}
@@ -435,7 +436,7 @@ user withdraws consent in the app.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-11}{No data to third parties}
+\hazreq{SEC-10}{No data to third parties}
 {\todo{No user identifiers or activity data are sent to third parties; the
 market data provider receives only asset identifiers.}}
 {\todo{}}
@@ -451,7 +452,7 @@ secure by a reputable company (P02).}}
 
 \begin{description}
 
-\hazreq{SEC-12}{Private by default}
+\hazreq{SEC-11}{Private by default}
 {\todo{Each statistic is visible only to its owner until shared, and only to
 the friends selected for it.}}
 {\todo{}}
@@ -460,7 +461,7 @@ the friends selected for it.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-13}{No identifying detail in posts}
+\hazreq{SEC-12}{No identifying detail in posts}
 {\todo{Shared posts carry no location, route or time-of-day data; deleting a
 post or removing a friend revokes access within \texttt{REVOKE\_DELAY}.}}
 {\todo{}}
@@ -484,7 +485,7 @@ checklist asks us to consider self-image.}}
 
 \begin{description}
 
-\hazreq{SEC-14}{Authenticated access only}
+\hazreq{SEC-13}{Authenticated access only}
 {\todo{Every request that reads or changes user data needs an authenticated
 session; another user's data is returned only if it was shared with the
 requester.}}
@@ -494,7 +495,7 @@ requester.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-15}{Protect data in transit and at rest}
+\hazreq{SEC-14}{Protect data in transit and at rest}
 {\todo{All data is encrypted in transit and when stored.}}
 {\todo{}}
 {\todo{}}
@@ -502,7 +503,7 @@ requester.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-16}{Session expiry and sign-in audit}
+\hazreq{SEC-15}{Session expiry and sign-in audit}
 {\todo{Sessions expire after \texttt{SESSION\_TIMEOUT} of inactivity; sign-ins
 are recorded and visible to the user.}}
 {\todo{}}
@@ -511,7 +512,7 @@ are recorded and visible to the user.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SEC-17}{In-app account deletion}
+\hazreq{SEC-16}{In-app account deletion}
 {\todo{The user can delete their account and its data from inside the app.}}
 {\todo{}}
 {\todo{Required by Apple App Store guideline 5.1.1(v) for apps that allow
@@ -542,6 +543,7 @@ controls, and where it appears in the SRS.
 \reqref{SAF-4} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-5} & \todo{} & L1 & \todo{} & \todo{}\\
 \reqref{SAF-6} & \todo{} & L1, L2 & \todo{} & Capstone\\
+\reqref{SAF-7} & \todo{} & L1, L4, L5 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
