@@ -139,7 +139,7 @@ controls, and where it appears in the Software Requirements Specification
 (SRS). Every requirement appears in the SRS with the same identifier and
 wording. Values written as \texttt{SMALL\_CAPS} constants are defined in SRS
 Appendix~C. Requirements prefixed SAF address physical, psychological and
-financial-understanding harm; requirements prefixed SEC address privacy and
+financial-understanding harm. Requirements prefixed SEC address privacy and
 security. Losses L1--L8 are defined in Section~2.
 \todo{Confirm loss IDs once Section 2 (\#75) is written.}
 
@@ -165,11 +165,10 @@ pushing through exercise regardless of pain (P02).}
 {Capstone.}
 
 \hazreq{SAF-2}{No penalty for a lapse}
-{\todo{Missing a goal or ending a streak never reduces the user's currency
-balance or simulated holdings.}}
-{\todo{}}
-{\todo{Punishing lapses adds guilt and pressure to exercise when unwell.}}
-{FMEA \todo{} \todo{L1, L2}}
+{Missing an activity goal or ending a streak shall not reduce the user’s virtual currency balance or simulated holdings, and shall not be shown to other users.}
+{For a test user who misses their goal on day \textit{d}, the currency balance and simulated holdings at the start of day \textit{d+1} equal those at the end of day \textit{d}. No friend’s feed shows the missed goal or the ended streak.}
+{The only consequences of missing a goal are not earning that day’s currency and, without a rest day (SAF-1), the end of the streak. Interviews show that keeping a streak going is already a strong motivator (P01). Comparison becomes harmful mainly when a user falls far behind (P02). Taking away earned currency or holdings would also add pressure to exercise when unwell, and would mix fitness penalties into the investment results the user is trying to learn from}
+{FMEA }
 {\todo{}}
 {\todo{}}
 
