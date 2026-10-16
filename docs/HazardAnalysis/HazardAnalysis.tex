@@ -545,22 +545,30 @@ built, they should be opt-in.}
 \begin{description}
 
 \hazreq{SEC-12}{Authenticated access only}
-{\todo{Every request that reads or changes user data needs an authenticated
-session; another user's data is returned only if it was shared with the
-requester.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L3, L4}}
-{\todo{}}
-{\todo{}}
+{The system shall require an authenticated session for every request that reads
+or changes a user's data, and shall return another user's data only when that
+user has shared it with the requester.}
+{A test request without a valid session is rejected. A request for another
+user's data that was not shared with the requester is rejected, and a request
+for data that was shared succeeds.}
+{Health, location, portfolio and social data must reach only the account it
+belongs to or the friends it was shared with. \reqref{SEC-10} sets what a user
+shares.}
+{FMEA \todo{row ID}, L3 (privacy loss), L4 (security loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-13}{Protect data in transit and at rest}
-{\todo{All data is encrypted in transit and when stored.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L3, L4}}
-{\todo{}}
-{\todo{}}
+{The system shall encrypt user data in transit between the phone and the
+server, and when stored on the server.}
+{Inspecting the network traffic between a test phone and the server, and the
+data stored on the server, shows no readable user data.}
+{Data in transit can be intercepted on public networks, and stored data can be
+exposed if the server or a backup is compromised. Participants want their data
+kept secure (P02).}
+{FMEA \todo{row ID}, L3 (privacy loss), L4 (security loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-14}{Session expiry and sign-in audit}
 {\todo{Sessions expire after \texttt{SESSION\_TIMEOUT} of inactivity; sign-ins
@@ -618,6 +626,8 @@ controls, and where it appears in the SRS.
 \reqref{SEC-9} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-10} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-11} & \todo{} & L1, L3 & \todo{} & Capstone\\
+\reqref{SEC-12} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-13} & \todo{} & L3, L4 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
