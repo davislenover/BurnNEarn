@@ -424,23 +424,30 @@ the user did not intend.}
 \begin{description}
 
 \hazreq{SEC-5}{Least-privilege health access}
-{\todo{Request read-only access to only the health data types listed as
-activity inputs in the SRS Data Dictionary; never write to the health
-platform.}}
-{\todo{}}
-{\todo{Interviewees want apps to be frugal with permissions (P01).}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+{The system shall request read access only to the health data types listed as
+activity inputs in the SRS data dictionary, and shall not request permission
+to write to the health platform.}
+{Every health permission the system requests is a read permission, and its data
+type appears in the SRS data dictionary as an activity input.}
+{Each extra permission is more personal data that could be exposed. One
+participant said they look for apps that are frugal with the permissions they
+ask for (P01).}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-6}{State the purpose of each permission}
-{\todo{Before each permission prompt, show which feature uses that data.}}
-{\todo{}}
-{\todo{Both interviewees grant permissions only when the reason is clear (P01,
-P02).}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+{Before requesting each health permission, the system shall tell the user which
+feature uses that data.}
+{For every health permission request, a test user is shown the feature that
+uses that data before the request appears.}
+{Both participants said they are more willing to grant a permission when it is
+clear why the app is asking (P01, P02). A user who denies a permission
+earns nothing for that activity, since days with no data count as zero
+activity (Section~4).}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-7}{No location, contacts or clinical data}
 {\todo{The system requests no location or contacts permission and collects no
@@ -584,6 +591,8 @@ controls, and where it appears in the SRS.
 \reqref{SEC-2} & \todo{} & L5, L6 & \todo{} & Capstone\\
 \reqref{SEC-3} & \todo{} & L5 & \todo{} & Capstone\\
 \reqref{SEC-4} & \todo{} & L5 & \todo{} & Capstone\\
+\reqref{SEC-5} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-6} & \todo{} & L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
