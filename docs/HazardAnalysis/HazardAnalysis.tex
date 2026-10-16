@@ -344,22 +344,26 @@ looked for answers tailored to their own situation (P01).}
 {Capstone.}
 
 \hazreq{SAF-9}{No personalised recommendations}
-{\todo{The system does not recommend buying or selling a specific asset to a
-specific user (no ``top picks'').}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L6}}
-{\todo{}}
-{\todo{}}
+{The system shall not recommend that a user buy or sell a specific asset.}
+{No screen or notification shown to a test user tells them to buy or sell a
+named asset, or presents assets as a "recommended pick".}
+{Recommending specific assets would be personalized financial advice, which
+\progname{} is not licensed to give, and users may act on it with real money
+(P01).}
+{FMEA \todo{row ID}, L6 (financial-understanding harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SAF-10}{Label simulated returns}
-{\todo{Returns are labelled as simulated, with a link to what the simulation
-leaves out (fees, taxes, delays).}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L6}}
-{\todo{}}
-{\todo{}}
+{The system shall label every displayed return and portfolio value as
+simulated.}
+{Every screen that shows a return or portfolio value shows a ``Simulated''
+label next to it.}
+{Simulated returns leave out real costs such as fees and taxes, so users could
+mistake them for results they would get with real money.}
+{FMEA \todo{row ID}, L6 (financial-understanding harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \end{description}
 
@@ -555,6 +559,8 @@ controls, and where it appears in the SRS.
 \reqref{SAF-6} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-7} & \todo{} & L1, L4, L5 & \todo{} & Capstone\\
 \reqref{SAF-8} & \todo{} & L6 & \todo{} & Capstone\\
+\reqref{SAF-9} & \todo{} & L6 & \todo{} & Capstone\\
+\reqref{SAF-10} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
