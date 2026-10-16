@@ -497,22 +497,33 @@ reputable company (P02).}
 \begin{description}
 
 \hazreq{SEC-10}{Private by default}
-{\todo{Each statistic is visible only to its owner until shared, and only to
-the friends selected for it.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+{The system shall show a user's statistics only to that user until they choose
+to share them, and shall show a shared statistic only to the friends the user
+selected for it. When the user deletes a shared post or removes a friend, the
+system shall stop showing the affected posts to that friend.}
+{A test user's new statistic is visible to no other user. Once shared with
+selected friends, it is visible to exactly those friends. After the user
+deletes the post or removes one of those friends, the post no longer appears
+in that friend's feed.}
+{Problem Statement Goal 3 measures success by users controlling who sees each
+shared statistic. Friends are expected to see only what a user chooses to
+share (Problem Statement 1.3).}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SEC-11}{No identifying detail in posts}
-{\todo{Shared posts carry no location, route or time-of-day data; deleting a
-post or removing a friend revokes access within \texttt{REVOKE\_DELAY}.}}
-{\todo{}}
-{\todo{Shared details plus context can identify a person (P01).}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+\hazreq{SEC-11}{No location detail in posts}
+{The system shall not include location, route or exact time information in
+shared posts.}
+{No shared post shown to a test user's friends contains a location, a route,
+or the exact time an activity took place.}
+{A route or location, especially combined with when an activity happened, can
+reveal where a user lives, works or regularly goes. One participant pointed out
+that removing names does not make a person anonymous, because context can
+reveal who they are (P01).}
+{FMEA \todo{row ID}, L1 (physical harm), L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SAF-11}{Limit harmful comparison}
 {\todo{Decide: e.g.\ users can hide comparisons or rankings.}}
@@ -600,6 +611,8 @@ controls, and where it appears in the SRS.
 \reqref{SEC-7} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-8} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-9} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-10} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-11} & \todo{} & L1, L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
