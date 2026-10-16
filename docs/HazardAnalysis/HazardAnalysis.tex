@@ -322,25 +322,28 @@ System Context (2.3, \#84).}}
 \begin{description}
 
 \hazreq{SAF-8}{Simulation notice before the first trade}
-{\todo{Before the user's first trade, show a notice that the market is
-simulated and that nothing in the app is financial advice.}}
-{\todo{}}
-{\todo{Users may treat simulated results as advice. An interviewee compared
-picking individual stocks to gambling and warned about misleading investing
-content online (P01).}}
-{FMEA \todo{}; \todo{L6}}
-{\todo{}}
-{\todo{}}
+{Before the user's first trade, the system shall display a notice stating that
+the market is simulated, that virtual currency and holdings have no real-world
+value, and that nothing in \progname{} is financial advice. The system shall
+not complete the first trade until the user acknowledges the notice.}
+{A new test user who attempts their first trade is shown the notice and cannot
+complete the trade until they acknowledge it. The notice contains all three
+statements: the market is simulated, currency and holdings have no real-world
+value, and nothing in \progname{} is financial advice.}
+{\progname{} teaches investing by letting users practise, and people learn how
+to act from what they practise: one participant said that formal study did not
+show them how to act until they had hands-on experience (P02). The lessons a
+simulation teaches can carry over to real decisions, and a user could
+mistake simulated results or in-app content for advice on what to do with real
+money. Users who learn investing on their own also draw on informal sources of
+mixed quality: one participant learned from online videos and forums, warned
+that it is easy to end up following the wrong kinds of investing content, and
+looked for answers tailored to their own situation (P01).}
+{FMEA \todo{row ID}, L6 (financial-understanding harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
-\hazreq{SAF-9}{Notice on every trade confirmation}
-{\todo{Repeat the \reqref{SAF-8} notice on every trade confirmation screen.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L6}}
-{\todo{}}
-{\todo{}}
-
-\hazreq{SAF-10}{No personalised recommendations}
+\hazreq{SAF-9}{No personalised recommendations}
 {\todo{The system does not recommend buying or selling a specific asset to a
 specific user (no ``top picks'').}}
 {\todo{}}
@@ -349,7 +352,7 @@ specific user (no ``top picks'').}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-11}{Label simulated returns}
+\hazreq{SAF-10}{Label simulated returns}
 {\todo{Returns are labelled as simulated, with a link to what the simulation
 leaves out (fees, taxes, delays).}}
 {\todo{}}
@@ -477,7 +480,7 @@ post or removing a friend revokes access within \texttt{REVOKE\_DELAY}.}}
 {\todo{}}
 {\todo{}}
 
-\hazreq{SAF-12}{Limit harmful comparison}
+\hazreq{SAF-11}{Limit harmful comparison}
 {\todo{Decide: e.g.\ users can hide comparisons or rankings.}}
 {\todo{}}
 {\todo{Comparison is ``only ever bad'' when a user is far behind (P02); the HA
@@ -551,6 +554,7 @@ controls, and where it appears in the SRS.
 \reqref{SAF-5} & \todo{} & L1 & \todo{} & \todo{}\\
 \reqref{SAF-6} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-7} & \todo{} & L1, L4, L5 & \todo{} & Capstone\\
+\reqref{SAF-8} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
