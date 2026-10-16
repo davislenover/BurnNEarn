@@ -390,21 +390,32 @@ harm).}
 {Capstone.}
 
 \hazreq{SEC-3}{Complete or reject trades}
-{\todo{A trade is recorded completely or not at all, and a trade costing more
-than the balance is rejected.}}
-{\todo{}}
-{\todo{}}
-{FMEA \todo{}; \todo{L5}}
-{\todo{}}
-{\todo{}}
+{The system shall record each trade completely, updating both the currency
+balance and the holdings, or not at all. It shall reject a purchase that costs
+more than the user's currency balance and the selling of anything higher value than what the user
+holds.}
+{A test trade interrupted before it completes leaves the balance and holdings
+unchanged, and a completed trade changes both. A purchase costing more than the
+balance, or a sale of more units than are held, is rejected and changes
+neither.}
+{A partly recorded trade could take currency without adding holdings, or the
+reverse. Allowing a user to spend more than their balance or sell more than
+they hold would create currency or holdings that were never earned.}
+{FMEA \todo{row ID}, L5 (data loss and integrity).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SEC-4}{No duplicate trades}
-{\todo{A repeated submission of the same trade is processed only once.}}
-{\todo{}}
-{\todo{Retries over a poor connection are the likely cause.}}
-{FMEA \todo{}; \todo{L5}}
-{\todo{}}
-{\todo{}}
+{The system shall record a trade only once when the same trade request is
+submitted more than once.}
+{When a test user submits a trade and the same request is sent again, for
+example by retrying after a dropped connection, exactly one trade is recorded.}
+{Mobile connections drop, and an app or user may resend a trade that already
+went through. Recording it twice would change the balance and holdings in a way
+the user did not intend.}
+{FMEA \todo{row ID}, L5 (data loss and integrity).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \end{description}
 
@@ -571,6 +582,8 @@ controls, and where it appears in the SRS.
 \reqref{SAF-10} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
 \reqref{SEC-2} & \todo{} & L5, L6 & \todo{} & Capstone\\
+\reqref{SEC-3} & \todo{} & L5 & \todo{} & Capstone\\
+\reqref{SEC-4} & \todo{} & L5 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
