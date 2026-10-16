@@ -220,17 +220,47 @@ suggests no more than a 10\% increase per week.
 {\todo{SRS section and ID}}
 {\todo{Capstone if \progname{} suggests goal changes. Otherwise remove SAF-5.}}
 
-\hazreq{SAF-6}{Reminder limits}
-{\todo{No activity reminders during \texttt{QUIET\_HOURS}. Each reminder
-category can be turned off. No shaming wording.}}
-{\todo{}}
-{\todo{Late-night nudges encourage unsafe exercise; guilt-based messages harm
-well-being.}}
-{FMEA \todo{}; \todo{L1, L2}}
-{\todo{}}
-{\todo{}}
+\hazreq{SAF-6}{Reminders only in chosen periods}
+{The system shall send reminders of the types in Table~\ref{TblReminderTypes}
+only during the time periods the user has chosen to receive them.}
+{For a test user who has chosen their reminder periods, no reminder of any type
+in Table~\ref{TblReminderTypes} is delivered outside those periods. For a test
+user who has not chosen any periods, reminders are delivered only during
+\texttt{DEFAULT\_REMINDER\_PERIOD}.}
+{A reminder is only useful when the user can act on it. During times such as
+working hours, a reminder to be active or to check a portfolio cannot be acted
+on and only interrupts the user. Late reminders also add pressure to exercise
+late at night: one participant described their streak making them go out
+walking at 9 p.m.\ when they otherwise would not (P01). Letting users choose
+when they are reminded keeps reminders useful and avoids late-night pressure.
+\todo{Choose \texttt{DEFAULT\_REMINDER\_PERIOD} for SRS Appendix C (\#95). It
+should exclude late evening and night.}
+\todo{Neither interview asked about notifications. Add a question about them
+for future interviews.}}
+{FMEA \todo{row ID}, L1 (physical harm), L2 (psychological harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \end{description}
+
+\begin{table}[h]
+\centering
+\caption{Reminder types}
+\label{TblReminderTypes}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Type} & \textbf{Example} & \textbf{Related feature}\\
+\midrule
+Activity & Progress toward today's goal, or a streak about to end & Activity goals and streaks (SAF-1 to SAF-5)\\
+Milestone & A goal reached, or a streak or currency milestone & Workout trends and milestones (Problem Statement 1.2)\\
+Portfolio & A notable change in simulated portfolio value & Portfolio value and trends (Problem Statement 1.2)\\
+Learning & A new concept or knowledge check is available & Learning progress (Problem Statement 1.2)\\
+Social & A friend shared an update or sent a connection request & Social feed (Problem Statement Goal 3)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+\todo{Confirm these reminder types against the SRS functional requirements
+(\#90).}
 
 \subsection{Activity Data Integrity}
 
@@ -510,6 +540,7 @@ controls, and where it appears in the SRS.
 \reqref{SAF-3} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-4} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-5} & \todo{} & L1 & \todo{} & \todo{}\\
+\reqref{SAF-6} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
