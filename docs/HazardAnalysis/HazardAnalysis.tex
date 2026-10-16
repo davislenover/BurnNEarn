@@ -477,14 +477,18 @@ tools that keep their data on their own device rather than in the cloud (P01).}
 {Capstone.}
 
 \hazreq{SEC-9}{No data to third parties}
-{\todo{No user identifiers or activity data are sent to third parties; the
-market data provider receives only asset identifiers.}}
-{\todo{}}
-{\todo{Interviewees want assurance their data is not sold (P01) and is kept
-secure by a reputable company (P02).}}
-{FMEA \todo{}; \todo{L3}}
-{\todo{}}
-{\todo{}}
+{The system shall not send users' personal, health or location data to any
+third party. The only data sent to the market data provider shall be the
+identifiers of the assets being priced.}
+{Every outgoing request from a test mobile device and from the server goes either to
+\progname{}'s own server or to the market data provider, and requests to the
+market data provider contain only asset identifiers.}
+{Participants judge apps by what happens to their data: one chose apps where
+their data is not sold (P01), and another wants their data kept secure by a
+reputable company (P02).}
+{FMEA \todo{row ID}, L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \end{description}
 
@@ -595,6 +599,7 @@ controls, and where it appears in the SRS.
 \reqref{SEC-6} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-7} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-8} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-9} & \todo{} & L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
