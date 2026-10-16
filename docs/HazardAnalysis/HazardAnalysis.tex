@@ -280,7 +280,9 @@ exercise regardless of pain (P02). A cap also limits what non-exercise motion
 can earn: phones count steps while riding a bus, and one tracking app was left
 running for hours after a ride had ended (P01). The cap applies to currency
 rather than to any one activity, so it works the same way for every supported
-activity type (Problem Statement Goal 5).
+activity type (Problem Statement Goal 5). The cap limits how much a day can
+earn, but it does not judge whether a workout record is genuine.
+\reqref{SEC-1} describes this in more detail.
 \todo{Choose \texttt{MAX\_DAILY\_CURRENCY} for SRS Appendix C (\#95) once the
 earning rate is defined in the SRS.}}
 {FMEA \todo{row ID}, L1 (physical harm), L4 (security loss), L5 (data loss and
@@ -289,14 +291,29 @@ integrity).}
 {Capstone.}
 
 \hazreq{SEC-1}{Implausible activity earns nothing}
-{\todo{Records above \texttt{MAX\_DAILY\_STEPS} or \texttt{MAX\_SESSION\_DURATION}
-earn no currency.}}
-{\todo{}}
-{\todo{Phones count steps on a bus, and trackers are left running for hours
-after an activity ends (P01).}}
-{FMEA \todo{}; \todo{L4, L5}}
-{\todo{}}
-{\todo{}}
+{The system shall not count an activity record that exceeds the plausibility
+limits for its activity type toward the user's currency, workout trends or
+milestones, and shall show the user that the record was not counted.}
+{A test record of more than \texttt{MAX\_DAILY\_STEPS} steps in one day, or a
+session longer than \texttt{MAX\_SESSION\_DURATION}, earns no currency, does not
+appear in the user's workout trends or milestones, and is shown to the user as
+not counted.}
+{\reqref{SAF-7} limits how much currency a day can earn, but it does not judge
+whether a record is genuine. Under the cap alone, a fabricated record still
+earns the full daily amount. An accidental one, such as a tracking app left
+running for hours after a ride had ended (P01), also distorts the user's
+workout trends, which the cap does not touch. This requirement rejects records
+that could not come from real activity.
+Small amounts of everyday tracking noise, such as steps counted while riding a
+bus (P01), stay within the limits and are accepted. The limits target records
+that are clearly impossible.
+\todo{Set \texttt{MAX\_DAILY\_STEPS} and \texttt{MAX\_SESSION\_DURATION} (and
+limits for any other activity types) in SRS Appendix C (\#95).}
+\todo{Match this wording with FitFolio's data-quality responsibilities in SRS
+System Context (2.3, \#84).}}
+{FMEA \todo{row ID}, L4 (security loss), L5 (data loss and integrity).}
+{\todo{SRS section and ID}}
+{Capstone.}
 
 \hazreq{SAF-8}{Show data gaps}
 {\todo{Days with no activity data are shown to the user as missing, not as
@@ -544,6 +561,7 @@ controls, and where it appears in the SRS.
 \reqref{SAF-5} & \todo{} & L1 & \todo{} & \todo{}\\
 \reqref{SAF-6} & \todo{} & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-7} & \todo{} & L1, L4, L5 & \todo{} & Capstone\\
+\reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
