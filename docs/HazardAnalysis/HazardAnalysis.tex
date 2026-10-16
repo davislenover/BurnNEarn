@@ -88,10 +88,390 @@ requirements.}
 entered in the table, including strategies involving providing additional
 documentation, and/or test cases.}
 
-\section{Safety and Security Requirements}
+\section{Safety and Security Requirements} \label{SecSafetyReqs}
 
-\wss{Newly discovered requirements.  These should also be added to the SRS.  (A
-rationale design process how and why to fake it.)}
+% Instructor prompt (hidden): Newly discovered requirements. These should also
+% be added to the SRS. (A rational design process: how and why to fake it.)
+
+% =============================================================================
+% HOW TO FILL IN THIS SECTION (delete this block before submitting)
+%
+% * One \hazreq entry per requirement. Arguments, in order:
+%     {ID}{short title}{requirement}{fit criterion}{rationale}
+%     {associated hazards}{where it appears in the SRS}{roadmap}
+% * IDs: SAF-n for physical, psychological and financial-understanding harm;
+%   SEC-n for privacy and security. Do not use "SR": the IEEE SRS already uses
+%   SR for stakeholder requirements. Number each prefix in order, no gaps.
+% * Requirement: "The system shall ...". Say WHAT, not how (no libraries,
+%   algorithms or encryption schemes), but be specific enough to act on. The
+%   HA checklist rejects vague wording such as "Better secure user data".
+% * Fit criterion: how a tester decides pass or fail. Numbers go in SRS
+%   Appendix C as SMALL_CAPS constants (write \texttt{MAX\_DAILY\_CURRENCY}),
+%   so the value is defined in one place.
+% * Rationale: why it is needed and the evidence: the FMEA row, interviews
+%   (P01/P02 only, paraphrased, nothing identifying), or a PS/DP section.
+% * Associated hazards: FMEA row ID(s) from Section 5 and loss ID(s) L1-L8
+%   from Section 2. Use \todo{} until those IDs exist.
+% * In SRS: the SRS section and ID where the same requirement appears, with
+%   the same ID and wording.
+% * Roadmap: "Capstone" or "Future" (feeds Section 7, Roadmap).
+% * Refer to another requirement with \reqref{SAF-1}.
+% * \todo{...} prints in red. Every one must be gone before submission.
+% =============================================================================
+
+% Entry format, defined here so it stays local to this section.
+\newcommand{\hazreq}[8]{%
+  \item[#1 (#2).]\phantomsection\label{req:#1} #3
+  \begin{itemize}
+    \item \textbf{Fit criterion:} #4
+    \item \textbf{Rationale:} #5
+    \item \textbf{Associated hazards:} #6
+    \item \textbf{In SRS:} #7
+    \item \textbf{Roadmap:} #8
+  \end{itemize}}
+\newcommand{\reqref}[1]{\hyperref[req:#1]{#1}}
+
+The requirements in this section control the hazards identified in the Failure
+Mode and Effect Analysis (Section~5). % TODO: switch to \ref once Section 5 has a \label
+Each requirement states what \progname{} shall do, how a tester decides whether
+it is met (its fit criterion), why it is needed, which hazards and losses it
+controls, and where it appears in the Software Requirements Specification
+(SRS). Every requirement appears in the SRS with the same identifier and
+wording. Values written as \texttt{SMALL\_CAPS} constants are defined in SRS
+Appendix~C. Requirements prefixed SAF address physical, psychological and
+financial-understanding harm; requirements prefixed SEC address privacy and
+security. Losses L1--L8 are defined in Section~2.
+\todo{Confirm loss IDs once Section 2 (\#75) is written.}
+
+\subsection{Physical and Psychological Well-being}
+
+\begin{description}
+
+\hazreq{SAF-1}{Rest days protect streaks}
+{The system shall let the user mark up to \texttt{REST\_DAYS\_PER\_PERIOD}
+days in each \texttt{STREAK\_PERIOD} as rest days, and a rest day shall not end
+the user's activity streak.}
+{A user who marks a day as a rest day and records no activity that day has the
+same streak count the following day. A request to mark more than
+\texttt{REST\_DAYS\_PER\_PERIOD} rest days in one \texttt{STREAK\_PERIOD} is
+refused.}
+{Streaks reward consistency, which can lead users to exercise while sick,
+injured or late at night to keep a streak alive. In user interviews, one
+participant described a step streak that makes them go out walking when they
+otherwise would not, including late in the evening (P01), and another admired
+pushing through exercise regardless of pain (P02).}
+{FMEA \todo{row ID} L1 (physical harm), L2 (psychological harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
+
+\hazreq{SAF-2}{No penalty for a lapse}
+{\todo{Missing a goal or ending a streak never reduces the user's currency
+balance or simulated holdings.}}
+{\todo{}}
+{\todo{Punishing lapses adds guilt and pressure to exercise when unwell.}}
+{FMEA \todo{} \todo{L1, L2}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-3}{User-controlled goals}
+{\todo{Goals are optional the system never raises a goal without the user's
+confirmation; any suggested increase is at most \texttt{MAX\_GOAL\_INCREASE}.}}
+{\todo{}}
+{\todo{Automatic goal escalation pushes users past what is healthy for them.}}
+{FMEA \todo{}; \todo{L1, L2}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-4}{Reminder limits}
+{\todo{No activity reminders during \texttt{QUIET\_HOURS}; each reminder
+category can be turned off no shaming wording.}}
+{\todo{}}
+{\todo{Late-night nudges encourage unsafe exercise; guilt-based messages harm
+well-being.}}
+{FMEA \todo{}; \todo{L1, L2}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Activity Data Integrity}
+
+\begin{description}
+
+\hazreq{SAF-5}{Daily earning cap}
+{\todo{No more than \texttt{MAX\_DAILY\_CURRENCY} currency is awarded per
+calendar day.}}
+{\todo{}}
+{\todo{Removes any reason to exercise past a healthy amount, and limits what
+faked or non-exercise motion can earn.}}
+{FMEA \todo{}; \todo{L1, L4, L5}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-1}{Count activity once}
+{\todo{When more than one source records the same period of activity, it earns
+currency once.}}
+{\todo{}}
+{\todo{A phone and a smartwatch can both record the same walk (P02 uses
+both).}}
+{FMEA \todo{}; \todo{L4, L5}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-2}{Implausible activity earns nothing}
+{\todo{Records above \texttt{MAX\_DAILY\_STEPS} or \texttt{MAX\_SESSION\_DURATION}
+earn no currency.}}
+{\todo{}}
+{\todo{Phones count steps on a bus, and trackers are left running for hours
+after an activity ends (P01).}}
+{FMEA \todo{}; \todo{L4, L5}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-6}{Show data gaps}
+{\todo{Days with no activity data are shown to the user as missing, not as
+zero activity.}}
+{\todo{}}
+{\todo{Steps go unrecorded while a phone is charging (P01), and HealthKit does
+not reveal whether read access was denied.}}
+{FMEA \todo{}; \todo{L2, L5}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Financial Understanding}
+
+\begin{description}
+
+\hazreq{SAF-7}{Simulation notice before the first trade}
+{\todo{Before the user's first trade, show a notice that the market is
+simulated and that nothing in the app is financial advice.}}
+{\todo{}}
+{\todo{Users may treat simulated results as advice. An interviewee compared
+picking individual stocks to gambling and warned about misleading investing
+content online (P01).}}
+{FMEA \todo{}; \todo{L6}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-8}{Notice on every trade confirmation}
+{\todo{Repeat the \reqref{SAF-7} notice on every trade confirmation screen.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L6}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-9}{No personalised recommendations}
+{\todo{The system does not recommend buying or selling a specific asset to a
+specific user (no ``top picks'').}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L6}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-10}{Label simulated returns}
+{\todo{Returns are labelled as simulated, with a link to what the simulation
+leaves out (fees, taxes, delays).}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L6}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Market Price and Trade Integrity}
+
+\begin{description}
+
+\hazreq{SEC-3}{Price freshness}
+{\todo{Show the time each price was obtained, and mark prices older than
+\texttt{QUOTE\_STALENESS\_LIMIT} as delayed.}}
+{\todo{}}
+{\todo{Provider request limits mean prices can lag; a lagging price shown as
+current teaches the wrong lesson.}}
+{FMEA \todo{}; \todo{L5, L6}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-4}{Complete or reject trades}
+{\todo{A trade is recorded completely or not at all, and a trade costing more
+than the balance is rejected.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L5}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-5}{No duplicate trades}
+{\todo{A repeated submission of the same trade is processed only once.}}
+{\todo{}}
+{\todo{Retries over a poor connection are the likely cause.}}
+{FMEA \todo{}; \todo{L5}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Privacy and Permissions}
+
+\begin{description}
+
+\hazreq{SEC-6}{Least-privilege health access}
+{\todo{Request read-only access to only the health data types listed as
+activity inputs in the SRS Data Dictionary; never write to the health
+platform.}}
+{\todo{}}
+{\todo{Interviewees want apps to be frugal with permissions (P01).}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-7}{State the purpose of each permission}
+{\todo{Before each permission prompt, show which feature uses that data.}}
+{\todo{}}
+{\todo{Both interviewees grant permissions only when the reason is clear (P01,
+P02).}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-8}{No location, contacts or clinical data}
+{\todo{The system requests no location or contacts permission and collects no
+medical history or diagnoses.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-9}{Consent and withdrawal}
+{\todo{Obtain consent before the first health-data read; stop reading after the
+user withdraws consent in the app.}}
+{\todo{}}
+{\todo{PIPEDA requires informed consent.}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-10}{Data minimisation and retention}
+{\todo{Only activity summaries leave the phone; personal data is deleted after
+\texttt{DATA\_RETENTION\_PERIOD} or on request.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-11}{No data to third parties}
+{\todo{No user identifiers or activity data are sent to third parties; the
+market data provider receives only asset identifiers.}}
+{\todo{}}
+{\todo{Interviewees want assurance their data is not sold (P01) and is kept
+secure by a reputable company (P02).}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Social Feed}
+
+\begin{description}
+
+\hazreq{SEC-12}{Private by default}
+{\todo{Each statistic is visible only to its owner until shared, and only to
+the friends selected for it.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-13}{No identifying detail in posts}
+{\todo{Shared posts carry no location, route or time-of-day data; deleting a
+post or removing a friend revokes access within \texttt{REVOKE\_DELAY}.}}
+{\todo{}}
+{\todo{Shared details plus context can identify a person (P01).}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SAF-11}{Limit harmful comparison}
+{\todo{Decide: e.g.\ users can hide comparisons or rankings.}}
+{\todo{}}
+{\todo{Comparison is ``only ever bad'' when a user is far behind (P02); the HA
+checklist asks us to consider self-image.}}
+{FMEA \todo{}; \todo{L2}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Account Security}
+
+\begin{description}
+
+\hazreq{SEC-14}{Authenticated access only}
+{\todo{Every request that reads or changes user data needs an authenticated
+session; another user's data is returned only if it was shared with the
+requester.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L3, L4}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-15}{Protect data in transit and at rest}
+{\todo{All data is encrypted in transit and when stored.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L3, L4}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-16}{Session expiry and sign-in audit}
+{\todo{Sessions expire after \texttt{SESSION\_TIMEOUT} of inactivity; sign-ins
+are recorded and visible to the user.}}
+{\todo{}}
+{\todo{}}
+{FMEA \todo{}; \todo{L4}}
+{\todo{}}
+{\todo{}}
+
+\hazreq{SEC-17}{In-app account deletion}
+{\todo{The user can delete their account and its data from inside the app.}}
+{\todo{}}
+{\todo{Required by Apple App Store guideline 5.1.1(v) for apps that allow
+account creation.}}
+{FMEA \todo{}; \todo{L3}}
+{\todo{}}
+{\todo{}}
+
+\end{description}
+
+\subsection{Traceability Summary}
+
+Table~\ref{TblSafetyTrace} summarises each requirement, the hazards it
+controls, and where it appears in the SRS.
+\todo{Fill in once the entries above and the Section 5 FMEA IDs are final.}
+
+\begin{table}[h]
+\centering
+\caption{Safety and security requirements traceability}
+\label{TblSafetyTrace}
+\begin{tabularx}{\textwidth}{llllX}
+\toprule
+\textbf{ID} & \textbf{FMEA rows} & \textbf{Losses} & \textbf{SRS} & \textbf{Roadmap}\\
+\midrule
+\reqref{SAF-1} & \todo{} & L1, L2 & \todo{} & Capstone\\
+\reqref{SAF-2} & \todo{} & \todo{} & \todo{} & \todo{}\\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \section{Roadmap}
 
