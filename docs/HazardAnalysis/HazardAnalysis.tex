@@ -525,14 +525,18 @@ reveal who they are (P01).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SAF-11}{Limit harmful comparison}
-{\todo{Decide: e.g.\ users can hide comparisons or rankings.}}
-{\todo{}}
-{\todo{Comparison is ``only ever bad'' when a user is far behind (P02); the HA
-checklist asks us to consider self-image.}}
-{FMEA \todo{}; \todo{L2}}
-{\todo{}}
-{\todo{}}
+\hazreq{SAF-11}{No rankings between users}
+{The system shall not rank users against each other by activity, currency or
+portfolio performance.}
+{No screen shown to a test user orders users by activity, currency or
+portfolio performance, or shows a user's position relative to others.}
+{Seeing friends' progress can motivate, but comparison becomes harmful when a
+user is far behind (P02). A ranking makes that gap explicit and places someone
+last. Leaderboards are a stretch goal (Problem Statement Section~3). If they are
+built, they should be opt-in.}
+{FMEA \todo{row ID}, L2 (psychological harm).}
+{\todo{SRS section and ID}}
+{Capstone. Opt-in leaderboards: Future, with the stretch goal.}
 
 \end{description}
 
@@ -602,6 +606,7 @@ controls, and where it appears in the SRS.
 \reqref{SAF-8} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SAF-9} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SAF-10} & \todo{} & L6 & \todo{} & Capstone\\
+\reqref{SAF-11} & \todo{} & L2 & \todo{} & Capstone\\
 \reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
 \reqref{SEC-2} & \todo{} & L5, L6 & \todo{} & Capstone\\
 \reqref{SEC-3} & \todo{} & L5 & \todo{} & Capstone\\
