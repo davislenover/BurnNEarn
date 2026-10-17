@@ -352,7 +352,7 @@ phone, add the push notification service as an external entity (HA SEC-9).}
   flow/.style={-{Stealth[length=2mm]}},
   lbl/.style={font=\scriptsize, align=center}
 ]
-  \node[system] (sys) {\progname{}};
+  \node[system] (sys) {\progname{}\\[2pt]\normalfont\small (mobile app and server)};
 
   \node[entity, left=3.7cm of sys] (user) {User};
   \node[entity, right=3.2cm of sys] (market) {Market data\\provider};
@@ -402,26 +402,62 @@ phone, add the push notification service as an external entity (HA SEC-9).}
 \label{Fig_SystemContext}
 \end{figure}
 
-\plt{For each of the entities in the system context diagram its responsibilities
-  should be listed.  Whenever possible the system should check for data quality,
-  but for some cases the user will need to assume that responsibility.  The list
-  of responsibilities should be about the inputs and outputs only, and they
-  should be abstract.  Details should not be presented here.  However, the
-  information should not be so abstract as to just say ``inputs'' and
-  ``outputs''.  A summarizing phrase can be used to characterize the inputs.
-  For instance, saying ``material properties'' provides some information, but it
-  stays away from the detail of listing every required properties.}
+% Template prompt (hidden): List the responsibilities of each entity in the
+% diagram, about inputs and outputs only, kept abstract but more specific than
+% "inputs" and "outputs". The system should check data quality wherever
+% possible; otherwise the user takes on that responsibility.
+
+The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 
 \begin{itemize}
 \item User Responsibilities:
 \begin{itemize}
-\item 
+\item Provide accurate profile measurements (age, height and weight).
+\item Grant \progname{} the permissions its features use, and keep an activity
+  source recording to the phone's health platform.
+\item Make their own trade decisions. \progname{} gives no financial advice.
+\item Choose what to share, with which friends, and when to receive reminders.
+\item Keep an Internet connection for trading and the social feed.
 \end{itemize}
 \item \progname{} Responsibilities:
 \begin{itemize}
-\item Detect data type mismatch, such as a string of characters instead of a
-  floating point number
-\item 
+\item Reject profile measurements outside plausible ranges.
+\item Award currency only for activity within plausibility limits and up to a
+  daily cap, treating a day with no activity data as a day with zero activity
+  (Hazard Analysis SAF-7, SEC-1).
+\item Reject trades the user cannot cover, and record each trade once and
+  completely (Hazard Analysis SEC-3, SEC-4).
+\item Show each asset price with the time it was obtained, and mark delayed
+  prices (Hazard Analysis SEC-2).
+\item Show shared posts only to the friends the user chose, without location
+  detail (Hazard Analysis SEC-10, SEC-11).
+\item Request only the permissions its features use, explaining each one
+  (Hazard Analysis SEC-5, SEC-6).
+\item Send the market data provider only asset identifiers (Hazard Analysis
+  SEC-9).
+\end{itemize}
+\item Health Platform Responsibilities:
+\begin{itemize}
+\item Store activity records from the user's activity sources, and provide
+  daily totals for the activity types the user has permitted.
+\item Grant or withdraw \progname{}'s read access as the user chooses, and
+  report the current permission status.
+\item Keep the activity data it records as accurate as its activity sources
+  allow.
+\end{itemize}
+\item Location Services Responsibilities:
+\begin{itemize}
+\item Provide the phone's location when the user has granted permission.
+\end{itemize}
+\item Market Data Provider Responsibilities:
+\begin{itemize}
+\item Supply current and historical prices for the assets \progname{}
+  requests, within its request limits.
+\end{itemize}
+\item Friend Responsibilities:
+\begin{itemize}
+\item Accept or decline a user's connection request.
+\item View the posts a user has shared with them.
 \end{itemize}
 \end{itemize}
 
