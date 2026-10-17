@@ -58,10 +58,69 @@ Date2 & Name(s) & Description of changes\\
 
 \wss{You can include your definition of what a hazard is here.}
 
-\section{Scope and Purpose of Hazard Analysis}
+\section{Scope and Purpose of Hazard Analysis} \label{SecScope}
 
-\wss{You should say what \textbf{loss} could be incurred because of the
-hazards.}
+% Instructor prompt (hidden): You should say what loss could be incurred
+% because of the hazards.
+
+\progname{} is designed to change how its users behave: to be more active, to
+keep up a routine, and to make investing decisions. Features that change
+behaviour can also cause harm, even when they work as intended. For example,
+one interview participant described a step streak that now makes them go out
+walking later than they should (P01). The purpose of this
+hazard analysis is to identify how \progname{} could cause harm and to define
+requirements that control it. Hazards are identified using Failure Mode and
+Effect Analysis (FMEA) in Section~5, and the resulting safety and security
+requirements are listed in Section~\ref{SecSafetyReqs} and added to the SRS.
+The aim is to reduce each risk as low as reasonably practicable (ALARP).
+
+In-app currency has no real-world value, so \progname{} cannot cause a direct
+financial loss. However, given it is expected to simulate real-world trading it can influence a users financial choices outside the app. Table~\ref{TblLosses} lists the losses it can cause. Each FMEA
+row and each requirement in Section~\ref{SecSafetyReqs} refers to these
+identifiers.
+
+\begin{table}[H]
+\centering
+\caption{Losses that \progname{} could cause}
+\label{TblLosses}
+\begin{tabularx}{\textwidth}{lp{3.2cm}X}
+\toprule
+\textbf{ID} & \textbf{Loss} & \textbf{Description}\\
+\midrule
+L1 & Physical harm & Injury or unsafe exercise, such as exercising while sick
+or injured or late at night, to earn currency or keep a streak.\\
+\addlinespace
+L2 & Psychological harm & Guilt, anxiety or harm to self-image from missed
+goals, broken streaks or comparison with friends.\\
+\addlinespace
+L3 & Privacy loss & Health, location, portfolio or social data seen by people
+the user did not choose, or by third parties.\\
+\addlinespace
+L4 & Security loss & Someone else gaining access to a user's account, or
+currency earned from fabricated activity.\\
+\addlinespace
+L5 & Data loss and integrity & Lost, duplicated or incorrect activity,
+currency, holdings or trade records.\\
+\addlinespace
+L6 & Financial-understanding harm & A user learning the wrong lessons about
+investing, or treating simulated results or in-app content as advice for real
+financial decisions.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The analysis covers the \progname{} mobile app on Android and iOS, its server
+and database, and its use of the phone's health platform and the market data
+provider. Hazards are considered both when a part fails and when a feature
+behaves as intended. The following are out of scope:
+\begin{itemize}
+  \item The internal workings of the health platforms and the market data
+  provider. How their failures appear in \progname{}, such as missing activity
+  data or delayed prices, is in scope.
+  \item Injuries that are part of a sport or activity itself.
+  \item Stretch goals (Problem Statement Section~3). They will be analysed if
+  they are built.
+\end{itemize}
 
 \section{System Boundaries and Components}
 
@@ -111,7 +170,7 @@ documentation, and/or test cases.}
 %   so the value is defined in one place.
 % * Rationale: why it is needed and the evidence: the FMEA row, interviews
 %   (P01/P02 only, paraphrased, nothing identifying), or a PS/DP section.
-% * Associated hazards: FMEA row ID(s) from Section 5 and loss ID(s) L1-L8
+% * Associated hazards: FMEA row ID(s) from Section 5 and loss ID(s) L1-L6
 %   from Section 2. Use \todo{} until those IDs exist.
 % * In SRS: the SRS section and ID where the same requirement appears, with
 %   the same ID and wording.
@@ -141,8 +200,7 @@ controls, and where it appears in the Software Requirements Specification
 wording. Values written as \texttt{SMALL\_CAPS} constants are defined in SRS
 Appendix~C. Requirements prefixed SAF address physical, psychological and
 financial-understanding harm. Requirements prefixed SEC address privacy and
-security. Losses L1--L8 are defined in Section~2.
-\todo{Confirm loss IDs once Section 2 (\#75) is written.}
+security. Losses L1--L6 are defined in Table~\ref{TblLosses}.
 
 \subsection{Physical and Psychological Well-being}
 
