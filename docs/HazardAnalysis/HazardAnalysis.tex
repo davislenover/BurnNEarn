@@ -130,6 +130,31 @@ originate outside the boundary are still analyzed when \progname{} must detect
 or respond to them. For example, \progname{} cannot prevent the market data
 provider from going offline, but it must not present old prices as current.
 
+
+The hazards in scope are therefore those that arise in a component inside the
+boundary, or in an external entity whose failure a component must detect or
+withstand. They fall into five categories, which match the losses in
+Section~\ref{SecScopePurpose} and the groups of requirements in
+Section~\ref{SecSafetyReqs}:
+
+\begin{enumerate}
+    \item \textbf{Health and physical safety:} injury, overexertion, or harmful
+    behaviour encouraged by rewards or fitness content.
+    \item \textbf{Privacy and security:} exposure, loss of control, or misuse of
+    personal and health data.
+    \item \textbf{Data integrity:} incorrect balances, rewards, prices, or
+    portfolio values.
+    \item \textbf{Financial learning:} information that misleads users into a
+    wrong understanding or a harmful real-world financial decision.
+    \item \textbf{Availability:} outages or data loss that prevent users from
+    using \progname{} or cost them their progress.
+\end{enumerate}
+
+Hazards outside the boundary that \progname{} can neither detect nor
+influence, such as a defect in the phone's operating system or a breach of the
+hosting provider's own facilities, are out of scope; they are excluded by the
+critical assumptions in Section~\ref{SecAssumptions}.
+
 \section{Critical Assumptions} \label{SecAssumptions}
 
 \wss{These assumptions that are made about the software or system.  You should
