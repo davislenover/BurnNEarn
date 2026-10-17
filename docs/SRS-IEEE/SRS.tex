@@ -534,6 +534,15 @@ run as a mobile app on Android phones running Android
 versions on the devices available to the team and the supervisor for testing
 (Development Plan, Section~10).
 
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_HealthPlatform}:]
+\progname{} shall obtain recorded activity only through the phone's health
+platform: Apple HealthKit on iOS and Health Connect on Android. No core feature
+shall require a wearable device. Note this includes the use of programming libraries which gather health data (i.e., they must use the OS provider solution under the hood)
+\textit{Rationale:} Users carry their phone during everyday activity
+(Section~\ref{SecUserCharacteristics}), and the health platforms already
+collect data from the phone and from any wearable the user owns (note, wearable
+integration is a stretch goal).
+
 \end{itemize}
 
 % ============================================================== 
