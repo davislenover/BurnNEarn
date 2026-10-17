@@ -700,7 +700,8 @@ TODO
 % * Use \freq{label}{statement}{fit criterion}{traces}. The FR number is
 %   assigned automatically.
 % * Labels: FR_ plus the area prefix of your subsection, then a short name:
-%   FR_Acct..., FR_Act..., FR_Mkt..., FR_Learn..., FR_Social..., FR_Remind...
+%   FR_Acct..., FR_Act..., FR_Mkt..., FR_Learn..., FR_Social..., and FR_Remind...
+%   or FR_Set... in Reminders and Settings.
 %   The prefix keeps labels from clashing between authors.
 % * Statement: one "The system shall ..." per requirement. If it needs "and" to
 %   join two behaviours, split it into two requirements.
@@ -778,6 +779,18 @@ Section~\ref{SecProductVision}.
   {A test user sets a reminder period, and it is shown in their settings the
   next time they open the app.}
   {\todo{SR}, \todo{UC}, G2}
+\freq{FR_SetWithdrawConsent}
+  {The system shall let the user withdraw consent, separately for health data
+  and for location data, for \progname{} to read that data.}
+  {After a test user withdraws consent for health data in the app, no further
+  health data is read. The same holds for location data.}
+  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-7}
+\freq{FR_SetPermissionList}
+  {The system shall show the user which data \progname{} has permission to read
+  and the feature that uses each.}
+  {A test user who has granted health and location permissions sees both
+  listed, each with the feature that uses it.}
+  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-6}
 \end{itemize}
 
 % ============================================================== 
