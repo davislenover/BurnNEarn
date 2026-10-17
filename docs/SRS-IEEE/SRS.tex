@@ -543,6 +543,16 @@ shall require a wearable device. Note this includes the use of programming libra
 collect data from the phone and from any wearable the user owns (note, wearable
 integration is a stretch goal).
 
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_HealthAccess}:] \progname{}
+shall access health data only under the access rules Apple (iOS provider) and Google (Android OS provider) set for
+their health platforms, such as declaring each data type it reads and
+explaining each permission to the user.
+\textit{Rationale:} Apps that break these rules are not accepted in the app
+stores. The rules also limit what \progname{} can read, such as how far back
+past activity data can be read.
+\todo{Cite the HealthKit and Health Connect documentation in
+refs/References.bib.}
+
 \end{itemize}
 
 % ============================================================== 
