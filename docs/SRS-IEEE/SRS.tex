@@ -84,6 +84,10 @@
 \newcommand{\lthelcnum}{LC\thelcnum}
 \newcommand{\lcref}[1]{LC\ref{#1}}
 
+\newcounter{scnum} %System Constraint (SC) Number
+\newcommand{\scthescnum}{SC\thescnum}
+\newcommand{\scref}[1]{SC\ref{#1}}
+
 \usepackage{fullpage}
 
 \begin{document}
@@ -511,15 +515,26 @@ from the Problem Statement, and usability testing should include beginners.
 
 \subsection{System Constraints}
 
-\plt{System constraints differ from other type of requirements because they
-  limit the developers' options in the system design and they identify how the
-  eventual system must fit into the world. This is the only place in the SRS
-  where design decisions can be specified.  That is, the quality requirement for
-  abstraction is relaxed here.  However, system constraints should only be
-  included if they are truly required.}
+% Template prompts (hidden): System constraints limit the developers' options
+% in the design and identify how the system must fit into the world. This is
+% the only place in the SRS where design decisions can be specified, so they
+% should only be included if they are truly required. Mention platform
+% constraints and licensing restrictions here.
 
-\plt{This is where you would mention platform constrains, and licensing
-restrictions.}
+The following constraints limit the design of \progname{}. Each one is imposed
+by the project brief, an external service, the law or the app stores.
+
+\begin{itemize}
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_Platform}:] \progname{} shall
+run as a mobile app on Android phones running Android
+\texttt{MIN\_ANDROID\_VERSION} or later and on iPhones running iOS
+\texttt{MIN\_IOS\_VERSION} or later.
+\textit{Rationale:} This project calls for a mobile app, and these are the
+versions on the devices available to the team and the supervisor for testing
+(Development Plan, Section~10).
+
+\end{itemize}
 
 % ============================================================== 
 \section{Stakeholder Requirements}
@@ -664,7 +679,7 @@ email & String & User email address\\
 \caption{Data Dictionary} \label{tab:DataDictionary}
 \end{longtable}
 
-\subsection{Privacy and Data Retention}
+\subsection{Privacy and Data Retention} \label{SecPrivacyRetention}
 
 \plt{Discuss storage, retention, deletion, privacy controls,
  consent, encryption, and compliance requirements.}
