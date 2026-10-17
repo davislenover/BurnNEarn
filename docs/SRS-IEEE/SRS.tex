@@ -88,6 +88,12 @@
 \newcommand{\scthescnum}{SC\thescnum}
 \newcommand{\scref}[1]{SC\ref{#1}}
 
+% Functional requirement entry: \freq{label}{statement}{fit criterion}{traces}
+\newcommand{\freq}[4]{%
+  \item[FR\refstepcounter{reqnum}\thereqnum \label{#1}:] #2\\
+  \textit{Fit criterion:} #3\\
+  \textit{Traces to:} #4}
+
 \usepackage{fullpage}
 
 \begin{document}
@@ -288,7 +294,7 @@ are already established and harder to change.
 \textbf{Desired improvement.} An approachable, low-risk way for beginners to
 build fitness and financial habits together while staying motivated.
 
-\subsection{Product Vision}
+\subsection{Product Vision} \label{SecProductVision}
 
 % Template prompts (hidden): A clear and concise statement of the product's
 % purpose and goals. Goals are functional and nonfunctional objectives, refined
@@ -591,7 +597,7 @@ their phone.
 \todo{Add \texttt{MIN\_ANDROID\_VERSION} (17), \texttt{MIN\_IOS\_VERSION} (27)
 and \texttt{MARKET\_DATA\_PROVIDER} to Appendix C (\#95).}
 
-\end{itemize}
+
 
 % ============================================================== 
 \section{Stakeholder Requirements}
@@ -681,25 +687,91 @@ TODO
 \end{itemize}
 
 % ============================================================== 
-\section{Functional Requirements}
-\plt{Functional requirements describe what the system should do.  They are typically
-expressed as a set of conditions or capabilities that the system must have.  These
-requirements are usually derived from the stakeholder requirements and use cases.}
+\section{Functional Requirements} \label{SecFR}
 
-\plt{Use SHALL statements. Requirements must be atomic, testable, and traceable.}
+% Template prompts (hidden): Functional requirements describe what the system
+% should do, derived from the stakeholder requirements and use cases. Use SHALL
+% statements. Requirements must be atomic, testable and traceable. Labels are
+% meaningful mnemonics, not numbers.
+
+% =============================================================================
+% HOW TO WRITE A FUNCTIONAL REQUIREMENT (delete this block before submitting)
+%
+% * Use \freq{label}{statement}{fit criterion}{traces}. The FR number is
+%   assigned automatically.
+% * Labels: FR_ plus the area prefix of your subsection, then a short name:
+%   FR_Acct..., FR_Act..., FR_Mkt..., FR_Learn..., FR_Social..., FR_Remind...
+%   The prefix keeps labels from clashing between authors.
+% * Statement: one "The system shall ..." per requirement. If it needs "and" to
+%   join two behaviours, split it into two requirements.
+% * Say WHAT, not how: no screens, libraries or algorithms. Numbers are
+%   SMALL_CAPS constants defined in Appendix C (#95).
+% * Fit criterion: one line saying how a tester decides pass or fail.
+% * Traces to: the goal(s) G1-G5 (Section 2.2), plus the stakeholder
+%   requirement (\srref{...}) and use case (\ucref{...}) once they exist. Use
+%   \todo{SR} and \todo{UC} until then.
+% * Hazard Analysis requirements that are functional go here with their HA ID
+%   at the start of the statement, e.g. "(HA SAF-1) The system shall ...",
+%   using the same wording as the Hazard Analysis. Privacy and security
+%   requirements from the HA go in Section 7.3 or Section 8 instead.
+% * Each subsection has one owner (in its comment).
+% =============================================================================
+
+This section lists what \progname{} shall do, grouped by feature area. Each
+requirement has a fit criterion and traces to the goals in
+Section~\ref{SecProductVision}.
+
+% Owner: Farid
+\subsection{Accounts and Profile}
+
+% Owner: Davis
+\subsection{Activity and Rewards}
 
 \noindent \begin{itemize}
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label1}:] The system shall ...
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label2}:] The system shall ...
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label3}:] The system shall ...
-
+\freq{FR_ActEarn}
+  {The system shall award virtual currency for recorded activity of a supported
+  activity type.}
+  {A test user whose health platform reports a daily total for a supported
+  activity type receives currency for that day.}
+  {\todo{SR}, \todo{UC}, G5}
+\freq{FR_ActDailyCap}
+  {(HA SAF-7) The system shall award a user no more than
+  \texttt{MAX\_DAILY\_CURRENCY} virtual currency for recorded activity in any
+  calendar day.}
+  {For a test user whose recorded activity in one calendar day would otherwise
+  earn more than \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by exactly
+  \texttt{MAX\_DAILY\_CURRENCY} for that day.}
+  {\todo{SR}, \todo{UC}, G5}
 \end{itemize}
 
-\plt{The requirements are given labels so that they can be referenced in other
-parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
+% Owner: Davis
+\subsection{Simulated Market and Portfolio}
+
+\noindent \begin{itemize}
+\freq{FR_MktBuy}
+  {The system shall let the user buy units of an asset using virtual currency.}
+  {A test user with enough currency buys one unit of an asset. Their balance
+  decreases by the asset's price and their holdings of it increase by one.}
+  {\todo{SR}, \todo{UC}, G4}
+\end{itemize}
+
+% Owner: Farid
+\subsection{Learning and Feedback}
+
+% Owner: Farid
+\subsection{Social Feed}
+
+% Owner: Davis
+\subsection{Reminders and Settings}
+
+\noindent \begin{itemize}
+\freq{FR_RemindPeriods}
+  {The system shall let the user choose the time periods in which they receive
+  reminders.}
+  {A test user sets a reminder period, and it is shown in their settings the
+  next time they open the app.}
+  {\todo{SR}, \todo{UC}, G2}
+\end{itemize}
 
 % ============================================================== 
 \section{Data Requirements}
@@ -852,7 +924,7 @@ documents.}
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_Label1} \\
+\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_AcctCreate} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -864,7 +936,7 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_Label1} & \nfrref{NFR_Accuracy} \\
+\rref{FR_AcctCreate} & \nfrref{NFR_Accuracy} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
