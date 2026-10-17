@@ -36,7 +36,7 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Oct 16, 2026 & Farid Bastoros & Initial revision of 1 Introduction.\\
+Oct 16, 2026 & Farid Bastoros & Initial revision of 1 Introduction, 3 System Boundaries and Components.\\
 Date1 & Name(s) & Description of changes\\
 Date2 & Name(s) & Description of changes\\
 ... & ... & ...\\
@@ -110,11 +110,25 @@ hazards.}
 
 \section{System Boundaries and Components} \label{SecBoundaries}
 
-\wss{Dividing the system into components will help you brainstorm the hazards.
-You shouldn't do a full design of the components, just get a feel for the major
-ones.  For projects that involve hardware, the components will typically include
-each individual piece of hardware.  If your software will have a database, or an
-important library, these are also potential components.}
+% \wss{Dividing the system into components will help you brainstorm the hazards.
+% You shouldn't do a full design of the components, just get a feel for the major
+% ones.  For projects that involve hardware, the components will typically include
+% each individual piece of hardware.  If your software will have a database, or an
+% important library, these are also potential components.}
+
+
+The system analyzed in this document is the software the team builds,
+configures, and deploys: the \progname{} mobile application, its backend
+server and the application programming interface (API) through which the app
+reaches it, its database, and the third-party libraries bundled with them.
+Third-party libraries are inside the boundary because the team chooses them,
+controls which version is used, and is responsible for how they are used.
+Everything \progname{} depends on but does not control is outside the
+boundary, including the phone's operating system (OS) and health platform, the
+market data provider, the network, and the hosting service. Hazards that
+originate outside the boundary are still analyzed when \progname{} must detect
+or respond to them. For example, \progname{} cannot prevent the market data
+provider from going offline, but it must not present old prices as current.
 
 \section{Critical Assumptions} \label{SecAssumptions}
 
