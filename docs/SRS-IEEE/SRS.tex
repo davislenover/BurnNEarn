@@ -461,15 +461,24 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \end{itemize}
 \end{itemize}
 
-\plt{Identify in what context the software will typically be used.  Is it for
-exploration? education? engineering work? scientific work?. Identify whether it
-will be used for mission-critical or safety-critical applications.} 
+% Template prompts (hidden): Identify the context the software will typically
+% be used in, and whether it will be used for mission-critical or
+% safety-critical applications. This sets how much effort the rationale
+% section needs.
 
-\plt{This additional context information is needed to determine how much effort
-should be devoted to the rationale section.  If the application is
-safety-critical, the bar is higher.  This is currently less structured, but
-analogous to, the idea to the Automotive Safety Integrity Levels (ASILs) that
-McSCert uses in their automotive hazard analyses.}
+\progname{} is intended for personal education and habit building. Members of
+the general public use it on their own smartphones to track their activity,
+earn currency and practice investing in a simulated market. It is not intended
+for professional, engineering or scientific use.
+
+\progname{} is not mission-critical: it holds and moves no real money, so an
+outage only delays rewards and learning. It is not safety-critical either
+since it controls no physical equipment and provides
+no medical function. However, it handles personal health and location data and
+is designed to influence how users exercise and make financial decisions. These
+hazards, and the requirements that control them, are covered in the Hazard
+Analysis. The rationale in Section~\ref{SecRationale} therefore focuses on
+those requirements.
 
 \subsection{User Characteristics} \label{SecUserCharacteristics}
 
@@ -774,7 +783,7 @@ Functional Req & Nonfunctional Req \\
 
 % ============================================================== 
 
-\section{Rationale}
+\section{Rationale} \label{SecRationale}
 
 \plt{Provide a rationale for the decisions made in the documentation.  Rationale
 should be provided for scope decisions, functional requirements, nonfunctioanl
