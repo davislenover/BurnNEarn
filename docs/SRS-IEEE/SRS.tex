@@ -578,6 +578,19 @@ data in Canada and in these stores. The specific controls are in
 Section~\ref{SecPrivacyRetention} and the Hazard Analysis (SEC-5 to SEC-9 and
 SEC-15).
 
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_Server}:] Trading, market
+prices and the social feed shall require an Internet connection to
+\progname{}'s server.
+\textit{Rationale:} Prices are fetched from the provider once for all users to
+stay within its request limits (\scref{SC_MarketData}), friends' shared posts
+must reach other users' phones, and a user's portfolio must survive the loss of
+their phone.
+
+\end{itemize}
+
+\todo{Add \texttt{MIN\_ANDROID\_VERSION} (17), \texttt{MIN\_IOS\_VERSION} (27)
+and \texttt{MARKET\_DATA\_PROVIDER} to Appendix C (\#95).}
+
 \end{itemize}
 
 % ============================================================== 
