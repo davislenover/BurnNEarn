@@ -3,6 +3,9 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{hyperref}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
 
 \hypersetup{
     colorlinks=true,       % false: boxed links; true: colored links
@@ -154,6 +157,73 @@ Hazards outside the boundary that \progname{} can neither detect nor
 influence, such as a defect in the phone's operating system or a breach of the
 hosting provider's own facilities, are out of scope; they are excluded by the
 critical assumptions in Section~\ref{SecAssumptions}.
+
+
+\begin{figure}[H]
+  \centering
+  \makebox[\textwidth][c]{%
+  \begin{tikzpicture}[scale=0.72, transform shape,
+    comp/.style={draw, rectangle, rounded corners=2pt, align=center,
+      minimum width=2.6cm, minimum height=0.9cm, font=\footnotesize, fill=white},
+    ext/.style={comp, fill=gray!25},
+    link/.style={-{Stealth[length=2mm]}, thick},
+    both/.style={{Stealth[length=2mm]}-{Stealth[length=2mm]}, thick},
+    lbl/.style={font=\scriptsize, align=center, inner sep=1.5pt}]
+
+    % Inside the boundary
+    \node[comp] (c1) at (0,0) {C1 Mobile\\application};
+    \node[comp] (c2) at (0,-1.8) {C2 Health data\\integration};
+    \node[comp] (c9) at (3.6,1.6) {C9 Accounts and\\authentication};
+    \node[comp] (c10) at (3.6,0) {C10 Backend API};
+    \node[comp] (c11) at (3.6,-1.8) {C11 Database};
+    \node[comp] (c3) at (7.4,1.2) {C3 Reward\\engine};
+    \node[comp] (c5) at (10.4,1.2) {C5 Trading and\\portfolio engine};
+    \node[comp] (c7) at (7.4,-0.2) {C7 Learning and\\feedback};
+    \node[comp] (c8) at (10.4,-0.2) {C8 Social feed};
+    \node[comp] (c4) at (7.4,-1.6) {C4 Market data\\service};
+    \node[comp] (c6) at (10.4,-1.6) {C6 Scenario\\engine};
+    \begin{scope}[on background layer]
+      \node[draw, fill=gray!8, rounded corners=3pt, inner sep=6pt,
+        fit=(c3) (c5) (c4) (c6),
+        label={[font=\scriptsize\itshape]above:Backend services}] (svc) {};
+    \end{scope}
+    \node[draw, dashed, thick, rounded corners=4pt, inner sep=10pt,
+      fit=(c1) (c2) (c9) (c11) (svc),
+      label={[font=\small\bfseries]above:\progname{} system boundary}] (sys) {};
+
+    % Outside the boundary
+    \node[ext] (e6) at (-5.2,1.6) {E6 App stores};
+    \node[ext] (e1) at (-5.2,0) {E1 User};
+    \node[ext] (e2) at (-5.2,-1.8) {E2 Phone OS and\\health platform};
+    \node[ext] (e5) at (3.6,-4.4) {E5 Hosting\\environment};
+    \node[ext] (e3) at (8.9,-4.4) {E3 Market data\\provider};
+    \node[ext] (e7) at (15.0,-0.2) {E7 Friends};
+
+    \draw[both] (e1) -- node[lbl, above] {input and\\display} (c1);
+    \draw[link] (e2) -- node[lbl, above] {activity\\records} (c2);
+    \draw[link] (e6.east) -| node[lbl, pos=0.18, above] {install and updates} (c1.north);
+    \draw[link] (c2) -- (c1);
+    \draw[both] (c1) -- node[lbl, above] {requests} (c10);
+    \draw[both] (c10) -- (c9);
+    \draw[both] (c10) -- (c11);
+    \draw[both] (c10) -- node[lbl, above] {requests} (svc.west |- c10);
+    \draw[both] (svc.west |- c11) -- node[lbl, below] {stored data} (c11);
+    \draw[link] (e5) -- node[lbl, right] {hosts C3 to C11} (c11);
+    \draw[link] (e3) -- node[lbl, pos=0.2, left] {current\\prices} (c4);
+    \draw[link] (e3) -- node[lbl, pos=0.2, right] {historical\\prices} (c6);
+    \draw[link] (c8) -- node[lbl, pos=0.72, above] {shared\\updates} (e7);
+  \end{tikzpicture}%
+  }
+  \caption{System boundary of \progname{}. Unshaded boxes are components inside
+  the boundary (dashed line); dark grey boxes are external entities outside it. Each
+  arrow shows that information flows from the element at its tail to the element
+  at its head; a double-headed arrow shows that information flows both ways.
+  The light grey group contains the backend services (C3 to C8): C10 passes each
+  request to the service responsible for it, and every service stores its data in
+  C11. External entity E4 (Network) is not drawn because it carries every arrow
+  that crosses the boundary.}
+  \label{FigBoundary}
+\end{figure}
 
 \section{Critical Assumptions} \label{SecAssumptions}
 
