@@ -749,10 +749,11 @@ Section~\ref{SecProductVision}.
 
 \noindent \begin{itemize}
 \freq{FR_MktRealPrices}
-  {The system shall price each asset in the simulated market at its most recent
-  real-world price from the market data provider.}
+  {The system shall price each asset in the simulated market at the most recent
+  price it has obtained for that asset from the market data provider.}
   {For a test asset, the price \progname{} shows and uses for trades equals the
-  most recent price the market data provider returned for that asset.}
+  latest price \progname{} received from the market data provider for that
+  asset.}
   {\todo{SR}, \todo{UC}, G4}
 \freq{FR_MktBuy}
   {The system shall let the user buy units of an asset using virtual currency.}
