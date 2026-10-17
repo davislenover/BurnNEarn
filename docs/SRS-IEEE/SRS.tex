@@ -748,6 +748,12 @@ Section~\ref{SecProductVision}.
 \subsection{Simulated Market and Portfolio}
 
 \noindent \begin{itemize}
+\freq{FR_MktRealPrices}
+  {The system shall price each asset in the simulated market at its most recent
+  real-world price from the market data provider.}
+  {For a test asset, the price \progname{} shows and uses for trades equals the
+  most recent price the market data provider returned for that asset.}
+  {\todo{SR}, \todo{UC}, G4}
 \freq{FR_MktBuy}
   {The system shall let the user buy units of an asset using virtual currency.}
   {A test user with enough currency buys one unit of an asset. Their balance
@@ -924,7 +930,7 @@ documents.}
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_AcctCreate} \\
+\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_ActEarn} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -936,7 +942,7 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_AcctCreate} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActEarn} & \nfrref{NFR_Accuracy} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
