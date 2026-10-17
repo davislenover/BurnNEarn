@@ -47,22 +47,26 @@ Date2 & Name(s) & Description of changes\\
 
 \tableofcontents
 
+\listoffigures
+
+\listoftables
+
 ~\newpage
 
 \pagenumbering{arabic}
 
 \wss{You are free to modify this template.}
 
-\section{Introduction}
+\section{Introduction} \label{SecIntro}
 
 \wss{You can include your definition of what a hazard is here.}
 
-\section{Scope and Purpose of Hazard Analysis}
+\section{Scope and Purpose of Hazard Analysis} \label{SecScopePurpose}
 
 \wss{You should say what \textbf{loss} could be incurred because of the
 hazards.}
 
-\section{System Boundaries and Components}
+\section{System Boundaries and Components} \label{SecBoundaries}
 
 \wss{Dividing the system into components will help you brainstorm the hazards.
 You shouldn't do a full design of the components, just get a feel for the major
@@ -70,14 +74,14 @@ ones.  For projects that involve hardware, the components will typically include
 each individual piece of hardware.  If your software will have a database, or an
 important library, these are also potential components.}
 
-\section{Critical Assumptions}
+\section{Critical Assumptions} \label{SecAssumptions}
 
 \wss{These assumptions that are made about the software or system.  You should
 minimize the number of assumptions that remove potential hazards.  For instance,
 you could assume a part will never fail, but it is generally better to include
 this potential failure mode.}
 
-\section{Failure Mode and Effect Analysis}
+\section{Failure Mode and Effect Analysis} \label{SecFMEA}
 
 \wss{Include your FMEA table here. This is the most important part of this document.}
 \wss{The safety requirements in the table do not have to have the prefix SR.
@@ -88,12 +92,12 @@ requirements.}
 entered in the table, including strategies involving providing additional
 documentation, and/or test cases.}
 
-\section{Safety and Security Requirements}
+\section{Safety and Security Requirements} \label{SecSafetyReqs}
 
 \wss{Newly discovered requirements.  These should also be added to the SRS.  (A
 rationale design process how and why to fake it.)}
 
-\section{Roadmap}
+\section{Roadmap} \label{SecRoadmap}
 
 \wss{Which safety requirements will be implemented as part of the capstone timeline?
 Which requirements will be implemented in the future?}
