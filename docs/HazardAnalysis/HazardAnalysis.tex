@@ -158,6 +158,12 @@ influence, such as a defect in the phone's operating system or a breach of the
 hosting provider's own facilities, are out of scope; they are excluded by the
 critical assumptions in Section~\ref{SecAssumptions}.
 
+Figure~\ref{FigBoundary} shows the boundary, the components inside it, and the
+external entities it depends on. The components are described in
+Table~\ref{TblComponents} and the external entities in
+Table~\ref{TblExternal}. The components are a high-level division for
+identifying hazards, not a final design; the software architecture will be
+specified in the Design Document.
 
 \begin{figure}[H]
   \centering
@@ -266,6 +272,36 @@ critical assumptions in Section~\ref{SecAssumptions}.
   \end{tabularx}
 \end{table}
 
+
+\begin{table}[H]
+  \caption{External entities outside the system boundary} \label{TblExternal}
+  \small
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.22\textwidth}
+    X X}
+    \toprule
+    \textbf{Entity}                            & \textbf{What crosses the boundary}                                      & \textbf{Dependency
+    and why it matters}                                                                                                                                                \\
+    \midrule
+    E1 User                                    & Profile, trades, sharing choices, and answers in; balance,
+    portfolio, explanations, and feedback out. & Can make mistakes, misunderstand
+    information, or try to cheat.                                                                                                                                      \\
+    E2 Phone OS and health platform            & Activity records and permission status in.
+                                               & Data may be missing, wrong, delayed, duplicated, or entered by hand. OS
+    updates can change permissions or break bridge libraries. Use of health data is
+    governed by each platform's policies~\cite{AppleReview, GoogleHealthConnect}.                                                                                      \\
+    E3 Market data provider                    & Current and historical prices in.                                       & May be
+    unavailable, rate limited, delayed, or wrong.                                                                                                                      \\
+    E4 Network                                 & All traffic between C1 and C10, and between C10 and E3.                 & May be
+    slow, interrupted, or monitored by a third party.                                                                                                                  \\
+    E5 Hosting environment                     & Runs C3 to C11.                                                         & May suffer outages or data loss.            \\
+    E6 App stores                              & The app's installation and updates.                                     & Set privacy and content
+    rules that \progname{} must meet to be distributed~\cite{AppleReview,
+    GooglePlayPolicy}.                                                                                                                                                 \\
+    E7 Friends                                 & Shared updates out.                                                     & Will see anything that is shared with them,
+    whether or not the user intended it.                                                                                                                               \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 \section{Critical Assumptions} \label{SecAssumptions}
 
 \wss{These assumptions that are made about the software or system.  You should
@@ -364,6 +400,19 @@ critical assumptions in Section~\ref{SecAssumptions}.
   N.~G. Leveson, \emph{Engineering a Safer World: Systems Thinking Applied to
     Safety}. Cambridge, MA, USA: MIT Press, 2011.
 
+  \bibitem{AppleReview}
+  Apple Inc., ``App Store Review Guidelines,'' Section 5.1.3, Health and Health
+  Research. [Online]. Available:
+  \url{https://developer.apple.com/app-store/review/guidelines/}
+
+  \bibitem{GoogleHealthConnect}
+  Google LLC, ``Android Health Permissions: Guidance and FAQs,'' Play Console
+  Help. [Online]. Available:
+  \url{https://support.google.com/googleplay/android-developer/answer/12991134}
+
+  \bibitem{GooglePlayPolicy}
+  Google LLC, ``Developer Program Policy,'' Google Play Policy Center.
+    [Online]. Available: \url{https://play.google/developer-content-policy/}
 
 \end{thebibliography}
 
