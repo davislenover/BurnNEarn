@@ -476,31 +476,192 @@ parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
 
 \subsection{Major Data Entities}
 
-\plt{What information must exist for the system to accomplish its goals?}
 
-\plt{For each entity, provide a short explanation.}
+FitFolio must manage data across user activity, fitness tracking and stock portfolio. 
 
-\begin{itemize}
-\item User
-\item Song
-\item Session
-\item Report
-\end{itemize}
+\begin{longtable}{@{}p{0.22\textwidth} p{0.74\textwidth}@{}}
+\caption{Major Data Entities}
+\label{tab:MajorDataEntities}\\
+
+\toprule
+\textbf{Entity} & \textbf{Description and relationships} \\
+\midrule
+\endfirsthead
+
+\toprule
+\textbf{Entity} & \textbf{Description and relationships} \\
+\midrule
+\endhead
+
+\textbf{User Data} &
+Represents a registered user's account and profile information,
+including authentication information and physical attributes such
+as age, height, and weight. Each user is linked to their activity
+records and portfolios. \\
+\addlinespace
+
+\textbf{Activity Record} &
+Represents an activity belonging to a user. Contains the activity
+type, relevant fitness metrics such as step count and activity
+duration, and the amount of virtual currency received for that
+activity. \\
+\addlinespace
+
+\textbf{Portfolio} &
+Represents a user's simulated investments, including their available
+virtual currency, individual stock holdings, trade history, and
+overall portfolio performance metrics. \\
+\addlinespace
+
+\textbf{Market Data} &
+Represents information about the stocks available to trade within
+the application, including their names, current prices, and
+historical prices. This information is used to price trades and
+calculate portfolio values. \\
+\addlinespace
+
+\textbf{Social Data} &
+Represents connections between users and the fitness and portfolio
+updates they choose to share with friends. Records the author,
+selected statistics, and permitted viewers for each shared
+statistic. \\
+
+\bottomrule
+\end{longtable}
+
+
 
 \subsection{Data Dictionary}
 
-\plt{For each entity, define all important attributes.}
+\begin{longtable}{
+    @{}p{0.27\textwidth}
+    p{0.17\textwidth}
+    p{0.50\textwidth}@{}
+}
+\caption{Data Dictionary}
+\label{tab:DataDictionary}\\
 
-\begin{longtable}{p{0.20\textwidth} p{0.20\textwidth} p{0.45\textwidth}}
 \toprule
-Attribute & Type & Description\\
+\textbf{Attribute} & \textbf{Type} & \textbf{Description} \\
 \midrule
-user\_id & UUID & Unique identifier\\
-email & String & User email address\\
-\bottomrule
-\caption{Data Dictionary} \label{tab:DataDictionary}
-\end{longtable}
+\endfirsthead
 
+\endhead
+
+
+
+% -------------------- USER DATA --------------------
+
+\multicolumn{3}{@{}l}{\textbf{User Data}} \\
+\midrule
+
+\texttt{user\_id} & UUID &
+Unique identifier for the user. \\
+
+\texttt{email} & String &
+Email address used for authentication. \\
+
+\texttt{display\_name} & String &
+Username displayed within the application. \\
+
+\texttt{age\_years} & Integer &
+Age in years. \\
+
+\texttt{height\_cm} & Decimal &
+Height in centimetres. \\
+
+\texttt{weight\_kg} & Decimal &
+Weight in kilograms. \\
+
+\addlinespace
+% -------------------- ACTIVITY RECORD --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Activity Record}} \\
+\midrule
+
+\texttt{activity\_id} & UUID &
+Unique identifier for the activity. \\
+
+\texttt{activity\_type} & String &
+Activity category, such as running or biking. \\
+
+\texttt{start\_time} & Timestamp &
+Beginning of the activity. \\
+
+\texttt{end\_time} & Timestamp &
+End of the activity. \\
+
+\texttt{step\_count} & Integer &
+Number of steps recorded. \\
+
+\texttt{duration\_seconds} & Integer &
+Activity duration in seconds. \\
+
+\texttt{distance\_metres} & Decimal &
+Distance travelled in metres. \\
+
+\texttt{reward\_amount} & Decimal &
+Amount of virtual currency earned for the activity. \\
+
+\addlinespace
+% -------------------- PORTFOLIO --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Portfolio}} \\
+\midrule
+
+\texttt{portfolio\_id} & UUID &
+Unique identifier for the portfolio. \\
+
+\texttt{cash\_balance} & Decimal &
+Available virtual currency. \\
+
+\texttt{holdings} & String &
+Stocks owned, including each stock's identifier and share quantity. \\
+
+\texttt{trade\_history} & String &
+Completed trades, including purchases and sales of stocks. \\
+
+\texttt{total\_value} & Decimal &
+Current value of all stock holdings, excluding available cash. \\
+
+\addlinespace
+% -------------------- MARKET DATA --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Market Data}} \\
+\midrule
+
+\texttt{stock\_id} & UUID &
+Unique identifier for the stock. \\
+
+\texttt{symbol} & String &
+Stock's market symbol. \\
+
+\texttt{name} & String &
+Stock or company name. \\
+
+\texttt{current\_price} & Decimal &
+Most recent available price. \\
+
+\texttt{price\_history} & String &
+Historical stock prices with associated timestamps. \\
+
+\addlinespace
+% -------------------- SOCIAL DATA --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Social Data}} \\
+\midrule
+
+\texttt{author\_id} & UUID &
+Identifier of the user who authored the social update. \\
+
+\texttt{created\_at} & Timestamp &
+Time the update was published. \\
+
+\texttt{shared\_statistics} & String &
+Fitness or portfolio statistics selected for sharing. \\
+
+\bottomrule
+\end{longtable}
 \subsection{Privacy and Data Retention}
 
 \plt{Discuss storage, retention, deletion, privacy controls,
