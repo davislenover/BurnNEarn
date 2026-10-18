@@ -827,60 +827,88 @@ and associated records must be removed within a specified period.
 % ============================================================== 
 \section{Non-Functional Requirements}
 
-\plt{You may have to add other NFRs.}
-
-\plt{List your nonfunctional requirements.  You may consider using a fit
-  criterion to make them verifiable.}
-
-\plt{The goal is for the nonfunctional requirements to be unambiguous, abstract
-  and verifiable.  This isn't easy to show succinctly, so a good strategy may be
-to give a ``high level'' view of the requirement, but allow for the details to
-be covered in the Verification and Validation document.}
-
-\plt{An absolute requirement on a quality of the system is rarely needed.  For
-  instance, an accuracy of 0.0101 \% is likely fine, even if the requirement is
-  for 0.01 \% accuracy.  Therefore, the emphasis will often be more on
-  describing now well the quality is achieved, through experimentation, and
-  possibly theory, rather than meeting some bar that was defined a priori.}
-
-\plt{You do not need an entry for correctness in your NFRs.  The purpose of the
-  SRS is to record the requirements that need to be satisfied for correctness.
-  Any statement of correctness would just be redundant. Rather than discuss
-  correctness, you can characterize how far away from the correct (true)
-  solution you are allowed to be.  This is discussed under accuracy.}
-
-\noindent \begin{itemize}
+\noindent 
+\begin{itemize}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accuracy}:]
-  \textbf{Accuracy} \plt{Characterize the accuracy by giving the context/use for
-    the software.  Maybe something like, ``The accuracy of the computed
-    solutions should meet the level needed for $<$engineering or scientific
-    application$>$.  The level of accuracy achieved by \progname{} shall be
-    described following the procedure given in Section~X of the Verification and
-    Validation Plan.''  If you do this provide a link to the VnV plan.}
+  \textbf{Accuracy} 
+
+  The system shall calculate virtual currency balances and simulated portfolio values within 0.01 virtual currency units of their expected values.
+
+  \textit{Fit Criterion:} Independently calculated test cases differ from the displayed result by no more than 0.01.
+
+  \textot{Traces To:} G4, G5
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability}:] \textbf{Usability}
-  \plt{Characterize the usability by giving the context/use for the software.
-    You should likely reference the user characteristics section.  The level of
-    usability achieved by the software shall be described following the
-    procedure given in Section~X of the Verification and Validation Plan.  Include a link to the VnV plan.}
+  \textbf{Usability}
+
+  At least 80 percent of first time users shall be able to complete the core activity and simulated investing tasks without outside assistance.
+
+  \textit{Fit Criterion:} At least 80 percent of usability test participants complete the core tasks independently.
+
+  \textit{Traces to:} G2
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:]
-  \textbf{Maintainability} \plt{The effort required to make any of the likely
-    changes listed for \progname{} should be less than FRACTION of the original
-    development time.  FRACTION is then a symbolic constant that can be defined
-    at the end of the report.}
+  \textbf{Maintainability} 
+
+  The effort requried to implement a likely change shall not exceed 25 percent of the original development effort for the affected feature.
+
+  \textit{Fit Criterion:} A modification requires no more than 25 percent of the original feature's development hours.
+
+
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Portability}:]
-  \textbf{Portability} \plt{This NFR is easier to write than the others.  The
-    systems that \progname{} should run on should be listed here.  When possible
-    the specific versions of the potential operating environments should be
-    given.  To make the NFR verifiable a statement could be made that the tests
-    from a given section of the VnV plan can be successfully run on all of the
-    possible operating environments.}
+  \textbf{Portability} 
 
-\item Other NFRs that might be discussed include verifiability,
-  understandability, reusability, performance, reliability and availability, security, and accessibility.  You may have to add other NFRs.
+  The core features of \progname{} shall operate on supported Android and iOS devices.
+
+  \textit{Fit Criterion: } Core acceptance tests pass on both supported operating systems.
+
+  \textot{Traces To:} G2, G4, G5,
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Performance}:]
+  \textbf{Performance} 
+
+  The system shall display previously loaded activity and portfolio summaries within three seconds of the user's request.
+
+  \textit{Fit Criterion: } At least 95 percent of 30 timed trials complete within three seconds under a stable network connection.
+
+  \textit{Traces To:} G2
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability}:]
+  \textbf{Reliability} 
+
+  The system shall preserve currency balances and portfolio holdings when transactions are interrupted or repeated.
+
+  \textit{Fit Criterion:} In 20 interruption and retry tests, no duplicate or incomplete transactions are recorded.
+
+  \textit{Traces To:} G4, Hazard Analysis SEC-3 and SEC-4
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security}:]
+  \textbf{Security}
+
+  The system shall prevent unauthorized access to
+  private user information.
+
+  \textit{Fit criterion:} All tested requests without
+  valid authentication or authorization are rejected.
+
+  \textit{Traces to:} G3,
+  Hazard Analysis SEC-12 and SEC-13.
+
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accessibility}:]
+  \textbf{Accessibility}
+
+  The core features shall remain usable when the
+  device text size is increased to 200 percent of its
+  default size.
+
+  \textit{Fit criterion:} Users can read essential
+  information and complete core tasks with 200 percent
+  text scaling without clipped controls.
+
+  \textit{Traces to:} G2
 
 \end{itemize}
 
