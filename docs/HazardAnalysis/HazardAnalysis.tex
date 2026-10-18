@@ -335,6 +335,19 @@ turns out to be false.
         Section~\ref{SecFMEA}. \emph{If false:} if minors are later allowed to use
         \progname{}, consent, content, and social feed hazards for children must be
         added to this analysis.
+  \item[CA3:] \textbf{Device integrity.} The phone's operating system is not
+        rooted or jailbroken, and it enforces app sandboxing, secure storage, and its
+        permission model as documented. \emph{Rationale:} the team cannot detect or
+        defend against every attack by a compromised operating system.
+        \emph{Effect:} attacks that require control of the operating system are
+        removed. Attacks that use a modified copy of the \progname{} app are still
+        analyzed in Section~\ref{SecFMEA}. \emph{If false:} an attacker in control
+        of the phone could read data stored on it, including the session token.
+        Because rewards, balances, and holdings are calculated only on the server
+        (Section~\ref{SecSafetyReqs}), such an attacker could affect only that
+        phone's own account. The app can also detect rooted or jailbroken phones and
+        warn the user, as recommended by the OWASP Mobile Application Security
+        Verification Standard (MASVS)~\cite{OWASPMASVS}.
 \end{itemize}
 
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
@@ -446,6 +459,11 @@ turns out to be false.
   Government of Canada, \emph{Personal Information Protection and Electronic
     Documents Act}, S.C. 2000, c.~5. [Online]. Available:
   \url{https://laws-lois.justice.gc.ca/eng/acts/P-8.6/}
+
+  \bibitem{OWASPMASVS}
+  OWASP Foundation, ``Mobile Application Security Verification Standard
+  (MASVS),'' version 2.1.0, Jan. 2024. [Online]. Available:
+  \url{https://mas.owasp.org/MASVS/}
 
 \end{thebibliography}
 
