@@ -321,10 +321,20 @@ turns out to be false.
         \emph{Rationale:} this is a fixed scope decision in the Problem Statement.
         \emph{Effect:} hazards of direct monetary loss, such as unauthorized payments,
         are removed. Indirect financial harm, where a user makes a real-world decision
-        based on misleading information from \progname{}, is still analyzed
-        (\hyperref[H22]{H22}, \hyperref[H26]{H26}). \emph{If false:} if in-app
-        purchases or any other real-money feature is added, payment and fraud hazards
-        must be added to this analysis.
+        based on misleading information from \progname{}, is still analyzed in
+        Section~\ref{SecFMEA}. \emph{If false:} if in-app purchases or any other
+        real-money feature is added, payment and fraud hazards must be added to this
+        analysis.
+  \item[CA2:] \textbf{Users are adults.} \progname{} is intended only for
+        people aged 18 or older. \emph{Rationale:} it is designed for young adults,
+        and collecting health data from minors can require the consent of a parent or
+        guardian under the Personal Information Protection and Electronic Documents
+        Act (PIPEDA)~\cite{PIPEDA}. \emph{Effect:} hazards that apply only to
+        children, such as age-appropriate content, are removed. The hazard that a
+        minor gives a false age is \emph{not} removed and is analyzed in
+        Section~\ref{SecFMEA}. \emph{If false:} if minors are later allowed to use
+        \progname{}, consent, content, and social feed hazards for children must be
+        added to this analysis.
 \end{itemize}
 
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
@@ -431,6 +441,11 @@ turns out to be false.
   \bibitem{GooglePlayPolicy}
   Google LLC, ``Developer Program Policy,'' Google Play Policy Center.
     [Online]. Available: \url{https://play.google/developer-content-policy/}
+
+  \bibitem{PIPEDA}
+  Government of Canada, \emph{Personal Information Protection and Electronic
+    Documents Act}, S.C. 2000, c.~5. [Online]. Available:
+  \url{https://laws-lois.justice.gc.ca/eng/acts/P-8.6/}
 
 \end{thebibliography}
 
