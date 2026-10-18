@@ -662,12 +662,12 @@ and trace back to them by their identifiers.
 
 The evidence comes from three places. The Problem Statement and Goals document
 records the client's vision and the target users. Two potential users were
-interviewed for the team's Design Thinking report; they are referred to as
-P01 and P02, and their statements are paraphrased so that they cannot be
-identified. The Hazard Analysis contributes needs that protect users from
-harm. Because neither interviewee was a complete beginner at investing, the
-needs of beginners come from the Problem Statement and will be checked in
-usability testing.
+interviewed on October~14, 2026, for the team's Design Thinking report; they
+are referred to as P01 and P02, and their statements are paraphrased or
+briefly quoted from de-identified transcripts. The Hazard Analysis contributes
+needs that protect users from harm. Neither interviewee was a beginner at
+investing, so the needs of beginners come from the Problem Statement and will
+be checked in usability testing.
 
 Each requirement is verifiable: it can be confirmed by inspection,
 demonstration, or a usability test, through the functional and non-functional
@@ -677,14 +677,31 @@ requirements that refine it.
 
 {\sloppy
   \noindent\begin{itemize}
-    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_EarnFromActivity}:] Users shall be rewarded for the physical activity they already do, without having to record it themselves.\\
-          \emph{Source:} SH1, SH2. \emph{Evidence:} Both participants track their activity mainly with their phone (P01, P02). \emph{Goal:} G5.
-    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level or physical ability shall be able to earn rewards.\\
-          \emph{Source:} SH1, SH6. \emph{Evidence:} The target users have any level of fitness (Problem Statement), and rewards must count several types of activity, not only steps. \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_EarnFromActivity}:] Users shall be rewarded for the physical activity they already do, without having to start, stop, or record it themselves.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} Both participants track activity with their phone (P01, P02). Tracking should be ``as touchless as possible'': an app that must be started and stopped by hand is easily left running for hours and gives wrong results (P01). Approximate step counts are acceptable to users (P01). \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_UsefulRewards}:] Rewards for activity shall have a visible use to the user beyond the activity count itself.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} A long step streak gives one participant nothing but pride (P01); rewards have not changed the other's habits, although a tangible reward might make them work out more (P02). \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level or physical ability shall be able to earn rewards, whatever kinds of activity they do.\\
+          \emph{Source:} SH1, SH6. \emph{Evidence:} Participants' activity goes well beyond walking: basketball, skating, and pickup hockey (P01); soccer, weightlifting, climbing stairs, and rock climbing (P02). The target users have any level of fitness (Problem Statement). \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_OwnGoals}:] Users shall choose their own activity goals, or set none, and shall not be pressured to raise them.\\
-          \emph{Source:} SH1. \emph{Evidence:} One participant keeps a fixed step goal because a higher one takes too much time (P01); another sets no goals at all (P02). \emph{Goal:} G5.
+          \emph{Source:} SH1. \emph{Evidence:} One participant has kept the same step goal for over a year, because a higher one takes too much time (P01); the other sets no goals and keeps only a mental check that they ``at least did something'' (P02). \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_SafeMotivation}:] Features that motivate activity shall not encourage users to exercise when it is unsafe, such as late at night, while injured, or beyond a healthy amount.\\
-          \emph{Source:} SH1, SH6. \emph{Evidence:} A streak has made one participant go out walking at 9~p.m.\ (P01); another admired pushing through exercise regardless of pain (P02). \emph{Goal:} G5.
+          \emph{Source:} SH1, SH6. \emph{Evidence:} A streak now makes one participant go out walking at 9~p.m.\ to reach their goal (P01); the other admires a friend for whom ``it doesn't matter how much anything hurts'' (P02). \emph{Goal:} G5.
+  \end{itemize}
+  \par}
+
+\paragraph{Investing practice}
+
+{\sloppy
+  \noindent\begin{itemize}
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_RiskFree}:] Users shall be able to practise investing without any risk to real money.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} One participant was well-versed in financial math from university courses but did not know how to act on it until they started working with real investments (P02); the other first learned by tracking their own transactions by hand (P01). \emph{Goal:} G4.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_RealMarket}:] Investing practice shall follow the real market closely enough that its lessons carry over to real investing.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} The client's vision is a portfolio that follows real-world prices (Problem Statement). \emph{Goal:} G4.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_PastMarkets}:] Users shall be able to practise in past market conditions, such as a downturn, without affecting their own progress.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} Practising a downturn safely prepares users for one with real money (Problem Statement). \emph{Goal:} G4.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_NotAdvice}:] \progname{} shall never give, or be mistaken for, advice on what to do with real money.\\
+          \emph{Source:} SH1, SH6, SH9. \emph{Evidence:} Self-taught investors learn from YouTube and Reddit, where it is easy to follow ``the wrong kinds of investing YouTubers,'' and look for answers tailored to their own situation (P01). Users may act on whatever the app appears to recommend. \emph{Goal:} G4.
   \end{itemize}
   \par}
 % ============================================================== 
