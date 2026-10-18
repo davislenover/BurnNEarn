@@ -759,6 +759,51 @@ requirements that refine it.
           \emph{Source:} SH7, SH8. \emph{Evidence:} Providers limit what data can be read and how often prices can be requested (Problem Statement). \emph{Goal:} G4, G5.
   \end{itemize}
   \par}
+
+Table~\ref{TblSHtoSR} traces each stakeholder requirement to the stakeholders
+it comes from. Every stakeholder in Table~\ref{TblStakeholders} except the
+development team (SH3), whose needs are expressed through the qualities of the
+requirements themselves, is the source of at least one requirement.
+
+\begin{table}[H]
+  \caption{Traceability between stakeholders and stakeholder requirements}
+  \label{TblSHtoSR}
+  \small
+  \centering
+  \begin{tabular}{l*{9}{c}}
+    \toprule
+                                   & \multicolumn{9}{c}{\textbf{Stakeholder}}                                                                                                                         \\
+    \cmidrule(l){2-10}
+    \textbf{Requirement}           & \textbf{SH1}                             & \textbf{SH2} & \textbf{SH3} & \textbf{SH4} & \textbf{SH5} & \textbf{SH6} & \textbf{SH7} & \textbf{SH8} & \textbf{SH9} \\
+    \midrule
+    \srref{SR_EarnFromActivity}    & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_UsefulRewards}       & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_AllAbilities}        & $\times$                                 &              &              &              &              & $\times$     &              &              &              \\
+    \srref{SR_OwnGoals}            & $\times$                                 &              &              &              &              &              &              &              &              \\
+    \srref{SR_SafeMotivation}      & $\times$                                 &              &              &              &              & $\times$     &              &              &              \\
+    \srref{SR_RiskFree}            & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_RealMarket}          & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_PastMarkets}         & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_NotAdvice}           & $\times$                                 &              &              &              &              & $\times$     &              &              & $\times$     \\
+    \srref{SR_LearnInContext}      & $\times$                                 &              &              &              &              &              &              &              &              \\
+    \srref{SR_LearnByDoing}        & $\times$                                 &              &              &              &              &              &              &              &              \\
+    \srref{SR_LearnFromDecisions}  & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_CanadianContext}     & $\times$                                 &              &              &              &              & $\times$     &              &              &              \\
+    \srref{SR_SeeProgress}         & $\times$                                 &              &              &              &              &              &              &              &              \\
+    \srref{SR_ShareProgress}       & $\times$                                 &              &              &              & $\times$     &              &              &              &              \\
+    \srref{SR_ControlSharing}      & $\times$                                 &              &              &              & $\times$     &              &              &              &              \\
+    \srref{SR_NoHarmfulComparison} & $\times$                                 &              &              &              &              & $\times$     &              &              &              \\
+    \srref{SR_ProtectData}         & $\times$                                 &              &              &              &              &              &              &              & $\times$     \\
+    \srref{SR_ExplainPermissions}  & $\times$                                 &              &              &              &              &              & $\times$     &              &              \\
+    \srref{SR_ControlOwnData}      & $\times$                                 &              &              &              &              &              &              &              & $\times$     \\
+    \srref{SR_EasyStart}           & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_PhoneOnly}           & $\times$                                 & $\times$     &              &              &              &              &              &              &              \\
+    \srref{SR_Accessible}          & $\times$                                 &              &              &              &              & $\times$     &              &              & $\times$     \\
+    \srref{SR_UpdateContent}       &                                          &              &              & $\times$     &              &              &              &              &              \\
+    \srref{SR_RespectProviders}    &                                          &              &              &              &              &              & $\times$     & $\times$     &              \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 % ============================================================== 
 \section{User Personas}
 \plt{Create 2-5 realistic personas.
