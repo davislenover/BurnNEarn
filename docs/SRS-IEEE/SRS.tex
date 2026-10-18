@@ -647,12 +647,31 @@ rationale for everything, ust the major decisions that are not obvious.  You
 should have traceability to the entities in the document that you are
 referencing.}
 
-\section{Likely Changes}    
+\section{Likely Changes} 
+
+The following changes are identified in the project documents. They describe parts of FitFolio that may change as the team tests it's planned integrations or adds features already listed as stretch goals.
 
 \noindent \begin{itemize}
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_futureChange}:]
+Activity-data updates
 
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the likely changes, with traceability to the entity that is likely to change.}
+When FitFolio updates activity data may change because of restrictions imposed by the phone's health platform. The Development Plan identifies updating activity data when the user opens the app as an alternative if background updates cannot work reliably. This would affect the activity-sync requirements and how recent the activity information shown to the user is. 
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_secondChange}:]
+Wearable device support
+
+FitFolio may be extended to support wearable devices, such as the Apple Watch and other compatible fitness trackers. Wearable integration is already listed as a stretch goal in the Problem Statement and Goals. Adding this support could provide additional activity data, including workout duration and calories burned. This would affect the supported activity-data sources and the information stored in activity records.
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_thirdChange}:]
+Market-data access
+
+The market-data provider, price-update frequency, and selection of supported assets may change if the chosen service's request limits or costs prevent the planned use. The Development Plan identifies switching providers, reducing the update frequency, and limiting the asset list as possible responses. These changes would affect the requirements for obtaining market prices, keeping prices current, and supporting assets in the simulated market. Any reduction below the existing goals for price freshness or asset coverage would require an agreed revision to those requirements.
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_fourthChange}:] 
+Historical market scenarios
+
+The number and selection of historical market scenarios may change depending on the availability and cost of historical price data. The Development Plan identifies offering fewer scenarios or using a selected set of stored historical datasets as possible responses if the required data is difficult to obtain. This would affect the historical periods and events available to users and the data used to run those scenarios.
+
 
 \end{itemize}
 
