@@ -806,28 +806,97 @@ requirements themselves, is the source of at least one requirement.
 \end{table}
 % ============================================================== 
 \section{User Personas}
-\plt{Create 2-5 realistic personas.
-  Personas are fictional characters that represent the different user types that
-  might use your software.  They are used to help understand the users'
-  needs, experiences, behaviors and goals.  They are not real people, but they
-  should be based on real data collected from user research.}
+% \plt{Create 2-5 realistic personas.
+%   Personas are fictional characters that represent the different user types that
+%   might use your software.  They are used to help understand the users'
+%   needs, experiences, behaviors and goals.  They are not real people, but they
+%   should be based on real data collected from user research.}
+
+The personas below represent the main kinds of user \progname{} is built for.
+They are fictional, but each is based on the evidence named in its
+\emph{Based on} entry: Personas~1 and~2 on the two interviews (P01 and P02),
+and Persona~3 on the target users in the Problem Statement, since neither
+interviewee was a beginner at investing. Details that could identify an
+interviewee have been changed. Each persona lists the stakeholder requirements
+that matter most to them, so the design can be checked against the people it
+serves.
 
 \subsection{Persona 1}
 \begin{itemize}
-  \item Name:
-  \item Description:
-  \item Goals:
-  \item Frustrations:
-  \item Technical Ability:
+  \item \textbf{Name:} Sam, 28, graduate student.
+  \item \textbf{Description:} Walks to campus and back every day and has tracked
+        steps on an Android phone for years. A streak of more than a year at a
+        fixed step goal now gets Sam out walking at 9~p.m.\ on slow days, although
+        Sam has never raised the goal. Sam also plays pickup sports and skates in
+        winter, none of which is tracked, and stopped wearing a fitness band because
+        it irritated their skin. Sam taught themselves investing from videos, online
+        forums, and books, and prefers simple, diversified index investing.
+  \item \textbf{Goals:} Keep the streak going without it taking over the
+        evening; get credit for sports, not only steps; keep learning investing in a
+        way that fits their own situation; keep control of their data.
+  \item \textbf{Frustrations:} Apps that must be started and stopped by hand;
+        investing content that pushes risky stock-picking; apps that ask for far more
+        permissions than they need or that may sell their data.
+  \item \textbf{Technical Ability:} High. Sam chooses apps for privacy, turns off
+        an app's network access, and keeps financial records on their own computer.
+  \item \textbf{Based on:} P01.
+  \item \textbf{Most relevant requirements:} \srref{SR_EarnFromActivity},
+        \srref{SR_AllAbilities}, \srref{SR_SafeMotivation}, \srref{SR_NotAdvice},
+        \srref{SR_ProtectData}, \srref{SR_ExplainPermissions}, \srref{SR_PhoneOnly}.
 \end{itemize}
 
 \subsection{Persona 2}
 \begin{itemize}
-  \item Name:
-  \item Description:
-  \item Goals:
-  \item Frustrations:
-  \item Technical Ability:
+  \item \textbf{Name:} Jordan, 24, early-career employee in financial services.
+  \item \textbf{Description:} Took several finance courses at university, but
+        only understood how to act on them once their job involved real investments.
+        Walks, lifts weights now and then, and enjoys rock climbing; used to play
+        soccer. Exercise is not a priority right now. Jordan's iPhone counts their
+        steps and the stairs they climb, and they often check their heart rate on an
+        Apple Watch out of curiosity. Jordan sets no fitness goals and keeps only a
+        mental note of whether they did something that week.
+  \item \textbf{Goals:} Be more consistent with exercise, like a friend Jordan
+        admires; learn by doing rather than by watching; understand their account
+        options well enough that their savings grow instead of falling behind
+        inflation.
+  \item \textbf{Frustrations:} Learning from videos that do not stick;
+        falling far behind friends; apps that ask for personal data without a clear
+        reason.
+  \item \textbf{Technical Ability:} Moderate to high. Uses a phone and smartwatch
+        daily, and judges whether to trust an app by who makes it and how well it is
+        designed.
+  \item \textbf{Based on:} P02.
+  \item \textbf{Most relevant requirements:} \srref{SR_UsefulRewards},
+        \srref{SR_LearnByDoing}, \srref{SR_CanadianContext},
+        \srref{SR_ShareProgress}, \srref{SR_NoHarmfulComparison},
+        \srref{SR_OwnGoals}, \srref{SR_ExplainPermissions}.
+\end{itemize}
+
+
+\subsection{Persona 3}
+\begin{itemize}
+  \item \textbf{Name:} Aisha, 19, first-year student.
+  \item \textbf{Description:} Has never invested and does not know what a stock,
+        an exchange-traded fund, or a tax-free savings account is. Her savings sit in
+        a bank account. She walks between classes but does not exercise regularly.
+        She would like to start investing, but is afraid of losing money she cannot
+        afford to lose and has heard that investing means studying company finances.
+  \item \textbf{Goals:} Understand the basics of investing in plain language;
+        start a fitness habit without being judged; try things without real
+        consequences.
+  \item \textbf{Frustrations:} Financial jargon; advice that contradicts other
+        advice; apps that assume she already knows how they work.
+  \item \textbf{Technical Ability:} Everyday smartphone use: she can install an
+        app and respond to permission prompts, but has never used a fitness or
+        investing app.
+  \item \textbf{Based on:} the target users described in the Problem Statement,
+        and both interviewees' observations that many people do nothing with their
+        savings (P02) and that beginners are put off by the belief that investing
+        requires expert analysis (P01). This persona will be validated in usability
+        testing.
+  \item \textbf{Most relevant requirements:} \srref{SR_RiskFree},
+        \srref{SR_LearnInContext}, \srref{SR_CanadianContext}, \srref{SR_EasyStart},
+        \srref{SR_AllAbilities}, \srref{SR_SeeProgress}.
 \end{itemize}
 
 % ============================================================== 
