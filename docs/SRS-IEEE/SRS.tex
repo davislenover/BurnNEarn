@@ -387,16 +387,85 @@ from.
 
 \subsection{Definitions and Acronyms}
 
-\plt{This section provides the meaning of the different words and phrases used
-  in the domain of the problem.}
+% \plt{This section provides the meaning of the different words and phrases used
+%   in the domain of the problem.}
 
-\begin{longtable}{p{0.25\textwidth} p{0.65\textwidth}}
+Table~\ref{tab:DefinitionsAndAcronyms} defines the terms used in this
+document, in alphabetical order, followed by the acronyms. Each term is used
+only with the meaning given here. Where an acronym stands for a defined term,
+its entry links to that definition.
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.25\textwidth} p{0.65\textwidth}}
+  \caption{Definitions and Acronyms} \label{tab:DefinitionsAndAcronyms}                                                                                                                                                        \\
   \toprule
-  Term & Definition \\
+  \textbf{Term}                                      & \textbf{Definition}                                                                                                                                                     \\
   \midrule
-  TODO & TODO       \\
+  \endfirsthead
+  \multicolumn{2}{l}{\textit{Table~\ref{tab:DefinitionsAndAcronyms} continued}}                                                                                                                                                \\
+  \toprule
+  \textbf{Term}                                      & \textbf{Definition}                                                                                                                                                     \\
+  \midrule
+  \endhead
   \bottomrule
-  \caption{Definitions and Acronyms} \label{tab:DefinitionsAndAcronyms}
+  \endfoot
+  \multicolumn{2}{l}{\textit{Terms}}                                                                                                                                                                                           \\
+  \midrule
+  Activity goal                                      & A daily amount of activity that the user chooses to aim for, such as a number of steps.                                                                                 \\
+  Activity record                                    & A measured amount of one activity type over a stated time interval, as reported by the health platform; for example, 4,200 steps between 9:00 and 10:00 on a given day. \\
+  Activity type                                      & A category of physical activity recorded by the health platform, such as walking steps, running, cycling, or wheelchair pushes.                                         \\
+  Asset                                              & A real-world security that can be traded in \progname{}: either a stock or an exchange-traded fund.                                                                     \\
+  Balance                                            & The amount of virtual currency a user holds and has not invested.                                                                                                       \\
+  Concept explanation                                & A short description of a financial or fitness concept, shown where the concept appears in the app.                                                                      \\
+  Diversification                                    & The extent to which a portfolio's value is spread across different assets, so that a fall in one asset has a limited effect on the whole.                               \\
+  Exchange-traded fund\phantomsection\label{def:etf} & A fund that holds a collection of assets, such as the stocks of many companies, and is itself traded like a stock.                                                      \\
+  Feedback                                           & An explanation, specific to the user's own portfolio or activity, of what happened and why; for example, why their portfolio's value fell on a given day.               \\
+  Fitness milestone                                  & A stated level of activity reached by the user, such as their first week with activity recorded every day.                                                              \\
+  Friend                                             & Another \progname{} user who has accepted a user's friend request.                                                                                                      \\
+  Health platform                                    & The service built into a smartphone's operating system that stores health and activity data, such as Apple HealthKit on iOS and Google Health Connect on Android.       \\
+  Holding                                            & The number of shares of one asset that a user owns.                                                                                                                     \\
+  Knowledge check                                    & A short set of questions that tests whether a user understands a concept.                                                                                               \\
+  Learning progress                                  & The concepts a user has viewed and the knowledge checks they have passed.                                                                                               \\
+  Manually entered record                            & An activity record that the user typed into the health platform, rather than one measured by a sensor.                                                                  \\
+  Market data provider                               & An external service that reports current and historical market prices.                                                                                                  \\
+  Market price                                       & The most recent price of one share of an asset on the real-world exchange where it is listed.                                                                           \\
+  Market scenario                                    & A replay of the price history of a past period, such as a market downturn, in which the user trades with a portfolio separate from their live portfolio.                \\
+  Portfolio                                          & All of a user's holdings, together with the history of their trades.                                                                                                    \\
+  Portfolio value                                    & The total value of a user's holdings at their current simulated prices.                                                                                                 \\
+  Price age                                          & The time elapsed since a simulated price was last updated from the market data provider.                                                                                \\
+  Raw health data                                    & Individual activity records and body measurements (age, height, and weight), as opposed to summaries the user has chosen to share.                                      \\
+  Reminder                                           & A notification from \progname{} that prompts the user to be active or to check their portfolio.                                                                         \\
+  Rest day                                           & A day that the user marks as a planned break from activity; it does not end their streak.                                                                               \\
+  Reward                                             & An amount of virtual currency credited to a user for an activity record.                                                                                                \\
+  Share                                              & One unit of an asset.                                                                                                                                                   \\
+  Shared update                                      & A statistic or milestone that a user has chosen to make visible to their friends.                                                                                       \\
+  Simulated market                                   & The set of assets that users can trade in \progname{}, together with their simulated prices.                                                                            \\
+  Simulated price                                    & The price at which an asset is traded in \progname{}. In the live market it follows the market price; in a market scenario it follows a historical price.               \\
+  Social feed                                        & The list of shared updates from a user's friends.                                                                                                                       \\
+  Stock                                              & A share of ownership in a single public company.                                                                                                                        \\
+  Streak                                             & The number of consecutive days on which the user met their activity goal or took a rest day.                                                                            \\
+  Trade                                              & The purchase of shares of an asset for virtual currency, or the sale of shares for virtual currency.                                                                    \\
+  Virtual currency                                   & The unit of value earned in \progname{}. It has no real-world monetary value and cannot be exchanged for money.                                                         \\
+  Workout                                            & An activity record marked as a deliberate exercise session, with a start time, an end time, and an activity type.                                                       \\
+  \midrule
+  \multicolumn{2}{l}{\textit{Acronyms}}                                                                                                                                                                                        \\
+  \midrule
+  API                                                & Application Programming Interface                                                                                                                                       \\
+  ETF                                                & \hyperref[def:etf]{Exchange-Traded Fund}                                                                                                                                \\
+  FR                                                 & Functional Requirement                                                                                                                                                  \\
+  HA                                                 & Hazard Analysis                                                                                                                                                         \\
+  ISO                                                & International Organization for Standardization                                                                                                                          \\
+  JSON                                               & JavaScript Object Notation                                                                                                                                              \\
+  MASVS                                              & Mobile Application Security Verification Standard                                                                                                                       \\
+  NFR                                                & Non-Functional Requirement                                                                                                                                              \\
+  OS                                                 & Operating System                                                                                                                                                        \\
+  OWASP                                              & Open Worldwide Application Security Project                                                                                                                             \\
+  PIPEDA                                             & Personal Information Protection and Electronic Documents Act                                                                                                            \\
+  SH                                                 & Stakeholder (identifier prefix in Table~\ref{TblStakeholders})                                                                                                          \\
+  SR                                                 & Stakeholder Requirement                                                                                                                                                 \\
+  SRS                                                & Software Requirements Specification                                                                                                                                     \\
+  UC                                                 & Use Case                                                                                                                                                                \\
+  V\&V                                               & Verification and Validation                                                                                                                                             \\
+  WCAG                                               & Web Content Accessibility Guidelines                                                                                                                                    \\
 \end{longtable}
 
 \subsection{Characteristics of Intended Reader} \label{sec_IntendedReader}
