@@ -971,6 +971,48 @@ Learning milestone & A knowledge check the user has passed\\
   {After a test user removes a friend, neither user sees the other's shared
   updates.}
   {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-10}
+\freq{FR_SocialShare}
+  {The system shall let the user share an update of a kind listed in
+  Table~\ref{TblShareable}.}
+  {A test user can share one update of each kind in Table~\ref{TblShareable},
+  and cannot share anything else.}
+  {\srref{SR_ShareProgress}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialChooseFriends}
+  {The system shall let the user choose which of their friends can see each
+  shared update.}
+  {A test update shared with one selected friend appears in that friend's
+  social feed and in no other friend's.}
+  {\srref{SR_ControlSharing}, \ucref{UC_ShareProgress}, G3, Hazard Analysis
+  SEC-10}
+\freq{FR_SocialPreview}
+  {The system shall share an update only after showing the user the update
+  exactly as their friends will see it.}
+  {For every test update, the preview shown before sharing matches what the
+  selected friends see in their social feed.}
+  {\srref{SR_ControlSharing}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialNoBody}
+  {The system shall not include the user's age, height, or weight in any
+  shared update.}
+  {No shared update shown to a test user's friends contains their age, height,
+  or weight.}
+  {\srref{SR_ProtectData}, G3}
+\freq{FR_SocialFeed}
+  {The system shall show the user a social feed of the updates their friends
+  have shared with them, newest first.}
+  {A test user's social feed contains every update shared with them by a friend
+  and no others, ordered by the time each was shared.}
+  {\srref{SR_ShareProgress}, G3}
+\freq{FR_SocialDeleteUpdate}
+  {The system shall let the user delete an update they have shared.}
+  {After a test user deletes a shared update, it no longer appears in any
+  friend's social feed.}
+  {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-10}
+\freq{FR_SocialNoRanking}
+  {(HA SAF-11) The system shall not rank users against each other by activity,
+  currency or portfolio performance.}
+  {No screen shown to a test user orders users by activity, currency or
+  portfolio performance, or shows a user's position relative to others.}
+  {\srref{SR_NoHarmfulComparison}, G3}
 \end{itemize}
 
 % Owner: Davis
