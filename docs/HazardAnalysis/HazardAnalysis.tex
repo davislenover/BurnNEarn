@@ -348,6 +348,15 @@ turns out to be false.
         phone's own account. The app can also detect rooted or jailbroken phones and
         warn the user, as recommended by the OWASP Mobile Application Security
         Verification Standard (MASVS)~\cite{OWASPMASVS}.
+  \item[CA4:] \textbf{Documented platform behaviour.} When the health platform
+        and market data provider respond, their application programming interfaces
+        behave as their documentation states. \emph{Rationale:} \progname{} depends
+        on these services and cannot verify their internal behaviour.
+        \emph{Effect:} this does not assume the data they return is accurate,
+        complete, or timely; wrong, missing, delayed, and duplicated data are
+        analyzed in Section~\ref{SecFMEA}. \emph{If false:} an undocumented change,
+        such as a renamed field, appears as failed or invalid responses, which
+        \progname{} already handles as missing or wrong data.
 \end{itemize}
 
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
