@@ -837,7 +837,10 @@ and associated records must be removed within a specified period.
 
   \textit{Fit Criterion:} Independently calculated test cases differ from the displayed result by no more than 0.01.
 
-  \textot{Traces To:} G4, G5
+  
+  \textit{Traces to:} G4, G5,
+  \rref{FR_ActEarn}, \rref{FR_MktBuy},
+  \rref{FR_LearnTradeEffect}.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability}:] \textbf{Usability}
   \textbf{Usability}
@@ -846,7 +849,9 @@ and associated records must be removed within a specified period.
 
   \textit{Fit Criterion:} At least 80 percent of usability test participants complete the core tasks independently.
 
-  \textit{Traces to:} G2
+  \textit{Traces to:} G1, G2,
+  \rref{FR_ActEarn}, \rref{FR_MktBuy},
+  \rref{FR_LearnKnowledgeCheck}.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:]
   \textbf{Maintainability} 
@@ -855,6 +860,8 @@ and associated records must be removed within a specified period.
 
   \textit{Fit Criterion:} A modification requires no more than 25 percent of the original feature's development hours.
 
+  \textit{Traces to:} G1, G4, G5,
+  \rref{FR_LearnUpdateContent},
 
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Portability}:]
@@ -864,7 +871,8 @@ and associated records must be removed within a specified period.
 
   \textit{Fit Criterion: } Core acceptance tests pass on both supported operating systems.
 
-  \textot{Traces To:} G2, G4, G5,
+  \textit{Traces to:} G2, G3, G4, G5,
+  \scref{SC_Platform}, \scref{SC_HealthPlatform}.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Performance}:]
   \textbf{Performance} 
@@ -873,7 +881,10 @@ and associated records must be removed within a specified period.
 
   \textit{Fit Criterion: } At least 95 percent of 30 timed trials complete within three seconds under a stable network connection.
 
-  \textit{Traces To:} G2
+  \textit{Traces to:} G2,
+  \rref{FR_ActEarn}, \rref{FR_MktRealPrices},
+  \rref{FR_SocialFeed}.
+
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability}:]
   \textbf{Reliability} 
@@ -882,7 +893,9 @@ and associated records must be removed within a specified period.
 
   \textit{Fit Criterion:} In 20 interruption and retry tests, no duplicate or incomplete transactions are recorded.
 
-  \textit{Traces To:} G4, Hazard Analysis SEC-3 and SEC-4
+  \textit{Traces to:} G4,
+  \rref{FR_MktBuy}, \rref{FR_MktQueueClosed},
+  Hazard Analysis SEC-5 and SEC-6.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security}:]
   \textbf{Security}
@@ -894,6 +907,8 @@ and associated records must be removed within a specified period.
   valid authentication or authorization are rejected.
 
   \textit{Traces to:} G3,
+  \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut},
+  \rref{FR_SocialChooseFriends},
   Hazard Analysis SEC-12 and SEC-13.
 
 
@@ -909,6 +924,9 @@ and associated records must be removed within a specified period.
   text scaling without clipped controls.
 
   \textit{Traces to:} G2
+  \rref{FR_AcctCreate}, \rref{FR_MktBuy},
+  \rref{FR_LearnKnowledgeCheck},
+  \rref{FR_SocialShare}.
 
 \end{itemize}
 
