@@ -442,12 +442,42 @@ performed. The limit matches Problem Statement Goal 4 (prices within 15 minutes
 of the real market).
 \todo{Add \texttt{QUOTE\_STALENESS\_LIMIT} = 15 minutes to SRS Appendix C
 (\#95).}}
-{FMEA \todo{row ID}, L5 (data loss and integrity), L6 (financial-understanding
+{FMEA H12, H45, L5 (data loss and integrity), L6 (financial-understanding
 harm).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-3}{Complete or reject trades}
+\hazreq{SEC-3}{No trades on stale prices}
+{The system shall not execute a trade while the asset's market is open and the
+asset's price is older than \texttt{QUOTE\_STALENESS\_LIMIT}.}
+{While a test asset's market is open and its price is older than
+\texttt{QUOTE\_STALENESS\_LIMIT}, a trade request for it is refused and the
+user is told the price is out of date. With a price within the limit, the trade
+proceeds.}
+{A trade at an old price misrepresents how the market moved and teaches the
+wrong lesson. The limit is the same one \reqref{SEC-2} uses to mark a price as
+delayed.}
+{FMEA H12, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
+
+\hazreq{SEC-4}{Queue trades while the market is closed}
+{The system shall queue a trade requested while the asset's market is closed,
+and execute it at the first price obtained after the market next opens.}
+{A test trade requested while the market is closed is shown to the user as
+queued, with a notice that it will run at the opening price, and is executed at
+the first price obtained after the market opens.}
+{Many users have time to practise in the evenings and on weekends, when markets
+are closed. Running those trades at the last closing price would use an old
+price, and refusing them without explanation would confuse the user.
+\todo{Confirm with Farid that running a queued trade at the opening price,
+after telling the user, satisfies H17 (execute at the confirmed price, or ask
+the user to confirm the new price).}}
+{FMEA H18, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{\todo{SRS section and ID}}
+{Capstone.}
+
+\hazreq{SEC-5}{Complete or reject trades}
 {The system shall record each trade completely, updating both the currency
 balance and the holdings, or not at all. It shall reject a purchase that costs
 more than the user's currency balance and the selling of anything higher value than what the user
@@ -463,7 +493,7 @@ they hold would create currency or holdings that were never earned.}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-4}{No duplicate trades}
+\hazreq{SEC-6}{No duplicate trades}
 {The system shall record a trade only once when the same trade request is
 submitted more than once.}
 {When a test user submits a trade and the same request is sent again, for
@@ -481,7 +511,7 @@ the user did not intend.}
 
 \begin{description}
 
-\hazreq{SEC-5}{Least-privilege health access}
+\hazreq{SEC-7}{Least-privilege health access}
 {The system shall request read access only to the health data types listed as
 activity inputs in the SRS data dictionary, and shall not request permission
 to write to the health platform.}
@@ -494,7 +524,7 @@ ask for (P01).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-6}{State the purpose of each permission}
+\hazreq{SEC-8}{State the purpose of each permission}
 {Before requesting each permission, the system shall tell the user which
 feature uses that data.}
 {For every permission request, a
@@ -506,7 +536,7 @@ days with no data count as zero activity (Section~4).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-7}{Consent and withdrawal}
+\hazreq{SEC-9}{Consent and withdrawal}
 {The system shall obtain the user's consent before it first reads their health
 data, and shall stop reading health data when the user withdraws consent in the
 app.}
@@ -519,7 +549,7 @@ Health data is among the most sensitive data \progname{} handles.}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-8}{Data minimization}
+\hazreq{SEC-10}{Data minimization}
 {The system shall send from the user's mobile device to its server only daily activity
 totals for each activity type, not individual health records.}
 {The data a test phone sends to the server contains daily totals for each
@@ -530,7 +560,7 @@ tools that keep their data on their own device rather than in the cloud (P01).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-9}{No data to third parties}
+\hazreq{SEC-11}{No data to third parties}
 {The system shall not send users' personal or health data to any third
 party. The only data sent to the market data provider shall be the
 identifiers of the assets being priced.}
@@ -544,7 +574,7 @@ reputable company (P02).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-10}{No location data}
+\hazreq{SEC-12}{No location data}
 {The system shall not read or store location or route data.}
 {The permissions a test build requests include no location permission, and no
 location or route data is stored on the phone or the server.}
@@ -561,7 +591,7 @@ user lives or regularly goes.}
 
 \begin{description}
 
-\hazreq{SEC-11}{Private by default}
+\hazreq{SEC-13}{Private by default}
 {The system shall show a user's statistics only to that user until they choose
 to share them, and shall show a shared statistic only to the friends the user
 selected for it. When the user deletes a shared post or removes a friend, the
@@ -577,7 +607,7 @@ share (Problem Statement 1.3).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-12}{No location detail in posts}
+\hazreq{SEC-14}{No location detail in posts}
 {The system shall not include location, route or exact time information in
 shared posts.}
 {No shared post shown to a test user's friends contains a location, a route,
@@ -609,7 +639,7 @@ built, they should be opt-in.}
 
 \begin{description}
 
-\hazreq{SEC-13}{Authenticated access only}
+\hazreq{SEC-15}{Authenticated access only}
 {The system shall require an authenticated session for every request that reads
 or changes a user's data, and shall return another user's data only when that
 user has shared it with the requester.}
@@ -617,13 +647,13 @@ user has shared it with the requester.}
 user's data that was not shared with the requester is rejected, and a request
 for data that was shared succeeds.}
 {Health, portfolio and social data must reach only the account it
-belongs to or the friends it was shared with. \reqref{SEC-11} sets what a user
+belongs to or the friends it was shared with. \reqref{SEC-13} sets what a user
 shares.}
 {FMEA \todo{row ID}, L3 (privacy loss), L4 (security loss).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-14}{Protect data in transit and at rest}
+\hazreq{SEC-16}{Protect data in transit and at rest}
 {The system shall encrypt user data in transit between the phone and the
 server, and when stored on the server.}
 {Inspecting the network traffic between a test phone and the server, and the
@@ -635,7 +665,7 @@ kept secure (P02).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-15}{Session expiry}
+\hazreq{SEC-17}{Session expiry}
 {The system shall end a session that has not been used for
 \texttt{SESSION\_TIMEOUT}, after which the user must sign in again.}
 {A test session left unused for longer than \texttt{SESSION\_TIMEOUT} is
@@ -648,7 +678,7 @@ unused sessions limits that window.
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-16}{In-app account deletion}
+\hazreq{SEC-18}{In-app account deletion}
 {The system shall let the user delete their account from within the app, and
 shall delete their account details, profile, activity totals, currency
 balance, holdings, trades and posts from the server within
@@ -696,21 +726,23 @@ controls, and where it appears in the SRS.
 \reqref{SAF-10} & \todo{} & L6 & \todo{} & Capstone\\
 \reqref{SAF-11} & \todo{} & L2 & \todo{} & Capstone\\
 \reqref{SEC-1} & \todo{} & L4, L5 & \todo{} & Capstone\\
-\reqref{SEC-2} & \todo{} & L5, L6 & \todo{} & Capstone\\
-\reqref{SEC-3} & \todo{} & L5 & \todo{} & Capstone\\
-\reqref{SEC-4} & \todo{} & L5 & \todo{} & Capstone\\
-\reqref{SEC-5} & \todo{} & L3 & \todo{} & Capstone\\
-\reqref{SEC-6} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-2} & H12, H45 & L5, L6 & \todo{} & Capstone\\
+\reqref{SEC-3} & H12 & L5, L6 & \todo{} & Capstone\\
+\reqref{SEC-4} & H18 & L5, L6 & \todo{} & Capstone\\
+\reqref{SEC-5} & \todo{} & L5 & \todo{} & Capstone\\
+\reqref{SEC-6} & \todo{} & L5 & \todo{} & Capstone\\
 \reqref{SEC-7} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-8} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-9} & \todo{} & L3 & \todo{} & Capstone\\
-\reqref{SEC-10} & \todo{} & L1, L3 & \todo{} & Capstone\\
+\reqref{SEC-10} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-11} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-12} & \todo{} & L1, L3 & \todo{} & Capstone\\
-\reqref{SEC-13} & \todo{} & L3, L4 & \todo{} & Capstone\\
-\reqref{SEC-14} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-13} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-14} & \todo{} & L1, L3 & \todo{} & Capstone\\
 \reqref{SEC-15} & \todo{} & L3, L4 & \todo{} & Capstone\\
-\reqref{SEC-16} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-16} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-17} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-18} & \todo{} & L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}

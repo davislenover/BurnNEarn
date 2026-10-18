@@ -348,7 +348,7 @@ outside the boundary with a dashed outline. \progname{} does not connect to
 banks, brokerages, personal portfolio trackers, or the phone's location
 services or contacts.
 \todo{If reminders are sent as push notifications rather than generated on the
-phone, add the push notification service as an external entity (HA SEC-9).}
+phone, add the push notification service as an external entity (HA SEC-11).}
 
 \begin{figure}[H]
 \centering
@@ -429,15 +429,17 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
   daily cap, treating a day with no activity data as a day with zero activity
   (Hazard Analysis SAF-7, SEC-1).
 \item Reject trades the user cannot cover, and record each trade once and
-  completely (Hazard Analysis SEC-3, SEC-4).
+  completely (Hazard Analysis SEC-5, SEC-6).
 \item Show each asset price with the time it was obtained, and mark delayed
   prices (Hazard Analysis SEC-2).
+\item Refuse trades on out-of-date prices while the market is open, and queue
+  trades requested while it is closed (Hazard Analysis SEC-3, SEC-4).
 \item Show shared posts only to the friends the user chose, without location
-  detail (Hazard Analysis SEC-11, SEC-12).
+  detail (Hazard Analysis SEC-13, SEC-14).
 \item Request only the permissions its features use, explaining each one
-  (Hazard Analysis SEC-5, SEC-6).
+  (Hazard Analysis SEC-7, SEC-8).
 \item Send the market data provider only asset identifiers (Hazard Analysis
-  SEC-9).
+  SEC-11).
 \end{itemize}
 \item Health Platform Responsibilities:
 \begin{itemize}
@@ -570,8 +572,8 @@ Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
 and the health-data policies of the Apple App Store and Google Play.
 \textit{Rationale:} These laws and policies apply to any app that handles this
 data in Canada and in these stores. The specific controls are in
-Section~\ref{SecPrivacyRetention} and the Hazard Analysis (SEC-5 to SEC-10 and
-SEC-16).
+Section~\ref{SecPrivacyRetention} and the Hazard Analysis (SEC-7 to SEC-12 and
+SEC-18).
 
 \item[SC\refstepcounter{scnum}\thescnum \label{SC_Server}:] Trading, market
 prices and the social feed shall require an Internet connection to
@@ -748,7 +750,24 @@ Section~\ref{SecProductVision}.
 \freq{FR_MktBuy}
   {The system shall let the user buy units of an asset using virtual currency.}
   {A test user with enough currency buys one unit of an asset. Their balance
-  decreases by the asset's price and their holdings of it increase by one.}
+  decreases by the price shown when they confirmed the trade, and their
+  holdings of it increase by one.}
+  {\todo{SR}, \todo{UC}, G4}
+\freq{FR_MktNoStaleTrade}
+  {(HA SEC-3) The system shall not execute a trade while the asset's market is
+  open and the asset's price is older than \texttt{QUOTE\_STALENESS\_LIMIT}.}
+  {While a test asset's market is open and its price is older than
+  \texttt{QUOTE\_STALENESS\_LIMIT}, a trade request for it is refused and the
+  user is told the price is out of date. With a price within the limit, the
+  trade proceeds.}
+  {\todo{SR}, \todo{UC}, G4}
+\freq{FR_MktQueueClosed}
+  {(HA SEC-4) The system shall queue a trade requested while the asset's market
+  is closed, and execute it at the first price obtained after the market next
+  opens.}
+  {A test trade requested while the market is closed is shown to the user as
+  queued, with a notice that it will run at the opening price, and is executed
+  at the first price obtained after the market opens.}
   {\todo{SR}, \todo{UC}, G4}
 \end{itemize}
 
@@ -773,13 +792,13 @@ Section~\ref{SecProductVision}.
   health data.}
   {After a test user withdraws consent in the app, no further health data is
   read.}
-  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-7}
+  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-9}
 \freq{FR_SetPermissionList}
   {The system shall show the user which data \progname{} has permission to read
   and the feature that uses each.}
   {A test user who has granted health permissions sees each permitted data
   type listed with the feature that uses it.}
-  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-6}
+  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-8}
 \end{itemize}
 
 % ============================================================== 
