@@ -327,8 +327,7 @@ turns out to be false.
         \emph{Rationale:} this is a fixed scope decision in the Problem Statement.
         \emph{Effect:} hazards of direct monetary loss, such as unauthorized payments,
         are removed. Indirect financial harm, where a user makes a real-world decision
-        based on misleading information from \progname{}, is still analyzed in
-        Section~\ref{SecFMEA}. \emph{If false:} if in-app purchases or any other
+        based on misleading information from \progname{}, is still analyzed (\hyperref[H22]{H22}, \hyperref[H26]{H26}). \emph{If false:} if in-app purchases or any other
         real-money feature is added, payment and fraud hazards must be added to this
         analysis.
   \item[CA2:] \textbf{Users are adults.} \progname{} is intended only for
@@ -337,8 +336,7 @@ turns out to be false.
         guardian under the Personal Information Protection and Electronic Documents
         Act (PIPEDA)~\cite{PIPEDA}. \emph{Effect:} hazards that apply only to
         children, such as age-appropriate content, are removed. The hazard that a
-        minor gives a false age is \emph{not} removed and is analyzed in
-        Section~\ref{SecFMEA}. \emph{If false:} if minors are later allowed to use
+        minor gives a false age is \emph{not} removed and is analyzed (\hyperref[H35]{H35}). \emph{If false:} if minors are later allowed to use
         \progname{}, consent, content, and social feed hazards for children must be
         added to this analysis.
   \item[CA3:] \textbf{Device integrity.} The phone's operating system is not
@@ -347,7 +345,7 @@ turns out to be false.
         defend against every attack by a compromised operating system.
         \emph{Effect:} attacks that require control of the operating system are
         removed. Attacks that use a modified copy of the \progname{} app are still
-        analyzed in Section~\ref{SecFMEA}. \emph{If false:} an attacker in control
+        analyzed (\hyperref[H41]{H41}). \emph{If false:} an attacker in control
         of the phone could read data stored on it, including the session token.
         Because rewards, balances, and holdings are calculated only on the server
         (Section~\ref{SecSafetyReqs}), such an attacker could affect only that
@@ -360,7 +358,7 @@ turns out to be false.
         on these services and cannot verify their internal behaviour.
         \emph{Effect:} this does not assume the data they return is accurate,
         complete, or timely; wrong, missing, delayed, and duplicated data are
-        analyzed in Section~\ref{SecFMEA}. \emph{If false:} an undocumented change,
+        analyzed (\hyperref[H2]{H2}, \hyperref[H3]{H3}, \hyperref[H4]{H4}, \hyperref[H12]{H12}, \hyperref[H13]{H13}). \emph{If false:} an undocumented change,
         such as a renamed field, appears as failed or invalid responses, which
         \progname{} already handles as missing or wrong data.
   \item[CA5:] \textbf{Hosting security.} The hosting provider protects the
@@ -368,7 +366,7 @@ turns out to be false.
         \emph{Rationale:} these controls are outside the team's reach.
         \emph{Effect:} physical theft from the data centre is removed. Outages, data
         loss, and breaches through \progname{}'s own software or credentials are
-        still analyzed in Section~\ref{SecFMEA}. \emph{If false:} because personal
+        still analyzed (\hyperref[H39]{H39}, \hyperref[H42]{H42}, \hyperref[H43]{H43}). \emph{If false:} because personal
         data is encrypted at rest, including in backups
         (Section~\ref{SecSafetyReqs}), stolen storage would not expose it in
         readable form.
