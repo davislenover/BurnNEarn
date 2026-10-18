@@ -297,6 +297,29 @@ day's step count ranges from zero on a rest day to tens of thousands for a very
 active user, and every asset price is a positive amount reported by the market
 data provider.
 
+\paragraph{Standards and regulations.} The requirements are written to comply
+with the following external standards and regulations, which also define the
+formats of the data \progname{} exchanges:
+{\sloppy
+\begin{itemize}
+  \item \textbf{Privacy:} the Personal Information Protection and Electronic
+        Documents Act (PIPEDA)~\citep{PIPEDA}, which governs the collection, use, and
+        deletion of users' personal and health data.
+  \item \textbf{Accessibility:} the Web Content Accessibility Guidelines (WCAG)
+        2.2~\citep{WCAG22}, applied to the app's screens.
+  \item \textbf{Security:} the OWASP Mobile Application Security Verification
+        Standard (MASVS)~\citep{OWASPMASVS}.
+  \item \textbf{Quality characteristics:} the product quality model of ISO/IEC
+        25010~\citep{ISOIEC25010_2023}, which names the categories used for the
+        non-functional requirements.
+  \item \textbf{Data formats:} JavaScript Object Notation (JSON)~\citep{RFC8259}
+        for data exchanged between the app, the server, and the market data provider;
+        ISO~8601~\citep{ISO8601_2019} for dates, times, and time zones; and
+        ISO~4217~\citep{ISO4217_2015} for the currency in which each asset price is
+        quoted.
+\end{itemize}
+\par}
+
 \subsection{Stakeholders}
 \begin{itemize}
   \item Customer
