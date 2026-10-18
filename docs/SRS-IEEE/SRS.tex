@@ -409,41 +409,292 @@ numbers.}
 \end{itemize}
 
 % ============================================================== 
-\section{Use Cases}
-\plt{Use cases are a way to describe the interactions between users and the system.
-  They are typically written in natural language and describe the steps that a
-  user takes to achieve a specific goal.  Use cases can be used to identify
-  functional requirements and to create test cases.}  
-\plt{Typically 8-15 substantial use cases.}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Example Use Case}
+% ==============================================================
+\section{Use Cases}
+% ==============================================================
+
+\refstepcounter{ucnum}\label{UC_Label1}
+\subsection{\ucref{UC_Label1}: Record Daily Activity}
 
 \textbf{Primary Actor}
 
-TODO
+User
 
 \textbf{Preconditions}
 \begin{itemize}
-\item TODO
+\item The user has granted permission to access health data.
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item TODO
-\item TODO
-\item TODO
+\item The user opens their activity summary.
+\item The system retrieves the daily activity data.
+\item The system displays the recorded activity.
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item TODO
+\item If permission is denied, the system informs the user.
+\item If no activity data is available, the system displays that no activity was recorded.
 \end{itemize}
 
 \textbf{Postconditions}
 \begin{itemize}
-\item TODO
+\item The user can view their recorded daily activity.
 \end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_EarnCurrency}
+\subsection{\ucref{UC_EarnCurrency}: Earn Virtual Currency}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has recorded a supported activity.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The system retrieves the user's recorded activity.
+\item The system calculates the virtual currency earned.
+\item The system applies the daily earning limit.
+\item The user's currency balance is updated.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If no eligible activity is recorded, no currency is awarded.
+\item Activity exceeding the daily cap earns no additional currency.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's currency balance reflects the earned rewards.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ViewMarket}
+\subsection{\ucref{UC_ViewMarket}: View Market Prices}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has an Internet connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the simulated market.
+\item The user selects an asset.
+\item The system displays its latest available market price.
+\item The system displays when the price was obtained.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If market data is unavailable, the system informs the user.
+\item If the price is outdated, the system marks it as delayed.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user can view the available price of the selected asset.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_BuyAsset}
+\subsection{\ucref{UC_BuyAsset}: Buy a Simulated Asset}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has enough virtual currency for the purchase.
+\item A usable market price is available.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects an asset to purchase.
+\item The user enters the quantity.
+\item The system displays the total cost.
+\item The user confirms the transaction.
+\item The system updates the balance and holdings.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user has insufficient currency, the purchase is rejected.
+\item If the transaction fails, the balance and holdings remain unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The purchase is recorded and the portfolio is updated.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_Reminders}
+\subsection{\ucref{UC_Reminders}: Choose Reminder Times}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access their account settings.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens reminder settings.
+\item The user selects preferred reminder periods.
+\item The system saves the settings.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If reminders are disabled, no optional reminders are sent.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's reminder preferences are saved.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_WithdrawConsent}
+\subsection{\ucref{UC_WithdrawConsent}: Withdraw Data Consent}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user previously granted data access.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens data permission settings.
+\item The user selects a permission to withdraw.
+\item The system records the change.
+\item The system stops reading the selected data.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If operating system settings are required, the user is directed there.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The withdrawn data is no longer accessed.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ReviewPermissions}
+\subsection{\ucref{UC_ReviewPermissions}: Review Data Permissions}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens permission settings.
+\item The system displays the available permissions.
+\item The system explains which features use each permission.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item Permissions that are not granted are marked as unavailable.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user understands the application's data access.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ShareProgress}
+\subsection{\ucref{UC_ShareProgress}: Share Progress with Friends}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has at least one accepted friend connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a statistic to share.
+\item The user selects the friends who can view it.
+\item The system publishes the selected information.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user cancels, nothing is shared.
+\item Location and exact activity times are excluded.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Only selected friends can view the shared statistic.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_DeleteAccount}
+\subsection{\ucref{UC_DeleteAccount}: Delete Account}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects account deletion.
+\item The system requests confirmation.
+\item The user confirms the request.
+\item The system disables the account and deletes its associated data.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user cancels, their account remains unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The account is disabled and deletion is initiated.
+\end{itemize}
+
 
 % ============================================================== 
 \section{Functional Requirements}
