@@ -840,6 +840,44 @@ Section~\ref{SecProductVision}.
 % Owner: Farid
 \subsection{Learning and Feedback}
 
+The requirements in this subsection refer to the core concepts in
+Table~\ref{TblCoreConcepts}. These are the concepts measured by the knowledge
+check in goal G1; the list is educational content that administrators can
+extend without changing these requirements.
+
+\begin{table}[H]
+\caption{Core concepts} \label{TblCoreConcepts}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.18\textwidth}X}
+\toprule
+\textbf{Domain} & \textbf{Core concepts}\\
+\midrule
+Investing & Stock; ETF; share; market price; portfolio value; return;
+diversification; risk and volatility; compound growth; market downturn and
+recovery\\
+Canadian accounts & Tax-Free Savings Account (TFSA); Registered Retirement
+Savings Plan (RRSP)\\
+Fitness & Each supported activity type; active minutes; rest day;
+streak\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_LearnExplainConcept}
+  {The system shall provide a concept explanation for each core concept in
+  Table~\ref{TblCoreConcepts}.}
+  {For every core concept in Table~\ref{TblCoreConcepts}, a tester can open a
+  concept explanation of it in the app.}
+  {\srref{SR_LearnInContext}, \srref{SR_CanadianContext}, G1}
+\freq{FR_LearnInPlace}
+  {The system shall let the user open the concept explanation of a core concept
+  from every screen on which that concept appears.}
+  {On every screen that shows a core concept, a tester can open its concept
+  explanation without leaving that screen.}
+  {\srref{SR_LearnInContext}, G1, G2}
+\end{itemize}
+
 % Owner: Farid
 \subsection{Social Feed}
 
