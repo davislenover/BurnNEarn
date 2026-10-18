@@ -500,9 +500,7 @@ feature uses that data.}
 {For every permission request, a
 test user is shown the feature that uses that data before the request appears.}
 {Both participants said they are more willing to grant a permission when it is
-clear why the app is asking (P01, P02). One participant accepts location access
-when its purpose is obvious, such as a bike-tracking app that needs GPS (P01).
-A user who denies a health permission earns nothing for that activity, since
+clear why the app is asking (P01, P02). A user who denies a health permission earns nothing for that activity, since
 days with no data count as zero activity (Section~4).}
 {FMEA \todo{row ID}, L3 (privacy loss).}
 {\todo{SRS section and ID}}
@@ -510,15 +508,13 @@ days with no data count as zero activity (Section~4).}
 
 \hazreq{SEC-7}{Consent and withdrawal}
 {The system shall obtain the user's consent before it first reads their health
-or location data, and shall stop reading that data when the user withdraws
-consent in the app.}
-{A new test user's health and location data are not read until they consent.
-After they withdraw consent in the app, no further health or location data is
-read.}
+data, and shall stop reading health data when the user withdraws consent in the
+app.}
+{A new test user's health data is not read until they consent. After they
+withdraw consent in the app, no further health data is read.}
 {Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
 requires consent to collect personal information and lets people withdraw it.
-Health and location data are among the most sensitive data \progname{}
-handles.}
+Health data is among the most sensitive data \progname{} handles.}
 {FMEA \todo{row ID}, L3 (privacy loss).}
 {\todo{SRS section and ID}}
 {Capstone.}
@@ -535,8 +531,8 @@ tools that keep their data on their own device rather than in the cloud (P01).}
 {Capstone.}
 
 \hazreq{SEC-9}{No data to third parties}
-{The system shall not send users' personal, health or location data to any
-third party. The only data sent to the market data provider shall be the
+{The system shall not send users' personal or health data to any third
+party. The only data sent to the market data provider shall be the
 identifiers of the assets being priced.}
 {Every outgoing request from a test mobile device and from the server goes either to
 \progname{}'s own server or to the market data provider, and requests to the
@@ -548,13 +544,24 @@ reputable company (P02).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
+\hazreq{SEC-10}{No location data}
+{The system shall not read or store location or route data.}
+{The permissions a test build requests include no location permission, and no
+location or route data is stored on the phone or the server.}
+{None of \progname{}'s features need location. Location or route data, such as
+the route maps some workouts store in the health platform, could reveal where a
+user lives or regularly goes.}
+{FMEA H33, L1 (physical harm), L3 (privacy loss).}
+{\todo{SRS section and ID}}
+{Capstone.}
+
 \end{description}
 
 \subsection{Social Feed}
 
 \begin{description}
 
-\hazreq{SEC-10}{Private by default}
+\hazreq{SEC-11}{Private by default}
 {The system shall show a user's statistics only to that user until they choose
 to share them, and shall show a shared statistic only to the friends the user
 selected for it. When the user deletes a shared post or removes a friend, the
@@ -570,7 +577,7 @@ share (Problem Statement 1.3).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-11}{No location detail in posts}
+\hazreq{SEC-12}{No location detail in posts}
 {The system shall not include location, route or exact time information in
 shared posts.}
 {No shared post shown to a test user's friends contains a location, a route,
@@ -602,21 +609,21 @@ built, they should be opt-in.}
 
 \begin{description}
 
-\hazreq{SEC-12}{Authenticated access only}
+\hazreq{SEC-13}{Authenticated access only}
 {The system shall require an authenticated session for every request that reads
 or changes a user's data, and shall return another user's data only when that
 user has shared it with the requester.}
 {A test request without a valid session is rejected. A request for another
 user's data that was not shared with the requester is rejected, and a request
 for data that was shared succeeds.}
-{Health, location, portfolio and social data must reach only the account it
-belongs to or the friends it was shared with. \reqref{SEC-10} sets what a user
+{Health, portfolio and social data must reach only the account it
+belongs to or the friends it was shared with. \reqref{SEC-11} sets what a user
 shares.}
 {FMEA \todo{row ID}, L3 (privacy loss), L4 (security loss).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-13}{Protect data in transit and at rest}
+\hazreq{SEC-14}{Protect data in transit and at rest}
 {The system shall encrypt user data in transit between the phone and the
 server, and when stored on the server.}
 {Inspecting the network traffic between a test phone and the server, and the
@@ -628,20 +635,20 @@ kept secure (P02).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-14}{Session expiry}
+\hazreq{SEC-15}{Session expiry}
 {The system shall end a session that has not been used for
 \texttt{SESSION\_TIMEOUT}, after which the user must sign in again.}
 {A test session left unused for longer than \texttt{SESSION\_TIMEOUT} is
 rejected, and the user must sign in again to continue.}
-{A lost or shared phone, or a stolen session, gives access to a user's health,
-location and portfolio data for as long as the session stays valid. Ending
+{A lost or shared phone, or a stolen session, gives access to a user's health
+and portfolio data for as long as the session stays valid. Ending
 unused sessions limits that window.
 \todo{Add \texttt{SESSION\_TIMEOUT} to SRS Appendix C (\#95).}}
 {FMEA \todo{row ID}, L3 (privacy loss), L4 (security loss).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SEC-15}{In-app account deletion}
+\hazreq{SEC-16}{In-app account deletion}
 {The system shall let the user delete their account from within the app, and
 shall delete their account details, profile, activity totals, currency
 balance, holdings, trades and posts from the server within
@@ -697,12 +704,13 @@ controls, and where it appears in the SRS.
 \reqref{SEC-7} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-8} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-9} & \todo{} & L3 & \todo{} & Capstone\\
-\reqref{SEC-10} & \todo{} & L3 & \todo{} & Capstone\\
-\reqref{SEC-11} & \todo{} & L1, L3 & \todo{} & Capstone\\
-\reqref{SEC-12} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-10} & \todo{} & L1, L3 & \todo{} & Capstone\\
+\reqref{SEC-11} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-12} & \todo{} & L1, L3 & \todo{} & Capstone\\
 \reqref{SEC-13} & \todo{} & L3, L4 & \todo{} & Capstone\\
 \reqref{SEC-14} & \todo{} & L3, L4 & \todo{} & Capstone\\
-\reqref{SEC-15} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-15} & \todo{} & L3, L4 & \todo{} & Capstone\\
+\reqref{SEC-16} & \todo{} & L3 & \todo{} & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}

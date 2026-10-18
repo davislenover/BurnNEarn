@@ -345,7 +345,8 @@ it exchanges information with. Activity sources, such as phone sensors,
 smartwatches and other tracker apps, record activity in the phone's health
 platform. They never communicate with \progname{} directly, so they are shown
 outside the boundary with a dashed outline. \progname{} does not connect to
-banks, brokerages, personal portfolio trackers or the phone's contacts.
+banks, brokerages, personal portfolio trackers, or the phone's location
+services or contacts.
 \todo{If reminders are sent as push notifications rather than generated on the
 phone, add the push notification service as an external entity (HA SEC-9).}
 
@@ -366,10 +367,8 @@ phone, add the push notification service as an external entity (HA SEC-9).}
 
   \node[entity, left=3.7cm of sys] (user) {User};
   \node[entity, right=3.2cm of sys] (market) {Market data\\provider};
-  \node[entity, above=1.9cm of sys, xshift=-3.1cm] (health)
+  \node[entity, above=1.9cm of sys] (health)
     {Phone health platform\\(HealthKit or\\Health Connect)};
-  \node[entity, above=1.9cm of sys, xshift=3.1cm] (location)
-    {Phone location services};
   \node[entity, below=1.8cm of sys] (friends) {Friends\\(other users)};
   \node[upstream, above=0.9cm of health] (sources)
     {Activity sources: phone sensors, smartwatches, other tracker apps};
@@ -387,15 +386,9 @@ phone, add the push notification service as an external entity (HA SEC-9).}
     node[lbl, midway, below] {asset prices};
 
   % Health platform
-  \draw[flow] ([xshift=-4mm]health.south) -- ([xshift=-12mm]sys.north)
+  \draw[flow] ([xshift=-4mm]health.south) -- ([xshift=-4mm]sys.north)
     node[lbl, midway, left] {daily activity\\totals, permission\\status};
-  \draw[flow] ([xshift=-4mm]sys.north) -- ([xshift=4mm]health.south)
-    node[lbl, midway, right] {permission\\requests};
-
-  % Location services
-  \draw[flow] ([xshift=-4mm]location.south) -- ([xshift=4mm]sys.north)
-    node[lbl, midway, left] {location};
-  \draw[flow] ([xshift=12mm]sys.north) -- ([xshift=4mm]location.south)
+  \draw[flow] ([xshift=4mm]sys.north) -- ([xshift=4mm]health.south)
     node[lbl, midway, right] {permission\\requests};
 
   % Friends
@@ -440,7 +433,7 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \item Show each asset price with the time it was obtained, and mark delayed
   prices (Hazard Analysis SEC-2).
 \item Show shared posts only to the friends the user chose, without location
-  detail (Hazard Analysis SEC-10, SEC-11).
+  detail (Hazard Analysis SEC-11, SEC-12).
 \item Request only the permissions its features use, explaining each one
   (Hazard Analysis SEC-5, SEC-6).
 \item Send the market data provider only asset identifiers (Hazard Analysis
@@ -454,10 +447,6 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
   report the current permission status.
 \item Keep the activity data it records as accurate as its activity sources
   allow.
-\end{itemize}
-\item Location Services Responsibilities:
-\begin{itemize}
-\item Provide the phone's location when the user has granted permission.
 \end{itemize}
 \item Market Data Provider Responsibilities:
 \begin{itemize}
@@ -484,7 +473,7 @@ for professional, engineering or scientific use.
 \progname{} is not mission-critical: it holds and moves no real money, so an
 outage only delays rewards and learning. It is not safety-critical either
 since it controls no physical equipment and provides
-no medical function. However, it handles personal health and location data and
+no medical function. However, it handles personal health data and
 is designed to influence how users exercise and make financial decisions. These
 hazards, and the requirements that control them, are covered in the Hazard
 Analysis. The rationale in Section~\ref{SecRationale} therefore focuses on
@@ -576,13 +565,13 @@ advice. \progname{} will always outline associated risks when informing a user a
 Keeping real money out also keeps the practice risk-free (G4).
 
 \item[SC\refstepcounter{scnum}\thescnum \label{SC_Privacy}:] \progname{} shall
-collect, use, store and delete personal, health and location data in line with
+collect, use, store and delete personal and health data in line with
 Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
 and the health-data policies of the Apple App Store and Google Play.
 \textit{Rationale:} These laws and policies apply to any app that handles this
 data in Canada and in these stores. The specific controls are in
-Section~\ref{SecPrivacyRetention} and the Hazard Analysis (SEC-5 to SEC-9 and
-SEC-15).
+Section~\ref{SecPrivacyRetention} and the Hazard Analysis (SEC-5 to SEC-10 and
+SEC-16).
 
 \item[SC\refstepcounter{scnum}\thescnum \label{SC_Server}:] Trading, market
 prices and the social feed shall require an Internet connection to
@@ -780,16 +769,16 @@ Section~\ref{SecProductVision}.
   next time they open the app.}
   {\todo{SR}, \todo{UC}, G2}
 \freq{FR_SetWithdrawConsent}
-  {The system shall let the user withdraw consent, separately for health data
-  and for location data, for \progname{} to read that data.}
-  {After a test user withdraws consent for health data in the app, no further
-  health data is read. The same holds for location data.}
+  {The system shall let the user withdraw consent for \progname{} to read their
+  health data.}
+  {After a test user withdraws consent in the app, no further health data is
+  read.}
   {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-7}
 \freq{FR_SetPermissionList}
   {The system shall show the user which data \progname{} has permission to read
   and the feature that uses each.}
-  {A test user who has granted health and location permissions sees both
-  listed, each with the feature that uses it.}
+  {A test user who has granted health permissions sees each permitted data
+  type listed with the feature that uses it.}
   {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-6}
 \end{itemize}
 
