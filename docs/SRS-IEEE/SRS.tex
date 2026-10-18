@@ -461,9 +461,11 @@ its entry links to that definition.
   OS                                                 & Operating System                                                                                                                                                        \\
   OWASP                                              & Open Worldwide Application Security Project                                                                                                                             \\
   PIPEDA                                             & Personal Information Protection and Electronic Documents Act                                                                                                            \\
+  RRSP                                               & Registered Retirement Savings Plan                                                                                                                                      \\
   SH                                                 & Stakeholder (identifier prefix in Table~\ref{TblStakeholders})                                                                                                          \\
   SR                                                 & Stakeholder Requirement                                                                                                                                                 \\
   SRS                                                & Software Requirements Specification                                                                                                                                     \\
+  TFSA                                               & Tax-Free Savings Account                                                                                                                                                \\
   UC                                                 & Use Case                                                                                                                                                                \\
   V\&V                                               & Verification and Validation                                                                                                                                             \\
   WCAG                                               & Web Content Accessibility Guidelines                                                                                                                                    \\
@@ -702,6 +704,23 @@ requirements that refine it.
           \emph{Source:} SH1, SH2. \emph{Evidence:} Practising a downturn safely prepares users for one with real money (Problem Statement). \emph{Goal:} G4.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_NotAdvice}:] \progname{} shall never give, or be mistaken for, advice on what to do with real money.\\
           \emph{Source:} SH1, SH6, SH9. \emph{Evidence:} Self-taught investors learn from YouTube and Reddit, where it is easy to follow ``the wrong kinds of investing YouTubers,'' and look for answers tailored to their own situation (P01). Users may act on whatever the app appears to recommend. \emph{Goal:} G4.
+  \end{itemize}
+  \par}
+
+\paragraph{Learning}
+
+{\sloppy
+  \noindent\begin{itemize}
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_LearnInContext}:] Users shall be able to understand each financial and fitness concept where it appears, without leaving \progname{}.\\
+          \emph{Source:} SH1. \emph{Evidence:} Beginners are told that investing requires studying measures such as price-to-earnings ratios, which confuses them (P01); advice is scattered across sources that contradict each other (Problem Statement). \emph{Goal:} G1, G2.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_LearnByDoing}:] Users shall learn through activities they take part in, not only by reading or watching.\\
+          \emph{Source:} SH1. \emph{Evidence:} One participant has trouble learning from videos and needs ``a component that's interactive''; watching alone ``doesn't stick'' (P02). The other learned investing by doing it themselves (P01). \emph{Goal:} G1.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_LearnFromDecisions}:] Users shall be able to find out why their portfolio changed after their own decisions, including how diversified it is.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} One participant considers buying individual stocks ``almost like gambling'' compared with diversified index investing (P01); users need to see this in their own results. \emph{Goal:} G1.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_CanadianContext}:] Users shall be able to learn how the concepts they practise apply to saving and investing in Canada, such as tax-free savings accounts.\\
+          \emph{Source:} SH1, SH6. \emph{Evidence:} Both participants named Canada's account types, such as Tax-Free Savings Accounts (TFSAs) and Registered Retirement Savings Plans (RRSPs), as important things they had to learn (P01, P02); ``so many people aren't doing anything at all'' with their savings (P02). \emph{Goal:} G1.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_SeeProgress}:] Users shall be able to see how their activity and their investments have changed over time, in one place.\\
+          \emph{Source:} SH1. \emph{Evidence:} One participant checks their heart rate often, out of curiosity and to see that it is healthy (P02); the other tracks both their steps and their portfolio, in separate tools (P01). \emph{Goal:} G2.
   \end{itemize}
   \par}
 % ============================================================== 
