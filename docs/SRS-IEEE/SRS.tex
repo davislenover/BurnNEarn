@@ -716,6 +716,43 @@ Section~\ref{SecProductVision}.
 % Owner: Farid
 \subsection{Accounts and Profile}
 
+\noindent \begin{itemize}
+\freq{FR_AcctCreate}
+  {The system shall let a new user create an account with an email address and
+  a password.}
+  {A test user who enters an unused email address and a valid password has an
+  account, and can sign in with them.}
+  {\srref{SR_EasyStart}, G2}
+\freq{FR_AcctAgeConfirm}
+  {The system shall not create an account until the user confirms that they are
+  at least \texttt{MIN\_USER\_AGE} years old.}
+  {A test user who does not confirm their age during sign-up has no account
+  created.}
+  {\srref{SR_ProtectData}, G3, Hazard Analysis CA2}
+\freq{FR_AcctUsername}
+  {The system shall require each user to choose a username that no other user
+  has.}
+  {A test user who tries to sign up with a username that another account
+  already uses is asked to choose a different one.}
+  {\srref{SR_ShareProgress}, G3}
+\freq{FR_AcctSignIn}
+  {The system shall let a user sign in with their email address and password.}
+  {A test user who enters their correct email address and password is signed
+  in; one who enters a wrong password is not.}
+  {\srref{SR_ProtectData}, G2}
+\freq{FR_AcctSignOut}
+  {The system shall let a signed-in user sign out.}
+  {After a test user signs out, opening the app shows the sign-in screen and
+  none of their data.}
+  {\srref{SR_ProtectData}, G3}
+\freq{FR_AcctResetPassword}
+  {The system shall let a user who has forgotten their password set a new one
+  through a link sent to their account's email address.}
+  {A test user who requests a reset receives a link at their email address,
+  and after setting a new password can sign in only with the new one.}
+  {\srref{SR_ControlOwnData}, G2}
+\end{itemize}
+
 % Owner: Davis
 \subsection{Activity and Rewards}
 
