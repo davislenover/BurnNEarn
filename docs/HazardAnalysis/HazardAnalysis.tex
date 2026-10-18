@@ -11,6 +11,7 @@
 \usepackage{longtable}
 \usepackage{pdflscape}
 \usepackage{colortbl}
+\usepackage{multirow}
 
 \hypersetup{
     colorlinks=true,       % false: boxed links; true: colored links
@@ -620,6 +621,62 @@ requirements that address it, and each requirement links back to its hazards.
   \end{longtable}
 \end{landscape}
 \restoregeometry
+
+Table~\ref{TblRiskMatrix} summarizes the analysis by placing each hazard of
+Table~\ref{TblFMEA} at its severity and likelihood; darker cells are higher
+risk classes. Of the 48 hazards, 19 are eliminated by design and the rest
+are mitigated. The High-risk hazards concern the exposure of personal data
+(\hyperref[H30]{H30}, \hyperref[H34]{H34}, \hyperref[H39]{H39}, \hyperref[H43]{H43}), the user's physical safety (\hyperref[H33]{H33}), and
+trading while the market is closed (\hyperref[H18]{H18}), which is minor but affects
+almost every user.
+
+
+\begin{table}[H]
+  \caption{Risk matrix: hazards by severity ($S$) and likelihood ($L$)}
+  \label{TblRiskMatrix}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabularx}{\textwidth}{c *{5}{>{\raggedright\arraybackslash}X}}
+    \toprule
+    \multirow{2}{*}{\textbf{Severity $S$}}
+     & \multicolumn{5}{c}{\textbf{Likelihood $L$}}                                                                                                                                                                                                                                                                \\
+    \cmidrule(l){2-6}
+     & \textbf{1 Rare}                                                                                                                                                                                                                                          & \textbf{2 Unlikely}       & \textbf{3 Possible}
+     & \textbf{4 Likely}                                                                                                                                                                                                                                        & \textbf{5 Almost certain}                       \\
+    \midrule
+    \textbf{5}
+     & \cellcolor{gray!45}\hyperref[H33]{H33}
+     & \cellcolor{gray!45}\hyperref[H39]{H39}, \hyperref[H43]{H43}
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}--                                                                                                                                                                                                                                                                                      \\
+    \textbf{4}
+     & \cellcolor{white}\hyperref[H10]{H10}
+     & \cellcolor{gray!20}\hyperref[H9]{H9}, \hyperref[H11]{H11}, \hyperref[H22]{H22}, \hyperref[H29]{H29}, \hyperref[H31]{H31}, \hyperref[H40]{H40}
+     & \cellcolor{gray!45}\hyperref[H30]{H30}, \hyperref[H34]{H34}
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}--                                                                                                                                                                                                                                                                                      \\
+    \textbf{3}
+     & \cellcolor{white}--
+     & \cellcolor{gray!20}\hyperref[H13]{H13}, \hyperref[H14]{H14}, \hyperref[H19]{H19}, \hyperref[H20]{H20}, \hyperref[H21]{H21}, \hyperref[H24]{H24}, \hyperref[H32]{H32}, \hyperref[H35]{H35}, \hyperref[H36]{H36}, \hyperref[H38]{H38}, \hyperref[H42]{H42}
+     & \cellcolor{gray!20}\hyperref[H5]{H5}, \hyperref[H15]{H15}, \hyperref[H23]{H23}, \hyperref[H26]{H26}, \hyperref[H46]{H46}
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}--                                                                                                                                                                                                                                                                                      \\
+    \textbf{2}
+     & \cellcolor{white}--
+     & \cellcolor{white}\hyperref[H25]{H25}, \hyperref[H48]{H48}
+     & \cellcolor{gray!20}\hyperref[H6]{H6}, \hyperref[H7]{H7}, \hyperref[H8]{H8}, \hyperref[H27]{H27}, \hyperref[H28]{H28}, \hyperref[H37]{H37}, \hyperref[H41]{H41}, \hyperref[H44]{H44}, \hyperref[H47]{H47}
+     & \cellcolor{gray!20}\hyperref[H1]{H1}, \hyperref[H2]{H2}, \hyperref[H3]{H3}, \hyperref[H4]{H4}, \hyperref[H12]{H12}, \hyperref[H16]{H16}, \hyperref[H17]{H17}, \hyperref[H45]{H45}
+     & \cellcolor{gray!45}\hyperref[H18]{H18}                                                                                                                                                                                                                                                                     \\
+    \textbf{1}
+     & \cellcolor{white}--
+     & \cellcolor{white}--
+     & \cellcolor{white}--
+     & \cellcolor{white}--
+     & \cellcolor{gray!20}--                                                                                                                                                                                                                                                                                      \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \section{Safety and Security Requirements} \label{SecSafetyReqs}
 
