@@ -368,6 +368,24 @@ turns out to be false.
         readable form.
 \end{itemize}
 
+To keep the analysis complete, the following are explicitly \emph{not}
+assumed, and their failures are included in Section~\ref{SecFMEA}:
+
+\begin{itemize}
+  \item The network is always available, fast, or private.
+  \item The market data provider is always available or within its request
+        limits.
+  \item Activity data is accurate, complete, of the correct type and unit, or
+        measured rather than entered by hand.
+  \item The market is open whenever a user wants to trade.
+  \item Users are honest, read every notice, or understand financial terms.
+  \item The phone's clock is correct, or the user stays in one time zone.
+  \item Users enter their true age.
+  \item Third-party libraries are free of defects or remain compatible with new
+        operating system versions.
+  \item Educational content written by the team is free of errors.
+\end{itemize}
+
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
 
 \wss{Include your FMEA table here. This is the most important part of this document.}
