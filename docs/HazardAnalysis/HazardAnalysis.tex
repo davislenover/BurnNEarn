@@ -357,6 +357,15 @@ turns out to be false.
         analyzed in Section~\ref{SecFMEA}. \emph{If false:} an undocumented change,
         such as a renamed field, appears as failed or invalid responses, which
         \progname{} already handles as missing or wrong data.
+  \item[CA5:] \textbf{Hosting security.} The hosting provider protects the
+        physical security of its servers and controls its own staff's access to them.
+        \emph{Rationale:} these controls are outside the team's reach.
+        \emph{Effect:} physical theft from the data centre is removed. Outages, data
+        loss, and breaches through \progname{}'s own software or credentials are
+        still analyzed in Section~\ref{SecFMEA}. \emph{If false:} because personal
+        data is encrypted at rest, including in backups
+        (Section~\ref{SecSafetyReqs}), stolen storage would not expose it in
+        readable form.
 \end{itemize}
 
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
