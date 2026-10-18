@@ -928,6 +928,51 @@ streak\\
 % Owner: Farid
 \subsection{Social Feed}
 
+A user can share only the kinds of update in Table~\ref{TblShareable}. Currency
+balances and portfolio values are not shareable, so that friends compare
+effort and learning rather than market results.
+
+\begin{table}[H]
+\caption{Kinds of shared update} \label{TblShareable}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}X}
+\toprule
+\textbf{Kind} & \textbf{Content}\\
+\midrule
+Activity total & The user's total for one activity type over a day or a
+week\\
+Streak & The number of consecutive days with recorded activity\\
+Fitness milestone & A fitness milestone the user has reached\\
+Learning milestone & A knowledge check the user has passed\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_SocialRequest}
+  {The system shall let the user send a friend request to another user by
+  their username.}
+  {A test user who enters another user's username sends that user a friend
+  request, which the other user sees.}
+  {\srref{SR_ShareProgress}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialAccept}
+  {The system shall make two users friends only after the user who received
+  the friend request accepts it.}
+  {Two test users are not friends while a request between them is pending or
+  after it is declined, and are friends once it is accepted.}
+  {\srref{SR_ControlSharing}, G3}
+\freq{FR_SocialDecline}
+  {The system shall let the user decline a friend request.}
+  {After a test user declines a request, the two users are not friends and the
+  request is no longer shown to the user who declined it.}
+  {\srref{SR_ControlSharing}, G3}
+\freq{FR_SocialRemove}
+  {The system shall let the user remove a friend.}
+  {After a test user removes a friend, neither user sees the other's shared
+  updates.}
+  {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-10}
+\end{itemize}
+
 % Owner: Davis
 \subsection{Reminders and Settings}
 
