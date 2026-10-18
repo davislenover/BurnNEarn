@@ -81,6 +81,7 @@
 \newcounter{lcnum} %Likely Change (LC) Number
 \newcommand{\lthelcnum}{LC\thelcnum}
 \newcommand{\lcref}[1]{LC\ref{#1}}
+\newcounter{ulcnum}
 
 \usepackage{fullpage}
 
@@ -672,16 +673,34 @@ Historical market scenarios
 
 The number and selection of historical market scenarios may change depending on the availability and cost of historical price data. The Development Plan identifies offering fewer scenarios or using a selected set of stored historical datasets as possible responses if the required data is difficult to obtain. This would affect the historical periods and events available to users and the data used to run those scenarios.
 
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_5thChange}:] 
+Social challenges and leaderboards
+
+FitFolio may be extended to let users take part in fitness challenges with friends and other users, and compare fitness or portfolio statistics through leaderboards. These features are listed as a stretch goal in the Problem Statement and Goals. Adding them would expand the social features beyond sharing progress and would affect the requirements for taking part in challenges and displaying comparisons between users. Users would still control which information they share.
+
 
 \end{itemize}
 
-\section{Unlikely Changes}    
+\section{Unlikely Changes}
+
+The following parts of FitFolio are expected to stay the same because they support the project's purpose and goals.
 
 \noindent \begin{itemize}
+\item[ULC\refstepcounter{ulcnum}\theulcnum\label{ULC_firstChange}:]
+Virtual currency and simulated investing
 
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the unlikely changes.  The design can assume that the changes listed will
-    not occur.}
+FitFolio is expected to continue using virtual currency with no real-world monetary value. Adding real-money trading or allowing users to exchange earned currency for cash is unlikely. The Problem Statement and Goals describes an app where beginners can practise investing without risking real money or needing to link bank or brokerage accounts. Moving to real money would change this purpose.
+
+\item[ULC\refstepcounter{ulcnum}\theulcnum\label{ULC_SecondChange}:]
+Earning rewards through physical activity
+
+Physical activity is expected to remain the way users earn virtual currency in FitFolio. Removing activity-based rewards is unlikely because earning currency through exercise and using it in the simulated market is the project's central idea. This connection supports the goal of helping users build fitness habits while learning about investing. 
+
+\item[ULC\refstepcounter{ulcnum}\theulcnum\label{ULC_thirdChange}:]
+User control over social sharing
+
+Users are expected to keep control over which activity and portfolio information they share. Removing this control is unlikely because the Problem Statement and Goals includes motivating users through friends while protecting their privacy. It also states that raw health data is shared only when the user chooses to share it. Any changes to the social features should preserve this choice.
+
 
 \end{itemize}
 
