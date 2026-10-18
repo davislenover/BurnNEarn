@@ -103,10 +103,11 @@
 \section*{Revision History}
 
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
-  \toprule {\bf Date} & {\bf Version} & {\bf Notes} \\
+  \toprule {\bf Date} & {\bf Version} & {\bf Notes}                                                                                         \\
   \midrule
-  Date 1              & 1.0           & Notes       \\
-  Date 2              & 1.1           & Notes       \\
+  Oct 16, 2026        & 0.1           & Farid Bastoros: initial revision of 1 Introduction, 3 Stakeholder Requirements, and 4 User Personas \\
+  Date 1              & 1.0           & Notes                                                                                               \\
+  Date 2              & 1.1           & Notes                                                                                               \\
   \bottomrule
 \end{tabularx}
 
@@ -630,27 +631,62 @@ TODO
 % ============================================================== 
 \section{Stakeholder Requirements}
 
-\plt{Technology-independent requirements.  These come from statements made by
-  the stakeholders.  You will find these through interviews and surveys.  They are
-  often expressed in natural language.  They are not necessarily testable, but
-  they should be verifiable.}
+% \plt{Technology-independent requirements.  These come from statements made by
+%   the stakeholders.  You will find these through interviews and surveys.  They are
+%   often expressed in natural language.  They are not necessarily testable, but
+%   they should be verifiable.}
 
-\plt{The stakeholder requirements are numbered so that you can have traceability to other parts of your document.}
+% \plt{The stakeholder requirements are numbered so that you can have traceability to other parts of your document.}
 
-\noindent \begin{itemize}
+% \noindent \begin{itemize}
 
-  \item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label1}] TODO
+%   \item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label1}] TODO
 
-  \item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label2}] TODO
+%   \item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label2}] TODO
 
-  \item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label3}] TODO
+%   \item[SR\refstepcounter{srnum}\thesrnum \label{SR_Label3}] TODO
 
-\end{itemize}
+% \end{itemize}
 
-\plt{You should give your SRs meaningful labels, so that you can refer to them
-  in other parts of the SRS.  The label names should be meaningful mnemonics, not
-  numbers.}
+% \plt{You should give your SRs meaningful labels, so that you can refer to them
+%   in other parts of the SRS.  The label names should be meaningful mnemonics, not
+%   numbers.}
 
+
+This section lists what the stakeholders in Table~\ref{TblStakeholders} need
+from \progname{}, stated without reference to any technology. Each
+requirement names its \emph{source} stakeholders, the \emph{evidence} for it,
+and the product \emph{goal} from Section~2 that it supports. Use cases in
+Section~5 and functional requirements in Section~6 refine these requirements
+and trace back to them by their identifiers.
+
+The evidence comes from three places. The Problem Statement and Goals document
+records the client's vision and the target users. Two potential users were
+interviewed for the team's Design Thinking report; they are referred to as
+P01 and P02, and their statements are paraphrased so that they cannot be
+identified. The Hazard Analysis contributes needs that protect users from
+harm. Because neither interviewee was a complete beginner at investing, the
+needs of beginners come from the Problem Statement and will be checked in
+usability testing.
+
+Each requirement is verifiable: it can be confirmed by inspection,
+demonstration, or a usability test, through the functional and non-functional
+requirements that refine it.
+
+\paragraph{Activity and motivation}
+
+{\sloppy
+  \noindent\begin{itemize}
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_EarnFromActivity}:] Users shall be rewarded for the physical activity they already do, without having to record it themselves.\\
+          \emph{Source:} SH1, SH2. \emph{Evidence:} Both participants track their activity mainly with their phone (P01, P02). \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level or physical ability shall be able to earn rewards.\\
+          \emph{Source:} SH1, SH6. \emph{Evidence:} The target users have any level of fitness (Problem Statement), and rewards must count several types of activity, not only steps. \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_OwnGoals}:] Users shall choose their own activity goals, or set none, and shall not be pressured to raise them.\\
+          \emph{Source:} SH1. \emph{Evidence:} One participant keeps a fixed step goal because a higher one takes too much time (P01); another sets no goals at all (P02). \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_SafeMotivation}:] Features that motivate activity shall not encourage users to exercise when it is unsafe, such as late at night, while injured, or beyond a healthy amount.\\
+          \emph{Source:} SH1, SH6. \emph{Evidence:} A streak has made one participant go out walking at 9~p.m.\ (P01); another admired pushing through exercise regardless of pain (P02). \emph{Goal:} G5.
+  \end{itemize}
+  \par}
 % ============================================================== 
 \section{User Personas}
 \plt{Create 2-5 realistic personas.
@@ -884,9 +920,9 @@ TODO
 \begin{longtable}{p{0.15\textwidth} p{0.15\textwidth} p{0.20\textwidth} p{0.20\textwidth}}
 
   \toprule
-  Stakeholder Req   & Use Case          & Functional Req   \\
+  Stakeholder Req             & Use Case          & Functional Req   \\
   \midrule
-  \srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_Label1} \\
+  \srref{SR_EarnFromActivity} & \ucref{UC_Label1} & \rref{FR_Label1} \\
   \bottomrule
 
   \caption{Traceability Between Stakeholder Requirements, Use Cases, and
