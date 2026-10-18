@@ -899,6 +899,30 @@ streak\\
   value shows the explanation, and the explanation names no asset to buy or
   sell (Hazard Analysis SAF-9).}
   {\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice}, G1}
+\freq{FR_LearnKnowledgeCheck}
+  {The system shall provide a knowledge check for each core concept in
+  Table~\ref{TblCoreConcepts}.}
+  {For every core concept in Table~\ref{TblCoreConcepts}, a tester can start a
+  knowledge check on it.}
+  {\srref{SR_LearnByDoing}, G1}
+\freq{FR_LearnCheckResult}
+  {When the user finishes a knowledge check, the system shall show which of
+  their answers were correct and an explanation of the correct answer to each
+  question they got wrong.}
+  {A test user who answers one question wrongly sees that question marked
+  incorrect, together with the explanation of its correct answer.}
+  {\srref{SR_LearnFromDecisions}, G1}
+\freq{FR_LearnProgress}
+  {The system shall show the user their learning progress.}
+  {After a test user views a concept explanation and passes a knowledge check,
+  both appear in their learning progress.}
+  {\srref{SR_SeeProgress}, G1, G2}
+\freq{FR_LearnUpdateContent}
+  {The system shall let administrators add and edit concept explanations and
+  knowledge checks without releasing a new version of the app.}
+  {A concept explanation edited by an administrator is shown in its edited form
+  on a test phone whose app has not been updated.}
+  {\srref{SR_UpdateContent}, G1}
 \end{itemize}
 
 % Owner: Farid
