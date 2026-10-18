@@ -753,12 +753,77 @@ email & String & User email address\\
 \end{longtable}
 
 \subsection{Privacy and Data Retention}
+\label{SecPrivacyRetention}
 
-\plt{Discuss storage, retention, deletion, privacy controls,
- consent, encryption, and compliance requirements.}
+\progname{} Collects account information, daily total activity, virtual currency balances, portfolio holdings, and information that the user has shared with friends. Due to the sensitive nature of this information, users must have control over how their data is collected, stored and shared.
 
-TODO
+\begin{description}
 
+\item[SEC-5 (Health Permissions)]
+The system shall request read access only to the supported health data types and shall not request permission to write to the health platform.
+
+\textit{Fit criterion:} All requested health permissions are read only and correspond to supported activity data.
+
+\item[SEC-6 (Permission Purpose)]
+Before requesting a permission the system shall explain which feature requires the requested data.
+
+\textit{Fit Criterion:} Every permission request is followed by an explanation of its purpose.
+
+\item[SEC-7 (Consent and Withdrawal)]
+The system shall get the users consent before is accessses health or location data and shall stop reading that information when the user's consent is withdrawn.
+
+\textit{Fit Criterion:} No data is accessed before consent or after consent is withdraen.
+
+\item[SEC-8 (Data Minimization)]
+The system shall send only daily activity totals to the server rather than individual health record.
+
+\textit{Fit Criterion:} Server requests contain daily totals without individual health events.
+
+\item[SEC-9 (Third Party Data)]
+The system shall not send personal, health, or locationd data to third parties.
+
+\textit{Fit Criterion:} Requests to the market data provider contains only asset identifiers.
+
+\item[SEC-10 (Private Sharing)]
+The sytem shall keep user stats private unless the user explicitly chooses to share them.
+
+\textit{Fit Criterion:} Shared statistics are only visible to the friends selected by the user.
+
+\item[SEC-11 (Location Privacy)]
+The system shall not include location, route, or exact activity time information in shared posts.
+
+\textit{Fit Criterion:} Shared posts contain no exact location, route, or activity timestamps.
+
+\item[SEC-12 (Authenticated Access)]
+The system shall require authentication before it allows
+access to private user information
+
+\textit{Fit Criterion:} Requests without valid authentication
+or authorization are rejected.
+
+\item[SEC-13 (Data Protection)]
+The system shall encrypt user data during the transmission of the data
+and when the data is stored on the server.
+
+\textit{Fit Criterion:} Network and storage inspection will
+reveal no readable sensitive data that can be intercepted or accessed.
+
+\item[SEC-14 (Session Expiry)]
+The system shall end inactive sessions after a
+defined session timeout.
+
+\textit{Fit Criterion:} Expired sessions can no longer
+authorize requests.
+
+\item[SEC-15 (Account Deletion).]
+The system shall allow users to delete their accounts
+and remove personal information in the system within a
+defined deletion period.
+
+\textit{Fit Criterion:} Deleted accounts aren't able to sign in,
+and associated records must be removed within a specified period.
+
+\end{description}
 % ============================================================== 
 \section{Non-Functional Requirements}
 
