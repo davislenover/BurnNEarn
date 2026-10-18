@@ -6,6 +6,11 @@
 \usepackage{float}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
+\usepackage[pass]{geometry}
+\usepackage{amsmath}
+\usepackage{longtable}
+\usepackage{pdflscape}
+\usepackage{colortbl}
 
 \hypersetup{
     colorlinks=true,       % false: boxed links; true: colored links
@@ -401,18 +406,115 @@ assumed, and their failures are included in Section~\ref{SecFMEA}:
 \subsection{Method} \label{SecFMEAMethod}
 
 This analysis uses Failure Mode and Effect Analysis (FMEA), following the
-process described in IEC~60812~\cite{IEC60812}. FMEA examines each
-component in turn and asks three questions: how can the component fail, what
-is the effect of that failure, and what causes it. The method suits \progname{}
-because its components (Table~\ref{TblComponents}) have distinct
-responsibilities, so working through them one at a time gives systematic
-coverage. Failures that originate outside the boundary are listed under the
-component that must detect or respond to them. For each input, the analysis
-asks what happens if it is missing, wrong, late, or duplicated. To check that
-common hazards were not overlooked, security failure modes were compared with
-the OWASP Mobile Top~10~\cite{OWASPMobileTop10} and the OWASP
-MASVS~\cite{OWASPMASVS}, and accessibility failure modes with the Web Content
-Accessibility Guidelines (WCAG)~\cite{WCAG22}.
+process described in IEC~60812~\cite{IEC60812}. FMEA is a bottom-up method: it
+examines each component in turn and asks how the component can fail, what the
+effect of that failure is, and what causes it. The method suits \progname{}
+because its components (Table~\ref{TblComponents}) are functional units with
+distinct responsibilities, so working through them one at a time gives
+systematic coverage. Failures that originate outside the boundary are listed
+under the component that must detect or respond to them. For each input, the
+analysis asks what happens if it is missing, wrong, late, or duplicated.
+
+The analysis covers security threats as well as accidental failures. Unlike a
+hazard, a threat is deliberate, so it cannot be ruled out because it seems
+unlikely; such failure modes are therefore included even when their causes
+require an attacker. To check that common hazards were not overlooked,
+security failure modes were compared with the OWASP Mobile
+Top~10~\cite{OWASPMobileTop10} and the OWASP Mobile Application Security
+Verification Standard (MASVS)~\cite{OWASPMASVS}, and accessibility failure
+modes with the Web Content Accessibility Guidelines (WCAG)~\cite{WCAG22}.
+
+For each failure mode, the recommended action is classified as
+\textbf{elimination} (E), when it removes the failure mode by design, or
+\textbf{mitigation} (M), when the failure mode can still occur but the action
+reduces its likelihood or its effects. Elimination is preferred wherever it is
+practical; mitigation is used only where elimination is not possible, following
+the principle of reducing risk as low as reasonably practicable (ALARP). Each
+recommended action leads to one or more safety and security requirements in
+Section~\ref{SecSafetyReqs}, which make the action verifiable.
+
+
+Each hazard $h$ is rated for severity $S(h)$ (Table~\ref{TblSeverity}) and
+likelihood $L(h)$ (Table~\ref{TblLikelihood}), each an integer from 1 to 5.
+Its risk score $R(h)$ and risk class are then
+\begin{equation} \label{EqRisk}
+  R(h) = S(h) \times L(h), \qquad
+  \mathit{class}(h) =
+  \begin{cases}
+    \text{High}   & \text{if } S(h) = 5 \text{ or } R(h) \geq 10,        \\
+    \text{Medium} & \text{if } S(h) < 5 \text{ and } 5 \leq R(h) \leq 9, \\
+    \text{Low}    & \text{if } S(h) < 5 \text{ and } R(h) \leq 4.
+  \end{cases}
+\end{equation}
+Likelihood ratings are estimates, and an outcome judged ``unlikely'' still
+happens. The risk class is therefore used only to order the work in
+Section~\ref{SecRoadmap}, never to decide whether a hazard is addressed: every
+hazard in Table~\ref{TblFMEA} receives a recommended action and a requirement,
+whatever its class. For the same reason, every hazard of critical severity is
+classified as High however unlikely it seems. Unlike a risk priority number,
+the score does not include a detection rating, so a hazard that is easy to
+detect is not given a lower priority.
+
+\begin{table}[H]
+  \caption{Severity ratings} \label{TblSeverity}
+  \small
+  \begin{tabularx}{\textwidth}{clX}
+    \toprule
+    \textbf{$S$} & \textbf{Level} & \textbf{Description}                                             \\
+    \midrule
+    1            & Negligible     & Minor inconvenience that the user can ignore.                    \\
+    2            & Minor          & Frustration, temporary confusion, or incorrect rewards or values
+    that can be corrected without lasting effect.                                                    \\
+    3            & Moderate       & Lost progress, a wrong concept learned, exposure of
+    non-sensitive data, or an outage affecting many users.                                           \\
+    4            & Major          & Exposure of one user's health or personal data, a real-world
+    financial decision based on misleading information, or injury.                                   \\
+    5            & Critical       & Exposure of many users' health or personal data, or a threat to
+    a user's physical safety.                                                                        \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \caption{Likelihood ratings} \label{TblLikelihood}
+  \small
+  \begin{tabularx}{\textwidth}{clX}
+    \toprule
+    \textbf{$L$} & \textbf{Level} & \textbf{Description}                                \\
+    \midrule
+    1            & Rare           & Requires an unusual combination of events.          \\
+    2            & Unlikely       & Could occur, but is not expected during normal use. \\
+    3            & Possible       & Expected to occur occasionally across all users.    \\
+    4            & Likely         & Expected to occur regularly in normal use.          \\
+    5            & Almost certain & Expected to occur for most users.                   \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The recommended actions use four symbolic constants, whose proposed values are
+given in Table~\ref{TblConstants}. Keeping them symbolic lets the team adjust a
+value after testing without changing the actions or requirements that use it.
+
+\begin{table}[H]
+  \caption{Symbolic constants used in the recommended actions}
+  \label{TblConstants}
+  \small
+  \begin{tabularx}{\textwidth}{llX}
+    \toprule
+    \textbf{Constant}   & \textbf{Proposed value} & \textbf{Meaning and source}                       \\
+    \midrule
+    $T_{\text{stale}}$  & 15 minutes              & Maximum price age for a trade while the
+    market is open; from the Problem Statement goal that prices stay within 15
+    minutes of the real market.                                                                       \\
+    $W_{\text{sync}}$   & 7 days                  & How far back each sync re-reads activity records,
+    to catch records the health platform writes late.                                                 \\
+    $P_{\text{jump}}$   & 20\%                    & Change between two consecutive prices of an asset
+    that triggers confirmation before the price is used.                                              \\
+    $T_{\text{delete}}$ & 30 days                 & Maximum time to delete all personal data after
+    a user deletes their account.                                                                     \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \section{Safety and Security Requirements} \label{SecSafetyReqs}
 
