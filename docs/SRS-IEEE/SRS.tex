@@ -225,19 +225,77 @@ resilience~\citep{FCAC2021}. By making both habits approachable and
 low-risk, \progname{} is intended to contribute in a small way to both goals.
 
 \subsection{Scope}
-\plt{Briefly describe:
-  \begin{itemize}
-    \item Problem being solved
-    \item Intended users
-    \item Major functionality
-    \item Expected benefits
-    \item Clarifying the scope often means saying what the software doesn't do
-  \end{itemize}
-}
+% \plt{Briefly describe:
+%   \begin{itemize}
+%     \item Problem being solved
+%     \item Intended users
+%     \item Major functionality
+%     \item Expected benefits
+%     \item Clarifying the scope often means saying what the software doesn't do
+%   \end{itemize}
+% }
 
-\plt{The scope section is relevant for understanding the boundaries of the system. It is also relevant for later determining typical values of inputs. The scope should make it clear what inputs are reasonable to expect. This is a distinction between scope and context (context is a later section).  Scope affects the inputs while context affects how the software will be used.}
+% \plt{The scope section is relevant for understanding the boundaries of the system. It is also relevant for later determining typical values of inputs. The scope should make it clear what inputs are reasonable to expect. This is a distinction between scope and context (context is a later section).  Scope affects the inputs while context affects how the software will be used.}
 
-TODO
+% TODO
+
+\progname{} is a single product: a smartphone application for Android and iOS,
+together with the server that supports it.
+
+\paragraph{Problem being solved.} Young adults put off building fitness and
+investing habits because investing advice is confusing and learning by doing
+risks real money, while beginners at exercise lose motivation before they see
+results.
+
+\paragraph{Intended users.} Adults aged 18 or older, most of them students or
+people in their first jobs, with little or no investing experience and any
+level of fitness (Section~\ref{SecUserCharacteristics}).
+
+\paragraph{Major functionality.} Within scope, \progname{}:
+\begin{itemize}
+  \item reads activity records from the phone's health platform and converts
+        them into virtual currency;
+  \item lets users buy and sell shares of a curated list of real-world stocks and
+        exchange-traded funds (ETFs) at prices that follow the real market;
+  \item shows portfolio value, activity trends, and milestones over time;
+  \item explains financial and fitness concepts where they appear, gives
+        feedback on the user's own decisions, and tracks learning progress through
+        knowledge checks;
+  \item replays past market periods, such as a downturn, as practice scenarios
+        that do not affect the user's live portfolio;
+  \item shares the statistics and milestones that the user selects with accepted
+        friends.
+\end{itemize}
+
+\paragraph{Expected benefits.} Users practice investing with no financial risk,
+stay motivated to exercise because activity has a visible use, and learn core
+concepts by applying them to their own decisions. The targets that measure
+these benefits are stated as non-functional requirements.
+
+\paragraph{Out of scope.} \progname{} does not:
+\begin{itemize}
+  \item handle real money: the currency cannot be bought, withdrawn, or
+        exchanged, and \progname{} never connects to a bank or brokerage account;
+  \item give financial advice: it never recommends buying or selling a
+        real-world security;
+  \item give medical or training advice: it does not diagnose conditions,
+        prescribe exercise programs, or set diet or weight goals;
+  \item integrate directly with wearable devices (a stretch goal), since all
+        activity is read through the phone's health platform;
+  \item offer every listed security, or options, futures, short selling, or
+        borrowing to invest;
+  \item update prices tick by tick: simulated prices follow real prices with a
+        bounded delay, because market data providers limit how often prices can be
+        requested;
+  \item predict future prices: scenarios replay only historical data;
+  \item support public posts, direct messages, or rankings between users;
+  \item run on tablets, the web, or desktop computers.
+\end{itemize}
+
+These limits also bound the inputs \progname{} must handle. For example, a
+day's step count ranges from zero on a rest day to tens of thousands for a very
+active user, and every asset price is a positive amount reported by the market
+data provider.
 
 \subsection{Stakeholders}
 \begin{itemize}
