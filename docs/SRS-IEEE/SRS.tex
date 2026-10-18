@@ -321,13 +321,69 @@ formats of the data \progname{} exchanges:
 \par}
 
 \subsection{Stakeholders}
-\begin{itemize}
-  \item Customer
-  \item End Users
-  \item Project Sponsor
-  \item Development Team
-  \item Administrators
-\end{itemize}
+% \begin{itemize}
+%   \item Customer
+%   \item End Users
+%   \item Project Sponsor
+%   \item Development Team
+%   \item Administrators
+% \end{itemize}
+
+Table~\ref{TblStakeholders} lists the stakeholders of \progname{}. Primary
+stakeholders use the product or define its direction, secondary stakeholders
+are affected by it indirectly, and external stakeholders are organizations whose
+services and rules constrain it. Each stakeholder has an identifier, so that
+every stakeholder requirement in Section~3 can name the stakeholders it comes
+from.
+
+\begin{table}[H]
+  \caption{Stakeholders of \progname{}} \label{TblStakeholders}
+  \small
+  \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}p{0.27\textwidth}X}
+    \toprule
+    \textbf{ID} & \textbf{Stakeholder}                                               & \textbf{Role and interest}                               \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Primary}}                                                                                                        \\
+    \midrule
+    SH1         & End users (beginner investors and fitness-motivated users)         & Use
+    \progname{} to earn currency from activity, practice investing, and learn the
+    concepts involved. Want an engaging, low-risk experience that is easy to
+    understand.                                                                                                                                 \\
+    SH2         & Customer and project sponsor (Chris Schankula)                     & Proposed the project and
+    defines its vision of gamifying exercise and teaching investing in a
+    low-stakes setting. Approves the scope and validates the product against that
+    vision.                                                                                                                                     \\
+    SH3         & Development team (Team \#1, Burn n' Earn)                          & Builds and maintains
+    \progname{}. Needs requirements that are complete, unambiguous, and
+    verifiable.                                                                                                                                 \\
+    SH4         & Administrators                                                     & Operate the server after release: manage the list of
+    tradable assets, review educational content, and respond to outages. The
+    development team fills this role; \progname{} has no separate administrator
+    account.                                                                                                                                    \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Secondary}}                                                                                                      \\
+    \midrule
+    SH5         & Friends of users                                                   & View the updates a user chooses to share. Expect to
+    see only what the user selected.                                                                                                            \\
+    SH6         & Society                                                            & Benefits if more young adults build lasting exercise and
+    financial habits~\citep{CSEP2020, FCAC2021}. Is harmed if the app spreads
+    financial misinformation, encourages unhealthy exercise, or exposes personal
+    data.                                                                                                                                       \\
+    \midrule
+    \multicolumn{3}{l}{\textit{External}}                                                                                                       \\
+    \midrule
+    SH7         & Health platform providers (Apple HealthKit, Google Health Connect) &
+    Supply activity data. Their application programming interfaces (APIs),
+    permission models, and policies limit what \progname{} can read.                                                                            \\
+    SH8         & Market data providers                                              & Supply real-world prices. Their accuracy, request
+    limits, and cost limit how closely the simulated market follows the real
+    market.                                                                                                                                     \\
+    SH9         & App stores and privacy regulators                                  & Set the rules for distributing an app
+    that handles health data and financial content, including
+    PIPEDA~\citep{PIPEDA}.                                                                                                                      \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \subsection{Definitions and Acronyms}
 
