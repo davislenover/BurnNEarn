@@ -37,12 +37,12 @@
   \caption{Revision History} \label{TblRevisionHistory}
   \begin{tabularx}{\textwidth}{llX}
     \toprule
-    \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}                                                         \\
+    \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}                                                                                 \\
     \midrule
-    Oct 16, 2026  & Farid Bastoros        & Initial revision of 1 Introduction, 3 System Boundaries and Components. \\
-    Date1         & Name(s)               & Description of changes                                                  \\
-    Date2         & Name(s)               & Description of changes                                                  \\
-    ...           & ...                   & ...                                                                     \\
+    Oct 16, 2026  & Farid Bastoros        & Initial revision of 1 Introduction, 3 System Boundaries and Components, 4 Critical Assumptions. \\
+    Date1         & Name(s)               & Description of changes                                                                          \\
+    Date2         & Name(s)               & Description of changes                                                                          \\
+    ...           & ...                   & ...                                                                                             \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -304,10 +304,28 @@ specified in the Design Document.
 \end{table}
 \section{Critical Assumptions} \label{SecAssumptions}
 
-\wss{These assumptions that are made about the software or system.  You should
-  minimize the number of assumptions that remove potential hazards.  For instance,
-  you could assume a part will never fail, but it is generally better to include
-  this potential failure mode.}
+% \wss{These assumptions that are made about the software or system.  You should
+%   minimize the number of assumptions that remove potential hazards.  For instance,
+%   you could assume a part will never fail, but it is generally better to include
+%   this potential failure mode.}
+
+
+The assumptions below are kept to a minimum, because each assumption that
+removes a hazard also removes it from the analysis. Each assumption states why
+it is reasonable, which hazards it removes or limits, and what changes if it
+turns out to be false.
+
+\begin{itemize}
+  \item[CA1:] \textbf{No real money.} \progname{} never transfers, holds, or
+        displays real money, and never connects to a bank or brokerage account.
+        \emph{Rationale:} this is a fixed scope decision in the Problem Statement.
+        \emph{Effect:} hazards of direct monetary loss, such as unauthorized payments,
+        are removed. Indirect financial harm, where a user makes a real-world decision
+        based on misleading information from \progname{}, is still analyzed
+        (\hyperref[H22]{H22}, \hyperref[H26]{H26}). \emph{If false:} if in-app
+        purchases or any other real-money feature is added, payment and fraud hazards
+        must be added to this analysis.
+\end{itemize}
 
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
 
