@@ -37,12 +37,12 @@
   \caption{Revision History} \label{TblRevisionHistory}
   \begin{tabularx}{\textwidth}{llX}
     \toprule
-    \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}                                                                                 \\
+    \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}                                                                                                                     \\
     \midrule
-    Oct 16, 2026  & Farid Bastoros        & Initial revision of 1 Introduction, 3 System Boundaries and Components, 4 Critical Assumptions. \\
-    Date1         & Name(s)               & Description of changes                                                                          \\
-    Date2         & Name(s)               & Description of changes                                                                          \\
-    ...           & ...                   & ...                                                                                             \\
+    Oct 16, 2026  & Farid Bastoros        & Initial revision of 1 Introduction, 3 System Boundaries and Components, 4 Critical Assumptions, 5 Failure Mode and Effect Analysis. \\
+    Date1         & Name(s)               & Description of changes                                                                                                              \\
+    Date2         & Name(s)               & Description of changes                                                                                                              \\
+    ...           & ...                   & ...                                                                                                                                 \\
     \bottomrule
   \end{tabularx}
 \end{table}
@@ -388,14 +388,31 @@ assumed, and their failures are included in Section~\ref{SecFMEA}:
 
 \section{Failure Mode and Effect Analysis} \label{SecFMEA}
 
-\wss{Include your FMEA table here. This is the most important part of this document.}
-\wss{The safety requirements in the table do not have to have the prefix SR.
-  The most important thing is to show traceability to your SRS. You might trace to
-  requirements you have already written, or you might need to add new
-  requirements.}
-\wss{If no safety requirement can be devised, other mitigation strategies can be
-  entered in the table, including strategies involving providing additional
-  documentation, and/or test cases.}
+% \wss{Include your FMEA table here. This is the most important part of this document.}
+% \wss{The safety requirements in the table do not have to have the prefix SR.
+%   The most important thing is to show traceability to your SRS. You might trace to
+%   requirements you have already written, or you might need to add new
+%   requirements.}
+% \wss{If no safety requirement can be devised, other mitigation strategies can be
+%   entered in the table, including strategies involving providing additional
+%   documentation, and/or test cases.}
+
+
+\subsection{Method} \label{SecFMEAMethod}
+
+This analysis uses Failure Mode and Effect Analysis (FMEA), following the
+process described in IEC~60812~\cite{IEC60812}. FMEA examines each
+component in turn and asks three questions: how can the component fail, what
+is the effect of that failure, and what causes it. The method suits \progname{}
+because its components (Table~\ref{TblComponents}) have distinct
+responsibilities, so working through them one at a time gives systematic
+coverage. Failures that originate outside the boundary are listed under the
+component that must detect or respond to them. For each input, the analysis
+asks what happens if it is missing, wrong, late, or duplicated. To check that
+common hazards were not overlooked, security failure modes were compared with
+the OWASP Mobile Top~10~\cite{OWASPMobileTop10} and the OWASP
+MASVS~\cite{OWASPMASVS}, and accessibility failure modes with the Web Content
+Accessibility Guidelines (WCAG)~\cite{WCAG22}.
 
 \section{Safety and Security Requirements} \label{SecSafetyReqs}
 
@@ -500,6 +517,15 @@ assumed, and their failures are included in Section~\ref{SecFMEA}:
   OWASP Foundation, ``Mobile Application Security Verification Standard
   (MASVS),'' version 2.1.0, Jan. 2024. [Online]. Available:
   \url{https://mas.owasp.org/MASVS/}
+
+  \bibitem{OWASPMobileTop10}
+  OWASP Foundation, ``OWASP Mobile Top 10,'' 2024. [Online]. Available:
+  \url{https://owasp.org/www-project-mobile-top-10/}
+
+  \bibitem{WCAG22}
+  World Wide Web Consortium (W3C), ``Web Content Accessibility Guidelines (WCAG)
+  2.2,'' W3C Recommendation, Oct. 2023. [Online]. Available:
+  \url{https://www.w3.org/TR/WCAG22/}
 
 \end{thebibliography}
 
