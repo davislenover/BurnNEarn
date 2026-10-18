@@ -751,6 +751,35 @@ Section~\ref{SecProductVision}.
   {A test user who requests a reset receives a link at their email address,
   and after setting a new password can sign in only with the new one.}
   {\srref{SR_ControlOwnData}, G2}
+  \freq{FR_AcctEditProfile}
+  {The system shall let the user view and edit their profile details.}
+  {A test user who changes a profile detail sees the new value the next time
+  they open their profile.}
+  {\srref{SR_ControlOwnData}, G3}
+\freq{FR_AcctBodyOptional}
+  {The system shall not require the user to enter their height or weight in
+  order to use any feature.}
+  {A test user who leaves height and weight empty can earn currency, trade,
+  learn, and share.}
+  {\srref{SR_AllAbilities}, \srref{SR_ProtectData}, G3, G5}
+\freq{FR_AcctDownloadData}
+  {The system shall let the user download a copy of the personal data
+  \progname{} stores about them.}
+  {A test user who requests a copy receives a file containing their profile,
+  activity totals, balance, holdings, trades, and shared updates.}
+  {\srref{SR_ControlOwnData}, G3}
+\freq{FR_AcctDeleteConfirm}
+  {Before deleting an account, the system shall ask the user to confirm the
+  deletion in a message stating that it cannot be undone.}
+  {A test user who starts account deletion is shown this warning, and their
+  account still exists if they cancel.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_DeleteAccount}, G3}
+\freq{FR_AcctDelete}
+  {The system shall let the user delete their account from within the app.}
+  {A test user who confirms deletion can no longer sign in, and none of their
+  data is shown to them or to their friends.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_DeleteAccount}, G3, Hazard Analysis
+  SEC-15}
 \end{itemize}
 
 % Owner: Davis
