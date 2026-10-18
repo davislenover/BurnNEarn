@@ -876,6 +876,29 @@ streak\\
   {On every screen that shows a core concept, a tester can open its concept
   explanation without leaving that screen.}
   {\srref{SR_LearnInContext}, G1, G2}
+\freq{FR_LearnValueChange}
+  {When the user's portfolio value has changed by more than
+  \texttt{FEEDBACK\_THRESHOLD} since they last viewed their portfolio,
+  the system shall show feedback naming the holdings that contributed most to
+  the change.}
+  {For a test portfolio whose value has changed by more than the threshold,
+  the feedback names the holding whose value changed most.}
+  {\srref{SR_LearnFromDecisions}, G1}
+\freq{FR_LearnTradeEffect}
+  {After each trade, the system shall show the user how the trade changed the
+  share of their portfolio value held in each asset.}
+  {After a test trade, the feedback shows each holding's share of portfolio
+  value before and after the trade, and these match the values calculated from
+  the holdings.}
+  {\srref{SR_LearnByDoing}, \srref{SR_LearnFromDecisions}, G1, G4}
+\freq{FR_LearnConcentration}
+  {When a single holding is more than \texttt{CONCENTRATION\_LIMIT} of the
+  user's portfolio value, the system shall show the user an explanation of
+  diversification.}
+  {A test portfolio with one holding above \texttt{CONCENTRATION\_LIMIT} of its
+  value shows the explanation, and the explanation names no asset to buy or
+  sell (Hazard Analysis SAF-9).}
+  {\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice}, G1}
 \end{itemize}
 
 % Owner: Farid
