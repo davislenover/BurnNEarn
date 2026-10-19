@@ -2161,8 +2161,26 @@ I want to communicate with the team earlier and more often. That means agreeing
 on shared identifiers, terms and the big design decisions at the start of a
 deliverable, recording each decision in the related GitHub issue as soon as it
 is made, and merging smaller pieces of work sooner, so that conflicts show up
-while they are still cheaper to fix.
+while they are still cheaper to fix. \\
 
+\noindent\textbf{Farid:} My main pain point was keeping my sections consistent with work
+that was changing in other branches at the same time. I wrote the Introduction,
+Stakeholder Requirements, User Personas and three of the functional requirement
+subsections, and my requirements traced to labels and Hazard Analysis IDs that
+lived in my teammates' branches. When Davis renumbered the Hazard Analysis
+requirements, four of my traces pointed to the wrong requirement without any
+error, and I only noticed by checking every trace against his latest list. I
+also caused a problem myself: my editor's auto-formatter re-indented hundreds of
+template lines in sections I did not own, which turned a small change into
+merge conflicts with three other branches. I resolved this by turning
+format-on-save off, restoring the original spacing, branching my functional
+requirements from Davis's branch instead of my own, and making small commits
+that each touched only my sections. I also defined every domain term in
+Section~1.4 before it is used, because in our Problem Statement some words,
+such as ``compounding'', were clear to us but not to a reader outside the team.
+Next time I will merge \texttt{main} into my branch every day instead of once at
+the end, link each branch to its issue, and agree on shared identifiers before
+writing anything that refers to them.
 \newpage
 
 \bibliographystyle {plainnat}
