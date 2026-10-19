@@ -33,7 +33,7 @@
 \usepackage{graphicx}
 \usepackage{colortbl}
 \usepackage{xr}
-\usepackage{hyperref}
+\usepackage[bookmarks=true]{hyperref}
 \usepackage{longtable}
 \usepackage{xfrac}
 \usepackage{tabularx}
@@ -51,7 +51,6 @@
 %\usepackage{refcheck}
 
 \hypersetup{
-    bookmarks=true,         % show bookmarks bar?
       colorlinks=true,       % false: boxed links; true: colored links
     linkcolor=red,          % color of internal links (change box color with linkbordercolor)
     citecolor=green,        % color of links to bibliography
@@ -83,6 +82,7 @@
 \newcounter{lcnum} %Likely Change (LC) Number
 \newcommand{\lthelcnum}{LC\thelcnum}
 \newcommand{\lcref}[1]{LC\ref{#1}}
+\newcounter{ulcnum}
 
 \newcounter{scnum} %System Constraint (SC) Number
 \newcommand{\scthescnum}{SC\thescnum}
@@ -1948,22 +1948,61 @@ rationale for everything, ust the major decisions that are not obvious.  You
 should have traceability to the entities in the document that you are
 referencing.}
 
-\section{Likely Changes}    
+\section{Likely Changes} 
+
+The following changes are identified in the project documents. They describe parts of FitFolio that may change as the team tests its planned integrations or adds features already listed as stretch goals.
 
 \noindent \begin{itemize}
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_futureChange}:]
+\textbf{Activity-data updates}
 
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the likely changes, with traceability to the entity that is likely to change.}
+When FitFolio updates activity data may change because of restrictions imposed by the phone's health platform. The Development Plan identifies updating activity data when the user opens the app as an alternative if background updates cannot work reliably. This would affect when activity data is retrieved in \ucref{UC_Label1} (Record Daily Activity) and becomes available for awarding currency under \rref{FR_ActEarn}. Any change must still follow the health-platform access rules in SC\ref{SC_HealthAccess}.
+
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_secondChange}:]
+\textbf{Wearable device support}
+
+FitFolio may be extended to support wearable devices, such as the Apple Watch and other compatible fitness trackers. Wearable integration is already listed as a stretch goal in the Problem Statement and Goals. Adding this support could provide additional activity data, including workout duration and calories burned. This would affect the Activity Record entity in Table~\ref{tab:MajorDataEntities} and its fields in Table~\ref{tab:DataDictionary}. Direct access to a wearable, rather than reading its data through the phone's health platform, would also require revising SC\ref{SC_HealthPlatform}. Wearables would remain optional, as required by \srref{SR_PhoneOnly}.
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_thirdChange}:]
+\textbf{Market-data access}
+
+The market-data provider, price-update frequency, and selection of supported assets may change if the chosen service's request limits or costs prevent the planned use. The Development Plan identifies switching providers, reducing the update frequency, and limiting the asset list as possible responses. These changes would affect the provider choice in SC\ref{SC_MarketData}, the prices obtained under \rref{FR_MktRealPrices}, and the available assets represented by the Market Data entity in Table~\ref{tab:MajorDataEntities}. Changes to the update frequency would also need to account for the price-age display in \rref{FR_MktPriceAge} and the restriction on trading with stale prices in \rref{FR_MktNoStaleTrade}. Any reduction below the price-freshness or asset-coverage targets in Section~\ref{SecProductVision} would require an agreed revision to those targets and the affected requirements.
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_fourthChange}:] 
+\textbf{Historical market scenarios}
+
+The number and selection of historical market scenarios may change depending on the availability and cost of historical price data. The Development Plan identifies offering fewer scenarios or using a selected set of stored historical datasets as possible responses if the required data is difficult to obtain. This would affect the past market conditions available under \srref{SR_PastMarkets} and the historical prices represented by the Market Data entity in Table~\ref{tab:MajorDataEntities} and its \texttt{price\_history} field in Table~\ref{tab:DataDictionary}.
+
+
+\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_5thChange}:] 
+\textbf{Social challenges and leaderboards}
+
+FitFolio may be extended to include fitness challenges and opt-in leaderboards. Social challenges and leaderboards are listed as a stretch goal in the Problem Statement and Goals, and the Hazard Analysis identifies opt-in leaderboards as a possible future feature. The current version prohibits ranking users by activity, currency, or portfolio performance under \rref{FR_SocialNoRanking} and Hazard Analysis SAF-11. Adding leaderboards would therefore require an agreed revision to those requirements and a review of the risk of harmful comparison identified in \srref{SR_NoHarmfulComparison}. Adding comparisons of portfolio statistics would also require revisiting the allowed updates in \rref{FR_SocialShare} and Table~\ref{TblShareable}. Users would still choose whether to participate and which information to share, consistent with \srref{SR_ControlSharing} and \rref{FR_SocialChooseFriends}.
+
 
 \end{itemize}
 
-\section{Unlikely Changes}    
+\section{Unlikely Changes}
+
+The following parts of FitFolio are expected to stay the same because they support the project's purpose and goals.
 
 \noindent \begin{itemize}
+\item[ULC\refstepcounter{ulcnum}\theulcnum\label{ULC_firstChange}:]
+\textbf{Virtual currency and simulated investing}
 
-\item[LC\refstepcounter{lcnum}\thelcnum\label{LC_meaningfulLabel}:] \plt{Give
-    the unlikely changes.  The design can assume that the changes listed will
-    not occur.}
+FitFolio is expected to continue using virtual currency with no real-world monetary value. Adding real-money trading or allowing users to exchange earned currency for cash is unlikely. The Problem Statement and Goals describes an app where beginners can practise investing without risking real money or needing to link bank or brokerage accounts. Moving to real money would change this purpose.
+
+\item[ULC\refstepcounter{ulcnum}\theulcnum\label{ULC_SecondChange}:]
+\textbf{Earning rewards through physical activity}
+
+Physical activity is expected to remain the way users earn virtual currency in FitFolio. Removing activity-based rewards is unlikely because earning currency through exercise and using it in the simulated market is the project's central idea. This connection supports the goal of helping users build fitness habits while learning about investing. 
+
+\item[ULC\refstepcounter{ulcnum}\theulcnum\label{ULC_thirdChange}:]
+\textbf{User control over social sharing}
+
+Users are expected to keep control over which activity and portfolio information they share. Removing this control is unlikely because the Problem Statement and Goals includes motivating users through friends while protecting their privacy. It also states that raw health data is shared only when the user chooses to share it. Any changes to the social features should preserve this choice.
+
 
 \end{itemize}
 
@@ -2054,6 +2093,32 @@ graduate attribute of Lifelong Learning.
 \input{../Reflection.text}
 
 \input{../SRS_Reflection.text}
+
+\subsubsection*{2. What pain points did you experience during this deliverable,
+and how did you resolve them?}
+
+\textbf{Davis:} The main pain point for me was how many design decisions the
+SRS involved, and how many of them crossed between sections owned by different
+people. Farid and I split the functional requirements, Angad wrote the use cases
+and traceability matrices, and Preston wrote the data dictionary, but all of
+these depend on the same choices, such as what a user can share with friends
+and whether activity data leaves the phone as individual records or daily
+totals. Because we each worked in our own branch and only compared our work
+near the deadline, we found these mismatches late. Some had a ripple effect,
+for example, we had used different words for the same thing, such as ``post''
+and ``shared update'', one of the shared tables contradicted a Hazard Analysis
+requirement on how rest days affect a streak, and no one had filled in the
+appendix of constants that many of our requirements relied on. As a result, we
+spent much of the last few days aligning our sections and resolving merge
+conflicts instead of improving the content. I resolved this by reviewing my
+teammates' open pull requests against my sections, adopting the terms Farid
+defined in Section 1.4, filling in the appendix of constants, and listing what
+I still needed from each person in my pull request. Next time,
+I want to communicate with the team earlier and more often. That means agreeing
+on shared identifiers, terms and the big design decisions at the start of a
+deliverable, recording each decision in the related GitHub issue as soon as it
+is made, and merging smaller pieces of work sooner, so that conflicts show up
+while they are still cheaper to fix.
 
 \newpage
 
