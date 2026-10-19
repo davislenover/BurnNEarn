@@ -838,6 +838,21 @@ requirement.
   supported activity types, of each type's daily total multiplied by its rate
   in \texttt{EARNING\_RATES}.}
   {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActHealthNotice}
+  {(HA SAF-12) Before the user first earns currency, the system shall display
+  a notice stating that \progname{} does not give medical advice and that
+  users should consult a health professional before starting a new exercise
+  program, and shall not award currency until the user acknowledges it.}
+  {A new test user is shown the notice before their first reward, and earns no
+  currency until they acknowledge it.}
+  {\srref{SR_SafeMotivation}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActNoInteraction}
+  {(HA SAF-13) The system shall award currency for recorded activity without
+  requiring any interaction with \progname{} while the activity is in
+  progress.}
+  {A test user who records a workout without opening \progname{} during it
+  receives the same currency as one who opens the app during the workout.}
+  {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActNoData}
   {The system shall treat a day with no activity data from the health platform
   as a day with zero activity.}
@@ -912,6 +927,13 @@ requirement.
   {A test user whose streak, or total currency earned, first reaches a value in
   \texttt{MILESTONES} is shown that milestone once.}
   {\srref{SR_SeeProgress}, G5}
+\freq{FR_ActNoWeightReward}
+  {(HA SAF-14) The system shall not base any reward, goal or milestone on the
+  user's body weight, change in weight, or calories.}
+  {No reward rule, goal or milestone in \progname{} uses body weight, weight
+  change or calories as an input, and a test user's rewards are unchanged when
+  their weight is changed or removed.}
+  {\srref{SR_SafeMotivation}, \srref{SR_AllAbilities}, G5}
 \freq{FR_ActTrends}
   {The system shall show the user their daily totals for each supported
   activity type over time.}
@@ -1018,6 +1040,27 @@ requirement.
   {Every screen that shows a return or portfolio value shows a ``Simulated''
   label next to it.}
   {\srref{SR_NotAdvice}, \ucref{UC_InvestmentFeedback}, G4}
+\freq{FR_MktGainLossLabel}
+  {(HA SAF-18) The system shall show every gain or loss with a sign or a text
+  label, not by colour alone.}
+  {With the display shown in greyscale, a tester can tell every gain from
+  every loss on every screen.}
+  {\srref{SR_Accessible}, \ucref{UC_InvestmentFeedback}, G2, G4}
+\freq{FR_MktScenario}
+  {The system shall let the user trade in a market scenario that replays the
+  historical prices of a past period, such as a market downturn, without
+  changing their own currency balance or holdings.}
+  {A test user starts a scenario that replays a past market downturn, and their
+  trades in it use the historical prices for the replayed dates. After the
+  scenario, their currency balance and holdings outside it are the same as
+  before it started.}
+  {\srref{SR_PastMarkets}, \srref{SR_RiskFree}, G4}
+\freq{FR_MktScenarioLabel}
+  {(HA SAF-15) The system shall mark every screen of a market scenario as a
+  scenario, and shall show the historical dates being replayed.}
+  {Every screen shown during a test scenario carries a scenario label and the
+  dates of the period being replayed, and no screen of the live market does.}
+  {\srref{SR_PastMarkets}, G4}
 \freq{FR_MktNoRecommend}
   {(HA SAF-9) The system shall not recommend that a user buy or sell a
   specific asset.}
