@@ -1543,6 +1543,30 @@ graduate attribute of Lifelong Learning.
 
 \input{../SRS_Reflection.text}
 
+\subsubsection*{2. What pain points did you experience during this deliverable,
+and how did you resolve them?}
+
+\textbf{Davis:} The main pain point for me was how many design decisions this
+deliverable involved, and how many of them crossed between sections owned by
+different people. My Hazard Analysis requirements, Farid's FMEA, Angad's use
+cases and Preston's data dictionary all depend on the same choices, such as
+whether \progname{} stores location data, what happens to a trade when the
+market is closed, and whether activity data leaves the phone as individual
+records or daily totals. Because we each worked in our own branch and only
+compared our work near the deadline, we found these mismatches late. Some had a
+ripple effect, for example, when I added new requirements, the requirement IDs shifted, so
+traces in other members' sections had to be renumbered, and we had to agree on
+shared terms such as ``shared update'' instead of ``post''. As a result, we
+spent much of the last few days aligning our sections and resolving merge
+conflicts instead of improving the content. I resolved this by reviewing my
+teammates' open pull requests against my sections, updating my side to match,
+and listing what I still needed from each person in my pull request. Next time,
+I want to communicate with the team earlier and more often. That means agreeing
+on shared identifiers, terms and the big design decisions at the start of a
+deliverable, recording each decision in the related GitHub issue as soon as it
+is made, and merging smaller pieces of work sooner, so that conflicts show up
+while they are still cheaper to fix.
+
 \newpage
 
 \bibliographystyle {plainnat}
