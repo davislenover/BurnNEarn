@@ -88,6 +88,10 @@
 \newcommand{\scthescnum}{SC\thescnum}
 \newcommand{\scref}[1]{SC\ref{#1}}
 
+\newcounter{scnum} %System Constraint (SC) Number
+\newcommand{\scthescnum}{SC\thescnum}
+\newcommand{\scref}[1]{SC\ref{#1}}
+
 \usepackage{fullpage}
 
 % Functional requirement entry: \freq{label}{statement}{fit criterion}{traces}
@@ -1161,7 +1165,11 @@ serves.
 \end{itemize}
 
 % ============================================================== 
+
+% ==============================================================
 \section{Use Cases}
+% ==============================================================
+
 \refstepcounter{ucnum}\label{UC_RecordActivity}
 \subsection{\ucref{UC_RecordActivity}: Record Daily Activity}
 
@@ -1711,6 +1719,527 @@ User
 \begin{itemize}
 \item The user's goal and streak information are updated.
 \end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_EarnCurrency}
+\subsection{\ucref{UC_EarnCurrency}: Earn Virtual Currency}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has recorded a supported activity.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The system retrieves the user's recorded activity.
+\item The system calculates the virtual currency earned.
+\item The system applies the daily earning limit.
+\item The user's currency balance is updated.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If no eligible activity is recorded, no currency is awarded.
+\item Activity exceeding the daily cap earns no additional currency.
+\item If an activity record exceeds the plausibility limits for its type,
+the system does not count it toward currency, trends, streaks or
+milestones and informs the user (HA SEC-1).
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's currency balance reflects the earned rewards.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ViewMarket}
+\subsection{\ucref{UC_ViewMarket}: View Market Prices}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has an Internet connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the simulated market.
+\item The user selects an asset.
+\item The system displays its latest available market price.
+\item The system displays when the price was obtained.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If market data is unavailable, the system informs the user.
+\item If the price is outdated, the system marks it as delayed.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user can view the available price of the selected asset.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_BuyAsset}
+\subsection{\ucref{UC_BuyAsset}: Buy a Simulated Asset}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has enough virtual currency for the purchase.
+\item A usable market price is available.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects an asset to purchase.
+\item The user enters the quantity.
+\item The system displays the total cost.
+\item The user confirms the transaction.
+\item The system updates the balance and holdings.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user has insufficient currency, the purchase is rejected.
+\item If the transaction fails, the balance and holdings remain unchanged.
+\item If the market price is outdated, the system does not allow the trade and informs the user.
+\item If the market is closed, the system queues the trade until the market reopens.
+\item If the user submits the same trade twice, the system only processes it once.
+\item If this is the user's first trade, they must acknowledge that the market is simulated and does not provide financial advice.
+\item If the user chooses to sell instead, the system checks their shares and adds the virtual currency from the sale to their balance.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The purchase is recorded and the portfolio is updated.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_MarketScenario}
+\subsection{\ucref{UC_MarketScenario}: Practice a Historical Market Scenario}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the market scenarios section.
+\item The user selects a historical market scenario.
+\item The system displays the historical period being replayed.
+\item The user buys or sells simulated assets using the scenario's market prices.
+\item The system updates the user's scenario balance and holdings.
+\item The user views the results of their trades.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can leave the scenario at any time.
+\item If the user does not have enough scenario currency or shares, the system does not allow the trade.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's regular virtual currency balance and holdings remain unchanged.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_Reminders}
+\subsection{\ucref{UC_Reminders}: Choose Reminder Times}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access their account settings.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens reminder settings.
+\item The user selects preferred reminder periods.
+\item The system saves the settings.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If reminders are disabled, no optional reminders are sent.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's reminder preferences are saved.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_WithdrawConsent}
+\subsection{\ucref{UC_WithdrawConsent}: Withdraw Data Consent}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user previously granted data access.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens data permission settings.
+\item The user selects a permission to withdraw.
+\item The system records the change.
+\item The system stops reading the selected data.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If operating system settings are required, the user is directed there.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The withdrawn data is no longer accessed.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ReviewPermissions}
+\subsection{\ucref{UC_ReviewPermissions}: Review Data Permissions}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens permission settings.
+\item The system displays the available permissions.
+\item The system explains which features use each permission.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item Permissions that are not granted are marked as unavailable.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user understands the application's data access.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ShareProgress}
+\subsection{\ucref{UC_ShareProgress}: Share Progress with Friends}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has at least one accepted friend connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a statistic to share.
+\item The user selects the friends who can view it.
+\item The system publishes the selected information.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user cancels, nothing is shared.
+\item Location and exact activity times are excluded.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Only selected friends can view the shared statistic.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_DeleteAccount}
+\subsection{\ucref{UC_DeleteAccount}: Delete Account}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects account deletion.
+\item The system requests confirmation.
+\item The user confirms the request.
+\item The system disables the account and deletes its associated data.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user cancels, their account remains unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The account is disabled and deletion is initiated.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ManageAccount}
+\subsection{\ucref{UC_ManageAccount}: Create and Manage Account}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has an Internet connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the application and selects account creation.
+\item The user enters their account information.
+\item The system creates the account.
+\item The user signs in and accesses their profile.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the account information is invalid, the system asks the user to correct it.
+\item If the user forgets their password, they can request a password reset.
+\item The user can edit their profile, download their data, or sign out.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's account and profile information are saved.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_LearnConcepts}
+\subsection{\ucref{UC_LearnConcepts}: Learn Financial and Fitness Concepts}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access the learning content.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a financial or fitness concept.
+\item The system displays an explanation of the concept.
+\item The user reads the explanation.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can open an explanation from another part of the application.
+\item If the content is unavailable, the system informs the user.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user has viewed the selected concept explanation.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_InvestmentFeedback}
+\subsection{\ucref{UC_InvestmentFeedback}: Review Investment Feedback}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has a simulated investment portfolio.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens their portfolio.
+\item The system displays the portfolio's current value and holdings.
+\item The system displays feedback about changes in portfolio value.
+\item The user reviews the feedback.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If no significant change occurred, no change feedback is shown.
+\item If one holding exceeds the concentration limit, the system explains diversification.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user can review how their investments affected their portfolio.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_KnowledgeCheck}
+\subsection{\ucref{UC_KnowledgeCheck}: Complete Knowledge Check}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access the learning section.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a knowledge check.
+\item The system displays questions about the selected concept.
+\item The user submits their answers.
+\item The system displays the results and explanations.
+\item The system updates the user's learning progress.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user exits before submitting, no completed result is recorded.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's learning progress reflects the completed knowledge check.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ManageFriends}
+\subsection{\ucref{UC_ManageFriends}: Manage Friends and Social Feed}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the social section.
+\item The user sends a friend request to another user.
+\item The other user accepts the request.
+\item The system adds the users as friends.
+\item The user views updates shared by their friends.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the request is declined, the users are not added as friends.
+\item The user can remove an existing friend.
+\item If no updates are available, the social feed is empty.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's friend connections and social feed reflect the available information.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_UpdateLearning}
+\subsection{\ucref{UC_UpdateLearning}: Manage Educational Content}
+
+\textbf{Primary Actor}
+
+Administrator
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The administrator has access to educational content management.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The administrator opens the educational content.
+\item The administrator selects a concept explanation or knowledge check.
+\item The administrator adds or edits the content.
+\item The system saves the changes.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the administrator cancels, no changes are saved.
+\item If saving fails, the previous content remains unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The updated educational content is available to users.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_GoalsStreaks}
+\subsection{\ucref{UC_GoalsStreaks}: Manage Goals and Streaks}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens their activity goals.
+\item The user sets or changes their daily activity goal.
+\item The system saves the goal for the next day.
+\item The user views their current streak and milestones.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can earn currency without setting a goal.
+\item The user can mark a rest day without losing their streak.
+\item If the user misses their goal, no currency is taken away.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's goal and streak information are updated.
+\end{itemize}
+
 
 % ============================================================== 
 \section{Functional Requirements} \label{SecFR}
@@ -2433,6 +2962,71 @@ and associated records must be removed within a specified period.
 \end{description}
 
 
+\item[SEC-7 (Least privilege health acess)]
+The system shall request read access only to the supported health data types and shall not request permission to write to the health platform.
+
+\textit{Fit criterion:} All requested health permissions are read only and correspond to supported activity data.
+
+\item[SEC-6 (Permission Purpose)]
+Before requesting a permission the system shall explain which feature requires the requested data.
+
+\textit{Fit Criterion:} Every permission request is followed by an explanation of its purpose.
+
+\item[SEC-7 (Consent and Withdrawal)]
+The system shall get the users consent before is accessses health or location data and shall stop reading that information when the user's consent is withdrawn.
+
+\textit{Fit Criterion:} No data is accessed before consent or after consent is withdraen.
+
+\item[SEC-8 (Data Minimization)]
+The system shall send only daily activity totals to the server rather than individual health record.
+
+\textit{Fit Criterion:} Server requests contain daily totals without individual health events.
+
+\item[SEC-9 (Third Party Data)]
+The system shall not send personal, health, or locationd data to third parties.
+
+\textit{Fit Criterion:} Requests to the market data provider contains only asset identifiers.
+
+\item[SEC-10 (Private Sharing)]
+The sytem shall keep user stats private unless the user explicitly chooses to share them.
+
+\textit{Fit Criterion:} Shared statistics are only visible to the friends selected by the user.
+
+\item[SEC-11 (Location Privacy)]
+The system shall not include location, route, or exact activity time information in shared posts.
+
+\textit{Fit Criterion:} Shared posts contain no exact location, route, or activity timestamps.
+
+\item[SEC-12 (Authenticated Access)]
+The system shall require authentication before it allows
+access to private user information
+
+\textit{Fit Criterion:} Requests without valid authentication
+or authorization are rejected.
+
+\item[SEC-13 (Data Protection)]
+The system shall encrypt user data during the transmission of the data
+and when the data is stored on the server.
+
+\textit{Fit Criterion:} Network and storage inspection will
+reveal no readable sensitive data that can be intercepted or accessed.
+
+\item[SEC-14 (Session Expiry)]
+The system shall end inactive sessions after a
+defined session timeout.
+
+\textit{Fit Criterion:} Expired sessions can no longer
+authorize requests.
+
+\item[SEC-15 (Account Deletion).]
+The system shall allow users to delete their accounts
+and remove personal information in the system within a
+defined deletion period.
+
+\textit{Fit Criterion:} Deleted accounts aren't able to sign in,
+and associated records must be removed within a specified period.
+
+\end{description}
 % ============================================================== 
 \section{Non-Functional Requirements}
 \noindent 
@@ -2572,6 +3166,7 @@ TODO
 TODO
 
 % ============================================================== 
+
 \section{Requirements Traceability Matrices}
 
 \plt{Further traceability to test cases and modules will be given in other
@@ -2997,7 +3592,31 @@ document and in the Hazard Analysis (HA).
 \plt{This isn't part of the SRS, but it is part of the course.}
 
 The information in this section will be used to evaluate the team members on the
-graduate attribute of Lifelong Learning.  
+graduate attribute of Lifelong Learning. 
+
+
+
+\textbf{Angad:} One of the main challenges I faced during this deliverable
+was keeping my sections consistent with the requirements written by other
+team members. I was responsible for the use cases, non functional
+requirements, traceability matrices, privacy and data retention, and
+rationale. Since these sections depended heavily on the functional
+requirements, changes made by other members meant I had to go back
+and update my work. For example, additional functional requirements
+were introduced later in the deliverable, which meant I had to
+update the use cases and both traceability matrices to make sure
+everything was properly connected and included. Another challenge I faced was making
+sure that the privacy and security requirements matched our Hazard
+Analysis, especially when some requirements got renumbered or
+had their wording changed. I resolved these issues by reviewing
+the latest versions of my teammates' work, checking the
+references between sections, and addressing feedback on my
+pull request. This helped me understand how closely connected
+the different sections of the SRS are. For our next deliverable,
+I think we should communicate requirement changes earlier and
+review each other's work throughout the process rather than
+waiting until most of our sections are finished. This would
+help reduce the amount of rework needed near the deadline.
 
 \input{../Reflection.text}
 
