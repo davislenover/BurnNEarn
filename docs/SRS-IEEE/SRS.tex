@@ -43,6 +43,8 @@
 \usepackage{caption}
 \usepackage{pdflscape}
 \usepackage{afterpage}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
 
 \usepackage[round]{natbib}
 
@@ -82,7 +84,20 @@
 \newcommand{\lthelcnum}{LC\thelcnum}
 \newcommand{\lcref}[1]{LC\ref{#1}}
 
+\newcounter{scnum} %System Constraint (SC) Number
+\newcommand{\scthescnum}{SC\thescnum}
+\newcommand{\scref}[1]{SC\ref{#1}}
+
 \usepackage{fullpage}
+
+% Functional requirement entry: \freq{label}{statement}{fit criterion}{traces}
+\newcommand{\freq}[4]{%
+  \item[FR\refstepcounter{reqnum}\thereqnum \label{#1}:] #2\\
+  \textit{Fit criterion:} #3\\
+  \textit{Traces to:} #4}
+
+% Let lines holding long \texttt constants stretch instead of overflowing.
+\setlength{\emergencystretch}{3em}
 
 \begin{document}
 
@@ -261,102 +276,348 @@ constraints.
 
 \subsection{Problem Statement}
 
-\plt{Current situation, problem, impact, desired improvement.  You will likely borrow some text from your problem description document.}
+% Template prompt (hidden): Current situation, problem, impact, desired
+% improvement. You will likely borrow some text from your problem description
+% document.
 
-TODO
+\textbf{Current situation.} Building good fitness and financial habits early
+pays off for decades, because both compound over time. Regular exercise builds
+on itself, and so does money invested early. Poor habits compound in the same
+way. Yet many young adults, particularly students and those starting their
+first jobs, struggle to begin either one.
 
-\subsection{Product Vision}
+\textbf{Problem.} Advice on managing money is scattered across many sources,
+which often contradict each other, and learning to invest by doing is risky
+because beginners' mistakes cost real money. Starting to exercise is similarly
+daunting, and many beginners lose motivation before they see results.
 
-\plt{A clear and concise statement of the product's purpose and goals.}
+\textbf{Impact.} Many people put off both habits until later, when poor habits
+are already established and harder to change.
 
-\plt{The goal statements are functional and nonfunctional objectives that system
-  under consideration should achieve. Goals provide criteria for sufficient
-  completeness of a requirements specification and for requirements pertinence.
-  Goals will be refined by requirements.  The goals are written abstractly, with
-  a minimal amount of technical language.  They should be understandable by
-  non-domain experts.}
+\textbf{Desired improvement.} An approachable, low-risk way for beginners to
+build fitness and financial habits together while staying motivated.
 
-\plt{You will likely borrow from your goal statements in your problem
-description document.}
+\subsection{Product Vision} \label{SecProductVision}
 
-TODO
+% Template prompts (hidden): A clear and concise statement of the product's
+% purpose and goals. Goals are functional and nonfunctional objectives, refined
+% by requirements, written abstractly for non-domain experts. Borrow from the
+% goal statements in the problem description document.
+
+\progname{} is a mobile app in which users earn virtual currency from their
+everyday physical activity and invest it in a simulated market that follows
+real-world prices. It lets beginners build fitness habits and learn to invest
+without risking real money. Its goals, which the requirements in this document
+discuss, are:
+
+\begin{description}
+  \item[G1 (Learning by doing).] Users learn core financial and fitness
+  concepts through hands-on, low-risk practice, with each decision paired with
+  feedback explaining what happened and why. \textit{Measured by:} a
+  before-and-after knowledge check on a defined set of core concepts, where at
+  least 70\% of usability test participants improve their score.
+  \item[G2 (A human-centered, all-in-one experience).] Users see their fitness
+  progress and financial learning together in one place, so they rarely need
+  to leave the app to understand what they are looking at. \textit{Measured
+  by:} usability testing, where at least 80\% of first-time participants
+  complete the core tasks without outside help.
+  \item[G3 (Motivation through friends, with privacy).] Users stay motivated by
+  sharing their progress with friends, while keeping control of their data.
+  \textit{Measured by:} users control who sees each shared statistic, and no
+  raw health data is shared unless the user selects it.
+  \item[G4 (Risk-free investing practice).] Users practice investing in a
+  simulated market based on real-world market data, without risking real
+  money. \textit{Measured by:} users can trade at least 50 real-world stocks at
+  prices within 15 minutes of the real market, and can practice in market
+  scenarios such as a replay of a past market downturn.
+  \item[G5 (Rewards for everyday activity).] Users are rewarded for the
+  activities they already do, as recorded by their phone's health platform.
+  \textit{Measured by:} at least five activity types are supported.
+\end{description}
   
 \subsection{System Context}
 
-\plt{Include users, external systems, APIs, databases, and third-party services.}
+% Template prompts (hidden): Include users, external systems, APIs, databases,
+% and third-party services. The figure shows the abstract view of the software.
+% External libraries are shown only if a system constraint requires them, and
+% named only if the constraint names them.
 
-\plt{Your system context will include a figure that shows the abstract view of
-  the software.  In some cases the diagram will show other external
-  entities, besides the user.  For instance, when the software product is a
-  library, the user will be another software program, not an actual end user.
-  If there are system constraints that the software must work with external
-  libraries, these libraries can also be shown on the System Context diagram.
-  They should only be named with a specific library name if this is required by
-  the system constraint.}
+Figure~\ref{Fig_SystemContext} shows \progname{} as a single system, with its
+mobile app, server and database inside the boundary, and the external entities
+it exchanges information with. Activity sources, such as phone sensors,
+smartwatches and other tracker apps, record activity in the phone's health
+platform. They never communicate with \progname{} directly, so they are shown
+outside the boundary with a dashed outline. \progname{} does not connect to
+banks, brokerages, personal portfolio trackers, or the phone's location
+services or contacts.
+Reminders are generated on the phone as local notifications, so \progname{}
+uses no push notification service.
 
-\begin{figure}[h!]
-\begin{center}
- \includegraphics[width=0.6\textwidth]{SystemContextFigure}
-\caption{System Context}
-\label{Fig_SystemContext} 
-\end{center}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  entity/.style={draw, rounded corners, align=center, text width=2.3cm,
+    minimum height=1.1cm},
+  system/.style={draw, very thick, align=center, minimum width=3.2cm,
+    minimum height=2.4cm, font=\large\bfseries},
+  upstream/.style={draw, dashed, rounded corners, align=center,
+    text width=3.4cm},
+  flow/.style={-{Stealth[length=2mm]}},
+  lbl/.style={font=\scriptsize, align=center}
+]
+  \node[system] (sys) {\progname{}\\[2pt]\normalfont\small (mobile app and server)};
+
+  \node[entity, left=4.3cm of sys] (user) {User};
+  \node[entity, right=2.6cm of sys] (market) {Market data\\provider};
+  \node[entity, text width=2.5cm, above=1.8cm of market] (admin)
+    {Administrator};
+  \node[entity, below=1.8cm of market] (email) {Email\\service};
+  \node[entity, above=1.9cm of sys] (health)
+    {Phone health platform\\(HealthKit or\\Health Connect)};
+  \node[entity, below=1.8cm of sys] (friends) {Friends\\(other users)};
+  \node[upstream, above=0.9cm of health] (sources)
+    {Activity sources: phone sensors, smartwatches, other tracker apps};
+
+  % User
+  \draw[flow] ([yshift=4mm]user.east) -- ([yshift=4mm]sys.west)
+    node[lbl, midway, above] {account details, trades,\\answers, friend requests,\\sharing and reminder\\choices, consent};
+  \draw[flow] ([yshift=-4mm]sys.west) -- ([yshift=-4mm]user.east)
+    node[lbl, midway, below] {currency, simulated\\portfolio, activity trends,\\explanations, feedback,\\reminders, data copy};
+
+  % Market data provider
+  \draw[flow] ([yshift=4mm]sys.east) -- ([yshift=4mm]market.west)
+    node[lbl, midway, above] {asset symbols};
+  \draw[flow] ([yshift=-4mm]market.west) -- ([yshift=-4mm]sys.east)
+    node[lbl, midway, below] {asset prices};
+
+  % Health platform
+  \draw[flow] ([xshift=-4mm]health.south) -- ([xshift=-4mm]sys.north)
+    node[lbl, midway, left] {daily activity\\totals, permission\\status};
+  \draw[flow] ([xshift=4mm]sys.north) -- ([xshift=4mm]health.south)
+    node[lbl, midway, right] {permission\\requests};
+
+  % Friends
+  \draw[flow] ([xshift=-4mm]sys.south) -- ([xshift=-4mm]friends.north)
+    node[lbl, midway, left] {shared updates,\\friend requests};
+  \draw[flow] ([xshift=4mm]friends.north) -- ([xshift=4mm]sys.south)
+    node[lbl, midway, right] {friend request\\responses};
+
+  % Administrator
+  \draw[flow] (admin.south) |- ([yshift=10mm]sys.east)
+    node[lbl, pos=0.25, left] {concept explanations,\\knowledge checks};
+
+  % Email service
+  \draw[flow] ([yshift=-10mm]sys.east) -| (email.north)
+    node[lbl, pos=0.75, left] {email address,\\reset link};
+
+  % Activity sources (outside the system, never connected to it directly)
+  \draw[flow, dashed] (sources.south) -- (health.north)
+    node[lbl, midway, right] {activity records};
+\end{tikzpicture}
+\caption{System context of \progname{}}
+\label{Fig_SystemContext}
 \end{figure}
 
-\plt{For each of the entities in the system context diagram its responsibilities
-  should be listed.  Whenever possible the system should check for data quality,
-  but for some cases the user will need to assume that responsibility.  The list
-  of responsibilities should be about the inputs and outputs only, and they
-  should be abstract.  Details should not be presented here.  However, the
-  information should not be so abstract as to just say ``inputs'' and
-  ``outputs''.  A summarizing phrase can be used to characterize the inputs.
-  For instance, saying ``material properties'' provides some information, but it
-  stays away from the detail of listing every required properties.}
+% Template prompt (hidden): List the responsibilities of each entity in the
+% diagram, about inputs and outputs only, kept abstract but more specific than
+% "inputs" and "outputs". The system should check data quality wherever
+% possible; otherwise the user takes on that responsibility.
+
+The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 
 \begin{itemize}
 \item User Responsibilities:
 \begin{itemize}
-\item 
+\item Confirm truthfully that they are at least \texttt{MIN\_USER\_AGE} years
+  old.
+\item Keep any profile measurements they choose to enter, such as height and
+  weight, accurate.
+\item Grant \progname{} the permissions its features use, and keep an activity
+  source recording to the phone's health platform.
+\item Make their own trade decisions. \progname{} gives no financial advice.
+\item Choose what to share, with which friends, and when to receive reminders.
+\item Keep an Internet connection for trading and the social feed.
+\item Keep their password private and keep access to their account's email
+  address.
 \end{itemize}
 \item \progname{} Responsibilities:
 \begin{itemize}
-\item Detect data type mismatch, such as a string of characters instead of a
-  floating point number
-\item 
+\item Reject profile measurements outside plausible ranges.
+\item Award currency only for activity within plausibility limits and up to a
+  daily cap (Hazard Analysis SAF-7, SEC-1).
+\item Treat a day with no activity data as a day with zero activity.
+\item Reject purchases that cost more than the user's balance and sales of
+  more shares than the user holds (Hazard Analysis SEC-5).
+\item Record each trade once and completely (Hazard Analysis SEC-5, SEC-6).
+\item Show each asset price with the time it was obtained, and mark delayed
+  prices (Hazard Analysis SEC-2).
+\item Refuse trades on out-of-date prices while the market is open, and queue
+  trades requested while it is closed (Hazard Analysis SEC-3, SEC-4).
+\item Show each shared update only to the friends the user chose, without
+  location detail (Hazard Analysis SEC-13, SEC-14).
+\item Request only the permissions its features use, explaining each one
+  (Hazard Analysis SEC-7, SEC-8).
+\item Send the market data provider only the symbols of the assets being
+  priced, and no personal or health data (Hazard Analysis SEC-11).
+\item Send the email service no personal or health data other than the user's
+  email address and their password reset link (Hazard Analysis SEC-11).
+\end{itemize}
+\item Health Platform Responsibilities:
+\begin{itemize}
+\item Store activity records from the user's activity sources, and provide
+  daily totals for the activity types the user has permitted.
+\item Grant or withdraw \progname{}'s read access as the user chooses, and
+  report the current permission status.
+\item Keep the activity data it records as accurate as its activity sources
+  allow.
+\end{itemize}
+\item Market Data Provider Responsibilities:
+\begin{itemize}
+\item Supply current and historical prices for the assets \progname{}
+  requests, within its request limits.
+\end{itemize}
+\item Email Service Responsibilities:
+\begin{itemize}
+\item Deliver each password reset link that \progname{} sends to the user's
+  email address.
+\end{itemize}
+\item Administrator Responsibilities:
+\begin{itemize}
+\item Keep concept explanations and knowledge checks accurate, and name no
+  asset for the user to buy or sell in them (Hazard Analysis SAF-9).
+\end{itemize}
+\item Friend Responsibilities:
+\begin{itemize}
+\item Accept or decline a user's friend request.
+\item View the updates a user has shared with them in their social feed.
 \end{itemize}
 \end{itemize}
 
-\plt{Identify in what context the software will typically be used.  Is it for
-exploration? education? engineering work? scientific work?. Identify whether it
-will be used for mission-critical or safety-critical applications.} 
+% Template prompts (hidden): Identify the context the software will typically
+% be used in, and whether it will be used for mission-critical or
+% safety-critical applications. This sets how much effort the rationale
+% section needs.
 
-\plt{This additional context information is needed to determine how much effort
-should be devoted to the rationale section.  If the application is
-safety-critical, the bar is higher.  This is currently less structured, but
-analogous to, the idea to the Automotive Safety Integrity Levels (ASILs) that
-McSCert uses in their automotive hazard analyses.}
+\progname{} is intended for personal education and habit building. Members of
+the general public use it on their own smartphones to track their activity,
+earn currency and practice investing in a simulated market. It is not intended
+for professional, engineering or scientific use.
+
+\progname{} is not mission-critical: it holds and moves no real money, so an
+outage only delays rewards and learning. It is not safety-critical either
+since it controls no physical equipment and provides
+no medical function. However, it handles personal health data and
+is designed to influence how users exercise and make financial decisions. These
+hazards, and the requirements that control them, are covered in the Hazard
+Analysis. The rationale in Section~\ref{SecRationale} therefore focuses on
+those requirements.
 
 \subsection{User Characteristics} \label{SecUserCharacteristics}
 
-\plt{This section summarizes the knowledge/skills expected of the user.
-  Measuring usability, which is often a required non-function requirement,
-  requires knowledge of a typical user.  As mentioned above, the user is a
-  different role from the ``intended reader,'' as given in
-  Section~\ref{sec_IntendedReader}.  As in Section~\ref{sec_IntendedReader}, the
-  user characteristics should be specific an unambiguous.  For instance, ``The
-  end user of \progname{} should have an understanding of undergraduate Level 1
-  Calculus and Physics.''}
+% Template prompt (hidden): Summarize the knowledge and skills expected of the
+% user, specifically and unambiguously. The user is a different role from the
+% intended reader (Section 1.5). Usability requirements are measured against
+% this typical user.
+
+The typical user of \progname{} is a young adult, such as a student or someone
+starting their first job (Problem Statement and Goals, Section~1). The user of
+\progname{}:
+\begin{itemize}
+  \item Is at least \texttt{MIN\_USER\_AGE} years old (Hazard Analysis CA2).
+  \item Uses a smartphone daily, and can install an app, grant or deny app
+  permissions, and use common mobile app controls.
+  \item Carries an Android or iOS phone during everyday activity. No wearable
+  device or fitness expertise is required.
+  \item Reads English, and has the numeracy of Grade~9 mathematics: working
+  with percentages, comparing values, and reading a simple line chart.
+  \item Needs no prior knowledge of investing terms such as stock,
+  exchange-traded fund (ETF) or portfolio.
+\end{itemize}
+
+As per interviews conducted, participants mainly track their activity with a phone. Both
+already knew some investing concepts, through self-study or formal study, and
+both learned most by doing.
+No one interviewed was a self-reported complete beginner, so the beginner characteristics above come
+from the Problem Statement, and usability testing should include beginners.
 
 \subsection{System Constraints}
 
-\plt{System constraints differ from other type of requirements because they
-  limit the developers' options in the system design and they identify how the
-  eventual system must fit into the world. This is the only place in the SRS
-  where design decisions can be specified.  That is, the quality requirement for
-  abstraction is relaxed here.  However, system constraints should only be
-  included if they are truly required.}
+% Template prompts (hidden): System constraints limit the developers' options
+% in the design and identify how the system must fit into the world. This is
+% the only place in the SRS where design decisions can be specified, so they
+% should only be included if they are truly required. Mention platform
+% constraints and licensing restrictions here.
 
-\plt{This is where you would mention platform constrains, and licensing
-restrictions.}
+The following constraints limit the design of \progname{}. Each one is imposed
+by the project brief, an external service, the law or the app stores.
+
+\begin{itemize}
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_Platform}:] \progname{} shall
+run as a mobile app on Android phones running Android
+\texttt{MIN\_ANDROID\_VERSION} or later and on iPhones running iOS
+\texttt{MIN\_IOS\_VERSION} or later.
+\textit{Rationale:} This project calls for a mobile app, and these are the
+versions on the devices available to the team and the supervisor for testing
+(Development Plan, Section~10).
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_HealthPlatform}:]
+\progname{} shall obtain recorded activity only through the phone's health
+platform: Apple HealthKit on iOS and Health Connect on Android. This rule also
+covers any library \progname{} uses to read health data. No core feature shall
+require a wearable device.
+\textit{Rationale:} Users carry their phone during everyday activity
+(Section~\ref{SecUserCharacteristics}), and the health platforms already
+collect data from the phone and from any wearable the user owns (note, wearable
+integration is a stretch goal).
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_HealthAccess}:] \progname{}
+shall access health data only under the access rules Apple (iOS provider) and Google (Android OS provider) set for
+their health platforms, such as declaring each data type it reads and
+explaining each permission to the user \citep{AppleHealthKit,
+GoogleHealthConnect}.
+\textit{Rationale:} Apps that break these rules are not accepted in the app
+stores. The rules also limit what \progname{} can read, such as how far back
+past activity data can be read.
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_MarketData}:] \progname{}
+shall obtain real-world asset prices from a third-party market data provider
+(\texttt{MARKET\_DATA\_PROVIDER}), within the provider's request limits and
+licence terms.
+\textit{Rationale:} The team cannot produce market prices itself, so request
+limits, cost and permitted use are set by the provider.
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_NoRealMoney}:] Virtual
+currency and simulated holdings shall have no monetary value. They cannot be
+bought with, redeemed for or exchanged for money, and \progname{} shall not
+connect to any bank or brokerage account or give personalized investment
+advice. \progname{} shall state the associated risks whenever it explains a financial concept.
+\textit{Rationale:} Handling real money or giving personalized investment advice would bring
+\progname{} under financial regulation that the team is not licensed for.
+Keeping real money out also keeps the practice risk-free (G4).
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_Privacy}:] \progname{} shall
+collect, use, store and delete personal and health data in line with
+Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
+and the health-data policies of the Apple App Store and Google Play.
+\textit{Rationale:} These laws and policies apply to any app that handles this
+data in Canada and in these stores. The specific controls are in
+Section~\ref{SecPrivacyRetention} and the Hazard Analysis (SEC-7 to SEC-12 and
+SEC-18).
+
+\item[SC\refstepcounter{scnum}\thescnum \label{SC_Server}:] Trading, market
+prices and the social feed shall require an Internet connection to
+\progname{}'s server.
+\textit{Rationale:} Prices are fetched from the provider once for all users to
+stay within its request limits (\scref{SC_MarketData}), friends' shared updates
+must reach other users' phones, and a user's portfolio must survive the loss of
+their phone.
+
+\end{itemize}
+
+
+
 
 % ============================================================== 
 \section{Stakeholder Requirements}
@@ -446,25 +707,558 @@ TODO
 \end{itemize}
 
 % ============================================================== 
-\section{Functional Requirements}
-\plt{Functional requirements describe what the system should do.  They are typically
-expressed as a set of conditions or capabilities that the system must have.  These
-requirements are usually derived from the stakeholder requirements and use cases.}
+\section{Functional Requirements} \label{SecFR}
 
-\plt{Use SHALL statements. Requirements must be atomic, testable, and traceable.}
+% Template prompts (hidden): Functional requirements describe what the system
+% should do, derived from the stakeholder requirements and use cases. Use SHALL
+% statements. Requirements must be atomic, testable and traceable. Labels are
+% meaningful mnemonics, not numbers.
+
+% =============================================================================
+% HOW TO WRITE A FUNCTIONAL REQUIREMENT (delete this block before submitting)
+%
+% * Use \freq{label}{statement}{fit criterion}{traces}. The FR number is
+%   assigned automatically.
+% * Labels: FR_ plus the area prefix of your subsection, then a short name:
+%   FR_Acct..., FR_Act..., FR_Mkt..., FR_Learn..., FR_Social..., and FR_Remind...
+%   or FR_Set... in Reminders and Settings.
+%   The prefix keeps labels from clashing between authors.
+% * Statement: one "The system shall ..." per requirement. If it needs "and" to
+%   join two behaviours, split it into two requirements.
+% * Say WHAT, not how: no screens, libraries or algorithms. Numbers are
+%   SMALL_CAPS constants defined in Appendix C (#95).
+% * Fit criterion: one line saying how a tester decides pass or fail.
+% * Traces to, in this order: stakeholder requirement(s) (\srref{SR_...},
+%   Section 3, #127), use case(s) (\ucref{UC_...}, Section 5, #130), goal(s)
+%   G1-G5 (Section 2.2), then any HA ID. SR and UC refs print as ?? until those
+%   PRs merge. Leave out the SR or UC when none fits.
+% * Hazard Analysis requirements that are functional (SAF-1 to SAF-11, SEC-1
+%   to SEC-6) go here with their HA ID at the start of the statement, e.g.
+%   "(HA SAF-1) The system shall ...", with the same statement and fit
+%   criterion as the Hazard Analysis. Privacy and security requirements
+%   (SEC-7 to SEC-18) go in Section 7.3 or Section 8 instead.
+% * A requirement that implements part of an HA requirement without restating
+%   it ends its Traces to with the HA ID, e.g. "G3, Hazard Analysis SEC-13".
+% * Each subsection has one owner (in its comment).
+% =============================================================================
+
+This section lists what \progname{} shall do, grouped by feature area. Each
+requirement has a fit criterion and traces to the stakeholder requirements and
+use cases it refines and to the goals in Section~\ref{SecProductVision}. A
+requirement that begins with a Hazard Analysis (HA) identifier, such as
+(HA SEC-3), appears in the Hazard Analysis with the same identifier and
+wording. A requirement whose traces end with a Hazard Analysis identifier, such
+as Hazard Analysis SEC-13, implements part of that Hazard Analysis
+requirement.
+
+% Owner: Farid
+\subsection{Accounts and Profile}
 
 \noindent \begin{itemize}
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label1}:] The system shall ...
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label2}:] The system shall ...
-
-\item[FR\refstepcounter{reqnum}\thereqnum \label{FR_Label3}:] The system shall ...
-
+\freq{FR_AcctCreate}
+  {The system shall let a new user create an account with an email address and
+  a password.}
+  {A test user who enters an unused email address and a valid password has an
+  account, and can sign in with them.}
+  {\srref{SR_EasyStart}, G2}
+\freq{FR_AcctAgeConfirm}
+  {The system shall not create an account until the user confirms that they are
+  at least \texttt{MIN\_USER\_AGE} years old.}
+  {A test user who does not confirm their age during sign-up has no account
+  created.}
+  {\srref{SR_ProtectData}, G3, Hazard Analysis CA2}
+\freq{FR_AcctUsername}
+  {The system shall require each user to choose a username that no other user
+  has.}
+  {A test user who tries to sign up with a username that another account
+  already uses is asked to choose a different one.}
+  {\srref{SR_ShareProgress}, G3}
+\freq{FR_AcctSignIn}
+  {The system shall let a user sign in with their email address and password.}
+  {A test user who enters their correct email address and password is signed
+  in; one who enters a wrong password is not.}
+  {\srref{SR_ProtectData}, G2}
+\freq{FR_AcctSignOut}
+  {The system shall let a signed-in user sign out.}
+  {After a test user signs out, opening the app shows the sign-in screen and
+  none of their data.}
+  {\srref{SR_ProtectData}, G3}
+\freq{FR_AcctResetPassword}
+  {The system shall let a user who has forgotten their password set a new one
+  through a link sent to their account's email address.}
+  {A test user who requests a reset receives a link at their email address,
+  and after setting a new password can sign in only with the new one.}
+  {\srref{SR_ControlOwnData}, G2}
+\freq{FR_AcctEditProfile}
+  {The system shall let the user view and edit their profile details.}
+  {A test user who changes a profile detail sees the new value the next time
+  they open their profile.}
+  {\srref{SR_ControlOwnData}, G3}
+\freq{FR_AcctBodyOptional}
+  {The system shall not require the user to enter their height or weight in
+  order to use any feature.}
+  {A test user who leaves height and weight empty can earn currency, trade,
+  learn, and share.}
+  {\srref{SR_AllAbilities}, \srref{SR_ProtectData}, G3, G5}
+\freq{FR_AcctDownloadData}
+  {The system shall let the user download a copy of the personal data
+  \progname{} stores about them.}
+  {A test user who requests a copy receives a file containing their profile,
+  activity totals, balance, holdings, trades, and shared updates.}
+  {\srref{SR_ControlOwnData}, G3}
+\freq{FR_AcctDeleteConfirm}
+  {Before deleting an account, the system shall ask the user to confirm the
+  deletion in a message stating that it cannot be undone.}
+  {A test user who starts account deletion is shown this warning, and their
+  account still exists if they cancel.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_DeleteAccount}, G3}
+\freq{FR_AcctDelete}
+  {The system shall let the user delete their account from within the app.}
+  {A test user who confirms deletion can no longer sign in, and none of their
+  data is shown to them or to their friends.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_DeleteAccount}, G3, Hazard Analysis
+  SEC-18}
 \end{itemize}
 
-\plt{The requirements are given labels so that they can be referenced in other
-parts of the SRS.  The label names should be meaningful mnemonics, not numbers.}
+% Owner: Davis
+\subsection{Activity and Rewards}
+
+\noindent \begin{itemize}
+\freq{FR_ActTypes}
+  {The system shall award virtual currency for at least
+  \texttt{MIN\_ACTIVITY\_TYPES} activity types (the supported activity types).}
+  {A tester records activity of \texttt{MIN\_ACTIVITY\_TYPES} different activity
+  types in the health platform, and each one earns currency.}
+  {\srref{SR_AllAbilities}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActEarn}
+  {The system shall award virtual currency for recorded activity of a supported
+  activity type.}
+  {For a test user whose recorded activity in one calendar day is plausible and
+  would earn at most \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by the sum, over the
+  supported activity types, of each type's daily total multiplied by its rate
+  in \texttt{EARNING\_RATES}.}
+  {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActNoData}
+  {The system shall treat a day with no activity data from the health platform
+  as a day with zero activity.}
+  {For a test user whose health platform reports no activity data for a day,
+  that day shows zero activity and earns no currency.}
+  {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActPlausible}
+  {(HA SEC-1) The system shall not count an activity record that exceeds the
+  plausibility limits for its activity type toward the user's currency,
+  activity trends, streak or milestones, and shall show the user that the
+  record was not counted.}
+  {A test record of more than \texttt{MAX\_DAILY\_STEPS} steps in one day, or
+  a workout longer than \texttt{MAX\_WORKOUT\_DURATION}, earns no currency,
+  does not appear in the user's activity trends, streak or milestones, and is
+  shown to the user as not counted.}
+  {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActDailyCap}
+  {(HA SAF-7) The system shall award a user no more than
+  \texttt{MAX\_DAILY\_CURRENCY} virtual currency for recorded activity in any
+  calendar day.}
+  {For a test user whose recorded activity in one calendar day is plausible and
+  would otherwise earn more than \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by exactly
+  \texttt{MAX\_DAILY\_CURRENCY} for that day. Each activity counts toward the
+  calendar day in the user's time zone at the time of the activity.}
+  {\srref{SR_SafeMotivation}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActGoal}
+  {The system shall let the user set or change a daily activity goal for a
+  supported activity type, with each change applying from the next day.}
+  {A test user who changes their daily activity goal keeps the previous goal
+  for the rest of that day and has the new goal from the next day.}
+  {\srref{SR_OwnGoals}, G5}
+\freq{FR_ActGoalOptional}
+  {(HA SAF-3) The system shall not require the user to set an activity goal in
+  order to earn currency for recorded activity.}
+  {A test user with no activity goal set who records activity receives
+  currency for it.}
+  {\srref{SR_OwnGoals}, \ucref{UC_EarnCurrency}, G5}
+\freq{FR_ActNoAutoGoal}
+  {(HA SAF-4) The system shall not change a user's activity goal without the
+  user's confirmation.}
+  {A test user who exceeds their goal on \texttt{GOAL\_REVIEW\_PERIOD}
+  consecutive days still has the same goal unless they confirm a change.}
+  {\srref{SR_OwnGoals}, G5}
+\freq{FR_ActStreak}
+  {The system shall show the user their current streak.}
+  {A test user with no streak who meets their activity goal on three
+  consecutive days is shown a streak of 3. After a following rest day, they
+  are shown a streak of 4. After a following day on which they neither
+  meet their goal nor take a rest day, they are shown a streak of 0.}
+  {\srref{SR_SeeProgress}, G5}
+\freq{FR_ActRestDay}
+  {(HA SAF-1) The system shall let the user mark up to
+  \texttt{REST\_DAYS\_PER\_PERIOD} days in each \texttt{STREAK\_PERIOD} as
+  rest days, and a rest day shall not end the user's activity streak.}
+  {A test user with a streak who marks a day as a rest day and records no
+  activity that day does not have the streak reset to zero at the start of the
+  following day. A request to mark more than \texttt{REST\_DAYS\_PER\_PERIOD}
+  rest days in one \texttt{STREAK\_PERIOD} is refused.}
+  {\srref{SR_SafeMotivation}, G5}
+\freq{FR_ActNoPenalty}
+  {(HA SAF-2) The system shall not reduce a user's virtual currency balance or
+  simulated holdings when they miss an activity goal or their streak ends, and
+  shall not show a missed goal or an ended streak to other users.}
+  {For a test user who misses their goal on day \textit{d}, the currency
+  balance and simulated holdings at the start of day \textit{d+1} equal those
+  at the end of day \textit{d}. No friend's social feed shows the missed goal
+  or the ended streak.}
+  {\srref{SR_SafeMotivation}, \srref{SR_NoHarmfulComparison}, G3, G5}
+\freq{FR_ActMilestone}
+  {The system shall show the user each milestone in \texttt{MILESTONES} when
+  they reach it.}
+  {A test user whose streak, or total currency earned, first reaches a value in
+  \texttt{MILESTONES} is shown that milestone once.}
+  {\srref{SR_SeeProgress}, G5}
+\freq{FR_ActTrends}
+  {The system shall show the user their daily totals for each supported
+  activity type over time.}
+  {A test user with recorded activity on 14 days sees the total for each of
+  those days, for each supported activity type.}
+  {\srref{SR_SeeProgress}, G2, G5}
+\end{itemize}
+
+% Owner: Davis
+\subsection{Simulated Market and Portfolio}
+
+\noindent \begin{itemize}
+\freq{FR_MktAssetCount}
+  {The system shall offer at least \texttt{MIN\_TRADABLE\_ASSETS} assets for
+  trading in the simulated market.}
+  {A tester counts the assets that can be traded in the simulated market and
+  finds at least \texttt{MIN\_TRADABLE\_ASSETS}.}
+  {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
+\freq{FR_MktRealPrices}
+  {The system shall price each asset in the simulated market at the most recent
+  price it has obtained for that asset from the market data provider.}
+  {For a test asset, the price \progname{} shows and uses for trades equals the
+  latest price \progname{} received from the market data provider for that
+  asset.}
+  {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
+\freq{FR_MktPriceAge}
+  {(HA SEC-2) The system shall display each asset price with the time it was
+  obtained, and shall mark the price as delayed when it is older than
+  \texttt{QUOTE\_STALENESS\_LIMIT}.}
+  {A test price obtained more than \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown
+  with its time and a ``Delayed'' marker. A price obtained within the limit is
+  shown with its time and no marker.}
+  {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
+\freq{FR_MktSimNotice}
+  {(HA SAF-8) Before the user's first trade, the system shall display a notice
+  stating that the market is simulated, that virtual currency and holdings
+  have no real-world value, and that nothing in \progname{} is financial
+  advice. The system shall not complete the first trade until the user
+  acknowledges the notice.}
+  {A new test user who attempts their first trade is shown the notice and
+  cannot complete the trade until they acknowledge it. The notice contains all
+  three statements: the market is simulated, currency and holdings have no
+  real-world value, and nothing in \progname{} is financial advice.}
+  {\srref{SR_NotAdvice}, \ucref{UC_BuyAsset}, G4}
+\freq{FR_MktBuy}
+  {The system shall let the user buy shares of an asset using virtual currency.}
+  {While a test asset's market is open, a test user with enough currency buys
+  one share of it. Their balance decreases by the price shown when they
+  confirmed the trade, and their holding of it increases by one.}
+  {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, \ucref{UC_BuyAsset}, G4}
+\freq{FR_MktSell}
+  {The system shall let the user sell shares of an asset they hold for virtual
+  currency.}
+  {While a test asset's market is open, a test user holding one share of it
+  sells it. Their balance increases by the price shown when they confirmed the
+  trade, and their holding of it decreases by one.}
+  {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, G4}
+\freq{FR_MktAtomicTrade}
+  {(HA SEC-5) The system shall record each trade completely, updating both the
+  currency balance and the holdings, or not at all. It shall reject a purchase
+  that costs more than the user's currency balance and a sale of more shares
+  than the user holds.}
+  {A test trade interrupted before it completes leaves the balance and
+  holdings unchanged, and a completed trade changes both. A purchase costing
+  more than the balance, or a sale of more shares than are held, is rejected
+  and changes neither.}
+  {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
+\freq{FR_MktNoDuplicate}
+  {(HA SEC-6) The system shall record a trade only once when the same trade
+  request is submitted more than once.}
+  {When a test user submits a trade and the same request is sent again, for
+  example by retrying after a dropped connection, exactly one trade is
+  recorded.}
+  {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
+\freq{FR_MktNoStaleTrade}
+  {(HA SEC-3) The system shall not execute a trade while the asset's market is
+  open and the asset's price is older than \texttt{QUOTE\_STALENESS\_LIMIT}.}
+  {While a test asset's market is open and its price is older than
+  \texttt{QUOTE\_STALENESS\_LIMIT}, a trade request for it is refused and the
+  user is told the price is out of date. With a price within the limit, the
+  trade proceeds.}
+  {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
+\freq{FR_MktQueueClosed}
+  {(HA SEC-4) The system shall queue a trade requested while the asset's market
+  is closed, and execute it at the first price obtained after the market next
+  opens.}
+  {A test trade requested while the market is closed is shown to the user as
+  queued, with a notice that it will run at the opening price, and is executed
+  at the first price obtained after the market opens.}
+  {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
+\freq{FR_MktHoldings}
+  {The system shall show the user each of their holdings.}
+  {A test user who owns shares of two assets sees both holdings, each with the
+  number of shares held.}
+  {\srref{SR_SeeProgress}, \ucref{UC_InvestmentFeedback}, G2, G4}
+\freq{FR_MktPortfolioValue}
+  {The system shall show the user their portfolio value.}
+  {For a test user with known holdings, the portfolio value shown equals the
+  sum of each holding multiplied by its asset's most recent price.}
+  {\srref{SR_SeeProgress}, \ucref{UC_InvestmentFeedback}, G2, G4}
+\freq{FR_MktLabelReturns}
+  {(HA SAF-10) The system shall label every displayed return and portfolio
+  value as simulated.}
+  {Every screen that shows a return or portfolio value shows a ``Simulated''
+  label next to it.}
+  {\srref{SR_NotAdvice}, \ucref{UC_InvestmentFeedback}, G4}
+\freq{FR_MktNoRecommend}
+  {(HA SAF-9) The system shall not recommend that a user buy or sell a
+  specific asset.}
+  {No screen or notification shown to a test user tells them to buy or sell a
+  named asset, or presents assets as a ``recommended pick''.}
+  {\srref{SR_NotAdvice}, \ucref{UC_InvestmentFeedback}, G1, G4}
+\end{itemize}
+
+% Owner: Farid
+\subsection{Learning and Feedback}
+
+The requirements in this subsection refer to the core concepts in
+Table~\ref{TblCoreConcepts}. These are the concepts measured by the knowledge
+check in goal G1; the list is educational content that administrators can
+extend without changing these requirements.
+
+\begin{table}[H]
+\caption{Core concepts} \label{TblCoreConcepts}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.18\textwidth}X}
+\toprule
+\textbf{Domain} & \textbf{Core concepts}\\
+\midrule
+Investing & Stock; ETF; share; market price; portfolio value; return;
+diversification; risk and volatility; compound growth; market downturn and
+recovery\\
+Canadian accounts & Tax-Free Savings Account (TFSA); Registered Retirement
+Savings Plan (RRSP)\\
+Fitness & Each supported activity type; active minutes; rest day;
+streak\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_LearnExplainConcept}
+  {The system shall provide a concept explanation for each core concept in
+  Table~\ref{TblCoreConcepts}.}
+  {For every core concept in Table~\ref{TblCoreConcepts}, a tester can open a
+  concept explanation of it in the app.}
+  {\srref{SR_LearnInContext}, \srref{SR_CanadianContext}, G1}
+\freq{FR_LearnInPlace}
+  {The system shall let the user open the concept explanation of a core concept
+  from every screen on which that concept appears.}
+  {On every screen that shows a core concept, a tester can open its concept
+  explanation without leaving that screen.}
+  {\srref{SR_LearnInContext}, G1, G2}
+\freq{FR_LearnValueChange}
+  {When the user's portfolio value has changed by more than
+  \texttt{FEEDBACK\_THRESHOLD} since they last viewed their portfolio,
+  the system shall show feedback naming the holdings that contributed most to
+  the change.}
+  {For a test portfolio whose value has changed by more than the threshold,
+  the feedback names the holding whose value changed most.}
+  {\srref{SR_LearnFromDecisions}, G1}
+\freq{FR_LearnTradeEffect}
+  {After each trade, the system shall show the user how the trade changed the
+  share of their portfolio value held in each asset.}
+  {After a test trade, the feedback shows each holding's share of portfolio
+  value before and after the trade, and these match the values calculated from
+  the holdings.}
+  {\srref{SR_LearnByDoing}, \srref{SR_LearnFromDecisions}, G1, G4}
+\freq{FR_LearnConcentration}
+  {When a single holding is more than \texttt{CONCENTRATION\_LIMIT} of the
+  user's portfolio value, the system shall show the user an explanation of
+  diversification.}
+  {A test portfolio with one holding above \texttt{CONCENTRATION\_LIMIT} of its
+  value shows the explanation, and the explanation names no asset to buy or
+  sell (Hazard Analysis SAF-9).}
+  {\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice}, G1, Hazard Analysis
+  SAF-9}
+\freq{FR_LearnKnowledgeCheck}
+  {The system shall provide a knowledge check for each core concept in
+  Table~\ref{TblCoreConcepts}.}
+  {For every core concept in Table~\ref{TblCoreConcepts}, a tester can start a
+  knowledge check on it.}
+  {\srref{SR_LearnByDoing}, G1}
+\freq{FR_LearnCheckResult}
+  {When the user finishes a knowledge check, the system shall show which of
+  their answers were correct and an explanation of the correct answer to each
+  question they got wrong.}
+  {A test user who answers one question wrongly sees that question marked
+  incorrect, together with the explanation of its correct answer.}
+  {\srref{SR_LearnFromDecisions}, G1}
+\freq{FR_LearnProgress}
+  {The system shall show the user their learning progress.}
+  {After a test user views a concept explanation and passes a knowledge check,
+  both appear in their learning progress.}
+  {\srref{SR_SeeProgress}, G1, G2}
+\freq{FR_LearnUpdateContent}
+  {The system shall let administrators add and edit concept explanations and
+  knowledge checks without releasing a new version of the app.}
+  {A concept explanation edited by an administrator is shown in its edited form
+  on a test phone whose app has not been updated.}
+  {\srref{SR_UpdateContent}, G1}
+\end{itemize}
+
+% Owner: Farid
+\subsection{Social Feed}
+
+A user can share only the kinds of update in Table~\ref{TblShareable}. Currency
+balances and portfolio values are not shareable, so that friends compare
+effort and learning rather than market results.
+
+\begin{table}[H]
+\caption{Kinds of shared update} \label{TblShareable}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}X}
+\toprule
+\textbf{Kind} & \textbf{Content}\\
+\midrule
+Activity total & The user's total for one activity type over a day or a
+week\\
+Streak & The user's current streak, in days. A rest day does not end a
+streak (Hazard Analysis SAF-1)\\
+Fitness milestone & A fitness milestone the user has reached\\
+Learning milestone & A knowledge check the user has passed\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_SocialRequest}
+  {The system shall let the user send a friend request to another user by
+  their username.}
+  {A test user who enters another user's username sends that user a friend
+  request, which the other user sees.}
+  {\srref{SR_ShareProgress}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialAccept}
+  {The system shall make two users friends only after the user who received
+  the friend request accepts it.}
+  {Two test users are not friends while a request between them is pending or
+  after it is declined, and are friends once it is accepted.}
+  {\srref{SR_ControlSharing}, G3}
+\freq{FR_SocialDecline}
+  {The system shall let the user decline a friend request.}
+  {After a test user declines a request, the two users are not friends and the
+  request is no longer shown to the user who declined it.}
+  {\srref{SR_ControlSharing}, G3}
+\freq{FR_SocialRemove}
+  {The system shall let the user remove a friend.}
+  {After a test user removes a friend, neither user sees the other's shared
+  updates.}
+  {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-13}
+\freq{FR_SocialShare}
+  {The system shall let the user share an update of a kind listed in
+  Table~\ref{TblShareable}.}
+  {A test user can share one update of each kind in Table~\ref{TblShareable},
+  and cannot share anything else.}
+  {\srref{SR_ShareProgress}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialChooseFriends}
+  {The system shall let the user choose which of their friends can see each
+  shared update.}
+  {A test update shared with one selected friend appears in that friend's
+  social feed and in no other friend's.}
+  {\srref{SR_ControlSharing}, \ucref{UC_ShareProgress}, G3, Hazard Analysis
+  SEC-13}
+\freq{FR_SocialPreview}
+  {The system shall share an update only after showing the user the update
+  exactly as their friends will see it.}
+  {For every test update, the preview shown before sharing matches what the
+  selected friends see in their social feed.}
+  {\srref{SR_ControlSharing}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialNoBody}
+  {The system shall not include the user's age, height, or weight in any
+  shared update.}
+  {No shared update shown to a test user's friends contains their age, height,
+  or weight.}
+  {\srref{SR_ProtectData}, G3}
+\freq{FR_SocialFeed}
+  {The system shall show the user a social feed of the updates their friends
+  have shared with them, newest first.}
+  {A test user's social feed contains every update shared with them by a friend
+  and no others, ordered by the time each was shared.}
+  {\srref{SR_ShareProgress}, G3}
+\freq{FR_SocialDeleteUpdate}
+  {The system shall let the user delete an update they have shared.}
+  {After a test user deletes a shared update, it no longer appears in any
+  friend's social feed.}
+  {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-13}
+\freq{FR_SocialNoRanking}
+  {(HA SAF-11) The system shall not rank users against each other by activity,
+  currency or portfolio performance.}
+  {No screen shown to a test user orders users by activity, currency or
+  portfolio performance, or shows a user's position relative to others.}
+  {\srref{SR_NoHarmfulComparison}, G3}
+\end{itemize}
+
+% Owner: Davis
+\subsection{Reminders and Settings}
+
+\progname{} sends reminders of the types in Table~\ref{TblReminderTypes}, which
+are the same reminder types as in the Hazard Analysis.
+
+\begin{table}[H]
+\caption{Reminder types} \label{TblReminderTypes}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.14\textwidth}X>{\raggedright\arraybackslash}p{0.3\textwidth}}
+\toprule
+\textbf{Type} & \textbf{Example} & \textbf{Feature area}\\
+\midrule
+Activity & Progress toward today's goal, or a streak about to end & Activity and Rewards\\
+Milestone & A goal reached, or a streak or currency milestone & Activity and Rewards\\
+Portfolio & A notable change in simulated portfolio value & Simulated Market and Portfolio\\
+Learning & A new concept explanation or knowledge check is available & Learning and Feedback\\
+Social & A friend shared an update or sent a friend request & Social Feed\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_RemindPeriods}
+  {The system shall let the user choose the time periods in which they receive
+  reminders.}
+  {A test user sets a reminder period, and it is shown in their settings the
+  next time they open the app.}
+  {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2, Hazard Analysis SAF-6}
+\freq{FR_RemindInPeriods}
+  {(HA SAF-6) The system shall send reminders of the types in
+  Table~\ref{TblReminderTypes} only during the time periods the user has chosen
+  to receive them.}
+  {For a test user who has chosen their reminder periods, no reminder of any type
+  in Table~\ref{TblReminderTypes} is delivered outside those periods. For a test
+  user who has not chosen any periods, reminders are delivered only during
+  \texttt{DEFAULT\_REMINDER\_PERIOD}.}
+  {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2}
+\freq{FR_SetWithdrawConsent}
+  {The system shall let the user withdraw consent for \progname{} to read their
+  health data.}
+  {After a test user withdraws consent in the app, no further health data is
+  read.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_WithdrawConsent}, G3, Hazard Analysis
+  SEC-9}
+\freq{FR_SetPermissionList}
+  {The system shall show the user which health data types \progname{} has
+  permission to read, and the feature that uses each type.}
+  {A test user who has granted health permissions sees each permitted data
+  type listed with the feature that uses it.}
+  {\srref{SR_ExplainPermissions}, \srref{SR_ProtectData},
+  \ucref{UC_ReviewPermissions}, G3, Hazard Analysis SEC-8}
+\end{itemize}
 
 % ============================================================== 
 \section{Data Requirements}
@@ -502,6 +1296,7 @@ email & String & User email address\\
 \end{longtable}
 
 \subsection{Privacy and Data Retention}
+\label{SecPrivacyRetention}
 
 \plt{Discuss storage, retention, deletion, privacy controls,
  consent, encryption, and compliance requirements.}
@@ -617,7 +1412,7 @@ documents.}
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_Label1} \\
+\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_ActEarn} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -629,7 +1424,7 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_Label1} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActEarn} & \nfrref{NFR_Accuracy} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
@@ -638,7 +1433,7 @@ Functional Req & Nonfunctional Req \\
 
 % ============================================================== 
 
-\section{Rationale}
+\section{Rationale} \label{SecRationale}
 
 \plt{Provide a rationale for the decisions made in the documentation.  Rationale
 should be provided for scope decisions, functional requirements, nonfunctioanl
@@ -693,7 +1488,42 @@ Their values are defined in this section for easy maintenance.}
 
 \plt{The value of FRACTION, for the Maintainability NFR would be given here.}
 
-TODO
+Table~\ref{TblConstants} gives the value of each symbolic constant used in this
+document and in the Hazard Analysis (HA).
+
+\begin{longtable}{p{0.36\textwidth} >{\raggedright\arraybackslash}p{0.27\textwidth}
+  >{\raggedright\arraybackslash}p{0.27\textwidth}}
+\toprule
+\textbf{Constant} & \textbf{Value} & \textbf{Used in}\\
+\midrule
+\endhead
+\texttt{MIN\_USER\_AGE} & 18 & \rref{FR_AcctAgeConfirm}\\
+\texttt{MIN\_ANDROID\_VERSION} & 17 & \scref{SC_Platform}\\
+\texttt{MIN\_IOS\_VERSION} & 27 & \scref{SC_Platform}\\
+\texttt{MARKET\_DATA\_PROVIDER} & Finnhub (Development Plan) & \scref{SC_MarketData}\\
+\texttt{MIN\_ACTIVITY\_TYPES} & 5 (G5) & \rref{FR_ActTypes}\\
+\texttt{EARNING\_RATES} & 1 per 100 steps. Workouts without a step count, such as
+  cycling or swimming, earn 1 per minute & \rref{FR_ActEarn}\\
+\texttt{MAX\_DAILY\_CURRENCY} & 300 & \rref{FR_ActEarn}, \rref{FR_ActDailyCap}, HA SAF-7\\
+\texttt{MIN\_TRADABLE\_ASSETS} & 50 (G4) & \rref{FR_MktAssetCount}\\
+\texttt{QUOTE\_STALENESS\_LIMIT} & 15 minutes (G4) & \rref{FR_MktPriceAge},
+  \rref{FR_MktNoStaleTrade}, HA SEC-2, SEC-3\\
+\texttt{FEEDBACK\_THRESHOLD} & 5\% & \rref{FR_LearnValueChange}\\
+\texttt{CONCENTRATION\_LIMIT} & 50\% & \rref{FR_LearnConcentration}\\
+\texttt{DEFAULT\_REMINDER\_PERIOD} & 9:00 to 20:00 in the user's time zone & \rref{FR_RemindInPeriods}, HA SAF-6\\
+\texttt{REST\_DAYS\_PER\_PERIOD} & 2 & \rref{FR_ActRestDay}, HA SAF-1\\
+\texttt{STREAK\_PERIOD} & 7 days & \rref{FR_ActRestDay}, HA SAF-1\\
+\texttt{GOAL\_REVIEW\_PERIOD} & 7 & \rref{FR_ActNoAutoGoal}, HA SAF-4\\
+\texttt{MAX\_GOAL\_INCREASE} & 10\% & HA SAF-5\\
+\texttt{MILESTONES} & Streaks of 7, 30 and 100 days, and 1,000, 10,000 and
+  100,000 currency earned in total & \rref{FR_ActMilestone}\\
+\texttt{MAX\_DAILY\_STEPS} & 150,000 & \rref{FR_ActPlausible}, HA SEC-1\\
+\texttt{MAX\_WORKOUT\_DURATION} & 12 hours & \rref{FR_ActPlausible}, HA SEC-1\\
+\texttt{SESSION\_TIMEOUT} & 14 days & HA SEC-17\\
+\texttt{DATA\_DELETION\_PERIOD} & 30 days & HA SEC-18\\
+\bottomrule
+\caption{Values of auxiliary constants} \label{TblConstants}
+\end{longtable}
 
 \subsection{Appendix D: Generative AI Disclosure}
 
@@ -712,6 +1542,32 @@ graduate attribute of Lifelong Learning.
 \input{../Reflection.text}
 
 \input{../SRS_Reflection.text}
+
+\subsubsection*{2. What pain points did you experience during this deliverable,
+and how did you resolve them?}
+
+\textbf{Davis:} The main pain point for me was how many design decisions the
+SRS involved, and how many of them crossed between sections owned by different
+people. Farid and I split the functional requirements, Angad wrote the use cases
+and traceability matrices, and Preston wrote the data dictionary, but all of
+these depend on the same choices, such as what a user can share with friends
+and whether activity data leaves the phone as individual records or daily
+totals. Because we each worked in our own branch and only compared our work
+near the deadline, we found these mismatches late. Some had a ripple effect,
+for example, we had used different words for the same thing, such as ``post''
+and ``shared update'', one of the shared tables contradicted a Hazard Analysis
+requirement on how rest days affect a streak, and no one had filled in the
+appendix of constants that many of our requirements relied on. As a result, we
+spent much of the last few days aligning our sections and resolving merge
+conflicts instead of improving the content. I resolved this by reviewing my
+teammates' open pull requests against my sections, adopting the terms Farid
+defined in Section 1.4, filling in the appendix of constants, and listing what
+I still needed from each person in my pull request. Next time,
+I want to communicate with the team earlier and more often. That means agreeing
+on shared identifiers, terms and the big design decisions at the start of a
+deliverable, recording each decision in the related GitHub issue as soon as it
+is made, and merging smaller pieces of work sooner, so that conflicts show up
+while they are still cheaper to fix.
 
 \newpage
 
