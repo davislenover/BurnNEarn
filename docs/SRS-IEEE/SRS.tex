@@ -88,6 +88,7 @@
 \newcommand{\scthescnum}{SC\thescnum}
 \newcommand{\scref}[1]{SC\ref{#1}}
 
+
 \usepackage{fullpage}
 
 % Functional requirement entry: \freq{label}{statement}{fit criterion}{traces}
@@ -1164,43 +1165,565 @@ serves.
 \end{itemize}
 
 % ============================================================== 
-\section{Use Cases}
-\plt{Use cases are a way to describe the interactions between users and the system.
-  They are typically written in natural language and describe the steps that a
-  user takes to achieve a specific goal.  Use cases can be used to identify
-  functional requirements and to create test cases.}  
-\plt{Typically 8-15 substantial use cases.}
 
-\refstepcounter{ucnum} \label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Example Use Case}
+% ==============================================================
+\section{Use Cases}
+% ==============================================================
+
+
+\refstepcounter{ucnum}\label{UC_RecordActivity}
+\subsection{\ucref{UC_RecordActivity}: Record Daily Activity}
 
 \textbf{Primary Actor}
 
-TODO
+User
 
 \textbf{Preconditions}
 \begin{itemize}
-\item TODO
+\item The user has granted permission to access health data.
 \end{itemize}
 
 \textbf{Main Success Scenario}
 \begin{enumerate}
-\item TODO
-\item TODO
-\item TODO
+\item The user opens their activity summary.
+\item The system retrieves the daily activity data.
+\item The system displays the recorded activity.
 \end{enumerate}
 
 \textbf{Alternative Flows}
 \begin{itemize}
-\item TODO
+\item If permission is denied, the system informs the user.
+\item If no activity data is available, the system displays that no activity was recorded.
 \end{itemize}
 
 \textbf{Postconditions}
 \begin{itemize}
-\item TODO
+\item The user can view their recorded daily activity.
 \end{itemize}
 
-% ============================================================== 
+
+\refstepcounter{ucnum}\label{UC_EarnCurrency}
+\subsection{\ucref{UC_EarnCurrency}: Earn Virtual Currency}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has recorded a supported activity.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The system retrieves the user's recorded activity.
+\item The system calculates the virtual currency earned.
+\item The system applies the daily earning limit.
+\item The user's currency balance is updated.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If no eligible activity is recorded, no currency is awarded.
+\item Activity exceeding the daily cap earns no additional currency.
+\item If an activity record exceeds the plausibility limits for its type,
+the system does not count it toward currency, trends, streaks or
+milestones and informs the user (HA SEC-1).
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's currency balance reflects the earned rewards.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ViewMarket}
+\subsection{\ucref{UC_ViewMarket}: View Market Prices}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has an Internet connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the simulated market.
+\item The user selects an asset.
+\item The system displays its latest available market price.
+\item The system displays when the price was obtained.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If market data is unavailable, the system informs the user.
+\item If the price is outdated, the system marks it as delayed.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user can view the available price of the selected asset.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_BuyAsset}
+\subsection{\ucref{UC_BuyAsset}: Buy a Simulated Asset}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has enough virtual currency for the purchase.
+\item A usable market price is available.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects an asset to purchase.
+\item The user enters the quantity.
+\item The system displays the total cost.
+\item The user confirms the transaction.
+\item The system updates the balance and holdings.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user has insufficient currency, the purchase is rejected.
+\item If the transaction fails, the balance and holdings remain unchanged.
+\item If the market price is outdated, the system does not allow the trade and informs the user.
+\item If the market is closed, the system queues the trade until the market reopens.
+\item If the user submits the same trade twice, the system only processes it once.
+\item If this is the user's first trade, they must acknowledge that the market is simulated and does not provide financial advice.
+\item If the user chooses to sell instead, the system checks their shares and adds the virtual currency from the sale to their balance.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The purchase is recorded and the portfolio is updated.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_MarketScenario}
+\subsection{\ucref{UC_MarketScenario}: Practice a Historical Market Scenario}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the market scenarios section.
+\item The user selects a historical market scenario.
+\item The system displays the historical period being replayed.
+\item The user buys or sells simulated assets using the scenario's market prices.
+\item The system updates the user's scenario balance and holdings.
+\item The user views the results of their trades.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can leave the scenario at any time.
+\item If the user does not have enough scenario currency or shares, the system does not allow the trade.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's regular virtual currency balance and holdings remain unchanged.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_Reminders}
+\subsection{\ucref{UC_Reminders}: Choose Reminder Times}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access their account settings.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens reminder settings.
+\item The user selects preferred reminder periods.
+\item The system saves the settings.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If reminders are disabled, no optional reminders are sent.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's reminder preferences are saved.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_WithdrawConsent}
+\subsection{\ucref{UC_WithdrawConsent}: Withdraw Data Consent}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user previously granted data access.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens data permission settings.
+\item The user selects a permission to withdraw.
+\item The system records the change.
+\item The system stops reading the selected data.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If operating system settings are required, the user is directed there.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The withdrawn data is no longer accessed.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ReviewPermissions}
+\subsection{\ucref{UC_ReviewPermissions}: Review Data Permissions}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens permission settings.
+\item The system displays the available permissions.
+\item The system explains which features use each permission.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item Permissions that are not granted are marked as unavailable.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user understands the application's data access.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ShareProgress}
+\subsection{\ucref{UC_ShareProgress}: Share Progress with Friends}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has at least one accepted friend connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a statistic to share.
+\item The user selects the friends who can view it.
+\item The system publishes the selected information.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user cancels, nothing is shared.
+\item Location and exact activity times are excluded.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item Only selected friends can view the shared statistic.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_DeleteAccount}
+\subsection{\ucref{UC_DeleteAccount}: Delete Account}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects account deletion.
+\item The system requests confirmation.
+\item The user confirms the request.
+\item The system disables the account and deletes its associated data.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user cancels, their account remains unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The account is disabled and deletion is initiated.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ManageAccount}
+\subsection{\ucref{UC_ManageAccount}: Create and Manage Account}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has an Internet connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the application and selects account creation.
+\item The user enters their account information.
+\item The system creates the account.
+\item The user signs in and accesses their profile.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the account information is invalid, the system asks the user to correct it.
+\item If the user forgets their password, they can request a password reset.
+\item The user can edit their profile, download their data, or sign out.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's account and profile information are saved.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_LearnConcepts}
+\subsection{\ucref{UC_LearnConcepts}: Learn Financial and Fitness Concepts}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access the learning content.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a financial or fitness concept.
+\item The system displays an explanation of the concept.
+\item The user reads the explanation.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can open an explanation from another part of the application.
+\item If the content is unavailable, the system informs the user.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user has viewed the selected concept explanation.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_InvestmentFeedback}
+\subsection{\ucref{UC_InvestmentFeedback}: Review Investment Feedback}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has a simulated investment portfolio.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens their portfolio.
+\item The system displays the portfolio's current value and holdings.
+\item The system displays feedback about changes in portfolio value.
+\item The user reviews the feedback.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If no significant change occurred, no change feedback is shown.
+\item If one holding exceeds the concentration limit, the system explains diversification.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user can review how their investments affected their portfolio.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_KnowledgeCheck}
+\subsection{\ucref{UC_KnowledgeCheck}: Complete Knowledge Check}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access the learning section.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a knowledge check.
+\item The system displays questions about the selected concept.
+\item The user submits their answers.
+\item The system displays the results and explanations.
+\item The system updates the user's learning progress.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user exits before submitting, no completed result is recorded.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's learning progress reflects the completed knowledge check.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ManageFriends}
+\subsection{\ucref{UC_ManageFriends}: Manage Friends and Social Feed}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the social section.
+\item The user sends a friend request to another user.
+\item The other user accepts the request.
+\item The system adds the users as friends.
+\item The user views updates shared by their friends.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the request is declined, the users are not added as friends.
+\item The user can remove an existing friend.
+\item If no updates are available, the social feed is empty.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's friend connections and social feed reflect the available information.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_UpdateLearning}
+\subsection{\ucref{UC_UpdateLearning}: Manage Educational Content}
+
+\textbf{Primary Actor}
+
+Administrator
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The administrator has access to educational content management.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The administrator opens the educational content.
+\item The administrator selects a concept explanation or knowledge check.
+\item The administrator adds or edits the content.
+\item The system saves the changes.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the administrator cancels, no changes are saved.
+\item If saving fails, the previous content remains unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The updated educational content is available to users.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_GoalsStreaks}
+\subsection{\ucref{UC_GoalsStreaks}: Manage Goals and Streaks}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens their activity goals.
+\item The user sets or changes their daily activity goal.
+\item The system saves the goal for the next day.
+\item The user views their current streak and milestones.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can earn currency without setting a goal.
+\item The user can mark a rest day without losing their streak.
+\item If the user misses their goal, no currency is taken away.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's goal and streak information are updated.
+\end{itemize}
+
+
+
+
 \section{Functional Requirements} \label{SecFR}
 
 % Template prompts (hidden): Functional requirements describe what the system
@@ -2145,70 +2668,184 @@ shared statistic.\\
 
 \subsection{Privacy and Data Retention}
 \label{SecPrivacyRetention}
-\plt{Discuss storage, retention, deletion, privacy controls,
- consent, encryption, and compliance requirements.}
 
-TODO
+\progname{} Collects account information, daily total activity, virtual currency balances, portfolio holdings, and information that the user has shared with friends. Due to the sensitive nature of this information, users must have control over how their data is collected, stored and shared.
 
+\begin{description}
+
+\item[SEC-7 (Least privilege health acess)]
+The system shall request read access only to the supported health data types and shall not request permission to write to the health platform.
+
+\textit{Fit criterion:} All requested health permissions are read only and correspond to supported activity data.
+
+\item[SEC-6 (Permission Purpose)]
+Before requesting a permission the system shall explain which feature requires the requested data.
+
+\textit{Fit Criterion:} Every permission request is followed by an explanation of its purpose.
+
+\item[SEC-7 (Consent and Withdrawal)]
+The system shall get the users consent before is accessses health or location data and shall stop reading that information when the user's consent is withdrawn.
+
+\textit{Fit Criterion:} No data is accessed before consent or after consent is withdraen.
+
+\item[SEC-8 (Data Minimization)]
+The system shall send only daily activity totals to the server rather than individual health record.
+
+\textit{Fit Criterion:} Server requests contain daily totals without individual health events.
+
+\item[SEC-9 (Third Party Data)]
+The system shall not send personal, health, or locationd data to third parties.
+
+\textit{Fit Criterion:} Requests to the market data provider contains only asset identifiers.
+
+\item[SEC-10 (Private Sharing)]
+The sytem shall keep user stats private unless the user explicitly chooses to share them.
+
+\textit{Fit Criterion:} Shared statistics are only visible to the friends selected by the user.
+
+\item[SEC-11 (Location Privacy)]
+The system shall not include location, route, or exact activity time information in shared posts.
+
+\textit{Fit Criterion:} Shared posts contain no exact location, route, or activity timestamps.
+
+\item[SEC-12 (Authenticated Access)]
+The system shall require authentication before it allows
+access to private user information
+
+\textit{Fit Criterion:} Requests without valid authentication
+or authorization are rejected.
+
+\item[SEC-13 (Data Protection)]
+The system shall encrypt user data during the transmission of the data
+and when the data is stored on the server.
+
+\textit{Fit Criterion:} Network and storage inspection will
+reveal no readable sensitive data that can be intercepted or accessed.
+
+\item[SEC-14 (Session Expiry)]
+The system shall end inactive sessions after a
+defined session timeout.
+
+\textit{Fit Criterion:} Expired sessions can no longer
+authorize requests.
+
+\item[SEC-15 (Account Deletion).]
+The system shall allow users to delete their accounts
+and remove personal information in the system within a
+defined deletion period.
+
+\textit{Fit Criterion:} Deleted accounts aren't able to sign in,
+and associated records must be removed within a specified period.
+
+\end{description}
 % ============================================================== 
 \section{Non-Functional Requirements}
-
-\plt{You may have to add other NFRs.}
-
-\plt{List your nonfunctional requirements.  You may consider using a fit
-  criterion to make them verifiable.}
-
-\plt{The goal is for the nonfunctional requirements to be unambiguous, abstract
-  and verifiable.  This isn't easy to show succinctly, so a good strategy may be
-to give a ``high level'' view of the requirement, but allow for the details to
-be covered in the Verification and Validation document.}
-
-\plt{An absolute requirement on a quality of the system is rarely needed.  For
-  instance, an accuracy of 0.0101 \% is likely fine, even if the requirement is
-  for 0.01 \% accuracy.  Therefore, the emphasis will often be more on
-  describing now well the quality is achieved, through experimentation, and
-  possibly theory, rather than meeting some bar that was defined a priori.}
-
-\plt{You do not need an entry for correctness in your NFRs.  The purpose of the
-  SRS is to record the requirements that need to be satisfied for correctness.
-  Any statement of correctness would just be redundant. Rather than discuss
-  correctness, you can characterize how far away from the correct (true)
-  solution you are allowed to be.  This is discussed under accuracy.}
-
-\noindent \begin{itemize}
+\noindent 
+\begin{itemize}
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accuracy}:]
-  \textbf{Accuracy} \plt{Characterize the accuracy by giving the context/use for
-    the software.  Maybe something like, ``The accuracy of the computed
-    solutions should meet the level needed for $<$engineering or scientific
-    application$>$.  The level of accuracy achieved by \progname{} shall be
-    described following the procedure given in Section~X of the Verification and
-    Validation Plan.''  If you do this provide a link to the VnV plan.}
+  \textbf{Accuracy} 
+
+  The system shall calculate virtual currency balances and simulated portfolio values within 0.01 virtual currency units of their expected values.
+
+  \textit{Fit Criterion:} Independently calculated test cases differ from the displayed result by no more than 0.01.
+
+  
+  \textit{Traces to:} G4, G5,
+  \rref{FR_ActEarn}, \rref{FR_MktBuy},
+  \rref{FR_LearnTradeEffect}.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Usability}:] \textbf{Usability}
-  \plt{Characterize the usability by giving the context/use for the software.
-    You should likely reference the user characteristics section.  The level of
-    usability achieved by the software shall be described following the
-    procedure given in Section~X of the Verification and Validation Plan.  Include a link to the VnV plan.}
+  \textbf{Usability}
+
+  At least 80 percent of first time users shall be able to complete the core activity and simulated investing tasks without outside assistance.
+
+  \textit{Fit Criterion:} At least 80 percent of usability test participants complete the core tasks independently.
+
+  \textit{Traces to:} G1, G2,
+  \rref{FR_ActEarn}, \rref{FR_MktBuy},
+  \rref{FR_LearnKnowledgeCheck}.
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Maintainability}:]
-  \textbf{Maintainability} \plt{The effort required to make any of the likely
-    changes listed for \progname{} should be less than FRACTION of the original
-    development time.  FRACTION is then a symbolic constant that can be defined
-    at the end of the report.}
+  \textbf{Maintainability} 
+
+  The effort requried to implement a likely change shall not exceed 25 percent of the original development effort for the affected feature.
+
+  \textit{Fit Criterion:} A modification requires no more than 25 percent of the original feature's development hours.
+
+  \textit{Traces to:} G1, G4, G5,
+  \rref{FR_LearnUpdateContent},
+
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Portability}:]
-  \textbf{Portability} \plt{This NFR is easier to write than the others.  The
-    systems that \progname{} should run on should be listed here.  When possible
-    the specific versions of the potential operating environments should be
-    given.  To make the NFR verifiable a statement could be made that the tests
-    from a given section of the VnV plan can be successfully run on all of the
-    possible operating environments.}
+  \textbf{Portability} 
 
-\item Other NFRs that might be discussed include verifiability,
-  understandability, reusability, performance, reliability and availability, security, and accessibility.  You may have to add other NFRs.
+  The core features of \progname{} shall operate on supported Android and iOS devices.
+
+  \textit{Fit Criterion: } Core acceptance tests pass on both supported operating systems.
+
+  \textit{Traces to:} G2, G3, G4, G5,
+  \scref{SC_Platform}, \scref{SC_HealthPlatform}.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Performance}:]
+  \textbf{Performance} 
+
+  The system shall display previously loaded activity and portfolio summaries within three seconds of the user's request.
+
+  \textit{Fit Criterion: } At least 95 percent of 30 timed trials complete within three seconds under a stable network connection.
+
+  \textit{Traces to:} G2,
+  \rref{FR_ActEarn}, \rref{FR_MktRealPrices},
+  \rref{FR_SocialFeed}.
+
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Reliability}:]
+  \textbf{Reliability} 
+
+  The system shall preserve currency balances and portfolio holdings when transactions are interrupted or repeated.
+
+  \textit{Fit Criterion:} In 20 interruption and retry tests, no duplicate or incomplete transactions are recorded.
+
+  \textit{Traces to:} G4,
+  \rref{FR_MktBuy}, \rref{FR_MktQueueClosed},
+  Hazard Analysis SEC-5 and SEC-6.
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Security}:]
+  \textbf{Security}
+
+  The system shall prevent unauthorized access to
+  private user information.
+
+  \textit{Fit criterion:} All tested requests without
+  valid authentication or authorization are rejected.
+
+  \textit{Traces to:} G3,
+  \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut},
+  \rref{FR_SocialChooseFriends},
+  Hazard Analysis SEC-15 and SEC-17.
+
+
+\item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accessibility}:]
+  \textbf{Accessibility}
+
+  The core features shall remain usable when the
+  device text size is increased to 200 percent of its
+  default size.
+
+  \textit{Fit criterion:} Users can read essential
+  information and complete core tasks with 200 percent
+  text scaling without clipped controls.
+
+  \textit{Traces to:} G2
+  \rref{FR_AcctCreate}, \rref{FR_MktBuy},
+  \rref{FR_LearnKnowledgeCheck},
+  \rref{FR_SocialShare}.
 
 \end{itemize}
+
+
+
+
 
 % ============================================================== 
 \section{AI and Machine Learning Requirements}
@@ -2240,26 +2877,90 @@ TODO
 TODO
 
 % ============================================================== 
+
 \section{Requirements Traceability Matrices}
-
-\plt{The Requirements Traceability Matrix (RTM) is a table that shows the
-relationship between different types of requirements. It is used to ensure that
-all requirements are traceable and that no requirements are missed. The typical
-flow is: Stakeholder Need -> Use Case -> Requirement}
-
-\plt{There is also a traceability matrix between functional and nonfunctional
-  requirements. The purpose of some FRs is to satisfy NFRs.  Therefore, it is
-  important to show the relationship between the two.}
 
 \plt{Further traceability to test cases and modules will be given in other
 documents.}
 
-\begin{longtable}{p{0.15\textwidth} p{0.15\textwidth} p{0.20\textwidth} p{0.20\textwidth}}
+\begin{longtable}{p{0.25\textwidth} p{0.20\textwidth} p{0.42\textwidth}}
 
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_EarnFromActivity} & \ucref{UC_Label1} & \rref{FR_ActEarn} \\
+
+\srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenario} \\
+\srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenarioLabel} \\
+\srref{SR_EasyStart} & \ucref{UC_ManageAccount} & \rref{FR_AcctCreate} \\
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctAgeConfirm} \\
+\srref{SR_ShareProgress} & \ucref{UC_ManageAccount} & \rref{FR_AcctUsername} \\
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctSignIn} \\
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctSignOut} \\
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctResetPassword} \\
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctEditProfile} \\
+\srref{SR_AllAbilities}, \srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctBodyOptional} \\
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctDownloadData} \\
+\srref{SR_ControlOwnData} & \ucref{UC_DeleteAccount} & \rref{FR_AcctDeleteConfirm} \\
+\srref{SR_ControlOwnData} & \ucref{UC_DeleteAccount} & \rref{FR_AcctDelete} \\
+
+\srref{SR_AllAbilities} & \ucref{UC_EarnCurrency} & \rref{FR_ActTypes} \\
+\srref{SR_EarnFromActivity} & \ucref{UC_EarnCurrency} & \rref{FR_ActEarn} \\
+\srref{SR_EarnFromActivity} & \ucref{UC_RecordActivity} & \rref{FR_ActNoData} \\
+\srref{SR_EarnFromActivity} & \ucref{UC_EarnCurrency} & \rref{FR_ActPlausible} \\
+\srref{SR_SafeMotivation} & \ucref{UC_EarnCurrency} & \rref{FR_ActDailyCap} \\
+\srref{SR_OwnGoals} & \ucref{UC_GoalsStreaks} & \rref{FR_ActGoal} \\
+\srref{SR_OwnGoals} & \ucref{UC_GoalsStreaks} & \rref{FR_ActGoalOptional} \\
+\srref{SR_OwnGoals} & \ucref{UC_GoalsStreaks} & \rref{FR_ActNoAutoGoal} \\
+\srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActStreak} \\
+\srref{SR_SafeMotivation} & \ucref{UC_GoalsStreaks} & \rref{FR_ActRestDay} \\
+\srref{SR_SafeMotivation}, \srref{SR_NoHarmfulComparison} & \ucref{UC_GoalsStreaks} & \rref{FR_ActNoPenalty} \\
+\srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActMilestone} \\
+\srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActTrends} \\
+
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktAssetCount} \\
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktRealPrices} \\
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktPriceAge} \\
+\srref{SR_NotAdvice} & \ucref{UC_BuyAsset} & \rref{FR_MktSimNotice} \\
+\srref{SR_RiskFree}, \srref{SR_LearnByDoing} & \ucref{UC_BuyAsset} & \rref{FR_MktBuy} \\
+\srref{SR_RiskFree}, \srref{SR_LearnByDoing} & \ucref{UC_BuyAsset} & \rref{FR_MktSell} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktAtomicTrade} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktNoDuplicate} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktNoStaleTrade} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktQueueClosed} \\
+\srref{SR_SeeProgress} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktHoldings} \\
+\srref{SR_SeeProgress} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktPortfolioValue} \\
+\srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktLabelReturns} \\
+\srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktNoRecommend} \\
+
+\srref{SR_LearnInContext}, \srref{SR_CanadianContext} & \ucref{UC_LearnConcepts} & \rref{FR_LearnExplainConcept} \\
+\srref{SR_LearnInContext} & \ucref{UC_LearnConcepts} & \rref{FR_LearnInPlace} \\
+\srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnValueChange} \\
+\srref{SR_LearnByDoing}, \srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnTradeEffect} \\
+\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnConcentration} \\
+\srref{SR_LearnByDoing} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnKnowledgeCheck} \\
+\srref{SR_LearnFromDecisions} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnCheckResult} \\
+\srref{SR_SeeProgress} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnProgress} \\
+\srref{SR_UpdateContent} & \ucref{UC_UpdateLearning} & \rref{FR_LearnUpdateContent} \\
+\srref{SR_UpdateContent}, \srref{SR_LearnInContext} & \ucref{UC_UpdateLearning} & \rref{FR_LearnReviewed} \\
+\srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnFeedbackBasis} \\
+
+\srref{SR_ShareProgress} & \ucref{UC_ManageFriends} & \rref{FR_SocialRequest} \\
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialAccept} \\
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialDecline} \\
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialRemove} \\
+\srref{SR_ShareProgress} & \ucref{UC_ShareProgress} & \rref{FR_SocialShare} \\
+\srref{SR_ControlSharing} & \ucref{UC_ShareProgress} & \rref{FR_SocialChooseFriends} \\
+\srref{SR_ControlSharing} & \ucref{UC_ShareProgress} & \rref{FR_SocialPreview} \\
+\srref{SR_ProtectData} & \ucref{UC_ShareProgress} & \rref{FR_SocialNoBody} \\
+\srref{SR_ShareProgress} & \ucref{UC_ManageFriends} & \rref{FR_SocialFeed} \\
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialDeleteUpdate} \\
+\srref{SR_NoHarmfulComparison} & \ucref{UC_ManageFriends} & \rref{FR_SocialNoRanking} \\
+
+
+\srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindPeriods} \\
+\srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindInPeriods} \\
+\srref{SR_ControlOwnData} & \ucref{UC_WithdrawConsent} & \rref{FR_SetWithdrawConsent} \\
+\srref{SR_ExplainPermissions}, \srref{SR_ProtectData} & \ucref{UC_ReviewPermissions} & \rref{FR_SetPermissionList} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -2271,23 +2972,196 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
+
+
+\rref{FR_AcctCreate} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctAgeConfirm} & \nfrref{NFR_Security} \\
+\rref{FR_AcctUsername} & \nfrref{NFR_Security} \\
+\rref{FR_AcctSignIn} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctSignOut} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctResetPassword} & \nfrref{NFR_Security} \\
+\rref{FR_AcctEditProfile} & \nfrref{NFR_Security} \\
+\rref{FR_AcctBodyOptional} & \nfrref{NFR_Security} \\
+\rref{FR_AcctDownloadData} & \nfrref{NFR_Security} \\
+\rref{FR_AcctDeleteConfirm} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctDelete} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+
+\rref{FR_ActTypes} & \nfrref{NFR_Accuracy} \\
 \rref{FR_ActEarn} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActNoData} & \nfrref{NFR_Usability} \\
+\rref{FR_ActPlausible} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActDailyCap} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActGoal} & \nfrref{NFR_Usability} \\
+\rref{FR_ActGoalOptional} & \nfrref{NFR_Usability} \\
+\rref{FR_ActNoAutoGoal} & \nfrref{NFR_Usability} \\
+\rref{FR_ActStreak} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActRestDay} & \nfrref{NFR_Usability} \\
+\rref{FR_ActNoPenalty} & \nfrref{NFR_Usability} \\
+\rref{FR_ActMilestone} & \nfrref{NFR_Usability} \\
+\rref{FR_ActTrends} & \nfrref{NFR_Accuracy} \\
+
+\rref{FR_MktAssetCount} & \nfrref{NFR_Usability} \\
+\rref{FR_MktRealPrices} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktPriceAge} & \nfrref{NFR_Usability} \\
+\rref{FR_MktSimNotice} & \nfrref{NFR_Usability} \\
+\rref{FR_MktBuy} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktSell} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktAtomicTrade} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktNoDuplicate} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktNoStaleTrade} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktQueueClosed} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktHoldings} & \nfrref{NFR_Usability} \\
+\rref{FR_MktPortfolioValue} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktLabelReturns} & \nfrref{NFR_Usability} \\
+\rref{FR_MktNoRecommend} & \nfrref{NFR_Usability} \\
+
+
+\rref{FR_LearnExplainConcept} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnInPlace} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnValueChange} & \nfrref{NFR_Accuracy} \\
+\rref{FR_LearnTradeEffect} & \nfrref{NFR_Accuracy} \\
+\rref{FR_LearnConcentration} & \nfrref{NFR_Accuracy} \\
+\rref{FR_LearnKnowledgeCheck} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnCheckResult} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnProgress} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnUpdateContent} & \nfrref{NFR_Maintainability} \\
+\rref{FR_LearnReviewed} & \nfrref{NFR_Maintainability} \\
+\rref{FR_LearnFeedbackBasis} & \nfrref{NFR_Accuracy} \\
+
+
+\rref{FR_SocialRequest} & \nfrref{NFR_Usability} \\
+\rref{FR_SocialAccept} & \nfrref{NFR_Security} \\
+\rref{FR_SocialDecline} & \nfrref{NFR_Security} \\
+\rref{FR_SocialRemove} & \nfrref{NFR_Security} \\
+\rref{FR_SocialShare} & \nfrref{NFR_Security} \\
+\rref{FR_SocialChooseFriends} & \nfrref{NFR_Security} \\
+\rref{FR_SocialPreview} & \nfrref{NFR_Security} \\
+\rref{FR_SocialNoBody} & \nfrref{NFR_Security} \\
+\rref{FR_SocialFeed} & \nfrref{NFR_Usability} \\
+\rref{FR_SocialDeleteUpdate} & \nfrref{NFR_Security} \\
+\rref{FR_SocialNoRanking} & \nfrref{NFR_Usability} \\
+
+
+\rref{FR_RemindPeriods} & \nfrref{NFR_Usability} \\
+\rref{FR_RemindInPeriods} & \nfrref{NFR_Usability} \\
+\rref{FR_SetWithdrawConsent} & \nfrref{NFR_Security} \\
+\rref{FR_SetPermissionList} & \nfrref{NFR_Security} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
 
 \end{longtable}
 
+
 % ============================================================== 
 
 \section{Rationale} \label{SecRationale}
 
-\plt{Provide a rationale for the decisions made in the documentation.  Rationale
-should be provided for scope decisions, functional requirements, nonfunctioanl
-requirements, data requirements, and AI requirements.  You don't need a
-rationale for everything, ust the major decisions that are not obvious.  You
-should have traceability to the entities in the document that you are
-referencing.}
+This section explains the reasoning behind the major requirements
+and decisions made for \progname{}.
+
+\subsection{Simulated Investing}
+
+\progname{} uses virtual currency instead of real money so users
+can learn about investing without the financial risk associated with investing. This allows
+beginners to experiment with different investment decisions
+without losing any real savings. The restriction on real money
+transactions also keeps the system focused on education rather
+than financial services (\scref{SC_NoRealMoney},
+\rref{FR_MktBuy}).
+
+\subsection{Activity Based Rewards}
+
+The system rewards users for everyday physical activity in order to
+encourage consistent exercise habits. Rather than requiring the user to do
+specific individual workouts, the app uses activity that is already recorded by
+the user's phone health platform. A daily earning limit is
+enforced in order to discourage excessive exercise for virtual
+rewards (\scref{SC_HealthPlatform},
+\rref{FR_ActEarn}, \rref{FR_ActDailyCap}).
+
+\subsection{Goals and Streaks}
+
+Users can set their own activity goals and track their streaks
+to stay motivated. Goals are optional because not every user
+wants to follow a specific activity target. Rest days are also
+included so users do not feel pressured to exercise every day
+to maintain their streak. Missing a goal does not reduce
+the user's currency or holdings
+(\rref{FR_ActGoal}, \rref{FR_ActGoalOptional},
+\rref{FR_ActRestDay}, \rref{FR_ActNoPenalty}).
+
+\subsection{Financial Education}
+
+Educational explanations and knowledge checks are included
+because simulated trading alone may not help beginners
+understand their investment decisions. By providing explanations
+alongside market activity, users can learn financial concepts
+while practising them. Portfolio feedback also helps users
+understand the effects of their trades
+(\rref{FR_LearnInPlace},
+\rref{FR_LearnTradeEffect},
+\rref{FR_LearnKnowledgeCheck}).
+
+\subsection{Real-World Market Data}
+
+The simulated market uses real-world prices to give users
+a more realistic investing experience. However, outdated
+prices could create unrealistic trading results. The system
+therefore prevents trades using stale prices while the market
+is open and queues trades requested while the market is
+closed (\scref{SC_MarketData},
+\rref{FR_MktRealPrices},
+\rref{FR_MktNoStaleTrade},
+\rref{FR_MktQueueClosed}).
+
+Trades must also be recorded correctly to make sure users
+do not lose virtual currency or receive incorrect holdings.
+The system prevents duplicate trades and ensures that both
+the user's balance and holdings are updated together
+(\rref{FR_MktAtomicTrade},
+\rref{FR_MktNoDuplicate}).
+
+\subsection{Privacy and Social Features}
+
+The social features are intended to motivate users without
+requiring them to share private information. Users choose
+which friends can view their updates, and personal body
+measurements are excluded from shared content. Users can
+also remove friends or delete shared updates to maintain
+control over their information
+(\rref{FR_SocialChooseFriends},
+\rref{FR_SocialNoBody},
+\rref{FR_SocialRemove},
+\rref{FR_SocialDeleteUpdate},
+\nfrref{NFR_Security}).
+
+The system also limits the health information it collects
+and does not read or store location data. This helps protect
+users from having sensitive personal information exposed.
+Health data is only accessed with consent, and users can
+withdraw that consent when they choose
+
+
+\subsection{Security and Data Protection}
+
+Since the system stores personal information, activity totals,
+and simulated investment records, protecting this data is
+important. Users must be signed in before accessing private
+information, and their data must be protected during storage
+and transmission. Sessions also expire to reduce the risk of
+unauthorized access
+\nfrref{NFR_Security}
+
+\subsection{Usability and Accessibility}
+
+\progname{} is intended for beginners, users should
+not need to have previous investing knowledge and experience or specialized fitness
+equipment. The app is designed for its main features
+easy to understand, while supporting different levels of
+physical activity and mobile device accessibility settings.
+This is reflected in the usability, portability, and
+accessibility requirements
 
 \section{Likely Changes} 
 
@@ -2454,7 +3328,31 @@ the points still reflected my original ideas and intended meaning.
 \plt{This isn't part of the SRS, but it is part of the course.}
 
 The information in this section will be used to evaluate the team members on the
-graduate attribute of Lifelong Learning.  
+graduate attribute of Lifelong Learning. 
+
+
+
+\textbf{Angad:} One of the main challenges I faced during this deliverable
+was keeping my sections consistent with the requirements written by other
+team members. I was responsible for the use cases, non functional
+requirements, traceability matrices, privacy and data retention, and
+rationale. Since these sections depended heavily on the functional
+requirements, changes made by other members meant I had to go back
+and update my work. For example, additional functional requirements
+were introduced later in the deliverable, which meant I had to
+update the use cases and both traceability matrices to make sure
+everything was properly connected and included. Another challenge I faced was making
+sure that the privacy and security requirements matched our Hazard
+Analysis, especially when some requirements got renumbered or
+had their wording changed. I resolved these issues by reviewing
+the latest versions of my teammates' work, checking the
+references between sections, and addressing feedback on my
+pull request. This helped me understand how closely connected
+the different sections of the SRS are. For our next deliverable,
+I think we should communicate requirement changes earlier and
+review each other's work throughout the process rather than
+waiting until most of our sections are finished. This would
+help reduce the amount of rework needed near the deadline.
 
 \input{../Reflection.text}
 
@@ -2485,6 +3383,29 @@ on shared identifiers, terms and the big design decisions at the start of a
 deliverable, recording each decision in the related GitHub issue as soon as it
 is made, and merging smaller pieces of work sooner, so that conflicts show up
 while they are still cheaper to fix.
+
+\textbf{Angad:} One of the main challenges I faced during this deliverable
+was keeping my sections consistent with the requirements written by other
+team members. I was responsible for the use cases, non functional
+requirements, traceability matrices, privacy and data retention, and
+rationale. Since these sections depended heavily on the functional
+requirements, changes made by other members meant I had to go back
+and update my work. For example, additional functional requirements
+were introduced later in the deliverable, which meant I had to
+update the use cases and both traceability matrices to make sure
+everything was properly connected and included. Another challenge I faced was making
+sure that the privacy and security requirements matched our Hazard
+Analysis, especially when some requirements got renumbered or
+had their wording changed. I resolved these issues by reviewing
+the latest versions of my teammates' work, checking the
+references between sections, and addressing feedback on my
+pull request. This helped me understand how closely connected
+the different sections of the SRS are. For our next deliverable,
+I think we should communicate requirement changes earlier and
+review each other's work throughout the process rather than
+waiting until most of our sections are finished. This would
+help reduce the amount of rework needed near the deadline.
+
 
 \newpage
 
