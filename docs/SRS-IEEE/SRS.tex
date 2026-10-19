@@ -1565,11 +1565,37 @@ document and in the Hazard Analysis (HA).
 \end{longtable}
 
 \subsection{Appendix D: Generative AI Disclosure}
+This section summarizes the team's reported AI use while preparing the Software Requirements Specification (SRS). It identifies the tools used, the sections affected, and how the AI-assisted material was checked.
 
-\plt{Provide full transparency on how generative AI was used in the creation of
-  this document.  This includes any text, figures, or tables that were generated
-  by AI.  If any skills were created for AI agents to review the documentation,
-  those should be disclosed here.}
+\subsubsection*{AI Tools Used:}
+
+The following AI tools and models were used while preparing this document:
+\begin{itemize}
+    \item ChatGPT (OpenAI): GPT-6.
+    \item Codex (OpenAI): GPT-6.1 Sol.
+    \item Claude (Anthropic): Claude Opus 5.5.
+\end{itemize}
+
+\subsubsection*{How and Where Used:}
+
+ChatGPT was used to improve grammar and wording, help format tables and figures in LaTeX, and identify errors, typos, and inconsistencies. This assistance covered Sections 1.1-1.5 (Introduction), Section 3 (Stakeholder Requirements), Section 4 (User Personas), Section 6.1 (Accounts and Profile), Section 6.4 (Learning and Feedback), Section 6.5 (Social Feed), and constants added to Appendix C. ChatGPT also helped fix the LaTeX cross-references in Section 12 (Likely Changes).
+
+ChatGPT also helped improve grammar and format tables, figures, and itemized lists in Section 5 (Use Cases), Section 7.3 (Privacy and Data Retention), Section 8 (Non-Functional Requirements), and Section 10 (Requirements Traceability Matrices).
+
+Codex was used to improve wording, check grammar, and help format tables in LaTeX. This assistance covered Section 1.4 (Definitions and Acronyms), Section 7.1 (Major Data Entities), and Section 7.2 (Data Dictionary).
+
+Claude was used to improve wording, check grammar, and help format tables and references in LaTeX for contributions to Sections 2 and 6. It also helped compare these sections with other parts of the document to identify gaps and improve consistency.
+
+\subsubsection*{Verification of AI-Generated Content:}
+
+Team members manually reviewed the AI-assisted changes to their sections. For wording and grammar changes, they reread the revised text to make sure it preserved their original ideas and intended meaning.
+
+For the ChatGPT-assisted work on tables and figures, the content was checked against the information provided to the tool. Team members also reviewed the formatting and checked for remaining errors and inconsistencies.
+
+For the sections where Codex and Claude were used, the authors reread the revised sections to check that the changes still reflected their original ideas and intended meaning.
+
+The team remains responsible for the accuracy, completeness, consistency, and appropriateness of the SRS, including any material prepared with AI assistance.
+
 
 \subsection{Appendix E: Reflection}
 
