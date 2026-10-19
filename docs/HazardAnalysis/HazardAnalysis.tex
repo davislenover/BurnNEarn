@@ -2,6 +2,7 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{float}
 \usepackage{hyperref}
 
 \hypersetup{
@@ -20,6 +21,13 @@
 
 \input{../Comments.text}
 \input{../Common.text}
+
+% Link to a Section 6 requirement, e.g. \reqref{SEC-3}. Defined in the
+% preamble so the FMEA table in Section 5 can use it too.
+\newcommand{\reqref}[1]{\hyperref[req:#1]{#1}}
+
+% Let lines holding long \texttt constants stretch instead of overflowing.
+\setlength{\emergencystretch}{3em}
 
 \begin{document}
 
@@ -57,10 +65,68 @@ Date2 & Name(s) & Description of changes\\
 
 \wss{You can include your definition of what a hazard is here.}
 
-\section{Scope and Purpose of Hazard Analysis}
+\section{Scope and Purpose of Hazard Analysis} \label{SecScopePurpose}
 
-\wss{You should say what \textbf{loss} could be incurred because of the
-hazards.}
+% Instructor prompt (hidden): You should say what loss could be incurred
+% because of the hazards.
+
+\progname{} is designed to change how its users behave: to be more active, to
+keep up a routine, and to make investing decisions. Features that change
+behaviour can also cause harm, even when they work as intended. For example,
+one interview participant described a step streak that now makes them go out
+walking later than they should (P01). The purpose of this
+hazard analysis is to identify how \progname{} could cause harm and to define
+requirements that control it. Hazards are identified using Failure Mode and
+Effect Analysis (FMEA) in Section~5, and the resulting safety and security
+requirements are listed in Section~\ref{SecSafetyReqs} and added to the SRS.
+The aim is to reduce each risk as low as reasonably practicable (ALARP).
+
+In-app currency has no real-world value, so \progname{} cannot cause a direct
+financial loss. However, given it is expected to simulate real-world trading it can influence a user's financial choices outside the app. Table~\ref{TblLosses} lists the losses it can cause. Each requirement in
+Section~\ref{SecSafetyReqs} names the losses it controls.
+
+\begin{table}[H]
+\centering
+\caption{Losses that \progname{} could cause}
+\label{TblLosses}
+\begin{tabularx}{\textwidth}{lp{3.2cm}X}
+\toprule
+\textbf{ID} & \textbf{Loss} & \textbf{Description}\\
+\midrule
+L1 & Physical harm & Injury or unsafe exercise, such as exercising while sick
+or injured or late at night, to earn currency or keep a streak.\\
+\addlinespace
+L2 & Psychological harm & Guilt, anxiety or harm to self-image from missed
+goals, broken streaks or comparison with friends.\\
+\addlinespace
+L3 & Privacy loss & Health, location, portfolio or social data seen by people
+the user did not choose, or by third parties.\\
+\addlinespace
+L4 & Security loss & Someone else gaining access to a user's account, or
+currency earned from fabricated activity.\\
+\addlinespace
+L5 & Data loss and integrity & Lost, duplicated or incorrect activity,
+currency, holdings or trade records.\\
+\addlinespace
+L6 & Financial-understanding harm & A user learning the wrong lessons about
+investing, or treating simulated results or in-app content as advice for real
+financial decisions.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The analysis covers the \progname{} mobile app on Android and iOS, its server
+and database, and its use of the phone's health platform and the market data
+provider. Hazards are considered both when a part fails and when a feature
+behaves as intended. The following are out of scope:
+\begin{itemize}
+  \item The internal workings of the health platforms and the market data
+  provider. How their failures appear in \progname{}, such as missing activity
+  data or delayed prices, is in scope.
+  \item Injuries that are part of a sport or activity itself.
+  \item Stretch goals (Problem Statement Section~3). They will be analysed if
+  they are built.
+\end{itemize}
 
 \section{System Boundaries and Components}
 
@@ -88,10 +154,612 @@ requirements.}
 entered in the table, including strategies involving providing additional
 documentation, and/or test cases.}
 
-\section{Safety and Security Requirements}
+\section{Safety and Security Requirements} \label{SecSafetyReqs}
 
-\wss{Newly discovered requirements.  These should also be added to the SRS.  (A
-rationale design process how and why to fake it.)}
+% Instructor prompt (hidden): Newly discovered requirements. These should also
+% be added to the SRS. (A rational design process: how and why to fake it.)
+
+% =============================================================================
+% HOW TO FILL IN THIS SECTION (delete this block before submitting)
+%
+% * One \hazreq entry per requirement. Arguments, in order:
+%     {ID}{short title}{requirement}{fit criterion}{rationale}
+%     {associated hazards}{where it appears in the SRS}{roadmap}
+% * IDs: SAF-n for physical, psychological and financial-understanding harm;
+%   SEC-n for privacy and security. Do not use "SR": the IEEE SRS already uses
+%   SR for stakeholder requirements. Number each prefix in order, no gaps.
+% * Requirement: "The system shall ...". Say WHAT, not how (no libraries,
+%   algorithms or encryption schemes), but be specific enough to act on. The
+%   HA checklist rejects vague wording such as "Better secure user data".
+% * Fit criterion: how a tester decides pass or fail. Numbers go in SRS
+%   Appendix C as SMALL_CAPS constants (write \texttt{MAX\_DAILY\_CURRENCY}),
+%   so the value is defined in one place.
+% * Rationale: why it is needed and the evidence: the FMEA row, interviews
+%   (P01/P02 only, paraphrased, nothing identifying), or a PS/DP section.
+% * Associated hazards: FMEA row ID(s) from Section 5 and loss ID(s) L1-L6
+%   from Section 2. Use \todo{} until those IDs exist.
+% * In SRS: plain text such as "SRS Section~6.5, FR\_SocialNoRanking" (the
+%   HA has no xr package, so no \ref). Name the FR that restates the
+%   requirement with "(HA ID)" and the same wording. If none does yet, keep a
+%   \todo saying where it will be restated, and name the FRs that implement
+%   part of it (their Traces to end with "Hazard Analysis ID").
+% * Roadmap: "Capstone" or "Future" (feeds Section 7, Roadmap).
+% * Refer to another requirement with \reqref{SAF-1}.
+% * \todo{...} prints in red. Every one must be gone before submission.
+% =============================================================================
+
+% Entry format, defined here so it stays local to this section.
+\newcommand{\hazreq}[8]{%
+  \item[#1 (#2).]\phantomsection\label{req:#1} #3
+  \begin{itemize}
+    \item \textbf{Fit criterion:} #4
+    \item \textbf{Rationale:} #5
+    \item \textbf{Associated hazards:} #6
+    \item \textbf{In SRS:} #7
+    \item \textbf{Roadmap:} #8
+  \end{itemize}}
+
+The requirements in this section control the hazards identified in the Failure
+Mode and Effect Analysis (Section~5).
+Each requirement states what \progname{} shall do, how a tester decides whether
+it is met (its fit criterion), why it is needed, which hazards and losses it
+controls, and where it appears in the Software Requirements Specification
+(SRS). Every requirement except SAF-5 appears in the SRS with the same
+identifier and wording. SAF-5 applies only if goal suggestions are added. Values written as \texttt{SMALL\_CAPS} constants are defined in SRS
+Appendix~C. Requirements prefixed SAF address physical, psychological and
+financial-understanding harm. Requirements prefixed SEC address privacy,
+security and data integrity. Losses L1--L6 are defined in Table~\ref{TblLosses}.
+
+\subsection{Physical and Psychological Well-being}
+
+\begin{description}
+
+\hazreq{SAF-1}{Rest days protect streaks}
+{The system shall let the user mark up to \texttt{REST\_DAYS\_PER\_PERIOD}
+days in each \texttt{STREAK\_PERIOD} as rest days, and a rest day shall not end
+the user's activity streak.}
+{A test user with a streak who marks a day as a rest day and records no
+activity that day does not have the streak reset to zero at the start of the
+following day. A request to mark more than \texttt{REST\_DAYS\_PER\_PERIOD}
+rest days in one \texttt{STREAK\_PERIOD} is refused.}
+{Streaks reward consistency, which can lead users to exercise while sick,
+injured or late at night to keep a streak alive. In user interviews, one
+participant described a step streak that makes them go out walking when they
+otherwise would not, including late in the evening (P01), and another admired
+pushing through exercise regardless of pain (P02).}
+{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{SRS Section~6.2, FR\_ActRestDay.}
+{Capstone.}
+
+\hazreq{SAF-2}{No penalty for a lapse}
+{The system shall not reduce a user's virtual currency balance or simulated
+holdings when they miss an activity goal or their streak ends, and shall not
+show a missed goal or an ended streak to other users.}
+{For a test user who misses their goal on day \textit{d}, the currency balance
+and simulated holdings at the start of day \textit{d+1} equal those at the end
+of day \textit{d}. No friend's social feed shows the missed goal or the ended
+streak.}
+{The only consequence of missing a goal is the end of the streak, unless the
+day is a rest day (\reqref{SAF-1}). Activity recorded on that day still earns
+currency, as it would with no goal set (\reqref{SAF-3}). Interviews show that
+keeping a streak going is already a strong motivator (P01). Comparison becomes
+harmful mainly when a user falls far behind (P02). Taking away earned currency
+or holdings would also add pressure to exercise when unwell, and would mix
+fitness penalties into the investment results the user is trying to learn
+from.}
+{FMEA H9, L1 (physical harm), L2 (psychological harm), L6 (financial-understanding harm).}
+{SRS Section~6.2, FR\_ActNoPenalty.}
+{Capstone.}
+
+\hazreq{SAF-3}{Goals are optional}
+{The system shall not require the user to set an activity goal in order to earn
+currency for recorded activity.}
+{A test user with no activity goal set who records activity receives currency
+for it.}
+{Some users track their activity informally and set no goals (P02). Requiring a
+goal would push them into targets they did not choose, or shut them out of the
+reward that is central to \progname{}.}
+{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{SRS Section~6.2, FR\_ActGoalOptional.}
+{Capstone.}
+
+\hazreq{SAF-4}{No automatic goal changes}
+{The system shall not change a user's activity goal without the user's
+confirmation.}
+{A test user who exceeds their goal on \texttt{GOAL\_REVIEW\_PERIOD}
+consecutive days still has the same goal unless they confirm a change.}
+{Users fit their goals around their available time and energy. One participant
+deliberately keeps their step goal fixed, even though they regularly exceed it,
+because a higher goal takes too much time (P01). Raising goals automatically
+ignores these limits and leads to overexertion or to goals that are repeatedly
+missed. Users can still change their own goal at any time (SRS Section~6.2,
+FR\_ActGoal). A change applies from the next day, so lowering a goal cannot
+keep the current day's streak alive.}
+{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{SRS Section~6.2, FR\_ActNoAutoGoal.}
+{Capstone.}
+
+\hazreq{SAF-5}{Bounded goal suggestions}
+{The system shall not suggest increasing a user's activity goal by more than
+\texttt{MAX\_GOAL\_INCREASE} in any one-week period.}
+{Over any 7-day period, every goal the system suggests to a test user is at
+most the user's goal at the start of that period multiplied by
+(1 + \texttt{MAX\_GOAL\_INCREASE}).}
+{Large jumps in a goal are not wanted. When raising a challenge, one participant
+does so only until it is hard but still winnable, and keeps their step goal
+fixed because a higher target takes too much time (P01). The system therefore
+limits suggested increases to \texttt{MAX\_GOAL\_INCREASE} per week.}
+{FMEA H9, L1 (physical harm).}
+{None. \progname{} does not suggest goal changes in the capstone.}
+{Future, if goal suggestions are added.}
+
+\hazreq{SAF-6}{Reminders only in chosen periods}
+{The system shall send reminders of the types in Table~\ref{TblReminderTypes}
+only during the time periods the user has chosen to receive them.}
+{For a test user who has chosen their reminder periods, no reminder of any type
+in Table~\ref{TblReminderTypes} is delivered outside those periods. For a test
+user who has not chosen any periods, reminders are delivered only during
+\texttt{DEFAULT\_REMINDER\_PERIOD}.}
+{A reminder is only useful when the user can act on it. During times such as
+working hours, a reminder to be active or to check a portfolio cannot be acted
+on and only interrupts the user. Late reminders also add pressure to exercise
+late at night: one participant described their streak making them go out
+walking at 9 p.m.\ when they otherwise would not (P01). Letting users choose
+when they are reminded keeps reminders useful and avoids late-night pressure.}
+{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{SRS Section~6.6, FR\_RemindInPeriods. Implemented in part by SRS
+Section~6.6, FR\_RemindPeriods.}
+{Capstone.}
+
+\end{description}
+
+\begin{table}[H]
+\centering
+\caption{Reminder types}
+\label{TblReminderTypes}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Type} & \textbf{Example} & \textbf{Related feature}\\
+\midrule
+Activity & Progress toward today's goal, or a streak about to end & Activity goals and streaks (SRS Section~6.2)\\
+Milestone & A goal reached, or a streak or currency milestone & Milestones and activity trends (SRS Section~6.2)\\
+Portfolio & A notable change in simulated portfolio value & Portfolio value (SRS Section~6.3)\\
+Learning & A new concept explanation or knowledge check is available & Learning and feedback (SRS Section~6.4)\\
+Social & A friend shared an update or sent a friend request & Social feed (SRS Section~6.5)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+% Keep the types and examples in this table the same as in SRS Section 6.6.
+
+\subsection{Activity Data Integrity}
+
+\begin{description}
+
+\hazreq{SAF-7}{Daily earning cap}
+{The system shall award a user no more than \texttt{MAX\_DAILY\_CURRENCY}
+virtual currency for recorded activity in any calendar day.}
+{For a test user whose recorded activity in one calendar day is plausible and
+would otherwise earn more than \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by exactly
+\texttt{MAX\_DAILY\_CURRENCY} for that day. Each activity counts toward the
+calendar day in the user's time zone at the time of the activity.}
+{Without a cap, more activity always earns more currency, which rewards
+exercising past a healthy amount. One participant admired pushing through
+exercise regardless of pain (P02). A cap also limits what non-exercise motion
+can earn: phones count steps while riding a bus, and one tracking app was left
+running for hours after a ride had ended (P01). The cap applies to currency
+rather than to any one activity, so it works the same way for every supported
+activity type (Problem Statement Goal 5). The cap limits how much a day can
+earn, but it does not judge whether an activity record is genuine.
+\reqref{SEC-1} covers that.}
+{FMEA H2, H6, H8, H9, L1 (physical harm), L4 (security loss), L5 (data loss and
+integrity).}
+{SRS Section~6.2, FR\_ActDailyCap.}
+{Capstone.}
+
+\hazreq{SEC-1}{Implausible activity earns nothing}
+{The system shall not count an activity record that exceeds the plausibility
+limits for its activity type toward the user's currency, activity trends,
+streak or milestones, and shall show the user that the record was not counted.}
+{A test record of more than \texttt{MAX\_DAILY\_STEPS} steps in one day, or a
+workout longer than \texttt{MAX\_WORKOUT\_DURATION}, earns no currency, does
+not appear in the user's activity trends, streak or milestones, and is shown to
+the user as not counted.}
+{\reqref{SAF-7} limits how much currency a day can earn, but it does not judge
+whether a record is genuine. Under the cap alone, a fabricated record still
+earns the full daily amount. An accidental one, such as a tracking app left
+running for hours after a ride had ended (P01), also distorts the user's
+activity trends, which the cap does not touch. This requirement rejects records
+that could not come from real activity.
+Small amounts of everyday tracking noise, such as steps counted while riding a
+bus (P01), stay within the limits and are accepted. The limits target records
+that are clearly impossible.}
+{FMEA H2, H6, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~6.2, FR\_ActPlausible.}
+{Capstone.}
+
+\end{description}
+
+\subsection{Financial Understanding}
+
+\begin{description}
+
+\hazreq{SAF-8}{Simulation notice before the first trade}
+{Before the user's first trade, the system shall display a notice stating that
+the market is simulated, that virtual currency and holdings have no real-world
+value, and that nothing in \progname{} is financial advice. The system shall
+not complete the first trade until the user acknowledges the notice.}
+{A new test user who attempts their first trade is shown the notice and cannot
+complete the trade until they acknowledge it. The notice contains all three
+statements: the market is simulated, currency and holdings have no real-world
+value, and nothing in \progname{} is financial advice.}
+{\progname{} teaches investing by letting users practise, and people learn how
+to act from what they practise: one participant said that formal study did not
+show them how to act until they had hands-on experience (P02). The lessons a
+simulation teaches can carry over to real decisions, and a user could
+mistake simulated results or in-app content for advice on what to do with real
+money. Users who learn investing on their own also draw on informal sources of
+mixed quality: one participant learned from online videos and forums, warned
+that it is easy to end up following the wrong kinds of investing content, and
+looked for answers tailored to their own situation (P01).}
+{FMEA H22, L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktSimNotice.}
+{Capstone.}
+
+\hazreq{SAF-9}{No personalized recommendations}
+{The system shall not recommend that a user buy or sell a specific asset.}
+{No screen or notification shown to a test user tells them to buy or sell a
+named asset, or presents assets as a ``recommended pick''.}
+{Recommending specific assets would be personalized financial advice, which
+\progname{} is not licensed to give, and users may act on it with real money
+(P01).}
+{FMEA H22, L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktNoRecommend. Implemented in part by SRS
+Section~6.4, FR\_LearnConcentration.}
+{Capstone.}
+
+\hazreq{SAF-10}{Label simulated returns}
+{The system shall label every displayed return and portfolio value as
+simulated.}
+{Every screen that shows a return or portfolio value shows a ``Simulated''
+label next to it.}
+{Simulated returns leave out real costs such as fees and taxes, so users could
+mistake them for results they would get with real money.}
+{FMEA H22, L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktLabelReturns.}
+{Capstone.}
+
+\end{description}
+
+\subsection{Market Price and Trade Integrity}
+
+\begin{description}
+
+\hazreq{SEC-2}{Price freshness}
+{The system shall display each asset price with the time it was obtained, and
+shall mark the price as delayed when it is older than
+\texttt{QUOTE\_STALENESS\_LIMIT}.}
+{A test price obtained more than \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown
+with its time and a ``Delayed'' marker. A price obtained within the limit is
+shown with its time and no marker.}
+{Market data request limits mean prices can lag the real market. A lagging
+price shown as current misrepresents how the market moved and how a trade
+performed. The limit matches Problem Statement Goal 4 (prices within 15 minutes
+of the real market).}
+{FMEA H12, H45, L5 (data loss and integrity), L6 (financial-understanding
+harm).}
+{SRS Section~6.3, FR\_MktPriceAge.}
+{Capstone.}
+
+\hazreq{SEC-3}{No trades on stale prices}
+{The system shall not execute a trade while the asset's market is open and the
+asset's price is older than \texttt{QUOTE\_STALENESS\_LIMIT}.}
+{While a test asset's market is open and its price is older than
+\texttt{QUOTE\_STALENESS\_LIMIT}, a trade request for it is refused and the
+user is told the price is out of date. With a price within the limit, the trade
+proceeds.}
+{A trade at an old price misrepresents how the market moved and teaches the
+wrong lesson. The limit is the same one \reqref{SEC-2} uses to mark a price as
+delayed.}
+{FMEA H12, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktNoStaleTrade.}
+{Capstone.}
+
+\hazreq{SEC-4}{Queue trades while the market is closed}
+{The system shall queue a trade requested while the asset's market is closed,
+and execute it at the first price obtained after the market next opens.}
+{A test trade requested while the market is closed is shown to the user as
+queued, with a notice that it will run at the opening price, and is executed at
+the first price obtained after the market opens.}
+{Many users have time to practise in the evenings and on weekends, when markets
+are closed. Running those trades at the last closing price would use an old
+price, and refusing them without explanation would confuse the user.}
+{FMEA H18, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktQueueClosed.}
+{Capstone.}
+
+\hazreq{SEC-5}{Complete or reject trades}
+{The system shall record each trade completely, updating both the currency
+balance and the holdings, or not at all. It shall reject a purchase that costs
+more than the user's currency balance and a sale of more shares than the user
+holds.}
+{A test trade interrupted before it completes leaves the balance and holdings
+unchanged, and a completed trade changes both. A purchase costing more than the
+balance, or a sale of more shares than are held, is rejected and changes
+neither.}
+{A partly recorded trade could take currency without adding holdings, or the
+reverse. Allowing a user to spend more than their balance or sell more than
+they hold would create currency or holdings that were never earned.}
+{FMEA H19, H20, H44, L5 (data loss and integrity).}
+{SRS Section~6.3, FR\_MktAtomicTrade.}
+{Capstone.}
+
+\hazreq{SEC-6}{No duplicate trades}
+{The system shall record a trade only once when the same trade request is
+submitted more than once.}
+{When a test user submits a trade and the same request is sent again, for
+example by retrying after a dropped connection, exactly one trade is recorded.}
+{Mobile connections drop, and an app or user may resend a trade that already
+went through. Recording it twice would change the balance and holdings in a way
+the user did not intend.}
+{FMEA H16, H44, L5 (data loss and integrity).}
+{SRS Section~6.3, FR\_MktNoDuplicate.}
+{Capstone.}
+
+\end{description}
+
+\subsection{Privacy and Permissions}
+
+\begin{description}
+
+\hazreq{SEC-7}{Least-privilege health access}
+{The system shall request read access only to the health data types listed as
+activity inputs in the SRS data dictionary, and shall not request permission
+to write to the health platform.}
+{Every health permission the system requests is a read permission, and its data
+type appears in the SRS data dictionary as an activity input.}
+{Each extra permission is more personal data that could be exposed. One
+participant said they look for apps that are frugal with the permissions they
+ask for (P01).}
+{FMEA H43, L3 (privacy loss).}
+{SRS Section~7.3, SEC-7.}
+{Capstone.}
+
+\hazreq{SEC-8}{State the purpose of each permission}
+{Before requesting each permission, the system shall tell the user which
+feature uses that data.}
+{For every permission request, a
+test user is shown the feature that uses that data before the request appears.}
+{Both participants said they are more willing to grant a permission when it is
+clear why the app is asking (P01, P02). A user who denies a health permission
+earns nothing for that activity and may believe the app is broken.}
+{FMEA H1, L3 (privacy loss).}
+{SRS Section~7.3, SEC-8. Implemented in part by SRS
+Section~6.6, FR\_SetPermissionList.}
+{Capstone.}
+
+\hazreq{SEC-9}{Consent and withdrawal}
+{The system shall obtain the user's consent before it first reads their health
+data, and shall stop reading health data when the user withdraws consent in the
+app.}
+{A new test user's health data is not read until they consent. After they
+withdraw consent in the app, no further health data is read.}
+{Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
+requires consent to collect personal information and lets people withdraw it.
+Health data is among the most sensitive data \progname{} handles.}
+{L3 (privacy loss).}
+{SRS Section~7.3, SEC-9. Implemented in part by SRS
+Section~6.6, FR\_SetWithdrawConsent.}
+{Capstone.}
+
+\hazreq{SEC-10}{Data minimization}
+{The system shall send activity data from the user's mobile device to its
+server only as daily totals for each activity type, not as individual activity
+records.}
+{The activity data a test phone sends to the server contains only daily totals
+for each activity type and no individual activity records.}
+{Data that never leaves the phone cannot be exposed by a breach of the server. One participant prefers
+tools that keep their data on their own device rather than in the cloud (P01).}
+{FMEA H43, L3 (privacy loss).}
+{SRS Section~7.3, SEC-10.}
+{Capstone.}
+
+\hazreq{SEC-11}{No data to third parties}
+{The system shall not send users' personal or health data to any third party,
+other than a user's email address and password reset link to the email service
+that delivers it. Requests to the market data provider shall identify assets
+only by symbol.}
+{Every outgoing request from a test mobile device and from the server goes to
+\progname{}'s own server, the market data provider or the email service.
+Requests to the market data provider contain no personal or health data and
+identify assets only by symbol. Requests to the email service contain no
+personal or health data other than the user's email address and their password
+reset link.}
+{Participants judge apps by what happens to their data: one chose apps where
+their data is not sold (P01), and another wants their data kept secure by a
+reputable company (P02). Password reset by email (SRS Section~6.1,
+FR\_AcctResetPassword) needs an email service, so it receives only the address
+and the reset link.}
+{L3 (privacy loss).}
+{SRS Section~7.3, SEC-11.}
+{Capstone.}
+
+\hazreq{SEC-12}{No location data}
+{The system shall not read or store location or route data.}
+{The permissions a test build requests include no location permission, and no
+location or route data is stored on the phone or the server.}
+{None of \progname{}'s features need location. Location or route data, such as
+the route maps some workouts store in the health platform, could reveal where a
+user lives or regularly goes.}
+{FMEA H33, L1 (physical harm), L3 (privacy loss).}
+{SRS Section~7.3, SEC-12.}
+{Capstone.}
+
+\end{description}
+
+\subsection{Social Feed}
+
+\begin{description}
+
+\hazreq{SEC-13}{Private by default}
+{The system shall show a user's statistics only to that user until they choose
+to share them, and shall show a shared update only to the friends the user
+selected for it. When the user deletes a shared update or removes a friend, the
+system shall stop showing the affected shared updates to that friend.}
+{A test user's new statistic is visible to no other user. Once shared with
+selected friends, it is visible to exactly those friends. After the user
+deletes the shared update or removes one of those friends, the shared update
+no longer appears in that friend's social feed.}
+{Problem Statement Goal 3 measures success by users controlling who sees each
+shared statistic. Friends are expected to see only what a user chooses to
+share (Problem Statement 1.3).}
+{FMEA H30, L3 (privacy loss).}
+{SRS Section~7.3, SEC-13. Implemented in part by SRS
+Section~6.5, FR\_SocialChooseFriends, FR\_SocialDeleteUpdate and
+FR\_SocialRemove.}
+{Capstone.}
+
+\hazreq{SEC-14}{No location detail in shared updates}
+{The system shall not include location, route or the exact time an activity
+took place in shared updates.}
+{No shared update shown to a test user's friends contains a location, a route,
+or the exact time an activity took place.}
+{A route or location, especially combined with when an activity happened, can
+reveal where a user lives, works or regularly goes. One participant pointed out
+that removing names does not make a person anonymous, because context can
+reveal who they are (P01).}
+{FMEA H31, H33, L1 (physical harm), L3 (privacy loss).}
+{SRS Section~7.3, SEC-14.}
+{Capstone.}
+
+\hazreq{SAF-11}{No rankings between users}
+{The system shall not rank users against each other by activity, currency or
+portfolio performance.}
+{No screen shown to a test user orders users by activity, currency or
+portfolio performance, or shows a user's position relative to others.}
+{Seeing friends' progress can motivate, but comparison becomes harmful when a
+user is far behind (P02). A ranking makes that gap explicit and places someone
+last. Leaderboards are a stretch goal (Problem Statement Section~3). If they are
+built, they should be opt-in.}
+{FMEA H9, L2 (psychological harm).}
+{SRS Section~6.5, FR\_SocialNoRanking.}
+{Capstone. Opt-in leaderboards: Future, with the stretch goal.}
+
+\end{description}
+
+\subsection{Account Security}
+
+\begin{description}
+
+\hazreq{SEC-15}{Authenticated access only}
+{The system shall require an authenticated session for every request that reads
+or changes a user's data, and shall return another user's data, other than
+their username, only when that user has shared it with the requester.}
+{A test request without a valid session is rejected. A request for another
+user's data, other than their username, that was not shared with the requester
+is rejected, and a request for data that was shared succeeds.}
+{Health, portfolio and social data must reach only the account it
+belongs to or the friends it was shared with. \reqref{SEC-13} sets what a user
+shares. Usernames are the exception because friend requests are sent by
+username (SRS Section~6.5, FR\_SocialRequest).}
+{FMEA H39, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-15.}
+{Capstone.}
+
+\hazreq{SEC-16}{Protect data in transit and at rest}
+{The system shall encrypt user data in transit between the phone and the
+server, and when stored on the server, including in backups.}
+{Inspecting the network traffic between a test phone and the server, the data
+stored on the server, and its backups shows no readable user data.}
+{Data in transit can be intercepted on public networks, and stored data can be
+exposed if the server or a backup is compromised. Participants want their data
+kept secure (P02).}
+{FMEA H40, H43, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-16.}
+{Capstone.}
+
+\hazreq{SEC-17}{Session expiry}
+{The system shall end a session when the user signs out of it or when it has
+not been used for \texttt{SESSION\_TIMEOUT}, after which the user must sign in
+again.}
+{A test session is rejected after the user signs out of it, and after it is
+left unused for longer than \texttt{SESSION\_TIMEOUT}. In both cases the user
+must sign in again to continue.}
+{A lost or shared phone, or a stolen session, gives access to a user's health
+and portfolio data for as long as the session stays valid. Ending
+unused sessions limits that window, and ending a session at sign-out stops a
+copied session from being reused (SRS Section~6.1, FR\_AcctSignOut).}
+{FMEA H36, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-17.}
+{Capstone.}
+
+\hazreq{SEC-18}{In-app account deletion}
+{The system shall let the user delete their account from within the app, and
+shall delete their account details, profile, activity totals, currency
+balance, holdings, trades, learning progress, shared updates, friend list and
+friend requests from the server and its backups within
+\texttt{DATA\_DELETION\_PERIOD} of the request.}
+{After a test user deletes their account in the app, they can no longer sign
+in. Within \texttt{DATA\_DELETION\_PERIOD}, neither the server nor its backups
+hold any of their account details, profile, activity totals, currency balance,
+holdings, trades, learning progress, shared updates, friend list or friend
+requests, and none of their shared updates appear in friends' social feeds.}
+{PIPEDA lets people withdraw consent and limits keeping personal information
+longer than it is needed. The Apple App Store also requires apps that let users
+create an account to offer account deletion within the app (App Store Review
+Guideline 5.1.1(v)).}
+{FMEA H38, L3 (privacy loss).}
+{SRS Section~7.3, SEC-18. Implemented in part by SRS
+Section~6.1, FR\_AcctDelete.}
+{Capstone.}
+
+\end{description}
+
+\subsection{Traceability Summary}
+
+Table~\ref{TblSafetyTrace} summarises each requirement, the hazards it
+controls, and where it appears in the SRS.
+
+\begin{table}[H]
+\centering
+\caption{Safety and security requirements traceability}
+\label{TblSafetyTrace}
+\small
+\begin{tabularx}{\textwidth}{lll>{\raggedright\arraybackslash}Xl}
+\toprule
+\textbf{ID} & \textbf{FMEA rows} & \textbf{Losses} & \textbf{SRS} & \textbf{Roadmap}\\
+\midrule
+\reqref{SAF-1} & H9 & L1, L2 & FR\_ActRestDay & Capstone\\
+\reqref{SAF-2} & H9 & L1, L2, L6 & FR\_ActNoPenalty & Capstone\\
+\reqref{SAF-3} & H9 & L1, L2 & FR\_ActGoalOptional & Capstone\\
+\reqref{SAF-4} & H9 & L1, L2 & FR\_ActNoAutoGoal & Capstone\\
+\reqref{SAF-5} & H9 & L1 & -- & Future\\
+\reqref{SAF-6} & H9 & L1, L2 & FR\_RemindInPeriods & Capstone\\
+\reqref{SAF-7} & H2, H6, H8, H9 & L1, L4, L5 & FR\_ActDailyCap & Capstone\\
+\reqref{SAF-8} & H22 & L6 & FR\_MktSimNotice & Capstone\\
+\reqref{SAF-9} & H22 & L6 & FR\_MktNoRecommend & Capstone\\
+\reqref{SAF-10} & H22 & L6 & FR\_MktLabelReturns & Capstone\\
+\reqref{SAF-11} & H9 & L2 & FR\_SocialNoRanking & Capstone\\
+\reqref{SEC-1} & H2, H6 & L4, L5 & FR\_ActPlausible & Capstone\\
+\reqref{SEC-2} & H12, H45 & L5, L6 & FR\_MktPriceAge & Capstone\\
+\reqref{SEC-3} & H12 & L5, L6 & FR\_MktNoStaleTrade & Capstone\\
+\reqref{SEC-4} & H18 & L5, L6 & FR\_MktQueueClosed & Capstone\\
+\reqref{SEC-5} & H19, H20, H44 & L5 & FR\_MktAtomicTrade & Capstone\\
+\reqref{SEC-6} & H16, H44 & L5 & FR\_MktNoDuplicate & Capstone\\
+\reqref{SEC-7} & H43 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-8} & H1 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-9} & -- & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-10} & H43 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-11} & -- & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-12} & H33 & L1, L3 & Section 7.3 & Capstone\\
+\reqref{SEC-13} & H30 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-14} & H31, H33 & L1, L3 & Section 7.3 & Capstone\\
+\reqref{SEC-15} & H39 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-16} & H40, H43 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-17} & H36 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-18} & H38 & L3 & Section 7.3 & Capstone\\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \section{Roadmap}
 
