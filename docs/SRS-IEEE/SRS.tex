@@ -96,6 +96,9 @@
   \textit{Fit criterion:} #3\\
   \textit{Traces to:} #4}
 
+% Let lines holding long \texttt constants stretch instead of overflowing.
+\setlength{\emergencystretch}{3em}
+
 \begin{document}
 
 \title{Software Requirements Specification for \progname: subtitle describing software} 
@@ -365,8 +368,8 @@ phone, add the push notification service as an external entity (HA SEC-11).}
 ]
   \node[system] (sys) {\progname{}\\[2pt]\normalfont\small (mobile app and server)};
 
-  \node[entity, left=3.7cm of sys] (user) {User};
-  \node[entity, right=3.2cm of sys] (market) {Market data\\provider};
+  \node[entity, left=4.3cm of sys] (user) {User};
+  \node[entity, right=2.6cm of sys] (market) {Market data\\provider};
   \node[entity, above=1.9cm of sys] (health)
     {Phone health platform\\(HealthKit or\\Health Connect)};
   \node[entity, below=1.8cm of sys] (friends) {Friends\\(other users)};
@@ -375,9 +378,9 @@ phone, add the push notification service as an external entity (HA SEC-11).}
 
   % User
   \draw[flow] ([yshift=4mm]user.east) -- ([yshift=4mm]sys.west)
-    node[lbl, midway, above] {profile, trades, answers,\\friend requests, sharing and\\reminder choices, consent};
+    node[lbl, midway, above] {account details, trades,\\answers, friend requests,\\sharing and reminder\\choices, consent};
   \draw[flow] ([yshift=-4mm]sys.west) -- ([yshift=-4mm]user.east)
-    node[lbl, midway, below] {currency, simulated\\portfolio, workout trends,\\feedback, reminders};
+    node[lbl, midway, below] {currency, simulated\\portfolio, activity trends,\\explanations, feedback,\\reminders, data copy};
 
   % Market data provider
   \draw[flow] ([yshift=4mm]sys.east) -- ([yshift=4mm]market.west)
@@ -424,6 +427,7 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \item Make their own trade decisions. \progname{} gives no financial advice.
 \item Choose what to share, with which friends, and when to receive reminders.
 \item Keep an Internet connection for trading and the social feed.
+\item Keep their password private.
 \end{itemize}
 \item \progname{} Responsibilities:
 \begin{itemize}
@@ -431,8 +435,9 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \item Award currency only for activity within plausibility limits and up to a
   daily cap (Hazard Analysis SAF-7, SEC-1).
 \item Treat a day with no activity data as a day with zero activity.
-\item Reject trades the user cannot cover, and record each trade once and
-  completely (Hazard Analysis SEC-5, SEC-6).
+\item Reject purchases that cost more than the user's balance and sales of
+  more shares than the user holds (Hazard Analysis SEC-5).
+\item Record each trade once and completely (Hazard Analysis SEC-5, SEC-6).
 \item Show each asset price with the time it was obtained, and mark delayed
   prices (Hazard Analysis SEC-2).
 \item Refuse trades on out-of-date prices while the market is open, and queue
@@ -508,8 +513,8 @@ starting their first job (Problem Statement and Goals, Section~1). The user of
 \end{itemize}
 
 As per interviews conducted, participants mainly track their activity with a phone. Both
-already knew some investing concepts, self-study and
-through formal study, most participants also learned most by doing.
+already knew some investing concepts, through self-study or formal study, and
+both learned most by doing.
 No one interviewed was a self-reported complete beginner, so the beginner characteristics above come
 from the Problem Statement, and usability testing should include beginners.
 
@@ -536,8 +541,9 @@ versions on the devices available to the team and the supervisor for testing
 
 \item[SC\refstepcounter{scnum}\thescnum \label{SC_HealthPlatform}:]
 \progname{} shall obtain recorded activity only through the phone's health
-platform: Apple HealthKit on iOS and Health Connect on Android. No core feature
-shall require a wearable device. Note this includes the use of programming libraries which gather health data (i.e., they must use the OS provider solution under the hood)
+platform: Apple HealthKit on iOS and Health Connect on Android. This rule also
+covers any library \progname{} uses to read health data. No core feature shall
+require a wearable device.
 \textit{Rationale:} Users carry their phone during everyday activity
 (Section~\ref{SecUserCharacteristics}), and the health platforms already
 collect data from the phone and from any wearable the user owns (note, wearable
@@ -563,8 +569,8 @@ limits, cost and permitted use are set by the provider.
 \item[SC\refstepcounter{scnum}\thescnum \label{SC_NoRealMoney}:] Virtual
 currency and simulated holdings shall have no monetary value. They cannot be
 bought with, redeemed for or exchanged for money, and \progname{} shall not
-connect to any bank or brokerage account or give personalised investment
-advice. \progname{} will always outline associated risks when informing a user about any kind of financial concept.
+connect to any bank or brokerage account or give personalized investment
+advice. \progname{} shall state the associated risks whenever it explains a financial concept.
 \textit{Rationale:} Handling real money or giving personalized investment advice would bring
 \progname{} under financial regulation that the team is not licensed for.
 Keeping real money out also keeps the practice risk-free (G4).
@@ -702,23 +708,28 @@ TODO
 % * Say WHAT, not how: no screens, libraries or algorithms. Numbers are
 %   SMALL_CAPS constants defined in Appendix C (#95).
 % * Fit criterion: one line saying how a tester decides pass or fail.
-% * Traces to: the goal(s) G1-G5 (Section 2.2), plus the stakeholder
-%   requirement (\srref{...}) and use case (\ucref{...}) once they exist. Use
-%   \todo{SR} and \todo{UC} until then.
-% * Hazard Analysis requirements that are functional go here with their HA ID
-%   at the start of the statement, e.g. "(HA SAF-1) The system shall ...",
-%   using the same wording as the Hazard Analysis. Privacy and security
-%   requirements from the HA go in Section 7.3 or Section 8 instead.
+% * Traces to, in this order: stakeholder requirement(s) (\srref{SR_...},
+%   Section 3, #127), use case(s) (\ucref{UC_...}, Section 5, #130), goal(s)
+%   G1-G5 (Section 2.2), then any HA ID. SR and UC refs print as ?? until those
+%   PRs merge. Use \todo{SR} or \todo{UC} only when none fits.
+% * Hazard Analysis requirements that are functional (SAF-1 to SAF-11, SEC-1
+%   to SEC-6) go here with their HA ID at the start of the statement, e.g.
+%   "(HA SAF-1) The system shall ...", with the same statement and fit
+%   criterion as the Hazard Analysis. Privacy and security requirements
+%   (SEC-7 to SEC-18) go in Section 7.3 or Section 8 instead.
 % * A requirement that implements part of an HA requirement without restating
 %   it ends its Traces to with the HA ID, e.g. "G3, Hazard Analysis SEC-13".
 % * Each subsection has one owner (in its comment).
 % =============================================================================
 
 This section lists what \progname{} shall do, grouped by feature area. Each
-requirement has a fit criterion and traces to the goals in
-Section~\ref{SecProductVision}. A requirement that begins with a Hazard
-Analysis (HA) identifier, such as (HA SEC-3), appears in the Hazard Analysis
-with the same identifier and wording.
+requirement has a fit criterion and traces to the stakeholder requirements and
+use cases it refines and to the goals in Section~\ref{SecProductVision}. A
+requirement that begins with a Hazard Analysis (HA) identifier, such as
+(HA SEC-3), appears in the Hazard Analysis with the same identifier and
+wording. A requirement whose traces end with a Hazard Analysis identifier, such
+as Hazard Analysis SEC-13, implements part of that Hazard Analysis
+requirement.
 
 % Owner: Farid
 \subsection{Accounts and Profile}
@@ -758,7 +769,7 @@ with the same identifier and wording.
   {A test user who requests a reset receives a link at their email address,
   and after setting a new password can sign in only with the new one.}
   {\srref{SR_ControlOwnData}, G2}
-  \freq{FR_AcctEditProfile}
+\freq{FR_AcctEditProfile}
   {The system shall let the user view and edit their profile details.}
   {A test user who changes a profile detail sees the new value the next time
   they open their profile.}
@@ -798,7 +809,8 @@ with the same identifier and wording.
   activity type.}
   {A test user whose health platform reports a daily total for a supported
   activity type receives currency for that day.}
-  {\todo{SR}, \todo{UC}, G5}
+  {\srref{SR_EarnFromActivity}, \srref{SR_AllAbilities},
+  \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActDailyCap}
   {(HA SAF-7) The system shall award a user no more than
   \texttt{MAX\_DAILY\_CURRENCY} virtual currency for recorded activity in any
@@ -807,7 +819,7 @@ with the same identifier and wording.
   earn more than \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by exactly
   \texttt{MAX\_DAILY\_CURRENCY} for that day. Each activity counts toward the
   calendar day in the user's time zone at the time of the activity.}
-  {\todo{SR}, \todo{UC}, G5}
+  {\srref{SR_SafeMotivation}, \ucref{UC_EarnCurrency}, G5}
 \end{itemize}
 
 % Owner: Davis
@@ -820,7 +832,7 @@ with the same identifier and wording.
   {For a test asset, the price \progname{} shows and uses for trades equals the
   latest price \progname{} received from the market data provider for that
   asset.}
-  {\todo{SR}, \todo{UC}, G4}
+  {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
 \freq{FR_MktPriceAge}
   {(HA SEC-2) The system shall display each asset price with the time it was
   obtained, and shall mark the price as delayed when it is older than
@@ -828,20 +840,20 @@ with the same identifier and wording.
   {A test price obtained more than \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown
   with its time and a ``Delayed'' marker. A price obtained within the limit is
   shown with its time and no marker.}
-  {\todo{SR}, \todo{UC}, G4}
+  {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
 \freq{FR_MktBuy}
   {The system shall let the user buy shares of an asset using virtual currency.}
-  {A test user with enough currency buys one share of an asset. Their balance
-  decreases by the price shown when they confirmed the trade, and their
-  holding of it increases by one.}
-  {\todo{SR}, \todo{UC}, G4}
+  {While a test asset's market is open, a test user with enough currency buys
+  one share of it. Their balance decreases by the price shown when they
+  confirmed the trade, and their holding of it increases by one.}
+  {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktSell}
   {The system shall let the user sell shares of an asset they hold for virtual
   currency.}
-  {A test user holding one share of an asset sells it. Their balance increases
-  by the price shown when they confirmed the trade, and their holding of it
-  decreases by one.}
-  {\todo{SR}, \todo{UC}, G4}
+  {While a test asset's market is open, a test user holding one share of it
+  sells it. Their balance increases by the price shown when they confirmed the
+  trade, and their holding of it decreases by one.}
+  {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, \todo{UC}, G4}
 \freq{FR_MktNoStaleTrade}
   {(HA SEC-3) The system shall not execute a trade while the asset's market is
   open and the asset's price is older than \texttt{QUOTE\_STALENESS\_LIMIT}.}
@@ -849,7 +861,7 @@ with the same identifier and wording.
   \texttt{QUOTE\_STALENESS\_LIMIT}, a trade request for it is refused and the
   user is told the price is out of date. With a price within the limit, the
   trade proceeds.}
-  {\todo{SR}, \todo{UC}, G4}
+  {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktQueueClosed}
   {(HA SEC-4) The system shall queue a trade requested while the asset's market
   is closed, and execute it at the first price obtained after the market next
@@ -857,7 +869,7 @@ with the same identifier and wording.
   {A test trade requested while the market is closed is shown to the user as
   queued, with a notice that it will run at the opening price, and is executed
   at the first price obtained after the market opens.}
-  {\todo{SR}, \todo{UC}, G4}
+  {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
 \end{itemize}
 
 % Owner: Farid
@@ -921,7 +933,8 @@ streak\\
   {A test portfolio with one holding above \texttt{CONCENTRATION\_LIMIT} of its
   value shows the explanation, and the explanation names no asset to buy or
   sell (Hazard Analysis SAF-9).}
-  {\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice}, G1}
+  {\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice}, G1, Hazard Analysis
+  SAF-9}
 \freq{FR_LearnKnowledgeCheck}
   {The system shall provide a knowledge check for each core concept in
   Table~\ref{TblCoreConcepts}.}
@@ -964,7 +977,8 @@ effort and learning rather than market results.
 \midrule
 Activity total & The user's total for one activity type over a day or a
 week\\
-Streak & The number of consecutive days with recorded activity\\
+Streak & The user's current streak, in days. A rest day does not end a
+streak (Hazard Analysis SAF-1)\\
 Fitness milestone & A fitness milestone the user has reached\\
 Learning milestone & A knowledge check the user has passed\\
 \bottomrule
@@ -1047,19 +1061,21 @@ Learning milestone & A knowledge check the user has passed\\
   reminders.}
   {A test user sets a reminder period, and it is shown in their settings the
   next time they open the app.}
-  {\todo{SR}, \todo{UC}, G2}
+  {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2, Hazard Analysis SAF-6}
 \freq{FR_SetWithdrawConsent}
   {The system shall let the user withdraw consent for \progname{} to read their
   health data.}
   {After a test user withdraws consent in the app, no further health data is
   read.}
-  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-9}
+  {\srref{SR_ControlOwnData}, \ucref{UC_WithdrawConsent}, G3, Hazard Analysis
+  SEC-9}
 \freq{FR_SetPermissionList}
-  {The system shall show the user which data \progname{} has permission to read
-  and the feature that uses each.}
+  {The system shall show the user which health data types \progname{} has
+  permission to read, and the feature that uses each type.}
   {A test user who has granted health permissions sees each permitted data
   type listed with the feature that uses it.}
-  {\todo{SR}, \todo{UC}, G3, Hazard Analysis SEC-8}
+  {\srref{SR_ExplainPermissions}, \srref{SR_ProtectData},
+  \ucref{UC_ReviewPermissions}, G3, Hazard Analysis SEC-8}
 \end{itemize}
 
 % ============================================================== 

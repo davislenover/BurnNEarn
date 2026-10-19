@@ -26,6 +26,9 @@
 % preamble so the FMEA table in Section 5 can use it too.
 \newcommand{\reqref}[1]{\hyperref[req:#1]{#1}}
 
+% Let lines holding long \texttt constants stretch instead of overflowing.
+\setlength{\emergencystretch}{3em}
+
 \begin{document}
 
 \maketitle
@@ -175,8 +178,11 @@ documentation, and/or test cases.}
 %   (P01/P02 only, paraphrased, nothing identifying), or a PS/DP section.
 % * Associated hazards: FMEA row ID(s) from Section 5 and loss ID(s) L1-L6
 %   from Section 2. Use \todo{} until those IDs exist.
-% * In SRS: the SRS section and ID where the same requirement appears, with
-%   the same ID and wording.
+% * In SRS: plain text such as "SRS Section~6.5, FR\_SocialNoRanking" (the
+%   HA has no xr package, so no \ref). Name the FR that restates the
+%   requirement with "(HA ID)" and the same wording. If none does yet, keep a
+%   \todo saying where it will be restated, and name the FRs that implement
+%   part of it (their Traces to end with "Hazard Analysis ID").
 % * Roadmap: "Capstone" or "Future" (feeds Section 7, Roadmap).
 % * Refer to another requirement with \reqref{SAF-1}.
 % * \todo{...} prints in red. Every one must be gone before submission.
@@ -206,8 +212,9 @@ security and data integrity. Losses L1--L6 are defined in Table~\ref{TblLosses}.
 
 \subsection{Physical and Psychological Well-being}
 
-\todo{Confirm with the SRS functional requirements (\#90) that daily activity
-goals and streaks are \progname{} features. SAF-1 to SAF-5 depend on it.}
+\todo{SRS Sections 6.4 and 6.5 use streaks and rest days (\#129), but no SRS
+functional requirement defines activity goals or streaks yet. Add them to SRS
+Section~6.2 and mirror SAF-1 to SAF-5 there (\#90).}
 
 \begin{description}
 
@@ -215,10 +222,10 @@ goals and streaks are \progname{} features. SAF-1 to SAF-5 depend on it.}
 {The system shall let the user mark up to \texttt{REST\_DAYS\_PER\_PERIOD}
 days in each \texttt{STREAK\_PERIOD} as rest days, and a rest day shall not end
 the user's activity streak.}
-{A user who marks a day as a rest day and records no activity that day has the
-same streak count the following day. A request to mark more than
-\texttt{REST\_DAYS\_PER\_PERIOD} rest days in one \texttt{STREAK\_PERIOD} is
-refused.}
+{A test user with a streak who marks a day as a rest day and records no
+activity that day does not have the streak reset to zero at the start of the
+following day. A request to mark more than \texttt{REST\_DAYS\_PER\_PERIOD}
+rest days in one \texttt{STREAK\_PERIOD} is refused.}
 {Streaks reward consistency, which can lead users to exercise while sick,
 injured or late at night to keep a streak alive. In user interviews, one
 participant described a step streak that makes them go out walking when they
@@ -229,9 +236,21 @@ pushing through exercise regardless of pain (P02).}
 {Capstone.}
 
 \hazreq{SAF-2}{No penalty for a lapse}
-{Missing an activity goal or ending a streak shall not reduce the user’s virtual currency balance or simulated holdings, and shall not be shown to other users.}
-{For a test user who misses their goal on day \textit{d}, the currency balance and simulated holdings at the start of day \textit{d+1} equal those at the end of day \textit{d}. No friend’s social feed shows the missed goal or the ended streak.}
-{The only consequences of missing a goal are not earning that day’s currency and, without a rest day (\reqref{SAF-1}), the end of the streak. Interviews show that keeping a streak going is already a strong motivator (P01). Comparison becomes harmful mainly when a user falls far behind (P02). Taking away earned currency or holdings would also add pressure to exercise when unwell, and would mix fitness penalties into the investment results the user is trying to learn from.}
+{The system shall not reduce a user's virtual currency balance or simulated
+holdings when they miss an activity goal or their streak ends, and shall not
+show a missed goal or an ended streak to other users.}
+{For a test user who misses their goal on day \textit{d}, the currency balance
+and simulated holdings at the start of day \textit{d+1} equal those at the end
+of day \textit{d}. No friend's social feed shows the missed goal or the ended
+streak.}
+{The only consequence of missing a goal is the end of the streak, unless the
+day is a rest day (\reqref{SAF-1}). Activity recorded on that day still earns
+currency, as it would with no goal set (\reqref{SAF-3}). Interviews show that
+keeping a streak going is already a strong motivator (P01). Comparison becomes
+harmful mainly when a user falls far behind (P02). Taking away earned currency
+or holdings would also add pressure to exercise when unwell, and would mix
+fitness penalties into the investment results the user is trying to learn
+from.}
 {FMEA H9, L1 (physical harm), L2 (psychological harm), L6 (financial-understanding harm).}
 {\todo{SRS section and ID}}
 {Capstone.}
@@ -300,7 +319,8 @@ should exclude late evening and night.}
 for future interviews.}}
 {FMEA H9, L1 (physical harm), L2 (psychological harm).
 \todo{No FMEA row covers reminders sent when the user cannot act on them. Add one under C1.}}
-{\todo{SRS section and ID}}
+{\todo{Restate in SRS Section~6.6.} Implemented in part by SRS Section~6.6,
+FR\_RemindPeriods.}
 {Capstone.}
 
 \end{description}
@@ -316,13 +336,13 @@ for future interviews.}}
 Activity & Progress toward today's goal, or a streak about to end & Activity goals and streaks (SAF-1 to SAF-5)\\
 Milestone & A goal reached, or a streak or currency milestone & Workout trends and milestones (Problem Statement 1.2)\\
 Portfolio & A notable change in simulated portfolio value & Portfolio value and trends (Problem Statement 1.2)\\
-Learning & A new concept or knowledge check is available & Learning progress (Problem Statement 1.2)\\
-Social & A friend shared an update or sent a friend request & Social feed (Problem Statement Goal 3)\\
+Learning & A new concept explanation or knowledge check is available & Learning and feedback (SRS Section~6.4)\\
+Social & A friend shared an update or sent a friend request & Social feed (SRS Section~6.5)\\
 \bottomrule
 \end{tabularx}
 \end{table}
-\todo{Confirm these reminder types against the SRS functional requirements
-(\#90).}
+\todo{Confirm the Activity, Milestone and Portfolio types once SRS Sections 6.2
+and 6.3 define goals, streaks, milestones and portfolio value (\#90).}
 
 \subsection{Activity Data Integrity}
 
@@ -342,36 +362,34 @@ can earn: phones count steps while riding a bus, and one tracking app was left
 running for hours after a ride had ended (P01). The cap applies to currency
 rather than to any one activity, so it works the same way for every supported
 activity type (Problem Statement Goal 5). The cap limits how much a day can
-earn, but it does not judge whether a workout record is genuine.
-\reqref{SEC-1} describes this in more detail.
+earn, but it does not judge whether an activity record is genuine.
+\reqref{SEC-1} covers that.
 \todo{Choose \texttt{MAX\_DAILY\_CURRENCY} for SRS Appendix C (\#95) once the
 earning rate is defined in the SRS.}}
 {FMEA H2, H6, H8, H9, L1 (physical harm), L4 (security loss), L5 (data loss and
 integrity).}
-{\todo{SRS section and ID}}
+{SRS Section~6.2, FR\_ActDailyCap.}
 {Capstone.}
 
 \hazreq{SEC-1}{Implausible activity earns nothing}
 {The system shall not count an activity record that exceeds the plausibility
-limits for its activity type toward the user's currency, workout trends,
+limits for its activity type toward the user's currency, activity trends,
 streak or milestones, and shall show the user that the record was not counted.}
 {A test record of more than \texttt{MAX\_DAILY\_STEPS} steps in one day, or a
-session longer than \texttt{MAX\_SESSION\_DURATION}, earns no currency, does not
-appear in the user's workout trends, streak or milestones, and is shown to the
-user as not counted.}
+workout longer than \texttt{MAX\_WORKOUT\_DURATION}, earns no currency, does
+not appear in the user's activity trends, streak or milestones, and is shown to
+the user as not counted.}
 {\reqref{SAF-7} limits how much currency a day can earn, but it does not judge
 whether a record is genuine. Under the cap alone, a fabricated record still
 earns the full daily amount. An accidental one, such as a tracking app left
 running for hours after a ride had ended (P01), also distorts the user's
-workout trends, which the cap does not touch. This requirement rejects records
+activity trends, which the cap does not touch. This requirement rejects records
 that could not come from real activity.
 Small amounts of everyday tracking noise, such as steps counted while riding a
 bus (P01), stay within the limits and are accepted. The limits target records
 that are clearly impossible.
-\todo{Set \texttt{MAX\_DAILY\_STEPS} and \texttt{MAX\_SESSION\_DURATION} (and
-limits for any other activity types) in SRS Appendix C (\#95).}
-\todo{Match this wording with FitFolio's data-quality responsibilities in SRS
-System Context (2.3, \#84).}}
+\todo{Set \texttt{MAX\_DAILY\_STEPS} and \texttt{MAX\_WORKOUT\_DURATION} (and
+limits for any other activity types) in SRS Appendix C (\#95).}}
 {FMEA H2, H6, L4 (security loss), L5 (data loss and integrity).}
 {\todo{SRS section and ID}}
 {Capstone.}
@@ -404,15 +422,16 @@ looked for answers tailored to their own situation (P01).}
 {\todo{SRS section and ID}}
 {Capstone.}
 
-\hazreq{SAF-9}{No personalised recommendations}
+\hazreq{SAF-9}{No personalized recommendations}
 {The system shall not recommend that a user buy or sell a specific asset.}
 {No screen or notification shown to a test user tells them to buy or sell a
-named asset, or presents assets as a "recommended pick".}
+named asset, or presents assets as a ``recommended pick''.}
 {Recommending specific assets would be personalized financial advice, which
 \progname{} is not licensed to give, and users may act on it with real money
 (P01).}
 {FMEA H22, L6 (financial-understanding harm).}
-{\todo{SRS section and ID}}
+{\todo{Restate in SRS Section~6.} Implemented in part by SRS Section~6.4,
+FR\_LearnConcentration.}
 {Capstone.}
 
 \hazreq{SAF-10}{Label simulated returns}
@@ -447,7 +466,7 @@ of the real market).
 (\#95).}}
 {FMEA H12, H45, L5 (data loss and integrity), L6 (financial-understanding
 harm).}
-{\todo{SRS section and ID}}
+{SRS Section~6.3, FR\_MktPriceAge.}
 {Capstone.}
 
 \hazreq{SEC-3}{No trades on stale prices}
@@ -461,7 +480,7 @@ proceeds.}
 wrong lesson. The limit is the same one \reqref{SEC-2} uses to mark a price as
 delayed.}
 {FMEA H12, L5 (data loss and integrity), L6 (financial-understanding harm).}
-{\todo{SRS section and ID}}
+{SRS Section~6.3, FR\_MktNoStaleTrade.}
 {Capstone.}
 
 \hazreq{SEC-4}{Queue trades while the market is closed}
@@ -477,7 +496,7 @@ price, and refusing them without explanation would confuse the user.
 after telling the user, satisfies H17 (execute at the confirmed price, or ask
 the user to confirm the new price).}}
 {FMEA H18, L5 (data loss and integrity), L6 (financial-understanding harm).}
-{\todo{SRS section and ID}}
+{SRS Section~6.3, FR\_MktQueueClosed.}
 {Capstone.}
 
 \hazreq{SEC-5}{Complete or reject trades}
@@ -536,7 +555,8 @@ test user is shown the feature that uses that data before the request appears.}
 clear why the app is asking (P01, P02). A user who denies a health permission
 earns nothing for that activity and may believe the app is broken.}
 {FMEA H1, L3 (privacy loss).}
-{\todo{SRS section and ID}}
+{\todo{Restate in SRS Section~7.3 (\#130).} Implemented in part by SRS
+Section~6.6, FR\_SetPermissionList.}
 {Capstone.}
 
 \hazreq{SEC-9}{Consent and withdrawal}
@@ -550,7 +570,8 @@ requires consent to collect personal information and lets people withdraw it.
 Health data is among the most sensitive data \progname{} handles.}
 {FMEA \todo{No row yet. Ask Farid to add one under C2 for health data read
 without consent or after consent is withdrawn.}, L3 (privacy loss).}
-{\todo{SRS section and ID}}
+{\todo{Restate in SRS Section~7.3 (\#130).} Implemented in part by SRS
+Section~6.6, FR\_SetWithdrawConsent.}
 {Capstone.}
 
 \hazreq{SEC-10}{Data minimization}
@@ -612,7 +633,9 @@ no longer appears in that friend's social feed.}
 shared statistic. Friends are expected to see only what a user chooses to
 share (Problem Statement 1.3).}
 {FMEA H30, L3 (privacy loss).}
-{\todo{SRS section and ID}}
+{\todo{Restate in SRS Section~7.3 (\#130).} Implemented in part by SRS
+Section~6.5, FR\_SocialChooseFriends, FR\_SocialDeleteUpdate and
+FR\_SocialRemove.}
 {Capstone.}
 
 \hazreq{SEC-14}{No location detail in shared updates}
@@ -638,7 +661,7 @@ user is far behind (P02). A ranking makes that gap explicit and places someone
 last. Leaderboards are a stretch goal (Problem Statement Section~3). If they are
 built, they should be opt-in.}
 {FMEA H9, L2 (psychological harm).}
-{\todo{SRS section and ID}}
+{SRS Section~6.5, FR\_SocialNoRanking.}
 {Capstone. Opt-in leaderboards: Future, with the stretch goal.}
 
 \end{description}
@@ -649,14 +672,15 @@ built, they should be opt-in.}
 
 \hazreq{SEC-15}{Authenticated access only}
 {The system shall require an authenticated session for every request that reads
-or changes a user's data, and shall return another user's data only when that
-user has shared it with the requester.}
+or changes a user's data, and shall return another user's data, other than
+their username, only when that user has shared it with the requester.}
 {A test request without a valid session is rejected. A request for another
-user's data that was not shared with the requester is rejected, and a request
-for data that was shared succeeds.}
+user's data, other than their username, that was not shared with the requester
+is rejected, and a request for data that was shared succeeds.}
 {Health, portfolio and social data must reach only the account it
 belongs to or the friends it was shared with. \reqref{SEC-13} sets what a user
-shares.}
+shares. Usernames are the exception because friend requests are sent by
+username (SRS Section~6.5, FR\_SocialRequest).}
 {FMEA H39, L3 (privacy loss), L4 (security loss).}
 {\todo{SRS section and ID}}
 {Capstone.}
@@ -674,13 +698,16 @@ kept secure (P02).}
 {Capstone.}
 
 \hazreq{SEC-17}{Session expiry}
-{The system shall end a session that has not been used for
-\texttt{SESSION\_TIMEOUT}, after which the user must sign in again.}
-{A test session left unused for longer than \texttt{SESSION\_TIMEOUT} is
-rejected, and the user must sign in again to continue.}
+{The system shall end a session when the user signs out of it or when it has
+not been used for \texttt{SESSION\_TIMEOUT}, after which the user must sign in
+again.}
+{A test session is rejected after the user signs out of it, and after it is
+left unused for longer than \texttt{SESSION\_TIMEOUT}. In both cases the user
+must sign in again to continue.}
 {A lost or shared phone, or a stolen session, gives access to a user's health
 and portfolio data for as long as the session stays valid. Ending
-unused sessions limits that window.
+unused sessions limits that window, and ending a session at sign-out stops a
+copied session from being reused (SRS Section~6.1, FR\_AcctSignOut).
 \todo{Add \texttt{SESSION\_TIMEOUT} to SRS Appendix C (\#95).}}
 {FMEA H36, L3 (privacy loss), L4 (security loss).}
 {\todo{SRS section and ID}}
@@ -689,20 +716,22 @@ unused sessions limits that window.
 \hazreq{SEC-18}{In-app account deletion}
 {The system shall let the user delete their account from within the app, and
 shall delete their account details, profile, activity totals, currency
-balance, holdings, trades, shared updates and friend connections from the
-server and its backups within \texttt{DATA\_DELETION\_PERIOD} of the request.}
+balance, holdings, trades, learning progress, shared updates, friend list and
+friend requests from the server and its backups within
+\texttt{DATA\_DELETION\_PERIOD} of the request.}
 {After a test user deletes their account in the app, they can no longer sign
 in. Within \texttt{DATA\_DELETION\_PERIOD}, neither the server nor its backups
 hold any of their account details, profile, activity totals, currency balance,
-holdings, trades, shared updates or friend connections, and none of their
-shared updates appear in friends' social feeds.}
+holdings, trades, learning progress, shared updates, friend list or friend
+requests, and none of their shared updates appear in friends' social feeds.}
 {PIPEDA lets people withdraw consent and limits keeping personal information
 longer than it is needed. The Apple App Store also requires apps that let users
 create an account to offer account deletion within the app (App Store Review
 Guideline 5.1.1(v)).
 \todo{Add \texttt{DATA\_DELETION\_PERIOD} = 30 days to SRS Appendix C (\#95).}}
 {FMEA H38, L3 (privacy loss).}
-{\todo{SRS section and ID}}
+{\todo{Restate in SRS Section~7.3 (\#130).} Implemented in part by SRS
+Section~6.1, FR\_AcctDelete.}
 {Capstone.}
 
 \end{description}
@@ -713,11 +742,12 @@ Table~\ref{TblSafetyTrace} summarises each requirement, the hazards it
 controls, and where it appears in the SRS.
 \todo{Fill in once the entries above and the Section 5 FMEA IDs are final.}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{Safety and security requirements traceability}
 \label{TblSafetyTrace}
-\begin{tabularx}{\textwidth}{llllX}
+\small
+\begin{tabularx}{\textwidth}{lll>{\raggedright\arraybackslash}Xl}
 \toprule
 \textbf{ID} & \textbf{FMEA rows} & \textbf{Losses} & \textbf{SRS} & \textbf{Roadmap}\\
 \midrule
@@ -726,30 +756,31 @@ controls, and where it appears in the SRS.
 \reqref{SAF-3} & H9 & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-4} & H9 & L1, L2 & \todo{} & Capstone\\
 \reqref{SAF-5} & H9 & L1 & \todo{} & \todo{}\\
-\reqref{SAF-6} & H9 & L1, L2 & \todo{} & Capstone\\
-\reqref{SAF-7} & H2, H6, H8, H9 & L1, L4, L5 & \todo{} & Capstone\\
+\reqref{SAF-6} & H9 & L1, L2 & \todo{} FR\_RemindPeriods (part) & Capstone\\
+\reqref{SAF-7} & H2, H6, H8, H9 & L1, L4, L5 & FR\_ActDailyCap & Capstone\\
 \reqref{SAF-8} & H22 & L6 & \todo{} & Capstone\\
-\reqref{SAF-9} & H22 & L6 & \todo{} & Capstone\\
+\reqref{SAF-9} & H22 & L6 & \todo{} FR\_LearnConcentration (part) & Capstone\\
 \reqref{SAF-10} & H22 & L6 & \todo{} & Capstone\\
-\reqref{SAF-11} & \todo{} & L2 & \todo{} & Capstone\\
+\reqref{SAF-11} & H9 & L2 & FR\_SocialNoRanking & Capstone\\
 \reqref{SEC-1} & H2, H6 & L4, L5 & \todo{} & Capstone\\
-\reqref{SEC-2} & H12, H45 & L5, L6 & \todo{} & Capstone\\
-\reqref{SEC-3} & H12 & L5, L6 & \todo{} & Capstone\\
-\reqref{SEC-4} & H18 & L5, L6 & \todo{} & Capstone\\
+\reqref{SEC-2} & H12, H45 & L5, L6 & FR\_MktPriceAge & Capstone\\
+\reqref{SEC-3} & H12 & L5, L6 & FR\_MktNoStaleTrade & Capstone\\
+\reqref{SEC-4} & H18 & L5, L6 & FR\_MktQueueClosed & Capstone\\
 \reqref{SEC-5} & H19, H20, H44 & L5 & \todo{} & Capstone\\
 \reqref{SEC-6} & H16, H44 & L5 & \todo{} & Capstone\\
 \reqref{SEC-7} & H43 & L3 & \todo{} & Capstone\\
-\reqref{SEC-8} & H1 & L3 & \todo{} & Capstone\\
-\reqref{SEC-9} & \todo{} & L3 & \todo{} & Capstone\\
+\reqref{SEC-8} & H1 & L3 & \todo{} FR\_SetPermissionList (part) & Capstone\\
+\reqref{SEC-9} & \todo{} & L3 & \todo{} FR\_SetWithdrawConsent (part) & Capstone\\
 \reqref{SEC-10} & H43 & L3 & \todo{} & Capstone\\
 \reqref{SEC-11} & \todo{} & L3 & \todo{} & Capstone\\
 \reqref{SEC-12} & H33 & L1, L3 & \todo{} & Capstone\\
-\reqref{SEC-13} & H30 & L3 & \todo{} & Capstone\\
+\reqref{SEC-13} & H30 & L3 & \todo{} FR\_SocialChooseFriends,
+FR\_SocialDeleteUpdate, FR\_SocialRemove (part) & Capstone\\
 \reqref{SEC-14} & H31, H33 & L1, L3 & \todo{} & Capstone\\
 \reqref{SEC-15} & H39 & L3, L4 & \todo{} & Capstone\\
 \reqref{SEC-16} & H40, H43 & L3, L4 & \todo{} & Capstone\\
 \reqref{SEC-17} & H36 & L3, L4 & \todo{} & Capstone\\
-\reqref{SEC-18} & H38 & L3 & \todo{} & Capstone\\
+\reqref{SEC-18} & H38 & L3 & \todo{} FR\_AcctDelete (part) & Capstone\\
 \bottomrule
 \end{tabularx}
 \end{table}
