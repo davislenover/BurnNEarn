@@ -1378,6 +1378,111 @@ Functional Req & Nonfunctional Req \\
 
 \section{Rationale}
 
+This section explains the reasoning behind the major requirements
+and decisions made for \progname{}.
+
+\subsection{Simulated Investing}
+
+\progname{} uses virtual currency instead of real money so users
+can learn about investing without the financial risk associated with investing. This allows
+beginners to experiment with different investment decisions
+without losing any real savings. The restriction on real money
+transactions also keeps the system focused on education rather
+than financial services (\scref{SC_NoRealMoney},
+\rref{FR_MktBuy}).
+
+\subsection{Activity Based Rewards}
+
+The system rewards users for everyday physical activity in order to
+encourage consistent exercise habits. Rather than requiring the user to do
+specific individual workouts, the app uses activity that is already recorded by
+the user's phone health platform. A daily earning limit is
+enforced in order to discourage excessive exercise for virtual
+rewards (\scref{SC_HealthPlatform},
+\rref{FR_ActEarn}, \rref{FR_ActDailyCap}).
+
+\subsection{Goals and Streaks}
+
+Users can set their own activity goals and track their streaks
+to stay motivated. Goals are optional because not every user
+wants to follow a specific activity target. Rest days are also
+included so users do not feel pressured to exercise every day
+to maintain their streak. Missing a goal does not reduce
+the user's currency or holdings
+(\rref{FR_ActGoal}, \rref{FR_ActGoalOptional},
+\rref{FR_ActRestDay}, \rref{FR_ActNoPenalty}).
+
+\subsection{Financial Education}
+
+Educational explanations and knowledge checks are included
+because simulated trading alone may not help beginners
+understand their investment decisions. By providing explanations
+alongside market activity, users can learn financial concepts
+while practising them. Portfolio feedback also helps users
+understand the effects of their trades
+(\rref{FR_LearnInPlace},
+\rref{FR_LearnTradeEffect},
+\rref{FR_LearnKnowledgeCheck}).
+
+\subsection{Real-World Market Data}
+
+The simulated market uses real-world prices to give users
+a more realistic investing experience. However, outdated
+prices could create unrealistic trading results. The system
+therefore prevents trades using stale prices while the market
+is open and queues trades requested while the market is
+closed (\scref{SC_MarketData},
+\rref{FR_MktRealPrices},
+\rref{FR_MktNoStaleTrade},
+\rref{FR_MktQueueClosed}).
+
+Trades must also be recorded correctly to make sure users
+do not lose virtual currency or receive incorrect holdings.
+The system prevents duplicate trades and ensures that both
+the user's balance and holdings are updated together
+(\rref{FR_MktAtomicTrade},
+\rref{FR_MktNoDuplicate}).
+
+\subsection{Privacy and Social Features}
+
+The social features are intended to motivate users without
+requiring them to share private information. Users choose
+which friends can view their updates, and personal body
+measurements are excluded from shared content. Users can
+also remove friends or delete shared updates to maintain
+control over their information
+(\rref{FR_SocialChooseFriends},
+\rref{FR_SocialNoBody},
+\rref{FR_SocialRemove},
+\rref{FR_SocialDeleteUpdate},
+\nfrref{NFR_Security}).
+
+The system also limits the health information it collects
+and does not read or store location data. This helps protect
+users from having sensitive personal information exposed.
+Health data is only accessed with consent, and users can
+withdraw that consent when they choose
+
+
+\subsection{Security and Data Protection}
+
+Since the system stores personal information, activity totals,
+and simulated investment records, protecting this data is
+important. Users must be signed in before accessing private
+information, and their data must be protected during storage
+and transmission. Sessions also expire to reduce the risk of
+unauthorized access
+\nfrref{NFR_Security}
+
+\subsection{Usability and Accessibility}
+
+\progname{} is intended for beginners, users should
+not need to have previous investing knowledge and experience or specialized fitness
+equipment. The app is designed for its main features
+easy to understand, while supporting different levels of
+physical activity and mobile device accessibility settings.
+This is reflected in the usability, portability, and
+accessibility requirements
 
 \section{Likely Changes}    
 
