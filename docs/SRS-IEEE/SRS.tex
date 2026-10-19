@@ -3006,7 +3006,12 @@ document and in the Hazard Analysis (HA).
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Lifelong Learning. 
 
+\input{../Reflection.text}
 
+\input{../SRS_Reflection.text}
+
+\subsubsection*{2. What pain points did you experience during this deliverable,
+and how did you resolve them?}
 
 \textbf{Angad:} One of the main challenges I faced during this deliverable
 was keeping my sections consistent with the requirements written by other
@@ -3029,13 +3034,6 @@ I think we should communicate requirement changes earlier and
 review each other's work throughout the process rather than
 waiting until most of our sections are finished. This would
 help reduce the amount of rework needed near the deadline.
-
-\input{../Reflection.text}
-
-\input{../SRS_Reflection.text}
-
-\subsubsection*{2. What pain points did you experience during this deliverable,
-and how did you resolve them?}
 
 \textbf{Davis:} The main pain point for me was how many design decisions the
 SRS involved, and how many of them crossed between sections owned by different
@@ -3058,31 +3056,26 @@ I want to communicate with the team earlier and more often. That means agreeing
 on shared identifiers, terms and the big design decisions at the start of a
 deliverable, recording each decision in the related GitHub issue as soon as it
 is made, and merging smaller pieces of work sooner, so that conflicts show up
-while they are still cheaper to fix.
+while they are still cheaper to fix. \\
 
-\textbf{Angad:} One of the main challenges I faced during this deliverable
-was keeping my sections consistent with the requirements written by other
-team members. I was responsible for the use cases, non functional
-requirements, traceability matrices, privacy and data retention, and
-rationale. Since these sections depended heavily on the functional
-requirements, changes made by other members meant I had to go back
-and update my work. For example, additional functional requirements
-were introduced later in the deliverable, which meant I had to
-update the use cases and both traceability matrices to make sure
-everything was properly connected and included. Another challenge I faced was making
-sure that the privacy and security requirements matched our Hazard
-Analysis, especially when some requirements got renumbered or
-had their wording changed. I resolved these issues by reviewing
-the latest versions of my teammates' work, checking the
-references between sections, and addressing feedback on my
-pull request. This helped me understand how closely connected
-the different sections of the SRS are. For our next deliverable,
-I think we should communicate requirement changes earlier and
-review each other's work throughout the process rather than
-waiting until most of our sections are finished. This would
-help reduce the amount of rework needed near the deadline.
-
-
+\noindent\textbf{Farid:} My main pain point was keeping my sections consistent with work
+that was changing in other branches at the same time. I wrote the Introduction,
+Stakeholder Requirements, User Personas and three of the functional requirement
+subsections, and my requirements traced to labels and Hazard Analysis IDs that
+lived in my teammates' branches. When Davis renumbered the Hazard Analysis
+requirements, four of my traces pointed to the wrong requirement without any
+error, and I only noticed by checking every trace against his latest list. I
+also caused a problem myself: my editor's auto-formatter re-indented hundreds of
+template lines in sections I did not own, which turned a small change into
+merge conflicts with three other branches. I resolved this by turning
+format-on-save off, restoring the original spacing, branching my functional
+requirements from Davis's branch instead of my own, and making small commits
+that each touched only my sections. I also defined every domain term in
+Section~1.4 before it is used, because in our Problem Statement some words,
+such as ``compounding'', were clear to us but not to a reader outside the team.
+Next time I will merge \texttt{main} into my branch every day instead of once at
+the end, link each branch to its issue, and agree on shared identifiers before
+writing anything that refers to them.
 \newpage
 
 \bibliographystyle {plainnat}
