@@ -4,6 +4,15 @@
 \usepackage{tabularx}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds}
+\usepackage[pass]{geometry}
+\usepackage{amsmath}
+\usepackage{longtable}
+\usepackage{pdflscape}
+\usepackage{colortbl}
+\usepackage{multirow}
 
 \hypersetup{
     colorlinks=true,       % false: boxed links; true: colored links
@@ -42,11 +51,12 @@
 \caption{Revision History} \label{TblRevisionHistory}
 \begin{tabularx}{\textwidth}{llX}
 \toprule
-\textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
+    \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}                                                                                                                     \\
 \midrule
-Date1 & Name(s) & Description of changes\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+    Oct 16, 2026  & Farid Bastoros        & Initial revision of 1 Introduction, 3 System Boundaries and Components, 4 Critical Assumptions, 5 Failure Mode and Effect Analysis. \\
+    Date1         & Name(s)               & Description of changes                                                                                                              \\
+    Date2         & Name(s)               & Description of changes                                                                                                              \\
+    ...           & ...                   & ...                                                                                                                                 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -55,15 +65,60 @@ Date2 & Name(s) & Description of changes\\
 
 \tableofcontents
 
+\listoffigures
+
+\listoftables
+
 ~\newpage
 
 \pagenumbering{arabic}
 
 \wss{You are free to modify this template.}
 
-\section{Introduction}
+\section{Introduction} \label{SecIntro}
 
-\wss{You can include your definition of what a hazard is here.}
+% \wss{You can include your definition of what a hazard is here.}
+
+\progname{} is a mobile application in which users earn virtual currency from
+the physical activity their phone records, invest that currency in a simulated
+market that follows real-world prices, learn the financial and fitness concepts
+behind their decisions, and share chosen progress with friends. Although
+\progname{} controls no physical hardware and never moves real money, it
+handles health data, presents financial information that users may act on, and
+rewards physical exertion. Failures in any of these areas can harm users, so a
+systematic analysis of what can go wrong is needed before the software is
+designed.
+
+This document identifies the hazards of \progname{}, analyzes how each could
+arise, and derives requirements that eliminate or reduce them. It uses the
+following definitions:
+
+\begin{itemize}
+  \item A \textbf{hazard} is a state or set of conditions of \progname{} that,
+        together with a set of worst-case conditions in its environment, will lead to
+        a loss~\cite{Leveson2011}. For example, a
+        shared update that reveals a user's weight is a hazard: combined with a
+        friend who sees it, it leads to a loss of privacy.
+  \item A \textbf{loss} is harm to a stakeholder that the team wants to prevent.
+        The losses considered in this document are described in
+        Section~\ref{SecScopePurpose}.
+  \item A \textbf{failure mode} is a way in which a component of \progname{} can
+        fail to perform its intended function~\cite{IEC60812}. A component fails not
+        only when its output is missing, but also when its output is wrong, late, or
+        duplicated; this analysis considers all four.
+  \item A \textbf{safety or security requirement} is a requirement that
+        eliminates a hazard, reduces its likelihood, or reduces its effects.
+\end{itemize}
+
+The rest of this document is organized as follows.
+Section~\ref{SecScopePurpose} states the scope and purpose of the analysis and
+the losses it aims to prevent. Section~\ref{SecBoundaries} defines the system
+boundary and divides \progname{} into components.
+Section~\ref{SecAssumptions} lists the critical assumptions.
+Section~\ref{SecFMEA} presents the Failure Mode and Effect Analysis (FMEA),
+which is the core of this document. Section~\ref{SecSafetyReqs} collects the
+resulting safety and security requirements, and Section~\ref{SecRoadmap}
+states when each will be implemented.
 
 \section{Scope and Purpose of Hazard Analysis} \label{SecScopePurpose}
 
@@ -128,31 +183,577 @@ behaves as intended. The following are out of scope:
   they are built.
 \end{itemize}
 
-\section{System Boundaries and Components}
+\section{System Boundaries and Components} \label{SecBoundaries}
 
-\wss{Dividing the system into components will help you brainstorm the hazards.
-You shouldn't do a full design of the components, just get a feel for the major
-ones.  For projects that involve hardware, the components will typically include
-each individual piece of hardware.  If your software will have a database, or an
-important library, these are also potential components.}
+% \wss{Dividing the system into components will help you brainstorm the hazards.
+% You shouldn't do a full design of the components, just get a feel for the major
+% ones.  For projects that involve hardware, the components will typically include
+% each individual piece of hardware.  If your software will have a database, or an
+% important library, these are also potential components.}
 
-\section{Critical Assumptions}
 
-\wss{These assumptions that are made about the software or system.  You should
-minimize the number of assumptions that remove potential hazards.  For instance,
-you could assume a part will never fail, but it is generally better to include
-this potential failure mode.}
+The system analyzed in this document is the software the team builds,
+configures, and deploys: the \progname{} mobile application, its backend
+server and the application programming interface (API) through which the app
+reaches it, its database, and the third-party libraries bundled with them.
+Third-party libraries are inside the boundary because the team chooses them,
+controls which version is used, and is responsible for how they are used.
+Everything \progname{} depends on but does not control is outside the
+boundary, including the phone's operating system (OS) and health platform, the
+market data provider, the network, and the hosting service. Hazards that
+originate outside the boundary are still analyzed when \progname{} must detect
+or respond to them. For example, \progname{} cannot prevent the market data
+provider from going offline, but it must not present old prices as current.
 
-\section{Failure Mode and Effect Analysis}
 
-\wss{Include your FMEA table here. This is the most important part of this document.}
-\wss{The safety requirements in the table do not have to have the prefix SR.
-The most important thing is to show traceability to your SRS. You might trace to
-requirements you have already written, or you might need to add new
-requirements.}
-\wss{If no safety requirement can be devised, other mitigation strategies can be
-entered in the table, including strategies involving providing additional
-documentation, and/or test cases.}
+The hazards in scope are therefore those that arise in a component inside the
+boundary, or in an external entity whose failure a component must detect or
+withstand. They fall into five categories, which match the losses in
+Section~\ref{SecScopePurpose} and the groups of requirements in
+Section~\ref{SecSafetyReqs}:
+
+\begin{enumerate}
+  \item \textbf{Health and physical safety:} injury, overexertion, or harmful
+        behaviour encouraged by rewards or fitness content.
+  \item \textbf{Privacy and security:} exposure, loss of control, or misuse of
+        personal and health data.
+  \item \textbf{Data integrity:} incorrect balances, rewards, prices, or
+        portfolio values.
+  \item \textbf{Financial learning:} information that misleads users into a
+        wrong understanding or a harmful real-world financial decision.
+  \item \textbf{Availability:} outages or data loss that prevent users from
+        using \progname{} or cost them their progress.
+\end{enumerate}
+
+Hazards outside the boundary that \progname{} can neither detect nor
+influence, such as a defect in the phone's operating system or a breach of the
+hosting provider's own facilities, are out of scope; they are excluded by the
+critical assumptions in Section~\ref{SecAssumptions}.
+
+Figure~\ref{FigBoundary} shows the boundary, the components inside it, and the
+external entities it depends on. The components are described in
+Table~\ref{TblComponents} and the external entities in
+Table~\ref{TblExternal}. The components are a high-level division for
+identifying hazards, not a final design; the software architecture will be
+specified in the Design Document.
+
+\begin{figure}[H]
+  \centering
+  \makebox[\textwidth][c]{%
+    \begin{tikzpicture}[scale=0.72, transform shape,
+      comp/.style={draw, rectangle, rounded corners=2pt, align=center,
+          minimum width=2.6cm, minimum height=0.9cm, font=\footnotesize, fill=white},
+      ext/.style={comp, fill=gray!25},
+      link/.style={-{Stealth[length=2mm]}, thick},
+      both/.style={{Stealth[length=2mm]}-{Stealth[length=2mm]}, thick},
+      lbl/.style={font=\scriptsize, align=center, inner sep=1.5pt}]
+
+      % Inside the boundary
+      \node[comp] (c1) at (0,0) {C1 Mobile\\application};
+      \node[comp] (c2) at (0,-1.8) {C2 Health data\\integration};
+      \node[comp] (c9) at (3.6,1.6) {C9 Accounts and\\authentication};
+      \node[comp] (c10) at (3.6,0) {C10 Backend API};
+      \node[comp] (c11) at (3.6,-1.8) {C11 Database};
+      \node[comp] (c3) at (7.4,1.2) {C3 Reward\\engine};
+      \node[comp] (c5) at (10.4,1.2) {C5 Trading and\\portfolio engine};
+      \node[comp] (c7) at (7.4,-0.2) {C7 Learning and\\feedback};
+      \node[comp] (c8) at (10.4,-0.2) {C8 Social feed};
+      \node[comp] (c4) at (7.4,-1.6) {C4 Market data\\service};
+      \node[comp] (c6) at (10.4,-1.6) {C6 Scenario\\engine};
+      \begin{scope}[on background layer]
+        \node[draw, fill=gray!8, rounded corners=3pt, inner sep=6pt,
+          fit=(c3) (c5) (c4) (c6),
+          label={[font=\scriptsize\itshape]above:Backend services}] (svc) {};
+      \end{scope}
+      \node[draw, dashed, thick, rounded corners=4pt, inner sep=10pt,
+        fit=(c1) (c2) (c9) (c11) (svc),
+        label={[font=\small\bfseries]above:\progname{} system boundary}] (sys) {};
+
+      % Outside the boundary
+      \node[ext] (e6) at (-5.2,1.6) {E6 App stores};
+      \node[ext] (e1) at (-5.2,0) {E1 User};
+      \node[ext] (e2) at (-5.2,-1.8) {E2 Phone OS and\\health platform};
+      \node[ext] (e5) at (3.6,-4.4) {E5 Hosting\\environment};
+      \node[ext] (e3) at (8.9,-4.4) {E3 Market data\\provider};
+      \node[ext] (e7) at (15.0,-0.2) {E7 Friends};
+      \node[ext] (e8) at (3.6,4.3) {E8 Email service};
+      \node[ext] (e9) at (10.4,4.3) {E9 Administrator};
+
+      \draw[both] (e1) -- node[lbl, above] {input and\\display} (c1);
+      \draw[link] (e2) -- node[lbl, above] {activity\\records} (c2);
+      \draw[link] (e6.east) -| node[lbl, pos=0.18, above] {install and updates} (c1.north);
+      \draw[link] (c2) -- (c1);
+      \draw[both] (c1) -- node[lbl, above] {requests} (c10);
+      \draw[both] (c10) -- (c9);
+      \draw[both] (c10) -- (c11);
+      \draw[both] (c10) -- node[lbl, above] {requests} (svc.west |- c10);
+      \draw[both] (svc.west |- c11) -- node[lbl, below] {stored data} (c11);
+      \draw[link] (e5) -- node[lbl, right] {hosts C3 to C11} (c11);
+      \draw[link] (e3) -- node[lbl, pos=0.2, left] {current\\prices} (c4);
+      \draw[link] (e3) -- node[lbl, pos=0.2, right] {historical\\prices} (c6);
+      \draw[link] (c8) -- node[lbl, pos=0.72, above] {shared\\updates} (e7);
+      \draw[link] (c9) -- node[lbl, pos=0.78, left] {password reset\\emails} (e8);
+      \draw[link] (e9) -- node[lbl, pos=0.4, right] {asset list and\\learning content} (e9 |- svc.north);
+    \end{tikzpicture}%
+  }
+  \caption{System boundary of \progname{}. Unshaded boxes are components inside
+    the boundary (dashed line); dark grey boxes are external entities outside it. Each
+    arrow shows that information flows from the element at its tail to the element
+    at its head; a double-headed arrow shows that information flows both ways.
+    The light grey group contains the backend services (C3 to C8): C10 passes each
+    request to the service responsible for it, and every service stores its data in
+    C11. External entity E4 (Network) is not drawn because it carries every arrow
+    that crosses the boundary. E9 (Administrator) is the development team in its
+    operating role (SRS Section~1.3).}
+  \label{FigBoundary}
+\end{figure}
+
+
+\begin{table}[H]
+  \caption{Components inside the system boundary} \label{TblComponents}
+  \small
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.22\textwidth}
+    X >{\raggedright\arraybackslash}p{0.2\textwidth}}
+    \toprule
+    \textbf{Component}                                                           & \textbf{Responsibility}                                    & \textbf{Sensitive data
+    handled}                                                                                                                                                           \\
+    \midrule
+    C1 Mobile application                                                        & Displays all screens, accepts user input, caches
+    recent data for offline viewing, and stores the user's session on the phone. &
+    Session token, cached balance, portfolio, and activity                                                                                                             \\
+    C2 Health data integration                                                   & Requests activity permissions and reads activity
+    records from the health platform through bridge libraries.                   & Activity
+    records                                                                                                                                                            \\
+    C3 Reward engine                                                             & Validates activity records and converts them into rewards. &
+    Activity records, balance                                                                                                                                          \\
+    C4 Market data service                                                       & Retrieves market prices from the provider, caches
+    them, and tracks how old each price is.                                      & None                                                                                \\
+    C5 Trading and portfolio engine                                              & Executes trades, maintains holdings and
+    balances, and calculates portfolio value.                                    & Balance, portfolio                                                                  \\
+    C6 Scenario engine                                                           & Replays historical prices for market scenarios.            &
+    Scenario portfolios                                                                                                                                                \\
+    C7 Learning and feedback                                                     & Provides concept explanations and knowledge checks,
+    generates feedback on decisions, and records learning progress.              & Learning
+    progress                                                                                                                                                           \\
+    C8 Social feed                                                               & Manages friend connections, sharing settings, and shared
+    updates.                                                                     & Friend list, shared updates                                                         \\
+    C9 Accounts and authentication                                               & Handles sign-up, sign-in, sessions, and
+    account deletion.                                                            & Email address, password hash, profile (age, height,
+    weight)                                                                                                                                                            \\
+    C10 Backend API                                                              & Receives requests from the mobile application, checks that
+    each is valid and authorized, and passes it to the right component.          & All of
+    the above, in transit                                                                                                                                              \\
+    C11 Database                                                                 & Stores all persistent data and its backups.                & All of the above,
+    at rest                                                                                                                                                            \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+
+\begin{table}[H]
+  \caption{External entities outside the system boundary} \label{TblExternal}
+  \small
+  \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.22\textwidth}
+    X X}
+    \toprule
+    \textbf{Entity}                            & \textbf{What crosses the boundary}                                      & \textbf{Dependency
+    and why it matters}                                                                                                                                                \\
+    \midrule
+    E1 User                                    & Profile, trades, sharing choices, and answers in; balance,
+    portfolio, explanations, and feedback out. & Can make mistakes, misunderstand
+    information, or try to cheat.                                                                                                                                      \\
+    E2 Phone OS and health platform            & Activity records and permission status in.
+                                               & Data may be missing, wrong, delayed, duplicated, or entered by hand. OS
+    updates can change permissions or break bridge libraries. Use of health data is
+    governed by each platform's policies~\cite{AppleReview, GoogleHealthConnect}.                                                                                      \\
+    E3 Market data provider                    & Current and historical prices in.                                       & May be
+    unavailable, rate limited, delayed, or wrong.                                                                                                                      \\
+    E4 Network                                 & All traffic between C1 and C10, and between C10 and E3.                 & May be
+    slow, interrupted, or monitored by a third party.                                                                                                                  \\
+    E5 Hosting environment                     & Runs C3 to C11.                                                         & May suffer outages or data loss.            \\
+    E6 App stores                              & The app's installation and updates.                                     & Set privacy and content
+    rules that \progname{} must meet to be distributed~\cite{AppleReview,
+    GooglePlayPolicy}.                                                                                                                                                 \\
+    E7 Friends                                 & Shared updates out.                                                     & Will see anything that is shared with them,
+    whether or not the user intended it.                                                                                                                               \\
+    E8 Email service & The user's email address and a password reset link
+    out. & May be unavailable or delay messages, which stops users from
+    resetting a forgotten password. Must not receive any other personal or
+    health data.\\
+    E9 Administrator & Changes to the list of tradable assets and to
+    educational content in. & Can make mistakes, such as publishing an
+    incorrect explanation or removing an asset that users hold.\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+\section{Critical Assumptions} \label{SecAssumptions}
+
+% \wss{These assumptions that are made about the software or system.  You should
+%   minimize the number of assumptions that remove potential hazards.  For instance,
+%   you could assume a part will never fail, but it is generally better to include
+%   this potential failure mode.}
+
+
+The assumptions below are kept to a minimum, because each assumption that
+removes a hazard also removes it from the analysis. Each assumption states why
+it is reasonable, which hazards it removes or limits, and what changes if it
+turns out to be false.
+
+\begin{itemize}
+  \item[CA1:] \textbf{No real money.} \progname{} never transfers, holds, or
+        displays real money, and never connects to a bank or brokerage account.
+        \emph{Rationale:} this is a fixed scope decision in the Problem Statement.
+        \emph{Effect:} hazards of direct monetary loss, such as unauthorized payments,
+        are removed. Indirect financial harm, where a user makes a real-world decision
+        based on misleading information from \progname{}, is still analyzed (\hyperref[H23]{H23}, \hyperref[H27]{H27}). \emph{If false:} if in-app purchases or any other
+        real-money feature is added, payment and fraud hazards must be added to this
+        analysis.
+  \item[CA2:] \textbf{Users are adults.} \progname{} is intended only for
+        people aged 18 or older. \emph{Rationale:} it is designed for young adults,
+        and collecting health data from minors can require the consent of a parent or
+        guardian under the Personal Information Protection and Electronic Documents
+        Act (PIPEDA)~\cite{PIPEDA}. \emph{Effect:} hazards that apply only to
+        children, such as age-appropriate content, are removed. The hazard that a
+        minor gives a false age is \emph{not} removed and is analyzed (\hyperref[H36]{H36}). \emph{If false:} if minors are later allowed to use
+        \progname{}, consent, content, and social feed hazards for children must be
+        added to this analysis.
+  \item[CA3:] \textbf{Device integrity.} The phone's operating system is not
+        rooted or jailbroken, and it enforces app sandboxing, secure storage, and its
+        permission model as documented. \emph{Rationale:} the team cannot detect or
+        defend against every attack by a compromised operating system.
+        \emph{Effect:} attacks that require control of the operating system are
+        removed. Attacks that use a modified copy of the \progname{} app are still
+        analyzed (\hyperref[H43]{H43}). \emph{If false:} an attacker in control
+        of the phone could read data stored on it, including the session token.
+        Because rewards, balances, and holdings are calculated only on the server
+        (Section~\ref{SecSafetyReqs}), such an attacker could affect only that
+        phone's own account. The app can also detect rooted or jailbroken phones and
+        warn the user, as recommended by the OWASP Mobile Application Security
+        Verification Standard (MASVS)~\cite{OWASPMASVS}.
+  \item[CA4:] \textbf{Documented platform behaviour.} When the health platform
+        and market data provider respond, their application programming interfaces
+        behave as their documentation states. \emph{Rationale:} \progname{} depends
+        on these services and cannot verify their internal behaviour.
+        \emph{Effect:} this does not assume the data they return is accurate,
+        complete, or timely; wrong, missing, delayed, and duplicated data are
+        analyzed (\hyperref[H3]{H3}, \hyperref[H4]{H4}, \hyperref[H5]{H5}, \hyperref[H13]{H13}, \hyperref[H14]{H14}). \emph{If false:} an undocumented change,
+        such as a renamed field, appears as failed or invalid responses, which
+        \progname{} already handles as missing or wrong data.
+  \item[CA5:] \textbf{Hosting security.} The hosting provider protects the
+        physical security of its servers and controls its own staff's access to them.
+        \emph{Rationale:} these controls are outside the team's reach.
+        \emph{Effect:} physical theft from the data centre is removed. Outages, data
+        loss, and breaches through \progname{}'s own software or credentials are
+        still analyzed (\hyperref[H40]{H40}, \hyperref[H44]{H44}, \hyperref[H45]{H45}). \emph{If false:} because personal
+        data is encrypted at rest, including in backups
+        (Section~\ref{SecSafetyReqs}), stolen storage would not expose it in
+        readable form.
+\end{itemize}
+
+To keep the analysis complete, the following are explicitly \emph{not}
+assumed, and their failures are included in Section~\ref{SecFMEA}:
+
+\begin{itemize}
+  \item The network is always available, fast, or private.
+  \item The market data provider is always available or within its request
+        limits.
+  \item Activity data is accurate, complete, of the correct type and unit, or
+        measured rather than entered by hand.
+  \item The market is open whenever a user wants to trade.
+  \item Users are honest, read every notice, or understand financial terms.
+  \item The phone's clock is correct, or the user stays in one time zone.
+  \item Users enter their true age.
+  \item Third-party libraries are free of defects or remain compatible with new
+        operating system versions.
+  \item Educational content written by the team is free of errors.
+\end{itemize}
+
+\section{Failure Mode and Effect Analysis} \label{SecFMEA}
+
+% \wss{Include your FMEA table here. This is the most important part of this document.}
+% \wss{The safety requirements in the table do not have to have the prefix SR.
+%   The most important thing is to show traceability to your SRS. You might trace to
+%   requirements you have already written, or you might need to add new
+%   requirements.}
+% \wss{If no safety requirement can be devised, other mitigation strategies can be
+%   entered in the table, including strategies involving providing additional
+%   documentation, and/or test cases.}
+
+
+\subsection{Method} \label{SecFMEAMethod}
+
+This analysis uses Failure Mode and Effect Analysis (FMEA), following the
+process described in IEC~60812~\cite{IEC60812}. FMEA is a bottom-up method: it
+examines each component in turn and asks how the component can fail, what the
+effect of that failure is, and what causes it. The method suits \progname{}
+because its components (Table~\ref{TblComponents}) are functional units with
+distinct responsibilities, so working through them one at a time gives
+systematic coverage. Failures that originate outside the boundary are listed
+under the component that must detect or respond to them. For each input, the
+analysis asks what happens if it is missing, wrong, late, or duplicated.
+
+The analysis covers security threats as well as accidental failures. Unlike a
+hazard, a threat is deliberate, so it cannot be ruled out because it seems
+unlikely; such failure modes are therefore included even when their causes
+require an attacker. To check that common hazards were not overlooked,
+security failure modes were compared with the OWASP Mobile
+Top~10~\cite{OWASPMobileTop10} and the OWASP Mobile Application Security
+Verification Standard (MASVS)~\cite{OWASPMASVS}, and accessibility failure
+modes with the Web Content Accessibility Guidelines (WCAG)~\cite{WCAG22}.
+
+For each failure mode, the recommended action is classified as
+\textbf{elimination} (E), when it removes the failure mode by design, or
+\textbf{mitigation} (M), when the failure mode can still occur but the action
+reduces its likelihood or its effects. Elimination is preferred wherever it is
+practical; mitigation is used only where elimination is not possible, following
+the principle of reducing risk as low as reasonably practicable (ALARP). Each
+recommended action leads to one or more safety and security requirements in
+Section~\ref{SecSafetyReqs}, which make the action verifiable.
+
+
+Each hazard $h$ is rated for severity $S(h)$ (Table~\ref{TblSeverity}) and
+likelihood $L(h)$ (Table~\ref{TblLikelihood}), each an integer from 1 to 5.
+Its risk score $R(h)$ and risk class are then
+\begin{equation} \label{EqRisk}
+  R(h) = S(h) \times L(h), \qquad
+  \mathit{class}(h) =
+  \begin{cases}
+    \text{High}   & \text{if } S(h) = 5 \text{ or } R(h) \geq 10,        \\
+    \text{Medium} & \text{if } S(h) < 5 \text{ and } 5 \leq R(h) \leq 9, \\
+    \text{Low}    & \text{if } S(h) < 5 \text{ and } R(h) \leq 4.
+  \end{cases}
+\end{equation}
+Likelihood ratings are estimates, and an outcome judged ``unlikely'' still
+happens. The risk class is therefore used only to order the work in
+Section~\ref{SecRoadmap}, never to decide whether a hazard is addressed: every
+hazard in Table~\ref{TblFMEA} receives a recommended action and a requirement,
+whatever its class. For the same reason, every hazard of critical severity is
+classified as High however unlikely it seems. Unlike a risk priority number,
+the score does not include a detection rating, so a hazard that is easy to
+detect is not given a lower priority.
+
+\begin{table}[H]
+  \caption{Severity ratings} \label{TblSeverity}
+  \small
+  \begin{tabularx}{\textwidth}{clX}
+    \toprule
+    \textbf{$S$} & \textbf{Level} & \textbf{Description}                                             \\
+    \midrule
+    1            & Negligible     & Minor inconvenience that the user can ignore.                    \\
+    2            & Minor          & Frustration, temporary confusion, or incorrect rewards or values
+    that can be corrected without lasting effect.                                                    \\
+    3            & Moderate       & Lost progress, a wrong concept learned, exposure of
+    non-sensitive data, or an outage affecting many users.                                           \\
+    4            & Major          & Exposure of one user's health or personal data, a real-world
+    financial decision based on misleading information, or injury.                                   \\
+    5            & Critical       & Exposure of many users' health or personal data, or a threat to
+    a user's physical safety.                                                                        \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \caption{Likelihood ratings} \label{TblLikelihood}
+  \small
+  \begin{tabularx}{\textwidth}{clX}
+    \toprule
+    \textbf{$L$} & \textbf{Level} & \textbf{Description}                                \\
+    \midrule
+    1            & Rare           & Requires an unusual combination of events.          \\
+    2            & Unlikely       & Could occur, but is not expected during normal use. \\
+    3            & Possible       & Expected to occur occasionally across all users.    \\
+    4            & Likely         & Expected to occur regularly in normal use.          \\
+    5            & Almost certain & Expected to occur for most users.                   \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The recommended actions use three symbolic constants, described in
+Table~\ref{TblConstants}. Their values are defined once, in Appendix~C of the
+SRS, so the team can adjust a value after testing without changing the actions
+or requirements that use it.
+
+\begin{table}[H]
+  \caption{Symbolic constants used in the recommended actions}
+  \label{TblConstants}
+  \small
+  \begin{tabularx}{\textwidth}{lX}
+    \toprule
+    \textbf{Constant} & \textbf{Meaning}\\
+    \midrule
+    \texttt{QUOTE\_STALENESS\_LIMIT} & Maximum age of a price used for a trade
+    while the asset's market is open.\\
+    \texttt{SYNC\_LOOKBACK\_PERIOD} & How far back each sync re-reads activity
+    records, to catch records the health platform writes late.\\
+    \texttt{DATA\_DELETION\_PERIOD} & Maximum time to delete all of a user's
+    personal data after they delete their account.\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+
+\subsection{FMEA Table} \label{SecFMEATable}
+
+Table~\ref{TblFMEA} presents the analysis, grouped by component. Its columns
+are the hazard identifier (ID), failure mode, effects of the failure, causes,
+detection method, severity ($S$), likelihood ($L$), risk class from
+Equation~\eqref{EqRisk}, type of action (E for elimination, M for mitigation),
+recommended action, and the resulting safety and security requirements (Req.)
+in Section~\ref{SecSafetyReqs}. Each hazard identifier links to the
+requirements that address it, and each requirement links back to its hazards.
+
+\newgeometry{margin=0.75in}
+\begin{landscape}
+  \scriptsize
+  \setlength{\tabcolsep}{3pt}
+  \renewcommand{\arraystretch}{1.15}
+  \begin{longtable}{>{\raggedright\arraybackslash}p{0.6cm}*{3}{>{\raggedright\arraybackslash}p{2.9cm}}>{\raggedright\arraybackslash}p{2.6cm}cccc>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{1.4cm}}
+    \caption{Failure Mode and Effect Analysis of \progname{}} \label{TblFMEA}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \\
+    \toprule
+    \textbf{ID}                   & \textbf{Failure mode}                                  & \textbf{Effects}                                                                       & \textbf{Causes}                                                                                        &
+    \textbf{Detection}            & \textbf{$S$}                                           & \textbf{$L$}                                                                           & \textbf{Risk}                                                                                          &
+    \textbf{Type}                 & \textbf{Recommended action}                            & \textbf{Req.}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  \\
+    \endfirsthead
+    \multicolumn{11}{l}{\textit{Table~\ref{TblFMEA} continued}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \\
+    \toprule
+    \textbf{ID}                   & \textbf{Failure mode}                                  & \textbf{Effects}                                                                       & \textbf{Causes}                                                                                        &
+    \textbf{Detection}            & \textbf{$S$}                                           & \textbf{$L$}                                                                           & \textbf{Risk}                                                                                          &
+    \textbf{Type}                 & \textbf{Recommended action}                            & \textbf{Req.}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  \\
+    \endhead
+    \bottomrule
+    \endfoot
+    \midrule
+    \multicolumn{11}{l}{\textbf{C2 Health data integration}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\*[2pt]
+    H1\phantomsection\label{H1}   & Activity permission not granted, or revoked            & No activity is read, so the user earns nothing and may believe the app is broken       & User declines the prompt; OS revokes permission after inactivity or an OS update                       & Check permission status before every sync                                           & 2 & 4 & Medium & M & Detect the missing permission, explain why it is needed and how to grant it, and keep other features usable              & \reqref{SEC-8}, \reqref{SEC-21} \\
+    H2\phantomsection\label{H2} & Health data read without consent, or after consent is withdrawn & Health data used against the user's wishes; breach of PIPEDA's consent principle & Data read before the consent step completes; withdrawal in the app not applied to background reads & Tests that withdraw consent and check that no further reads occur & 4 & 2 & Medium & E & Read health data only after the user consents, and stop every read as soon as consent is withdrawn in the app & \reqref{SEC-9} \\
+    H3\phantomsection\label{H3}   & Activity record has the wrong quantity, type, or unit  & User is over- or under-rewarded and sees wrong trends                                  & Sensor inaccuracy; activity misclassified (cycling recorded as steps); units mixed (minutes and steps) & Compare each record against plausible limits for its type                           & 2 & 4 & Medium & M & Reject records outside the plausibility limits for their activity type, and cap daily rewards          & \reqref{SAF-7}, \reqref{SEC-1} \\
+    H4\phantomsection\label{H4}   & Same activity counted twice                            & Excess rewards, unfair comparisons with friends, and overstated fitness trends         & Phone and connected watch both report the same steps; the same interval is read again on a later sync  & Compare record identifiers and overlapping time intervals                           & 2 & 4 & Medium & E & Reward each interval of activity at most once                                                                            & \reqref{SEC-19} \\
+    H5\phantomsection\label{H5}   & Activity missing or recorded late                      & User is under-rewarded and sees incorrect trends                                       & OS restricts background sync; phone is off; platform writes data late                                  & Re-read a recent window of records on each sync                                     & 2 & 4 & Medium & M & Re-read and reward activity records from the last \texttt{SYNC\_LOOKBACK\_PERIOD}                                                      & \reqref{SEC-20} \\
+    H6\phantomsection\label{H6}   & Bridge library fails after an OS update                & App crashes or stops reading activity for all users on that OS                         & Library is unmaintained or not yet updated for a new platform API                                      & Test on each new OS version before release; crash reports                           & 3 & 3 & Medium & M & Fail without crashing and inform the user; pin library versions and test on new OS versions before each release          & \reqref{SEC-21} \\
+    H7\phantomsection\label{H7}   & Fabricated activity accepted                           & Unfair rewards and misleading shared milestones                                        & Manual entries in the health platform; other apps writing data; shaking the phone                      & Check each record's source; compare against plausible limits                        & 2 & 3 & Medium & M & Reject records outside the plausibility limits for their activity type, and cap daily rewards                                                      & \reqref{SAF-7}, \reqref{SEC-1} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C3 Reward engine}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \\*[2pt]
+    H8\phantomsection\label{H8}   & Reward calculated incorrectly                          & Wrong balance; user loses trust in the app                                             & Wrong conversion rate, rounding error, or mixed units (steps and minutes)                              & Unit tests with known values; reconcile balance against its history                 & 2 & 3 & Medium & M & Record every change to a balance with its reason, so the balance can be recomputed and checked                           & \reqref{SEC-22} \\
+    H9\phantomsection\label{H9}   & Activity counted on the wrong day                      & Daily cap applied to the wrong total; milestones and trends shifted                    & Time zones, daylight saving changes, or travel                                                         & Tests with records near midnight and across time zone changes                       & 2 & 3 & Medium & E & Assign each record to a day using the user's time zone at the time of the activity                                       & \reqref{SAF-7}, \reqref{SEC-23} \\
+    H10\phantomsection\label{H10}   & Rewards encourage overexertion                         & User exercises beyond safe limits and is injured                                       & Rewards grow without limit; streaks punish rest days; comparison with friends                          & Not detectable at run time; review reward design against its safety requirements    & 4 & 2 & Medium & M & Cap daily rewards, protect streaks with rest days, never take away currency for a lapse, keep goals optional, send reminders only at chosen times, show no rankings, and show a health notice                                 & \reqref{SAF-1} to \reqref{SAF-7}, \reqref{SAF-11}, \reqref{SAF-12} \\
+    H11\phantomsection\label{H11} & Earning requires attention during exercise             & User is distracted, for example near traffic, and has an accident                      & Features that need a tap, check-in, or timer while exercising                                          & Design review of every earning feature                                              & 4 & 1 & Low    & E & Earn currency from recorded activity alone, with no interaction during exercise                                          & \reqref{SAF-13} \\
+    H12\phantomsection\label{H12} & Weight or calories become the focus of rewards         & Reinforces harmful eating or exercise behaviour                                        & Rewarding weight change; prominent weight trends; calorie targets                                      & Design review of every reward rule                                                  & 4 & 2 & Medium & E & Make body measurements optional and never base rewards on weight or calories                                             & \reqref{SAF-14} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C4 Market data service}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \\*[2pt]
+    H13\phantomsection\label{H13} & Prices not updated                                     & Portfolio value is out of date and trades happen at old prices, teaching wrong lessons & Provider outage, rate limit reached, or expired API key                                                & Track the age of every price                                                        & 2 & 4 & Medium & M & Show each price's age and block trades while the market is open and the price is older than \texttt{QUOTE\_STALENESS\_LIMIT}           & \reqref{SEC-2}, \reqref{SEC-3} \\
+    H14\phantomsection\label{H14} & Incorrect price used                                   & Wrong portfolio value and misleading feedback                                          & Erroneous data point; wrong symbol mapping; prices in different currencies combined                    & Compare each new price with the previous one; validate the asset list & 3 & 2 & Medium & M & Store every price with its currency and never combine values in different currencies                                          & \reqref{SEC-27} \\
+    H15\phantomsection\label{H15} & Stock split not applied                                & Portfolio shows a large false loss or gain                                             & Corporate actions ignored                                                                              & Split data from the provider; large overnight price changes                                  & 3 & 2 & Medium & E & Adjust holdings and history when a split occurs                                                                          & \reqref{SEC-28} \\
+    H16\phantomsection\label{H16} & Provider API key exposed                               & Request quota exhausted, causing an outage for all users, or unexpected cost           & Key embedded in the app or committed to the repository                                                 & Automated secret scanning on every pull request                                     & 3 & 3 & Medium & E & Keep provider credentials on the server only                                                                             & \reqref{SEC-33} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C5 Trading and portfolio engine}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\*[2pt]
+    H17\phantomsection\label{H17} & Trade processed twice                                  & Extra shares bought and balance charged twice                                          & Double tap; app retries after a timeout                                                                & Detect repeated request identifiers                                                 & 2 & 4 & Medium & E & Process each trade request at most once                                                                                  & \reqref{SEC-6} \\
+    H18\phantomsection\label{H18} & Trade executes at a price different from the one shown & User pays more or receives less than expected and loses trust                          & Price updated between viewing and confirming                                                           & Compare the executed price with the confirmed price                                 & 2 & 4 & Medium & E & Execute at the confirmed price, or ask the user to confirm the new price                                                 & \reqref{SEC-29} \\
+    H19\phantomsection\label{H19} & Trade requested while the market is closed             & Trade uses an old price, or is blocked with no explanation                             & Evenings, weekends, and holidays, when most users are free                                             & Check the asset's trading hours before each trade                                   & 2 & 5 & High   & E & Queue the trade until the market opens and tell the user                                                                 & \reqref{SEC-4} \\
+    H20\phantomsection\label{H20} & Balance or holding becomes negative                    & Invalid portfolio state and incorrect values                                           & Simultaneous requests; missing validation                                                              & Database constraints; tests with simultaneous requests                              & 3 & 2 & Medium & E & Never allow a negative balance or holding                                                                                & \reqref{SEC-5} \\
+    H21\phantomsection\label{H21} & Trade only partly completed                            & Currency deducted without shares added, or the reverse                                 & Crash or database error during a trade                                                                 & Reconcile balances and holdings against trade history                               & 3 & 2 & Medium & E & Complete each trade fully or not at all                                                                                  & \reqref{SEC-5} \\
+    H22\phantomsection\label{H22} & Portfolio value calculated incorrectly                 & Wrong progress shown and wrong lessons learned                                         & Floating-point rounding; wrong price used                                                              & Tests against hand-calculated values                                                & 3 & 2 & Medium & M & Calculate values to within 0.01 currency units                                                                           & \reqref{SEC-30} \\
+    H23\phantomsection\label{H23} & User treats simulated results as real financial advice & User makes a real-world investment decision and loses real money                       & Realistic interface; no clear labelling; feedback worded as a recommendation                           & Usability testing of labels; content review                                         & 4 & 2 & Medium & M & Label the currency as having no real value and the content as not financial advice; never recommend real-world purchases & \reqref{SAF-8}, \reqref{SAF-9}, \reqref{SAF-10} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C6 Scenario engine}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \\*[2pt]
+    H24\phantomsection\label{H24} & Scenario mistaken for the live market                  & User believes a crash is happening now, causing anxiety or wrong decisions             & Scenario screens look the same as live screens                                                         & Usability testing                                                                   & 3 & 3 & Medium & M & Mark scenario mode clearly and show the historical dates being replayed                                                  & \reqref{SAF-15} \\
+    H25\phantomsection\label{H25} & Scenario trades change the live portfolio              & Live progress is corrupted                                                             & Shared state between scenario and live portfolios                                                      & Tests that run scenarios and check the live portfolio                               & 3 & 2 & Medium & E & Keep scenario portfolios separate from the live portfolio                                                                & \reqref{SEC-31} \\
+    H26\phantomsection\label{H26} & Historical data has gaps                               & Replay is misleading                                                                   & Incomplete dataset from the provider                                                                   & Check datasets for gaps before release                                              & 2 & 2 & Low    & E & Validate each scenario dataset before it is offered                                                                      & \reqref{SEC-32} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C7 Learning and feedback}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \\*[2pt]
+    H27\phantomsection\label{H27} & Educational content is incorrect or outdated           & User learns a wrong concept and may apply it to real money or exercise                 & Author error; rules that change over time, such as contribution limits                                 & Peer review against cited sources                                                   & 3 & 3 & Medium & M & Give every content item a source and a review date, and have a second team member review it                              & \reqref{SAF-16} \\
+    H28\phantomsection\label{H28} & Knowledge check marks an answer incorrectly            & User is told a wrong concept is right, or a right one is wrong                         & Error in the answer key                                                                                & Peer review of every question and answer                                            & 2 & 3 & Medium & M & Review every answer key with its content item                                                                            & \reqref{SAF-16} \\
+    H29\phantomsection\label{H29} & Feedback misexplains a portfolio change                & User draws the wrong lesson from their own decision                                    & Generic text not based on the user's data; wrong attribution of cause                                  & Tests comparing feedback with known portfolio changes                               & 2 & 3 & Medium & M & Base feedback on, and show, the user's actual data                                                                       & \reqref{SAF-17} \\
+    H30\phantomsection\label{H30} & Fitness content read as medical advice                 & User ignores a medical condition and is harmed                                         & Content worded as personal instructions                                                                & Content review                                                                      & 4 & 2 & Medium & M & Show a health notice and keep fitness content general                                                                    & \reqref{SAF-12} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C8 Social feed}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \\*[2pt]
+    H31\phantomsection\label{H31} & Update visible beyond the user's choice                & Loss of privacy and embarrassment                                                      & Sharing on by default; visibility defect; settings reset after an update                               & Tests of visibility rules for every update type                                     & 4 & 3 & High   & M & Share nothing by default and show updates only to accepted friends                                                       & \reqref{SEC-13} \\
+    H32\phantomsection\label{H32} & Raw health data or body measurements shared            & Loss of privacy about health or body                                                   & Shared update built from raw records                                                                   & Tests of shared update contents                                                     & 4 & 2 & Medium & E & Never include raw health data or body measurements in a shared update                                                    & \reqref{SEC-14}, \reqref{SEC-35} \\
+    H33\phantomsection\label{H33} & Unwanted contact from other users                      & Harassment and distress                                                                & Anyone can add a user as a friend; no way to remove contacts                                           & User reports                                                                        & 3 & 2 & Medium & M & Require acceptance of friend requests and allow removing and blocking                                                    & \reqref{SEC-36} \\
+    H34\phantomsection\label{H34} & Location revealed through workout data                 & A user's home or routine is revealed, risking physical safety                          & Route maps read from workouts                                                                          & Review of every data type read                                                      & 5 & 1 & High   & E & Never read or store location or route data                                                                               & \reqref{SEC-12}, \reqref{SEC-14} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C9 Accounts and authentication}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \\*[2pt]
+    H35\phantomsection\label{H35} & Account taken over                                     & Loss of privacy; account data changed or deleted                                       & Weak or reused passwords; repeated guessing                                                            & Monitor failed sign-in attempts                                                     & 4 & 3 & High   & M & Enforce password rules, limit sign-in attempts, and store session tokens in the phone's secure storage                   & \reqref{SEC-38}, \reqref{SEC-39} \\
+    H36\phantomsection\label{H36} & A person under 18 creates an account                   & Health data collected from a minor without the consent the law may require             & False age entered at sign-up                                                                           & Not reliably detectable                                                             & 3 & 2 & Medium & M & Require users to confirm they are 18 or older, and delete the account if told otherwise                                  & \reqref{SEC-37} \\
+    H37\phantomsection\label{H37} & Session stays valid after logout or a lost phone       & Another person uses the account                                                        & Sessions that never expire                                                                             & Tests of session expiry                                                             & 3 & 2 & Medium & M & Expire sessions and allow signing out of all devices                                                                     & \reqref{SEC-17} \\
+    H38\phantomsection\label{H38} & User cannot sign in                                    & User is locked out of their progress and may abandon the app                           & Forgotten password; authentication service outage                                                      & Monitor sign-in failures and outages                                                & 2 & 3 & Medium & M & Provide password reset by email and show a clear error message when sign-in fails                                        & \reqref{SEC-40} \\
+    H39\phantomsection\label{H39} & Account deletion incomplete                            & Personal data kept against the user's wishes; breach of PIPEDA                         & Data left in tables or backups                                                                         & Tests that delete an account and search for its data                                & 3 & 2 & Medium & E & Delete all personal data within \texttt{DATA\_DELETION\_PERIOD} of a request                                                    & \reqref{SEC-18} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C10 Backend API}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\*[2pt]
+    H40\phantomsection\label{H40} & One user can access another user's data                & Breach of health and personal data                                                     & Missing authorization check on requested records                                                       & Tests requesting other users' records                                               & 5 & 2 & High   & M & Check on every request that the data belongs to the requesting user                                                      & \reqref{SEC-15} \\
+    H41\phantomsection\label{H41} & Data intercepted in transit                            & Loss of privacy                                                                        & Unencrypted connection; public Wi-Fi                                                                   & Configuration tests                                                                 & 4 & 2 & Medium & M & Encrypt all communication                                                                                                & \reqref{SEC-16} \\
+    H42\phantomsection\label{H42} & Personal data sent to a third party & Health or personal data reaches companies the user never agreed to share it with & Analytics or crash-reporting libraries that send user data; user identifiers added to market data requests & Inspect all outgoing traffic from a test phone and the server & 4 & 2 & Medium & E & Send no personal, health or location data to any third party, and send the market data provider only asset identifiers & \reqref{SEC-11} \\
+    H43\phantomsection\label{H43} & Modified app sends false activity or balances          & Unfair rewards and corrupted data                                                      & Tampered copy of the app; crafted requests                                                             & Server-side validation logs                                                         & 2 & 3 & Medium & M & Treat the server as the only authority for rewards and balances, and validate every input                                & \reqref{SEC-24}, \reqref{SEC-25} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C11 Database}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \\*[2pt]
+    H44\phantomsection\label{H44} & Data lost                                              & Users lose their progress and history                                                  & Hosting failure; faulty migration; accidental deletion                                                 & Monitoring; scheduled restore tests                                                 & 3 & 2 & Medium & M & Back up data at least daily and test restoring it                                                                        & \reqref{SEC-26} \\
+    H45\phantomsection\label{H45} & Database or backup breached                            & Health and personal data of all users exposed                                          & Leaked credentials; publicly accessible backups                                                        & Access logs                                                                         & 5 & 2 & High   & M & Encrypt data at rest, including backups, and collect only the data the SRS lists                                         & \reqref{SEC-7}, \reqref{SEC-10}, \reqref{SEC-16} \\
+    \midrule
+    \multicolumn{11}{l}{\textbf{C1 Mobile application}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \\*[2pt]
+    H46\phantomsection\label{H46} & App closed or battery dies during a trade or sync      & User cannot tell whether a trade completed, or repeats it                              & Phone shuts down, user closes the app, or network drops mid-request                                    & Compare the server's record with the app's state when it reopens                    & 2 & 3 & Medium & E & Complete each trade on the server fully or not at all, and show its final status when the app reopens                    & \reqref{SEC-5}, \reqref{SEC-6} \\
+    H47\phantomsection\label{H47} & Cached data shown as current while offline             & User makes decisions on outdated information                                           & No network; app opened offline                                                                         & Compare cache time with the current time                                            & 2 & 4 & Medium & M & Show an offline indicator and the time of the last update                                                                & \reqref{SEC-2} \\
+    H48\phantomsection\label{H48} & Notification reveals health or portfolio data          & Others see private data on the lock screen                                             & Notification text includes values                                                                      & Review of notification text                                                         & 3 & 3 & Medium & M & Keep values out of notifications unless the user turns them on                                                           & \reqref{SEC-34} \\
+    H49\phantomsection\label{H49} & Reminder sent at a harmful time & User exercises late at night or while unwell to keep a streak, or is disturbed at work or while asleep & Reminders scheduled without regard to the user's chosen periods; time zone changes & Tests of reminder delivery times, including across time zone changes & 3 & 3 & Medium & M & Send reminders only during the periods the user chose, or the default period if they chose none & \reqref{SAF-6} \\
+    H50\phantomsection\label{H50} & Gains and losses shown by colour alone                 & Colour-blind users misread their results                                               & Red and green used as the only indicator                                                               & Accessibility review                                                                & 2 & 3 & Medium & E & Show gains and losses with a sign and text as well as colour                                                             & \reqref{SAF-18} \\
+    H51\phantomsection\label{H51} & Phone clock changed to claim rewards                   & Unfair rewards                                                                         & User changes the date on the phone                                                                     & Compare record times with server time                                               & 2 & 2 & Low    & E & Use server time and the platform's record times, never the phone clock, for rewards                                      & \reqref{SEC-24} \\
+  \end{longtable}
+\end{landscape}
+\restoregeometry
+
+Table~\ref{TblRiskMatrix} summarizes the analysis by placing each hazard of
+Table~\ref{TblFMEA} at its severity and likelihood; darker cells are higher
+risk classes. Of the 51 hazards, 21 are eliminated by design and the rest
+are mitigated. The High-risk hazards concern the exposure of personal data
+(\hyperref[H31]{H31}, \hyperref[H35]{H35}, \hyperref[H40]{H40}, \hyperref[H45]{H45}), the user's physical safety (\hyperref[H34]{H34}), and
+trading while the market is closed (\hyperref[H19]{H19}), which is minor but affects
+almost every user.
+
+
+\begin{table}[H]
+  \caption{Risk matrix: hazards by severity ($S$) and likelihood ($L$)}
+  \label{TblRiskMatrix}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabularx}{\textwidth}{c *{5}{>{\raggedright\arraybackslash}X}}
+    \toprule
+    \multirow{2}{*}{\textbf{Severity $S$}}
+     & \multicolumn{5}{c}{\textbf{Likelihood $L$}}                                                                                                                                                                                                                                                                \\
+    \cmidrule(l){2-6}
+     & \textbf{1 Rare}                                                                                                                                                                                                                                          & \textbf{2 Unlikely}       & \textbf{3 Possible}
+     & \textbf{4 Likely}                                                                                                                                                                                                                                        & \textbf{5 Almost certain}                       \\
+    \midrule
+    \textbf{5}
+     & \cellcolor{gray!45}\hyperref[H34]{H34}
+     & \cellcolor{gray!45}\hyperref[H40]{H40}, \hyperref[H45]{H45}
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}-- \\
+    \textbf{4}
+     & \cellcolor{white}\hyperref[H11]{H11}
+     & \cellcolor{gray!20}\hyperref[H2]{H2}, \hyperref[H10]{H10}, \hyperref[H12]{H12}, \hyperref[H23]{H23}, \hyperref[H30]{H30}, \hyperref[H32]{H32}, \hyperref[H41]{H41}, \hyperref[H42]{H42}
+     & \cellcolor{gray!45}\hyperref[H31]{H31}, \hyperref[H35]{H35}
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}-- \\
+    \textbf{3}
+     & \cellcolor{white}--
+     & \cellcolor{gray!20}\hyperref[H14]{H14}, \hyperref[H15]{H15}, \hyperref[H20]{H20}, \hyperref[H21]{H21}, \hyperref[H22]{H22}, \hyperref[H25]{H25}, \hyperref[H33]{H33}, \hyperref[H36]{H36}, \hyperref[H37]{H37}, \hyperref[H39]{H39}, \hyperref[H44]{H44}
+     & \cellcolor{gray!20}\hyperref[H6]{H6}, \hyperref[H16]{H16}, \hyperref[H24]{H24}, \hyperref[H27]{H27}, \hyperref[H48]{H48}, \hyperref[H49]{H49}
+     & \cellcolor{gray!45}--
+     & \cellcolor{gray!45}-- \\
+    \textbf{2}
+     & \cellcolor{white}--
+     & \cellcolor{white}\hyperref[H26]{H26}, \hyperref[H51]{H51}
+     & \cellcolor{gray!20}\hyperref[H7]{H7}, \hyperref[H8]{H8}, \hyperref[H9]{H9}, \hyperref[H28]{H28}, \hyperref[H29]{H29}, \hyperref[H38]{H38}, \hyperref[H43]{H43}, \hyperref[H46]{H46}, \hyperref[H50]{H50}
+     & \cellcolor{gray!20}\hyperref[H1]{H1}, \hyperref[H3]{H3}, \hyperref[H4]{H4}, \hyperref[H5]{H5}, \hyperref[H13]{H13}, \hyperref[H17]{H17}, \hyperref[H18]{H18}, \hyperref[H47]{H47}
+     & \cellcolor{gray!45}\hyperref[H19]{H19} \\
+    \textbf{1}
+     & \cellcolor{white}--
+     & \cellcolor{white}--
+     & \cellcolor{white}--
+     & \cellcolor{white}--
+     & \cellcolor{gray!20}-- \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
 
 \section{Safety and Security Requirements} \label{SecSafetyReqs}
 
@@ -227,7 +828,7 @@ injured or late at night to keep a streak alive. In user interviews, one
 participant described a step streak that makes them go out walking when they
 otherwise would not, including late in the evening (P01), and another admired
 pushing through exercise regardless of pain (P02).}
-{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{FMEA H10, L1 (physical harm), L2 (psychological harm).}
 {SRS Section~6.2, FR\_ActRestDay.}
 {Capstone.}
 
@@ -247,7 +848,7 @@ harmful mainly when a user falls far behind (P02). Taking away earned currency
 or holdings would also add pressure to exercise when unwell, and would mix
 fitness penalties into the investment results the user is trying to learn
 from.}
-{FMEA H9, L1 (physical harm), L2 (psychological harm), L6 (financial-understanding harm).}
+{FMEA H10, L1 (physical harm), L2 (psychological harm), L6 (financial-understanding harm).}
 {SRS Section~6.2, FR\_ActNoPenalty.}
 {Capstone.}
 
@@ -259,7 +860,7 @@ for it.}
 {Some users track their activity informally and set no goals (P02). Requiring a
 goal would push them into targets they did not choose, or shut them out of the
 reward that is central to \progname{}.}
-{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{FMEA H10, L1 (physical harm), L2 (psychological harm).}
 {SRS Section~6.2, FR\_ActGoalOptional.}
 {Capstone.}
 
@@ -275,7 +876,7 @@ ignores these limits and leads to overexertion or to goals that are repeatedly
 missed. Users can still change their own goal at any time (SRS Section~6.2,
 FR\_ActGoal). A change applies from the next day, so lowering a goal cannot
 keep the current day's streak alive.}
-{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{FMEA H10, L1 (physical harm), L2 (psychological harm).}
 {SRS Section~6.2, FR\_ActNoAutoGoal.}
 {Capstone.}
 
@@ -289,7 +890,7 @@ most the user's goal at the start of that period multiplied by
 does so only until it is hard but still winnable, and keeps their step goal
 fixed because a higher target takes too much time (P01). The system therefore
 limits suggested increases to \texttt{MAX\_GOAL\_INCREASE} per week.}
-{FMEA H9, L1 (physical harm).}
+{FMEA H10, L1 (physical harm).}
 {None. \progname{} does not suggest goal changes in the capstone.}
 {Future, if goal suggestions are added.}
 
@@ -306,9 +907,52 @@ on and only interrupts the user. Late reminders also add pressure to exercise
 late at night: one participant described their streak making them go out
 walking at 9 p.m.\ when they otherwise would not (P01). Letting users choose
 when they are reminded keeps reminders useful and avoids late-night pressure.}
-{FMEA H9, L1 (physical harm), L2 (psychological harm).}
+{FMEA H10, H49, L1 (physical harm), L2 (psychological harm).}
 {SRS Section~6.6, FR\_RemindInPeriods. Implemented in part by SRS
 Section~6.6, FR\_RemindPeriods.}
+{Capstone.}
+
+
+\hazreq{SAF-12}{Health notice before the first reward}
+{Before the user first earns currency, the system shall display a notice
+stating that \progname{} does not give medical advice and that users should
+consult a health professional before starting a new exercise program, and
+shall not award currency until the user acknowledges it.}
+{A new test user is shown the notice before their first reward, and earns no
+currency until they acknowledge it.}
+{Rewards encourage more activity, and fitness explanations describe exercise
+in general terms. A user with a medical condition could read either as a
+personal recommendation. The notice makes clear that \progname{} is not a
+substitute for medical advice, and fitness content stays general
+(SRS Section~1.2, Out of scope).}
+{FMEA H10, H30, L1 (physical harm).}
+{SRS Section~6.2, FR\_ActHealthNotice.}
+{Capstone.}
+
+\hazreq{SAF-13}{No interaction during activity}
+{The system shall award currency for recorded activity without requiring any
+interaction with \progname{} while the activity is in progress.}
+{A test user who records a workout without opening \progname{} during it
+receives the same currency as one who opens the app during the workout.}
+{A feature that needs a tap, check-in or timer during exercise draws the
+user's attention away from their surroundings, for example near traffic.
+Reading activity from the health platform afterwards
+(SRS Section~2.5, SC2) removes that need entirely.}
+{FMEA H11, L1 (physical harm).}
+{SRS Section~6.2, FR\_ActNoInteraction.}
+{Capstone.}
+
+\hazreq{SAF-14}{No rewards for weight or calories}
+{The system shall not base any reward, goal or milestone on the user's body
+weight, change in weight, or calories.}
+{No reward rule, goal or milestone in \progname{} uses body weight, weight
+change or calories as an input, and a test user's rewards are unchanged when
+their weight is changed or removed.}
+{Rewarding weight change or calories can reinforce harmful eating and exercise
+behaviour. Height and weight are optional (SRS Section~6.1,
+FR\_AcctBodyOptional), so no reward can depend on them.}
+{FMEA H12, L1 (physical harm), L2 (psychological harm).}
+{SRS Section~6.2, FR\_ActNoWeightReward.}
 {Capstone.}
 
 \end{description}
@@ -351,7 +995,7 @@ rather than to any one activity, so it works the same way for every supported
 activity type (Problem Statement Goal 5). The cap limits how much a day can
 earn, but it does not judge whether an activity record is genuine.
 \reqref{SEC-1} covers that.}
-{FMEA H2, H6, H8, H9, L1 (physical harm), L4 (security loss), L5 (data loss and
+{FMEA H3, H7, H9, H10, L1 (physical harm), L4 (security loss), L5 (data loss and
 integrity).}
 {SRS Section~6.2, FR\_ActDailyCap.}
 {Capstone.}
@@ -373,8 +1017,121 @@ that could not come from real activity.
 Small amounts of everyday tracking noise, such as steps counted while riding a
 bus (P01), stay within the limits and are accepted. The limits target records
 that are clearly impossible.}
-{FMEA H2, H6, L4 (security loss), L5 (data loss and integrity).}
+{FMEA H3, H7, L4 (security loss), L5 (data loss and integrity).}
 {SRS Section~6.2, FR\_ActPlausible.}
+{Capstone.}
+
+
+\hazreq{SEC-19}{Count each activity once}
+{The system shall award currency for each activity record at most once, even
+when the record is read more than once.}
+{When the same test records are read on two consecutive syncs, the user is
+rewarded for them once.}
+{Each sync re-reads recent records to catch late ones (\reqref{SEC-20}).
+Without this requirement, every re-read would reward the same activity again,
+over-rewarding the user and overstating their trends and shared milestones.
+Combining several activity sources is a stretch goal and is out of scope
+(Section~\ref{SecScopePurpose}).}
+{FMEA H4, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-19.}
+{Capstone.}
+
+\hazreq{SEC-20}{Catch late activity}
+{On each sync, the system shall read the activity records of the last
+\texttt{SYNC\_LOOKBACK\_PERIOD} and reward any record that has not already been
+rewarded.}
+{A test record written to the health platform two days after the activity took
+place is rewarded on the next sync, once.}
+{The phone's operating system can delay background syncs, and the health
+platform can receive records late, for example when a watch syncs the next day.
+Re-reading a recent window catches these records. \reqref{SEC-19} prevents the
+re-read records from being counted twice.}
+{FMEA H5, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-20.}
+{Capstone.}
+
+\hazreq{SEC-21}{Activity unavailable}
+{When the system cannot read activity data, because permission has not been
+granted or the health platform does not respond, it shall tell the user that
+activity could not be read, keep the currency already earned, and keep every
+feature that does not need new activity data usable.}
+{With health permission denied, and separately with the health platform
+returning errors, a test user is told that activity could not be read, their
+balance is unchanged, and trading, learning and the social feed still work.}
+{Permission can be declined or revoked by the operating system, and a library
+update can break reading for every user on one operating system version.
+Neither should crash the app or cost the user what they have earned.}
+{FMEA H1, H6, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-21. Implemented in part by SRS Section~6.2,
+FR\_ActNoData.}
+{Capstone.}
+
+\hazreq{SEC-22}{Balance history}
+{The system shall record every change to a user's currency balance with its
+amount, time and reason, and the balance shall always equal the sum of its
+recorded changes.}
+{For a test user after a series of rewards and trades, the balance equals the
+sum of the recorded changes, and each change shows its amount, time and
+reason.}
+{A wrong conversion rate or rounding error in a reward is otherwise invisible.
+A complete history lets the team detect it, recompute the correct balance, and
+explain any balance to the user.}
+{FMEA H8, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-22.}
+{Capstone.}
+
+\hazreq{SEC-23}{Count activity on the user's day}
+{The system shall assign each activity record to a calendar day using the
+user's time zone at the time of the activity.}
+{Test records at 23:30 and 00:30 local time are assigned to two different days,
+and a record made before a time zone change keeps the day on which it took
+place.}
+{The daily earning cap (\reqref{SAF-7}), streaks and trends all depend on which
+day a record belongs to. Using the server's time zone, or ignoring travel and
+daylight saving changes, moves activity to the wrong day.}
+{FMEA H9, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-23.}
+{Capstone.}
+
+\hazreq{SEC-24}{The server decides rewards and balances}
+{The system shall calculate rewards, balances and holdings only on the server,
+using the health platform's record times and the server's clock, and shall not
+accept these values, or times, from the app.}
+{A test request from a modified app that reports its own reward, balance or
+holding is rejected, and changing a test phone's clock does not change the
+rewards earned.}
+{A modified copy of the app, or a phone with its clock moved, can report any
+value it likes. Critical Assumption CA3 does not exclude a modified app, so the
+server must be the only authority for values that matter.}
+{FMEA H43, H51, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-24.}
+{Capstone.}
+
+\hazreq{SEC-25}{Validate every request}
+{The server shall reject any request whose inputs are missing, of the wrong
+type, or outside the limits stated in the SRS.}
+{Test requests with a missing field, a value of the wrong type, and a value
+outside its SRS limit, such as a negative trade quantity, are each rejected
+with an error and change no data.}
+{Crafted requests can bypass every check made in the app. Checking every input
+on the server stops them from corrupting data or reaching code paths that were
+never meant to receive them~\cite{OWASPMobileTop10}.}
+{FMEA H43, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-25.}
+{Capstone.}
+
+\hazreq{SEC-26}{Backups}
+{The system shall back up all persistent data at least once every
+\texttt{BACKUP\_INTERVAL}, and restoring from a backup shall be tested before
+each release.}
+{The backup log shows a backup in every \texttt{BACKUP\_INTERVAL}, and the
+release checklist shows a successful test restore before each release.}
+{A hosting failure, faulty migration or accidental deletion would otherwise
+lose every user's progress. A backup that has never been restored may not
+work when it is needed. Backups are encrypted and covered by deletion
+(\reqref{SEC-16}, \reqref{SEC-18}).}
+{FMEA H44, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-26.}
 {Capstone.}
 
 \end{description}
@@ -401,7 +1158,7 @@ money. Users who learn investing on their own also draw on informal sources of
 mixed quality: one participant learned from online videos and forums, warned
 that it is easy to end up following the wrong kinds of investing content, and
 looked for answers tailored to their own situation (P01).}
-{FMEA H22, L6 (financial-understanding harm).}
+{FMEA H23, L6 (financial-understanding harm).}
 {SRS Section~6.3, FR\_MktSimNotice.}
 {Capstone.}
 
@@ -412,7 +1169,7 @@ named asset, or presents assets as a ``recommended pick''.}
 {Recommending specific assets would be personalized financial advice, which
 \progname{} is not licensed to give, and users may act on it with real money
 (P01).}
-{FMEA H22, L6 (financial-understanding harm).}
+{FMEA H23, L6 (financial-understanding harm).}
 {SRS Section~6.3, FR\_MktNoRecommend. Implemented in part by SRS
 Section~6.4, FR\_LearnConcentration.}
 {Capstone.}
@@ -424,8 +1181,61 @@ simulated.}
 label next to it.}
 {Simulated returns leave out real costs such as fees and taxes, so users could
 mistake them for results they would get with real money.}
-{FMEA H22, L6 (financial-understanding harm).}
+{FMEA H23, L6 (financial-understanding harm).}
 {SRS Section~6.3, FR\_MktLabelReturns.}
+{Capstone.}
+
+
+\hazreq{SAF-15}{Mark market scenarios}
+{The system shall mark every screen of a market scenario as a scenario, and
+shall show the historical dates being replayed.}
+{Every screen shown during a test scenario carries a scenario label and the
+dates of the period being replayed, and no screen of the live market does.}
+{A replayed crash that looks like the live market could make a user believe it
+is happening now, causing anxiety or a real-world decision based on old
+events.}
+{FMEA H24, L2 (psychological harm), L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktScenarioLabel.}
+{Capstone.}
+
+\hazreq{SAF-16}{Reviewed learning content}
+{The system shall show each concept explanation with its source and the date
+it was last reviewed, and each explanation and knowledge check answer shall be
+reviewed by a second team member before it is published.}
+{Every concept explanation shown to a test user has a source and a review date,
+and the content log shows a second reviewer for every explanation and answer
+key.}
+{An incorrect explanation or answer key teaches a wrong concept that the user
+may later apply to real money or exercise. Some rules, such as account
+contribution limits, also change over time, so each item needs a source and a
+review date.}
+{FMEA H27, H28, L6 (financial-understanding harm).}
+{SRS Section~6.4, FR\_LearnReviewed.}
+{Capstone.}
+
+\hazreq{SAF-17}{Feedback shows its basis}
+{The system shall base all feedback on a portfolio change on the user's own
+holdings and price changes, and shall show the data it is based on.}
+{For a test portfolio change, the feedback names the holdings and price
+changes it refers to, and these match the portfolio's records.}
+{Generic feedback, or feedback that names the wrong cause, teaches the wrong
+lesson from the user's own decision. Showing the data lets the user check the
+explanation (SRS Section~6.4, FR\_LearnValueChange).}
+{FMEA H29, L6 (financial-understanding harm).}
+{SRS Section~6.4, FR\_LearnFeedbackBasis.}
+{Capstone.}
+
+\hazreq{SAF-18}{Gains and losses not shown by colour alone}
+{The system shall show every gain or loss with a sign or a text label, not by
+colour alone.}
+{With the display shown in greyscale, a tester can tell every gain from every
+loss on every screen.}
+{Red and green are the colours most often confused by people with colour
+vision deficiency, so a user could read a loss as a gain. WCAG~2.2 success
+criterion 1.4.1 forbids using colour as the only means of conveying
+information~\cite{WCAG22}.}
+{FMEA H50, L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktGainLossLabel.}
 {Capstone.}
 
 \end{description}
@@ -445,7 +1255,7 @@ shown with its time and no marker.}
 price shown as current misrepresents how the market moved and how a trade
 performed. The limit matches Problem Statement Goal 4 (prices within 15 minutes
 of the real market).}
-{FMEA H12, H45, L5 (data loss and integrity), L6 (financial-understanding
+{FMEA H13, H47, L5 (data loss and integrity), L6 (financial-understanding
 harm).}
 {SRS Section~6.3, FR\_MktPriceAge.}
 {Capstone.}
@@ -460,7 +1270,7 @@ proceeds.}
 {A trade at an old price misrepresents how the market moved and teaches the
 wrong lesson. The limit is the same one \reqref{SEC-2} uses to mark a price as
 delayed.}
-{FMEA H12, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{FMEA H13, L5 (data loss and integrity), L6 (financial-understanding harm).}
 {SRS Section~6.3, FR\_MktNoStaleTrade.}
 {Capstone.}
 
@@ -473,7 +1283,7 @@ the first price obtained after the market opens.}
 {Many users have time to practise in the evenings and on weekends, when markets
 are closed. Running those trades at the last closing price would use an old
 price, and refusing them without explanation would confuse the user.}
-{FMEA H18, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{FMEA H19, L5 (data loss and integrity), L6 (financial-understanding harm).}
 {SRS Section~6.3, FR\_MktQueueClosed.}
 {Capstone.}
 
@@ -489,7 +1299,7 @@ neither.}
 {A partly recorded trade could take currency without adding holdings, or the
 reverse. Allowing a user to spend more than their balance or sell more than
 they hold would create currency or holdings that were never earned.}
-{FMEA H19, H20, H44, L5 (data loss and integrity).}
+{FMEA H20, H21, H46, L5 (data loss and integrity).}
 {SRS Section~6.3, FR\_MktAtomicTrade.}
 {Capstone.}
 
@@ -501,8 +1311,96 @@ example by retrying after a dropped connection, exactly one trade is recorded.}
 {Mobile connections drop, and an app or user may resend a trade that already
 went through. Recording it twice would change the balance and holdings in a way
 the user did not intend.}
-{FMEA H16, H44, L5 (data loss and integrity).}
+{FMEA H17, H46, L5 (data loss and integrity).}
 {SRS Section~6.3, FR\_MktNoDuplicate.}
+{Capstone.}
+
+
+\hazreq{SEC-27}{Prices in one currency}
+{The system shall store every price with its currency, and shall not combine
+values in different currencies without converting them.}
+{For a test portfolio holding assets priced in two different currencies,
+every stored price has a currency, and the portfolio value equals the sum of
+the holdings after conversion to one currency.}
+{Assets listed on different exchanges, such as in Canada and the United
+States, are priced in different currencies. Adding their prices without
+conversion gives a wrong portfolio value and misleading feedback.}
+{FMEA H14, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-27.}
+{Capstone.}
+
+\hazreq{SEC-28}{Apply stock splits}
+{When an asset undergoes a stock split, the system shall adjust users'
+holdings and the asset's price history so that the split does not change any
+portfolio value.}
+{For a test asset that splits 2-for-1, every holding doubles, every historical
+price halves, and every portfolio value is the same before and after.}
+{Ignoring a split shows a large false loss or gain overnight, which teaches the
+wrong lesson about the asset.}
+{FMEA H15, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-28.}
+{Capstone.}
+
+\hazreq{SEC-29}{Trade at the confirmed price}
+{The system shall execute a trade at the price shown when the user confirmed
+it. If that price is no longer the latest price, it shall show the user the new
+price and ask them to confirm again.}
+{A test trade confirmed at a price that has not changed executes at that price.
+When the price changes between viewing and confirming, the trade does not
+execute until the user confirms the new price.}
+{Prices update while the user is deciding. Executing at a different price than
+the one shown charges the user an amount they did not agree to and undermines
+trust in the simulation (SRS Section~6.3, FR\_MktBuy).}
+{FMEA H18, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-29.}
+{Capstone.}
+
+\hazreq{SEC-30}{Accurate values}
+{The system shall calculate every displayed balance and portfolio value to
+within \texttt{VALUE\_TOLERANCE} of its exact value.}
+{For test portfolios with hand-calculated values, every displayed balance and
+portfolio value differs from the hand-calculated value by at most
+\texttt{VALUE\_TOLERANCE}.}
+{Rounding errors that build up over many trades show users progress they did
+not make, and break the balance history check (\reqref{SEC-22}).}
+{FMEA H22, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-30.}
+{Capstone.}
+
+\hazreq{SEC-31}{Separate scenario portfolios}
+{The system shall keep each market scenario's portfolio and balance separate
+from the user's live portfolio and balance.}
+{After a test user buys and sells in a scenario, their live balance and
+holdings are unchanged.}
+{A scenario is practice. If its trades changed the live portfolio, the user's
+real progress would be corrupted by a replay of the past.}
+{FMEA H25, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-31.}
+{Capstone.}
+
+\hazreq{SEC-32}{Complete scenario data}
+{The system shall offer a market scenario only after its historical data has
+been checked to contain a price for every asset in it on every trading day of
+its period.}
+{The check is run on every scenario dataset before release, and a test dataset
+with one missing day is not offered.}
+{A replay with gaps jumps between prices and misrepresents what happened in the
+period, which is the lesson the scenario is meant to teach.}
+{FMEA H26, L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-32.}
+{Capstone.}
+
+\hazreq{SEC-33}{Provider credentials stay on the server}
+{The system shall store the credentials for every external service only on the
+server, never in the app or in the code repository.}
+{Inspection of the app package and an automated scan of the repository find no
+external service credentials.}
+{A key in the app can be extracted from the installed package, and a key in
+the repository is visible to anyone with access to it. Either lets others use
+up the market data request limit, causing an outage for every user, or run up
+costs~\cite{OWASPMASVS}.}
+{FMEA H16, L4 (security loss).}
+{SRS Section~7.3, SEC-33.}
 {Capstone.}
 
 \end{description}
@@ -520,7 +1418,7 @@ type appears in the SRS data dictionary as an activity input.}
 {Each extra permission is more personal data that could be exposed. One
 participant said they look for apps that are frugal with the permissions they
 ask for (P01).}
-{FMEA H43, L3 (privacy loss).}
+{FMEA H45, L3 (privacy loss).}
 {SRS Section~7.3, SEC-7.}
 {Capstone.}
 
@@ -546,7 +1444,7 @@ withdraw consent in the app, no further health data is read.}
 {Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
 requires consent to collect personal information and lets people withdraw it.
 Health data is among the most sensitive data \progname{} handles.}
-{L3 (privacy loss).}
+{FMEA H2, L3 (privacy loss).}
 {SRS Section~7.3, SEC-9. Implemented in part by SRS
 Section~6.6, FR\_SetWithdrawConsent.}
 {Capstone.}
@@ -559,7 +1457,7 @@ records.}
 for each activity type and no individual activity records.}
 {Data that never leaves the phone cannot be exposed by a breach of the server. One participant prefers
 tools that keep their data on their own device rather than in the cloud (P01).}
-{FMEA H43, L3 (privacy loss).}
+{FMEA H45, L3 (privacy loss).}
 {SRS Section~7.3, SEC-10.}
 {Capstone.}
 
@@ -579,7 +1477,7 @@ their data is not sold (P01), and another wants their data kept secure by a
 reputable company (P02). Password reset by email (SRS Section~6.1,
 FR\_AcctResetPassword) needs an email service, so it receives only the address
 and the reset link.}
-{L3 (privacy loss).}
+{FMEA H42, L3 (privacy loss).}
 {SRS Section~7.3, SEC-11.}
 {Capstone.}
 
@@ -590,8 +1488,20 @@ location or route data is stored on the phone or the server.}
 {None of \progname{}'s features need location. Location or route data, such as
 the route maps some workouts store in the health platform, could reveal where a
 user lives or regularly goes.}
-{FMEA H33, L1 (physical harm), L3 (privacy loss).}
+{FMEA H34, L1 (physical harm), L3 (privacy loss).}
 {SRS Section~7.3, SEC-12.}
+{Capstone.}
+
+
+\hazreq{SEC-34}{Private notifications}
+{The system shall not include health data, balances or portfolio values in a
+notification unless the user has turned this on.}
+{With default settings, no notification sent to a test phone contains health
+data, a balance or a portfolio value.}
+{Notifications appear on the lock screen, where anyone near the phone can read
+them.}
+{FMEA H48, L3 (privacy loss).}
+{SRS Section~7.3, SEC-34.}
 {Capstone.}
 
 \end{description}
@@ -612,7 +1522,7 @@ no longer appears in that friend's social feed.}
 {Problem Statement Goal 3 measures success by users controlling who sees each
 shared statistic. Friends are expected to see only what a user chooses to
 share (Problem Statement 1.3).}
-{FMEA H30, L3 (privacy loss).}
+{FMEA H31, L3 (privacy loss).}
 {SRS Section~7.3, SEC-13. Implemented in part by SRS
 Section~6.5, FR\_SocialChooseFriends, FR\_SocialDeleteUpdate and
 FR\_SocialRemove.}
@@ -627,7 +1537,7 @@ or the exact time an activity took place.}
 reveal where a user lives, works or regularly goes. One participant pointed out
 that removing names does not make a person anonymous, because context can
 reveal who they are (P01).}
-{FMEA H31, H33, L1 (physical harm), L3 (privacy loss).}
+{FMEA H32, H34, L1 (physical harm), L3 (privacy loss).}
 {SRS Section~7.3, SEC-14.}
 {Capstone.}
 
@@ -640,9 +1550,35 @@ portfolio performance, or shows a user's position relative to others.}
 user is far behind (P02). A ranking makes that gap explicit and places someone
 last. Leaderboards are a stretch goal (Problem Statement Section~3). If they are
 built, they should be opt-in.}
-{FMEA H9, L2 (psychological harm).}
+{FMEA H10, L2 (psychological harm).}
 {SRS Section~6.5, FR\_SocialNoRanking.}
 {Capstone. Opt-in leaderboards: Future, with the stretch goal.}
+
+
+\hazreq{SEC-35}{No body data in shared updates}
+{The system shall not include body measurements or individual activity records
+in any shared update.}
+{No shared update shown to a test user's friends contains the user's age,
+height, weight, or an individual activity record.}
+{Shared updates are summaries the user chose, of the kinds listed in SRS
+Section~6.5. Body measurements and raw records are more sensitive than the
+summaries and are never needed to share progress.}
+{FMEA H32, L3 (privacy loss).}
+{SRS Section~6.5, FR\_SocialNoBody.}
+{Capstone.}
+
+\hazreq{SEC-36}{Friends only by acceptance}
+{The system shall make two users friends only after the user who received the
+friend request accepts it, and shall let either user remove the other at any
+time.}
+{Two test users are not friends while a request between them is pending or
+after it is declined, and stop being friends as soon as either removes the
+other.}
+{If anyone could add a user as a friend, a stranger could see their shared
+updates or contact them. Removing a friend lets a user end unwanted contact.}
+{FMEA H33, L2 (psychological harm), L3 (privacy loss).}
+{SRS Section~6.5, FR\_SocialAccept and FR\_SocialRemove.}
+{Capstone.}
 
 \end{description}
 
@@ -661,7 +1597,7 @@ is rejected, and a request for data that was shared succeeds.}
 belongs to or the friends it was shared with. \reqref{SEC-13} sets what a user
 shares. Usernames are the exception because friend requests are sent by
 username (SRS Section~6.5, FR\_SocialRequest).}
-{FMEA H39, L3 (privacy loss), L4 (security loss).}
+{FMEA H40, L3 (privacy loss), L4 (security loss).}
 {SRS Section~7.3, SEC-15.}
 {Capstone.}
 
@@ -673,7 +1609,7 @@ stored on the server, and its backups shows no readable user data.}
 {Data in transit can be intercepted on public networks, and stored data can be
 exposed if the server or a backup is compromised. Participants want their data
 kept secure (P02).}
-{FMEA H40, H43, L3 (privacy loss), L4 (security loss).}
+{FMEA H41, H45, L3 (privacy loss), L4 (security loss).}
 {SRS Section~7.3, SEC-16.}
 {Capstone.}
 
@@ -688,7 +1624,7 @@ must sign in again to continue.}
 and portfolio data for as long as the session stays valid. Ending
 unused sessions limits that window, and ending a session at sign-out stops a
 copied session from being reused (SRS Section~6.1, FR\_AcctSignOut).}
-{FMEA H36, L3 (privacy loss), L4 (security loss).}
+{FMEA H37, L3 (privacy loss), L4 (security loss).}
 {SRS Section~7.3, SEC-17.}
 {Capstone.}
 
@@ -707,9 +1643,62 @@ requests, and none of their shared updates appear in friends' social feeds.}
 longer than it is needed. The Apple App Store also requires apps that let users
 create an account to offer account deletion within the app (App Store Review
 Guideline 5.1.1(v)).}
-{FMEA H38, L3 (privacy loss).}
+{FMEA H39, L3 (privacy loss).}
 {SRS Section~7.3, SEC-18. Implemented in part by SRS
 Section~6.1, FR\_AcctDelete.}
+{Capstone.}
+
+
+\hazreq{SEC-37}{Adult users only}
+{The system shall not create an account until the user confirms that they are
+at least \texttt{MIN\_USER\_AGE} years old.}
+{A test user who does not confirm their age during sign-up has no account
+created.}
+{Critical Assumption CA2 limits \progname{} to adults, because collecting health
+data from minors would require additional consent. A user can still give a
+false age, which is why the hazard remains in the FMEA.}
+{FMEA H36, L3 (privacy loss).}
+{SRS Section~6.1, FR\_AcctAgeConfirm.}
+{Capstone.}
+
+\hazreq{SEC-38}{Limit sign-in attempts}
+{The system shall require passwords of at least \texttt{MIN\_PASSWORD\_LENGTH}
+characters, and after \texttt{MAX\_FAILED\_SIGNINS} failed sign-in attempts on
+an account shall refuse further attempts on it for
+\texttt{SIGNIN\_LOCKOUT\_PERIOD}.}
+{A test password shorter than \texttt{MIN\_PASSWORD\_LENGTH} is refused at
+sign-up, and after \texttt{MAX\_FAILED\_SIGNINS} wrong passwords even the
+correct password is refused until \texttt{SIGNIN\_LOCKOUT\_PERIOD} has
+passed.}
+{Short passwords and unlimited guessing are the most common ways an account is
+taken over. An account holds health and portfolio data, so a takeover is a
+High-risk hazard.}
+{FMEA H35, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-38.}
+{Capstone.}
+
+\hazreq{SEC-39}{Protect the session on the phone}
+{The system shall store the user's session only in the phone's secure
+storage.}
+{Inspection of a test phone's app storage finds the session only in the
+operating system's secure storage.}
+{A session stored in ordinary app storage can be copied by another app or from
+a backup of the phone, giving access to the account without the
+password~\cite{OWASPMASVS}.}
+{FMEA H35, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-39.}
+{Capstone.}
+
+\hazreq{SEC-40}{Account recovery}
+{The system shall let a user who has forgotten their password set a new one
+through a link sent to their account's email address.}
+{A test user who requests a reset receives a link at their email address, and
+after setting a new password can sign in only with the new one.}
+{A user who cannot sign in loses access to all their progress and may abandon
+the app. The link goes only to the account's email address, so recovery does
+not open a way into someone else's account.}
+{FMEA H38, L5 (data loss and integrity).}
+{SRS Section~6.1, FR\_AcctResetPassword.}
 {Capstone.}
 
 \end{description}
@@ -719,49 +1708,83 @@ Section~6.1, FR\_AcctDelete.}
 Table~\ref{TblSafetyTrace} summarises each requirement, the hazards it
 controls, and where it appears in the SRS.
 
-\begin{table}[H]
-\centering
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.11\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.14\textwidth}>{\raggedright\arraybackslash}p{0.3\textwidth}l}
 \caption{Safety and security requirements traceability}
-\label{TblSafetyTrace}
-\small
-\begin{tabularx}{\textwidth}{lll>{\raggedright\arraybackslash}Xl}
+\label{TblSafetyTrace}\\
 \toprule
 \textbf{ID} & \textbf{FMEA rows} & \textbf{Losses} & \textbf{SRS} & \textbf{Roadmap}\\
 \midrule
-\reqref{SAF-1} & H9 & L1, L2 & FR\_ActRestDay & Capstone\\
-\reqref{SAF-2} & H9 & L1, L2, L6 & FR\_ActNoPenalty & Capstone\\
-\reqref{SAF-3} & H9 & L1, L2 & FR\_ActGoalOptional & Capstone\\
-\reqref{SAF-4} & H9 & L1, L2 & FR\_ActNoAutoGoal & Capstone\\
-\reqref{SAF-5} & H9 & L1 & -- & Future\\
-\reqref{SAF-6} & H9 & L1, L2 & FR\_RemindInPeriods & Capstone\\
-\reqref{SAF-7} & H2, H6, H8, H9 & L1, L4, L5 & FR\_ActDailyCap & Capstone\\
-\reqref{SAF-8} & H22 & L6 & FR\_MktSimNotice & Capstone\\
-\reqref{SAF-9} & H22 & L6 & FR\_MktNoRecommend & Capstone\\
-\reqref{SAF-10} & H22 & L6 & FR\_MktLabelReturns & Capstone\\
-\reqref{SAF-11} & H9 & L2 & FR\_SocialNoRanking & Capstone\\
-\reqref{SEC-1} & H2, H6 & L4, L5 & FR\_ActPlausible & Capstone\\
-\reqref{SEC-2} & H12, H45 & L5, L6 & FR\_MktPriceAge & Capstone\\
-\reqref{SEC-3} & H12 & L5, L6 & FR\_MktNoStaleTrade & Capstone\\
-\reqref{SEC-4} & H18 & L5, L6 & FR\_MktQueueClosed & Capstone\\
-\reqref{SEC-5} & H19, H20, H44 & L5 & FR\_MktAtomicTrade & Capstone\\
-\reqref{SEC-6} & H16, H44 & L5 & FR\_MktNoDuplicate & Capstone\\
-\reqref{SEC-7} & H43 & L3 & Section 7.3 & Capstone\\
-\reqref{SEC-8} & H1 & L3 & Section 7.3 & Capstone\\
-\reqref{SEC-9} & -- & L3 & Section 7.3 & Capstone\\
-\reqref{SEC-10} & H43 & L3 & Section 7.3 & Capstone\\
-\reqref{SEC-11} & -- & L3 & Section 7.3 & Capstone\\
-\reqref{SEC-12} & H33 & L1, L3 & Section 7.3 & Capstone\\
-\reqref{SEC-13} & H30 & L3 & Section 7.3 & Capstone\\
-\reqref{SEC-14} & H31, H33 & L1, L3 & Section 7.3 & Capstone\\
-\reqref{SEC-15} & H39 & L3, L4 & Section 7.3 & Capstone\\
-\reqref{SEC-16} & H40, H43 & L3, L4 & Section 7.3 & Capstone\\
-\reqref{SEC-17} & H36 & L3, L4 & Section 7.3 & Capstone\\
-\reqref{SEC-18} & H38 & L3 & Section 7.3 & Capstone\\
+\endfirsthead
+\multicolumn{5}{l}{\textit{Table~\ref{TblSafetyTrace} continued}}\\
+\toprule
+\textbf{ID} & \textbf{FMEA rows} & \textbf{Losses} & \textbf{SRS} & \textbf{Roadmap}\\
+\midrule
+\endhead
 \bottomrule
-\end{tabularx}
-\end{table}
+\endfoot
+\reqref{SAF-1} & H10 & L1, L2 & FR\_ActRestDay & Capstone\\
+\reqref{SAF-2} & H10 & L1, L2, L6 & FR\_ActNoPenalty & Capstone\\
+\reqref{SAF-3} & H10 & L1, L2 & FR\_ActGoalOptional & Capstone\\
+\reqref{SAF-4} & H10 & L1, L2 & FR\_ActNoAutoGoal & Capstone\\
+\reqref{SAF-5} & H10 & L1 & -- & Future\\
+\reqref{SAF-6} & H10, H49 & L1, L2 & FR\_RemindInPeriods & Capstone\\
+\reqref{SAF-7} & H3, H7, H9, H10 & L1, L4, L5 & FR\_ActDailyCap & Capstone\\
+\reqref{SAF-8} & H23 & L6 & FR\_MktSimNotice & Capstone\\
+\reqref{SAF-9} & H23 & L6 & FR\_MktNoRecommend & Capstone\\
+\reqref{SAF-10} & H23 & L6 & FR\_MktLabelReturns & Capstone\\
+\reqref{SAF-11} & H10 & L2 & FR\_SocialNoRanking & Capstone\\
+\reqref{SAF-12} & H10, H30 & L1 & FR\_ActHealthNotice & Capstone\\
+\reqref{SAF-13} & H11 & L1 & FR\_ActNoInteraction & Capstone\\
+\reqref{SAF-14} & H12 & L1, L2 & FR\_ActNoWeightReward & Capstone\\
+\reqref{SAF-15} & H24 & L2, L6 & FR\_MktScenarioLabel & Capstone\\
+\reqref{SAF-16} & H27, H28 & L6 & FR\_LearnReviewed & Capstone\\
+\reqref{SAF-17} & H29 & L6 & FR\_LearnFeedbackBasis & Capstone\\
+\reqref{SAF-18} & H50 & L6 & FR\_MktGainLossLabel & Capstone\\
+\reqref{SEC-1} & H3, H7 & L4, L5 & FR\_ActPlausible & Capstone\\
+\reqref{SEC-2} & H13, H47 & L5, L6 & FR\_MktPriceAge & Capstone\\
+\reqref{SEC-3} & H13 & L5, L6 & FR\_MktNoStaleTrade & Capstone\\
+\reqref{SEC-4} & H19 & L5, L6 & FR\_MktQueueClosed & Capstone\\
+\reqref{SEC-5} & H20, H21, H46 & L5 & FR\_MktAtomicTrade & Capstone\\
+\reqref{SEC-6} & H17, H46 & L5 & FR\_MktNoDuplicate & Capstone\\
+\reqref{SEC-7} & H45 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-8} & H1 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-9} & H2 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-10} & H45 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-11} & H42 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-12} & H34 & L1, L3 & Section 7.3 & Capstone\\
+\reqref{SEC-13} & H31 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-14} & H32, H34 & L1, L3 & Section 7.3 & Capstone\\
+\reqref{SEC-15} & H40 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-16} & H41, H45 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-17} & H37 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-18} & H39 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-19} & H4 & L4, L5 & Section 7.3 & Capstone\\
+\reqref{SEC-20} & H5 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-21} & H1, H6 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-22} & H8 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-23} & H9 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-24} & H43, H51 & L4, L5 & Section 7.3 & Capstone\\
+\reqref{SEC-25} & H43 & L4, L5 & Section 7.3 & Capstone\\
+\reqref{SEC-26} & H44 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-27} & H14 & L5, L6 & Section 7.3 & Capstone\\
+\reqref{SEC-28} & H15 & L5, L6 & Section 7.3 & Capstone\\
+\reqref{SEC-29} & H18 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-30} & H22 & L5, L6 & Section 7.3 & Capstone\\
+\reqref{SEC-31} & H25 & L5 & Section 7.3 & Capstone\\
+\reqref{SEC-32} & H26 & L6 & Section 7.3 & Capstone\\
+\reqref{SEC-33} & H16 & L4 & Section 7.3 & Capstone\\
+\reqref{SEC-34} & H48 & L3 & Section 7.3 & Capstone\\
+\reqref{SEC-35} & H32 & L3 & FR\_SocialNoBody & Capstone\\
+\reqref{SEC-36} & H33 & L2, L3 & FR\_SocialAccept & Capstone\\
+\reqref{SEC-37} & H36 & L3 & FR\_AcctAgeConfirm & Capstone\\
+\reqref{SEC-38} & H35 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-39} & H35 & L3, L4 & Section 7.3 & Capstone\\
+\reqref{SEC-40} & H38 & L5 & FR\_AcctResetPassword & Capstone\\
+\end{longtable}
+}
 
-\section{Roadmap}
+\section{Roadmap} \label{SecRoadmap}
 
 \wss{Which safety requirements will be implemented as part of the capstone timeline?
 Which requirements will be implemented in the future?}
@@ -843,5 +1866,54 @@ gaps for Farid in my pull request. Next time, I would agree on the ID scheme
 with the team at the start and only ever add new IDs at the end, and share an
 early draft of the hazard list and the requirement list so that both sides can
 link to each other from the beginning.
+
+\newpage{}
+
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}
+
+  \bibitem{IEC60812}
+  International Electrotechnical Commission, \emph{IEC 60812:2018 Failure Modes
+    and Effects Analysis (FMEA and FMECA)}, 3rd ed. Geneva, Switzerland: IEC,
+  2018.
+
+  \bibitem{Leveson2011}
+  N.~G. Leveson, \emph{Engineering a Safer World: Systems Thinking Applied to
+    Safety}. Cambridge, MA, USA: MIT Press, 2011.
+
+  \bibitem{AppleReview}
+  Apple Inc., ``App Store Review Guidelines,'' Section 5.1.3, Health and Health
+  Research. [Online]. Available:
+  \url{https://developer.apple.com/app-store/review/guidelines/}
+
+  \bibitem{GoogleHealthConnect}
+  Google LLC, ``Android Health Permissions: Guidance and FAQs,'' Play Console
+  Help. [Online]. Available:
+  \url{https://support.google.com/googleplay/android-developer/answer/12991134}
+
+  \bibitem{GooglePlayPolicy}
+  Google LLC, ``Developer Program Policy,'' Google Play Policy Center.
+    [Online]. Available: \url{https://play.google/developer-content-policy/}
+
+  \bibitem{PIPEDA}
+  Government of Canada, \emph{Personal Information Protection and Electronic
+    Documents Act}, S.C. 2000, c.~5. [Online]. Available:
+  \url{https://laws-lois.justice.gc.ca/eng/acts/P-8.6/}
+
+  \bibitem{OWASPMASVS}
+  OWASP Foundation, ``Mobile Application Security Verification Standard
+  (MASVS),'' version 2.1.0, Jan. 2024. [Online]. Available:
+  \url{https://mas.owasp.org/MASVS/}
+
+  \bibitem{OWASPMobileTop10}
+  OWASP Foundation, ``OWASP Mobile Top 10,'' 2024. [Online]. Available:
+  \url{https://owasp.org/www-project-mobile-top-10/}
+
+  \bibitem{WCAG22}
+  World Wide Web Consortium (W3C), ``Web Content Accessibility Guidelines (WCAG)
+  2.2,'' W3C Recommendation, Oct. 2023. [Online]. Available:
+  \url{https://www.w3.org/TR/WCAG22/}
+
+\end{thebibliography}
 
 \end{document}
