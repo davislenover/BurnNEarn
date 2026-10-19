@@ -463,6 +463,8 @@ its entry links to that definition.
   Trade                                              & The purchase of shares of an asset for virtual currency, or the sale of shares for virtual currency.                                                                    \\
   Virtual currency                                   & The unit of value earned in \progname{}. It has no real-world monetary value and cannot be exchanged for money.                                                         \\
   Workout                                            & An activity record marked as a deliberate exercise session, with a start time, an end time, and an activity type.                                                       \\
+  Stock Symbol / Ticker                              & A code identifying a stock on an exchange.                                                       \\
+
   \midrule
   \multicolumn{2}{l}{\textit{Acronyms}}                                                                                                                                                                                        \\
   \midrule
@@ -485,6 +487,7 @@ its entry links to that definition.
   UC                                                 & Use Case                                                                                                                                                                \\
   V\&V                                               & Verification and Validation                                                                                                                                             \\
   WCAG                                               & Web Content Accessibility Guidelines                                                                                                                                    \\
+  UUID                                               & Universally Unique Identifier                                                                                                                                           \\
 \end{longtable}
 
 \subsection{Characteristics of Intended Reader} \label{sec_IntendedReader}
@@ -2342,29 +2345,325 @@ Social & A friend shared an update or sent a friend request & Social Feed\\
 
 \subsection{Major Data Entities}
 
-\plt{What information must exist for the system to accomplish its goals?}
+FitFolio must manage data across user activity, fitness tracking and
+asset portfolio.
 
-\plt{For each entity, provide a short explanation.}
+\begin{longtable}{@{}p{0.22\textwidth} p{0.74\textwidth}@{}}
+\caption{Major Data Entities}
+\label{tab:MajorDataEntities}\\
 
-\begin{itemize}
-\item User
-\item Song
-\item Session
-\item Report
-\end{itemize}
+\toprule
+\textbf{Entity} & \textbf{Description and relationships}\\
+\midrule
+\endfirsthead
+
+
+
+\textbf{User Data} &
+Represents a registered user's account and profile information,
+including authentication information and physical attributes such
+as age, height, and weight. Each user is linked to their activity
+records and portfolios.
+Also includes consent, settings, goals, rest days, and learning progress.
+
+\textbf{Location:} Both phone and server. Authentication verification
+data remains on the server.\\
+\addlinespace
+
+\textbf{Activity Record} &
+Represents an activity belonging to a user. Contains the activity
+type, relevant fitness metrics such as step count and activity
+duration, and the amount of virtual currency received for that
+activity.
+On the server, activity is stored as daily totals per activity
+type, as required by SEC-10.
+
+\textbf{Location:} Both phone and server. Individual activity records
+and exact activity times remain on the phone.\\
+\addlinespace
+
+\textbf{Portfolio} &
+Represents a user's simulated investments, including their available
+virtual currency, individual asset holdings, trade history, and
+overall portfolio performance metrics.
+Trade history links to the Trade entity.
+
+\textbf{Location:} Both phone and server. The server maintains
+the authoritative balances and holdings.\\
+\addlinespace
+
+\textbf{Market Data} &
+Represents information about the assets available to trade within
+the application, including their names, current prices, and
+historical prices. This information is used to price trades and
+calculate portfolio values.
+Also records when the server obtained each price.
+
+\textbf{Location:} Both phone and server.\\
+\addlinespace
+
+\textbf{Trade} &
+Represents a simulated purchase or sale belonging to a portfolio.
+Contains the asset, quantity, request identifier, status,
+and execution details.
+
+\textbf{Location:} Both phone and server. The server processes
+trade requests and records their outcomes.\\
+\addlinespace
+
+\textbf{Social Data} &
+Represents connections between users and the fitness and portfolio
+updates they choose to share with friends. Records the author,
+selected statistics, and permitted viewers for each shared
+statistic.
+Also includes friend lists and friend requests.
+
+\textbf{Location:} Both phone and server.\\
+
+\bottomrule
+\end{longtable}
+
 
 \subsection{Data Dictionary}
 
-\plt{For each entity, define all important attributes.}
+\begin{longtable}{
+    @{}p{0.27\textwidth}
+    p{0.17\textwidth}
+    p{0.50\textwidth}@{}
+}
+\caption{Data Dictionary}
+\label{tab:DataDictionary}\\
 
-\begin{longtable}{p{0.20\textwidth} p{0.20\textwidth} p{0.45\textwidth}}
 \toprule
-  Attribute & Type   & Description        \\
+\textbf{Attribute} & \textbf{Type} & \textbf{Description}\\
 \midrule
-  user\_id  & UUID   & Unique identifier  \\
-  email     & String & User email address \\
+\endfirsthead
+
+\endhead
+
+% -------------------- USER DATA --------------------
+
+\multicolumn{3}{@{}l}{\textbf{User Data --- Phone and server}}\\*
+\midrule
+
+\texttt{user\_id} & UUID &
+Unique identifier for the user.\\
+
+\texttt{email} & String &
+Email address used for authentication.\\
+
+\texttt{display\_name} & String &
+Username displayed within the application.\\
+
+\texttt{age\_years} & Integer &
+Age in years.\\
+
+\texttt{height\_cm} & Decimal &
+Height in centimetres.\\
+
+\texttt{weight\_kg} & Decimal &
+Weight in kilograms.\\
+
+\texttt{health\_consent} & Boolean &
+Whether the user consents to health-data access. Withdrawing
+consent stops further health-data reads.\\
+
+\texttt{consent\_updated\_at} & Timestamp &
+Time health-data consent was last granted or withdrawn.\\
+
+\texttt{time\_zone} & String &
+User's time zone for daily activity totals and reminders.\\
+
+\texttt{reminder\_settings} & List &
+Reminder categories, whether each is enabled, and the selected
+delivery windows.\\
+
+\texttt{goals} & List &
+Fitness goals, including the activity type, target value,
+measurement unit, and effective date. Goal changes take effect
+the following day.\\
+
+\texttt{rest\_days} & List &
+Calendar dates selected as rest days for streak calculations.\\
+
+\texttt{learning\_progress} & List &
+Learning records containing the content identifier, completion
+state, knowledge-check responses, and assessment results.\\
+
+\addlinespace
+
+% -------------------- ACTIVITY RECORD --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Activity Record --- Phone and server}}\\*
+\midrule
+
+\texttt{activity\_id} & UUID &
+Unique identifier for the activity.\\
+
+\texttt{user\_id} & UUID &
+Identifier of the user who owns the activity data.\\
+
+\texttt{activity\_type} & String &
+Activity category, such as running or biking.\\
+
+\texttt{activity\_date} & Date &
+Calendar day represented by the server's daily total.
+There is one total per user, date, and activity type.\\
+
+\texttt{start\_time} & Timestamp &
+Beginning of the activity. Stored on the phone only.\\
+
+\texttt{end\_time} & Timestamp &
+End of the activity. Stored on the phone only.\\
+
+\texttt{step\_count} & Integer &
+Number of steps recorded. On the server, this is the daily
+total for the activity type.\\
+
+\texttt{duration\_seconds} & Integer &
+Activity duration in seconds. On the server, this is the daily
+total for the activity type.\\
+
+\texttt{distance\_metres} & Decimal &
+Distance travelled in metres. On the server, this is the daily
+total for the activity type.\\
+
+\texttt{reward\_amount} & Decimal &
+Amount of virtual currency earned for the activity.
+On the server, this is the amount credited for the daily total,
+subject to the daily earning cap.\\
+
+\addlinespace
+
+% -------------------- PORTFOLIO --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Portfolio --- Phone and server}}\\*
+\midrule
+
+\texttt{portfolio\_id} & UUID &
+Unique identifier for the portfolio.\\
+
+\texttt{user\_id} & UUID &
+Identifier of the user who owns the portfolio.\\
+
+\texttt{cash\_balance} & Decimal &
+Available virtual currency.\\
+
+\texttt{holdings} & String &
+Assets owned, including each asset's identifier and share quantity.\\
+
+\texttt{trade\_history} & String &
+Completed trades, including purchases and sales of assets.
+Links to records in the Trade entity.\\
+
+\texttt{total\_value} & Decimal &
+Current value of all asset holdings, excluding available cash.\\
+
+\addlinespace
+
+% -------------------- MARKET DATA --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Market Data --- Phone and server}}\\*
+\midrule
+
+\texttt{asset\_id} & UUID &
+Unique identifier for the asset.\\
+
+\texttt{symbol} & String &
+Asset's market symbol.\\
+
+\texttt{name} & String &
+Asset or company name.\\
+
+\texttt{current\_price} & Decimal &
+Most recent available price.\\
+
+\texttt{price\_obtained\_at} & Timestamp &
+Time the server obtained the current price from the market-data
+provider. Reading a cached price does not change this timestamp.\\
+
+\texttt{price\_history} & String &
+Historical asset prices with associated timestamps.\\
+
+\addlinespace
+
+% -------------------- TRADE --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Trade --- Phone and server}}\\*
+\midrule
+
+\texttt{trade\_id} & UUID &
+Unique identifier for the trade.\\
+
+\texttt{request\_id} & UUID &
+Unique identifier for the trade request. The same identifier
+is retained when retrying a request to prevent duplicate execution.\\
+
+\texttt{portfolio\_id} & UUID &
+Identifier of the portfolio placing the trade.\\
+
+\texttt{asset\_id} & UUID &
+Identifier of the asset purchased or sold.\\
+
+\texttt{trade\_type} & Enumeration &
+Purchase or sale.\\
+
+\texttt{quantity} & Decimal &
+Positive number of shares requested.\\
+
+\texttt{status} & Enumeration &
+Trade state: pending, queued, executed, or rejected.\\
+
+\texttt{unit\_price} & Decimal &
+Price per share applied when the trade executes.
+Absent until execution.\\
+
+\texttt{currency\_amount} & Decimal &
+Virtual currency deducted for a purchase or credited for a sale.
+Absent until execution.\\
+
+\texttt{requested\_at} & Timestamp &
+Time the trade request was received.\\
+
+\texttt{executed\_at} & Timestamp &
+Time the simulated trade was completed.
+Absent until execution.\\
+
+\addlinespace
+
+% -------------------- SOCIAL DATA --------------------
+
+\multicolumn{3}{@{}l}{\textbf{Social Data --- Phone and server}}\\*
+\midrule
+
+\texttt{user\_id} & UUID &
+Identifier of the user who owns the friend list.\\
+
+\texttt{friend\_list} & List &
+Identifiers of users with accepted friendships.\\
+
+\texttt{friend\_requests} & List &
+Friend request records containing the request identifier,
+sender, recipient, status, and creation time.
+Status is pending, accepted, or declined.\\
+
+\texttt{update\_id} & UUID &
+Unique identifier for the social update.\\
+
+\texttt{author\_id} & UUID &
+Identifier of the user who authored the social update.\\
+
+\texttt{created\_at} & Timestamp &
+Time the update was published.\\
+
+\texttt{shared\_statistics} & String &
+Fitness or portfolio statistics selected for sharing.\\
+
+\texttt{permitted\_viewers} & List &
+Identifiers of selected friends permitted to view each
+shared statistic.\\
+
 \bottomrule
-\caption{Data Dictionary} \label{tab:DataDictionary}
 \end{longtable}
 
 \subsection{Privacy and Data Retention}
@@ -2998,6 +3297,31 @@ document and in the Hazard Analysis (HA).
   this document.  This includes any text, figures, or tables that were generated
   by AI.  If any skills were created for AI agents to review the documentation,
   those should be disclosed here.}
+
+
+\subsubsection*{Preston's AI Use Disclosure}
+
+\noindent\textbf{Tool and model/version:}
+OpenAI Codex - GPT-6.1 Sol.
+
+\medskip
+\noindent\textbf{Sections affected:}
+1.4 Definitions and Acronyms, 7.1 Major Data Entities,
+and 7.2 Data Dictionary.
+
+\medskip
+\noindent\textbf{How did you use it?}
+
+\noindent
+I wrote out the answers to the above sections then used AI to
+refine wording, check grammar, and help format the tables in LaTeX.
+
+\medskip
+\noindent\textbf{How did you check the AI content?}
+
+\noindent
+I re-read each section after refining it with AI and made sure
+the points still reflected my original ideas and intended meaning.
 
 \subsection{Appendix E: Reflection}
 
