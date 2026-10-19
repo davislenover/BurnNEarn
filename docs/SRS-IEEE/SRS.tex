@@ -418,8 +418,8 @@ numbers.}
 \section{Use Cases}
 % ==============================================================
 
-\refstepcounter{ucnum}\label{UC_Label1}
-\subsection{\ucref{UC_Label1}: Record Daily Activity}
+\refstepcounter{ucnum}\label{UC_RecordActivity}
+\subsection{\ucref{UC_RecordActivity}: Record Daily Activity}
 
 \textbf{Primary Actor}
 
@@ -473,6 +473,9 @@ User
 \begin{itemize}
 \item If no eligible activity is recorded, no currency is awarded.
 \item Activity exceeding the daily cap earns no additional currency.
+\item If an activity record exceeds the plausibility limits for its type,
+the system does not count it toward currency, trends, streaks or
+milestones and informs the user (HA SEC-1).
 \end{itemize}
 
 \textbf{Postconditions}
@@ -539,6 +542,11 @@ User
 \begin{itemize}
 \item If the user has insufficient currency, the purchase is rejected.
 \item If the transaction fails, the balance and holdings remain unchanged.
+\item If the market price is outdated, the system does not allow the trade and informs the user.
+\item If the market is closed, the system queues the trade until the market reopens.
+\item If the user submits the same trade twice, the system only processes it once.
+\item If this is the user's first trade, they must acknowledge that the market is simulated and does not provide financial advice.
+\item If the user chooses to sell instead, the system checks their shares and adds the virtual currency from the sale to their balance.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -894,6 +902,39 @@ Administrator
 \end{itemize}
 
 
+\refstepcounter{ucnum}\label{UC_GoalsStreaks}
+\subsection{\ucref{UC_GoalsStreaks}: Manage Goals and Streaks}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens their activity goals.
+\item The user sets or changes their daily activity goal.
+\item The system saves the goal for the next day.
+\item The user views their current streak and milestones.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can earn currency without setting a goal.
+\item The user can mark a rest day without losing their streak.
+\item If the user misses their goal, no currency is taken away.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's goal and streak information are updated.
+\end{itemize}
+
+
 % ============================================================== 
 \section{Functional Requirements}
 \plt{Functional requirements describe what the system should do.  They are typically
@@ -957,7 +998,7 @@ email & String & User email address\\
 
 \begin{description}
 
-\item[SEC-5 (Health Permissions)]
+\item[SEC-7 (Least privilege health acess)]
 The system shall request read access only to the supported health data types and shall not request permission to write to the health platform.
 
 \textit{Fit criterion:} All requested health permissions are read only and correspond to supported activity data.
@@ -1107,7 +1148,7 @@ and associated records must be removed within a specified period.
   \textit{Traces to:} G3,
   \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut},
   \rref{FR_SocialChooseFriends},
-  Hazard Analysis SEC-12 and SEC-13.
+  Hazard Analysis SEC-15 and SEC-17.
 
 
 \item[NFR\refstepcounter{nfrnum}\thenfrnum \label{NFR_Accessibility}:]
@@ -1172,70 +1213,75 @@ Stakeholder Req & Use Case & Functional Req \\
 
 
 \srref{SR_EasyStart} & \ucref{UC_ManageAccount} & \rref{FR_AcctCreate} \\
-
-\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctAgeConfirm}, \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut} \\
-
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctAgeConfirm} \\
 \srref{SR_ShareProgress} & \ucref{UC_ManageAccount} & \rref{FR_AcctUsername} \\
-
-\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctResetPassword}, \rref{FR_AcctEditProfile}, \rref{FR_AcctDownloadData} \\
-
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctSignIn} \\
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctSignOut} \\
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctResetPassword} \\
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctEditProfile} \\
 \srref{SR_AllAbilities}, \srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctBodyOptional} \\
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctDownloadData} \\
+\srref{SR_ControlOwnData} & \ucref{UC_DeleteAccount} & \rref{FR_AcctDeleteConfirm} \\
+\srref{SR_ControlOwnData} & \ucref{UC_DeleteAccount} & \rref{FR_AcctDelete} \\
 
-\srref{SR_ControlOwnData} & \ucref{UC_DeleteAccount} & \rref{FR_AcctDeleteConfirm}, \rref{FR_AcctDelete} \\
+\srref{SR_AllAbilities} & \ucref{UC_EarnCurrency} & \rref{FR_ActTypes} \\
+\srref{SR_EarnFromActivity} & \ucref{UC_EarnCurrency} & \rref{FR_ActEarn} \\
+\srref{SR_EarnFromActivity} & \ucref{UC_RecordActivity} & \rref{FR_ActNoData} \\
+\srref{SR_EarnFromActivity} & \ucref{UC_EarnCurrency} & \rref{FR_ActPlausible} \\
+\srref{SR_SafeMotivation} & \ucref{UC_EarnCurrency} & \rref{FR_ActDailyCap} \\
+\srref{SR_OwnGoals} & \ucref{UC_GoalsStreaks} & \rref{FR_ActGoal} \\
+\srref{SR_OwnGoals} & \ucref{UC_GoalsStreaks} & \rref{FR_ActGoalOptional} \\
+\srref{SR_OwnGoals} & \ucref{UC_GoalsStreaks} & \rref{FR_ActNoAutoGoal} \\
+\srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActStreak} \\
+\srref{SR_SafeMotivation} & \ucref{UC_GoalsStreaks} & \rref{FR_ActRestDay} \\
+\srref{SR_SafeMotivation}, \srref{SR_NoHarmfulComparison} & \ucref{UC_GoalsStreaks} & \rref{FR_ActNoPenalty} \\
+\srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActMilestone} \\
+\srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActTrends} \\
 
-
-
-\srref{SR_AllAbilities} & \ucref{UC_Label1}, \ucref{UC_EarnCurrency} & \rref{FR_ActEarn}, \rref{FR_ActDailyCap} \\
-
-
-\srref{SR_LearnByDoing} & \ucref{UC_ViewMarket} & \rref{FR_MktRealPrices} \\
-
-\srref{SR_LearnByDoing} & \ucref{UC_BuyAsset} & \rref{FR_MktBuy}, \rref{FR_MktNoStaleTrade}, \rref{FR_MktQueueClosed} \\
-
-
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktAssetCount} \\
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktRealPrices} \\
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktPriceAge} \\
+\srref{SR_NotAdvice} & \ucref{UC_BuyAsset} & \rref{FR_MktSimNotice} \\
+\srref{SR_RiskFree}, \srref{SR_LearnByDoing} & \ucref{UC_BuyAsset} & \rref{FR_MktBuy} \\
+\srref{SR_RiskFree}, \srref{SR_LearnByDoing} & \ucref{UC_BuyAsset} & \rref{FR_MktSell} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktAtomicTrade} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktNoDuplicate} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktNoStaleTrade} \\
+\srref{SR_RealMarket} & \ucref{UC_BuyAsset} & \rref{FR_MktQueueClosed} \\
+\srref{SR_SeeProgress} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktHoldings} \\
+\srref{SR_SeeProgress} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktPortfolioValue} \\
+\srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktLabelReturns} \\
+\srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_MktNoRecommend} \\
 
 \srref{SR_LearnInContext}, \srref{SR_CanadianContext} & \ucref{UC_LearnConcepts} & \rref{FR_LearnExplainConcept} \\
-
 \srref{SR_LearnInContext} & \ucref{UC_LearnConcepts} & \rref{FR_LearnInPlace} \\
-
 \srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnValueChange} \\
-
 \srref{SR_LearnByDoing}, \srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnTradeEffect} \\
-
 \srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnConcentration} \\
-
 \srref{SR_LearnByDoing} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnKnowledgeCheck} \\
-
 \srref{SR_LearnFromDecisions} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnCheckResult} \\
-
 \srref{SR_SeeProgress} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnProgress} \\
-
 \srref{SR_UpdateContent} & \ucref{UC_UpdateLearning} & \rref{FR_LearnUpdateContent} \\
-
+\srref{SR_UpdateContent}, \srref{SR_LearnInContext} & \ucref{UC_UpdateLearning} & \rref{FR_LearnReviewed} \\
+\srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnFeedbackBasis} \\
 
 \srref{SR_ShareProgress} & \ucref{UC_ManageFriends} & \rref{FR_SocialRequest} \\
-
-\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialAccept}, \rref{FR_SocialDecline}, \rref{FR_SocialRemove} \\
-
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialAccept} \\
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialDecline} \\
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialRemove} \\
 \srref{SR_ShareProgress} & \ucref{UC_ShareProgress} & \rref{FR_SocialShare} \\
-
-\srref{SR_ControlSharing} & \ucref{UC_ShareProgress} & \rref{FR_SocialChooseFriends}, \rref{FR_SocialPreview} \\
-
+\srref{SR_ControlSharing} & \ucref{UC_ShareProgress} & \rref{FR_SocialChooseFriends} \\
+\srref{SR_ControlSharing} & \ucref{UC_ShareProgress} & \rref{FR_SocialPreview} \\
 \srref{SR_ProtectData} & \ucref{UC_ShareProgress} & \rref{FR_SocialNoBody} \\
-
 \srref{SR_ShareProgress} & \ucref{UC_ManageFriends} & \rref{FR_SocialFeed} \\
-
 \srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialDeleteUpdate} \\
-
 \srref{SR_NoHarmfulComparison} & \ucref{UC_ManageFriends} & \rref{FR_SocialNoRanking} \\
 
 
-\srref{SR_ControlOwnData} & \ucref{UC_Reminders} & \rref{FR_RemindPeriods} \\
-
+\srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindPeriods} \\
+\srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindInPeriods} \\
 \srref{SR_ControlOwnData} & \ucref{UC_WithdrawConsent} & \rref{FR_SetWithdrawConsent} \\
-
-\srref{SR_ProtectData} & \ucref{UC_ReviewPermissions} & \rref{FR_SetPermissionList} \\
-
+\srref{SR_ExplainPermissions}, \srref{SR_ProtectData} & \ucref{UC_ReviewPermissions} & \rref{FR_SetPermissionList} \\
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -1249,58 +1295,78 @@ Functional Req & Nonfunctional Req \\
 \midrule
 
 
+\rref{FR_AcctCreate} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctAgeConfirm} & \nfrref{NFR_Security} \\
+\rref{FR_AcctUsername} & \nfrref{NFR_Security} \\
+\rref{FR_AcctSignIn} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctSignOut} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctResetPassword} & \nfrref{NFR_Security} \\
+\rref{FR_AcctEditProfile} & \nfrref{NFR_Security} \\
+\rref{FR_AcctBodyOptional} & \nfrref{NFR_Security} \\
+\rref{FR_AcctDownloadData} & \nfrref{NFR_Security} \\
+\rref{FR_AcctDeleteConfirm} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_AcctDelete} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
 
-\rref{FR_AcctCreate}, \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+\rref{FR_ActTypes} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActEarn} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActNoData} & \nfrref{NFR_Usability} \\
+\rref{FR_ActPlausible} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActDailyCap} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActGoal} & \nfrref{NFR_Usability} \\
+\rref{FR_ActGoalOptional} & \nfrref{NFR_Usability} \\
+\rref{FR_ActNoAutoGoal} & \nfrref{NFR_Usability} \\
+\rref{FR_ActStreak} & \nfrref{NFR_Accuracy} \\
+\rref{FR_ActRestDay} & \nfrref{NFR_Usability} \\
+\rref{FR_ActNoPenalty} & \nfrref{NFR_Usability} \\
+\rref{FR_ActMilestone} & \nfrref{NFR_Usability} \\
+\rref{FR_ActTrends} & \nfrref{NFR_Accuracy} \\
 
-\rref{FR_AcctAgeConfirm}, \rref{FR_AcctUsername} & \nfrref{NFR_Security} \\
-
-\rref{FR_AcctResetPassword}, \rref{FR_AcctDownloadData} & \nfrref{NFR_Security} \\
-
-\rref{FR_AcctEditProfile}, \rref{FR_AcctBodyOptional} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
-
-\rref{FR_AcctDeleteConfirm}, \rref{FR_AcctDelete} & \nfrref{NFR_Security}, \nfrref{NFR_Usability} \\
-
-
-\rref{FR_ActEarn}, \rref{FR_ActDailyCap} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Portability} \\
-
-
-\rref{FR_MktRealPrices} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Performance} \\
-
-\rref{FR_MktBuy} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability}, \nfrref{NFR_Usability} \\
-
-\rref{FR_MktNoStaleTrade}, \rref{FR_MktQueueClosed} & \nfrref{NFR_Reliability} \\
+\rref{FR_MktAssetCount} & \nfrref{NFR_Usability} \\
+\rref{FR_MktRealPrices} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktPriceAge} & \nfrref{NFR_Usability} \\
+\rref{FR_MktSimNotice} & \nfrref{NFR_Usability} \\
+\rref{FR_MktBuy} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktSell} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktAtomicTrade} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktNoDuplicate} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktNoStaleTrade} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktQueueClosed} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktHoldings} & \nfrref{NFR_Usability} \\
+\rref{FR_MktPortfolioValue} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability} \\
+\rref{FR_MktLabelReturns} & \nfrref{NFR_Usability} \\
+\rref{FR_MktNoRecommend} & \nfrref{NFR_Usability} \\
 
 
-
-\rref{FR_LearnExplainConcept}, \rref{FR_LearnInPlace} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
-
-\rref{FR_LearnValueChange}, \rref{FR_LearnTradeEffect} & \nfrref{NFR_Accuracy} \\
-
-\rref{FR_LearnConcentration} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Usability} \\
-
-\rref{FR_LearnKnowledgeCheck}, \rref{FR_LearnCheckResult}, \rref{FR_LearnProgress} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
-
+\rref{FR_LearnExplainConcept} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnInPlace} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnValueChange} & \nfrref{NFR_Accuracy} \\
+\rref{FR_LearnTradeEffect} & \nfrref{NFR_Accuracy} \\
+\rref{FR_LearnConcentration} & \nfrref{NFR_Accuracy} \\
+\rref{FR_LearnKnowledgeCheck} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnCheckResult} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+\rref{FR_LearnProgress} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
 \rref{FR_LearnUpdateContent} & \nfrref{NFR_Maintainability} \\
+\rref{FR_LearnReviewed} & \nfrref{NFR_Maintainability} \\
+\rref{FR_LearnFeedbackBasis} & \nfrref{NFR_Accuracy} \\
 
 
-
-\rref{FR_SocialRequest}, \rref{FR_SocialAccept}, \rref{FR_SocialDecline}, \rref{FR_SocialRemove} & \nfrref{NFR_Security} \\
-
-\rref{FR_SocialShare}, \rref{FR_SocialChooseFriends}, \rref{FR_SocialPreview} & \nfrref{NFR_Security}, \nfrref{NFR_Usability} \\
-
+\rref{FR_SocialRequest} & \nfrref{NFR_Usability} \\
+\rref{FR_SocialAccept} & \nfrref{NFR_Security} \\
+\rref{FR_SocialDecline} & \nfrref{NFR_Security} \\
+\rref{FR_SocialRemove} & \nfrref{NFR_Security} \\
+\rref{FR_SocialShare} & \nfrref{NFR_Security} \\
+\rref{FR_SocialChooseFriends} & \nfrref{NFR_Security} \\
+\rref{FR_SocialPreview} & \nfrref{NFR_Security} \\
 \rref{FR_SocialNoBody} & \nfrref{NFR_Security} \\
-
-\rref{FR_SocialFeed} & \nfrref{NFR_Performance}, \nfrref{NFR_Security}, \nfrref{NFR_Accessibility} \\
-
+\rref{FR_SocialFeed} & \nfrref{NFR_Usability} \\
 \rref{FR_SocialDeleteUpdate} & \nfrref{NFR_Security} \\
-
 \rref{FR_SocialNoRanking} & \nfrref{NFR_Usability} \\
 
 
 \rref{FR_RemindPeriods} & \nfrref{NFR_Usability} \\
-
-\rref{FR_SetWithdrawConsent}, \rref{FR_SetPermissionList} & \nfrref{NFR_Security}, \nfrref{NFR_Usability} \\
-
+\rref{FR_RemindInPeriods} & \nfrref{NFR_Usability} \\
+\rref{FR_SetWithdrawConsent} & \nfrref{NFR_Security} \\
+\rref{FR_SetPermissionList} & \nfrref{NFR_Security} \\
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
