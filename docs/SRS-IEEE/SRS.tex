@@ -555,6 +555,40 @@ User
 \end{itemize}
 
 
+\refstepcounter{ucnum}\label{UC_MarketScenario}
+\subsection{\ucref{UC_MarketScenario}: Practice a Historical Market Scenario}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the market scenarios section.
+\item The user selects a historical market scenario.
+\item The system displays the historical period being replayed.
+\item The user buys or sells simulated assets using the scenario's market prices.
+\item The system updates the user's scenario balance and holdings.
+\item The user views the results of their trades.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can leave the scenario at any time.
+\item If the user does not have enough scenario currency or shares, the system does not allow the trade.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's regular virtual currency balance and holdings remain unchanged.
+\end{itemize}
+
+
 \refstepcounter{ucnum}\label{UC_Reminders}
 \subsection{\ucref{UC_Reminders}: Choose Reminder Times}
 
@@ -1211,7 +1245,8 @@ documents.}
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
 
-
+\srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenario} \\
+\srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenarioLabel} \\
 \srref{SR_EasyStart} & \ucref{UC_ManageAccount} & \rref{FR_AcctCreate} \\
 \srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctAgeConfirm} \\
 \srref{SR_ShareProgress} & \ucref{UC_ManageAccount} & \rref{FR_AcctUsername} \\
