@@ -1546,21 +1546,23 @@ graduate attribute of Lifelong Learning.
 \subsubsection*{2. What pain points did you experience during this deliverable,
 and how did you resolve them?}
 
-\textbf{Davis:} The main pain point for me was how many design decisions this
-deliverable involved, and how many of them crossed between sections owned by
-different people. My Hazard Analysis requirements, Farid's FMEA, Angad's use
-cases and Preston's data dictionary all depend on the same choices, such as
-whether \progname{} stores location data, what happens to a trade when the
-market is closed, and whether activity data leaves the phone as individual
-records or daily totals. Because we each worked in our own branch and only
-compared our work near the deadline, we found these mismatches late. Some had a
-ripple effect, for example, when I added new requirements, the requirement IDs shifted, so
-traces in other members' sections had to be renumbered, and we had to agree on
-shared terms such as ``shared update'' instead of ``post''. As a result, we
+\textbf{Davis:} The main pain point for me was how many design decisions the
+SRS involved, and how many of them crossed between sections owned by different
+people. Farid and I split the functional requirements, Angad wrote the use cases
+and traceability matrices, and Preston wrote the data dictionary, but all of
+these depend on the same choices, such as what a user can share with friends
+and whether activity data leaves the phone as individual records or daily
+totals. Because we each worked in our own branch and only compared our work
+near the deadline, we found these mismatches late. Some had a ripple effect,
+for example, we had used different words for the same thing, such as ``post''
+and ``shared update'', one of the shared tables contradicted a Hazard Analysis
+requirement on how rest days affect a streak, and no one had filled in the
+appendix of constants that many of our requirements relied on. As a result, we
 spent much of the last few days aligning our sections and resolving merge
 conflicts instead of improving the content. I resolved this by reviewing my
-teammates' open pull requests against my sections, updating my side to match,
-and listing what I still needed from each person in my pull request. Next time,
+teammates' open pull requests against my sections, adopting the terms Farid
+defined in Section 1.4, filling in the appendix of constants, and listing what
+I still needed from each person in my pull request. Next time,
 I want to communicate with the team earlier and more often. That means agreeing
 on shared identifiers, terms and the big design decisions at the start of a
 deliverable, recording each decision in the related GitHub issue as soon as it
