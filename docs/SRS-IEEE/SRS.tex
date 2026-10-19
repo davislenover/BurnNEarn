@@ -88,13 +88,13 @@
 \newcommand{\scthescnum}{SC\thescnum}
 \newcommand{\scref}[1]{SC\ref{#1}}
 
+\usepackage{fullpage}
+
 % Functional requirement entry: \freq{label}{statement}{fit criterion}{traces}
 \newcommand{\freq}[4]{%
   \item[FR\refstepcounter{reqnum}\thereqnum \label{#1}:] #2\\
   \textit{Fit criterion:} #3\\
   \textit{Traces to:} #4}
-
-\usepackage{fullpage}
 
 \begin{document}
 
@@ -375,13 +375,13 @@ phone, add the push notification service as an external entity (HA SEC-11).}
 
   % User
   \draw[flow] ([yshift=4mm]user.east) -- ([yshift=4mm]sys.west)
-    node[lbl, midway, above] {profile, trades, answers,\\sharing and reminder\\choices, consent};
+    node[lbl, midway, above] {profile, trades, answers,\\friend requests, sharing and\\reminder choices, consent};
   \draw[flow] ([yshift=-4mm]sys.west) -- ([yshift=-4mm]user.east)
     node[lbl, midway, below] {currency, simulated\\portfolio, workout trends,\\feedback, reminders};
 
   % Market data provider
   \draw[flow] ([yshift=4mm]sys.east) -- ([yshift=4mm]market.west)
-    node[lbl, midway, above] {asset identifiers};
+    node[lbl, midway, above] {asset symbols};
   \draw[flow] ([yshift=-4mm]market.west) -- ([yshift=-4mm]sys.east)
     node[lbl, midway, below] {asset prices};
 
@@ -393,9 +393,9 @@ phone, add the push notification service as an external entity (HA SEC-11).}
 
   % Friends
   \draw[flow] ([xshift=-4mm]sys.south) -- ([xshift=-4mm]friends.north)
-    node[lbl, midway, left] {shared posts};
+    node[lbl, midway, left] {shared updates,\\friend requests};
   \draw[flow] ([xshift=4mm]friends.north) -- ([xshift=4mm]sys.south)
-    node[lbl, midway, right] {connection responses};
+    node[lbl, midway, right] {friend request\\responses};
 
   % Activity sources (outside the system, never connected to it directly)
   \draw[flow, dashed] (sources.south) -- (health.north)
@@ -415,7 +415,10 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \begin{itemize}
 \item User Responsibilities:
 \begin{itemize}
-\item Provide accurate profile measurements (age, height and weight).
+\item Confirm truthfully that they are at least \texttt{MIN\_USER\_AGE} years
+  old.
+\item Keep any profile measurements they choose to enter, such as height and
+  weight, accurate.
 \item Grant \progname{} the permissions its features use, and keep an activity
   source recording to the phone's health platform.
 \item Make their own trade decisions. \progname{} gives no financial advice.
@@ -426,20 +429,20 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \begin{itemize}
 \item Reject profile measurements outside plausible ranges.
 \item Award currency only for activity within plausibility limits and up to a
-  daily cap, treating a day with no activity data as a day with zero activity
-  (Hazard Analysis SAF-7, SEC-1).
+  daily cap (Hazard Analysis SAF-7, SEC-1).
+\item Treat a day with no activity data as a day with zero activity.
 \item Reject trades the user cannot cover, and record each trade once and
   completely (Hazard Analysis SEC-5, SEC-6).
 \item Show each asset price with the time it was obtained, and mark delayed
   prices (Hazard Analysis SEC-2).
 \item Refuse trades on out-of-date prices while the market is open, and queue
   trades requested while it is closed (Hazard Analysis SEC-3, SEC-4).
-\item Show shared posts only to the friends the user chose, without location
-  detail (Hazard Analysis SEC-13, SEC-14).
+\item Show each shared update only to the friends the user chose, without
+  location detail (Hazard Analysis SEC-13, SEC-14).
 \item Request only the permissions its features use, explaining each one
   (Hazard Analysis SEC-7, SEC-8).
-\item Send the market data provider only asset identifiers (Hazard Analysis
-  SEC-11).
+\item Send the market data provider only the symbols of the assets being
+  priced, and no personal or health data (Hazard Analysis SEC-11).
 \end{itemize}
 \item Health Platform Responsibilities:
 \begin{itemize}
@@ -457,8 +460,8 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \end{itemize}
 \item Friend Responsibilities:
 \begin{itemize}
-\item Accept or decline a user's connection request.
-\item View the posts a user has shared with them.
+\item Accept or decline a user's friend request.
+\item View the updates a user has shared with them in their social feed.
 \end{itemize}
 \end{itemize}
 
@@ -492,8 +495,8 @@ The typical user of \progname{} is a young adult, such as a student or someone
 starting their first job (Problem Statement and Goals, Section~1). The user of
 \progname{}:
 \begin{itemize}
-  \item Is 18 years of age or older.
-  \todo{Confirm the minimum age}
+  \item Is at least \texttt{MIN\_USER\_AGE} years old (Hazard Analysis CA2).
+  \todo{Add \texttt{MIN\_USER\_AGE} = 18 to Appendix C (\#95).}
   \item Uses a smartphone daily, and can install an app, grant or deny app
   permissions, and use common mobile app controls.
   \item Carries an Android or iOS phone during everyday activity. No wearable
@@ -579,7 +582,7 @@ SEC-18).
 prices and the social feed shall require an Internet connection to
 \progname{}'s server.
 \textit{Rationale:} Prices are fetched from the provider once for all users to
-stay within its request limits (\scref{SC_MarketData}), friends' shared posts
+stay within its request limits (\scref{SC_MarketData}), friends' shared updates
 must reach other users' phones, and a user's portfolio must survive the loss of
 their phone.
 
@@ -706,12 +709,16 @@ TODO
 %   at the start of the statement, e.g. "(HA SAF-1) The system shall ...",
 %   using the same wording as the Hazard Analysis. Privacy and security
 %   requirements from the HA go in Section 7.3 or Section 8 instead.
+% * A requirement that implements part of an HA requirement without restating
+%   it ends its Traces to with the HA ID, e.g. "G3, Hazard Analysis SEC-13".
 % * Each subsection has one owner (in its comment).
 % =============================================================================
 
 This section lists what \progname{} shall do, grouped by feature area. Each
 requirement has a fit criterion and traces to the goals in
-Section~\ref{SecProductVision}.
+Section~\ref{SecProductVision}. A requirement that begins with a Hazard
+Analysis (HA) identifier, such as (HA SEC-3), appears in the Hazard Analysis
+with the same identifier and wording.
 
 % Owner: Farid
 \subsection{Accounts and Profile}
@@ -732,7 +739,8 @@ Section~\ref{SecProductVision}.
   calendar day.}
   {For a test user whose recorded activity in one calendar day would otherwise
   earn more than \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by exactly
-  \texttt{MAX\_DAILY\_CURRENCY} for that day.}
+  \texttt{MAX\_DAILY\_CURRENCY} for that day. Each activity counts toward the
+  calendar day in the user's time zone at the time of the activity.}
   {\todo{SR}, \todo{UC}, G5}
 \end{itemize}
 
@@ -747,11 +755,26 @@ Section~\ref{SecProductVision}.
   latest price \progname{} received from the market data provider for that
   asset.}
   {\todo{SR}, \todo{UC}, G4}
+\freq{FR_MktPriceAge}
+  {(HA SEC-2) The system shall display each asset price with the time it was
+  obtained, and shall mark the price as delayed when it is older than
+  \texttt{QUOTE\_STALENESS\_LIMIT}.}
+  {A test price obtained more than \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown
+  with its time and a ``Delayed'' marker. A price obtained within the limit is
+  shown with its time and no marker.}
+  {\todo{SR}, \todo{UC}, G4}
 \freq{FR_MktBuy}
-  {The system shall let the user buy units of an asset using virtual currency.}
-  {A test user with enough currency buys one unit of an asset. Their balance
+  {The system shall let the user buy shares of an asset using virtual currency.}
+  {A test user with enough currency buys one share of an asset. Their balance
   decreases by the price shown when they confirmed the trade, and their
-  holdings of it increase by one.}
+  holding of it increases by one.}
+  {\todo{SR}, \todo{UC}, G4}
+\freq{FR_MktSell}
+  {The system shall let the user sell shares of an asset they hold for virtual
+  currency.}
+  {A test user holding one share of an asset sells it. Their balance increases
+  by the price shown when they confirmed the trade, and their holding of it
+  decreases by one.}
   {\todo{SR}, \todo{UC}, G4}
 \freq{FR_MktNoStaleTrade}
   {(HA SEC-3) The system shall not execute a trade while the asset's market is
@@ -836,7 +859,8 @@ email & String & User email address\\
 \caption{Data Dictionary} \label{tab:DataDictionary}
 \end{longtable}
 
-\subsection{Privacy and Data Retention} \label{SecPrivacyRetention}
+\subsection{Privacy and Data Retention}
+\label{SecPrivacyRetention}
 
 \plt{Discuss storage, retention, deletion, privacy controls,
  consent, encryption, and compliance requirements.}
