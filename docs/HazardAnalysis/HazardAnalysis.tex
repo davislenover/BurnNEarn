@@ -276,6 +276,8 @@ specified in the Design Document.
       \node[ext] (e5) at (3.6,-4.4) {E5 Hosting\\environment};
       \node[ext] (e3) at (8.9,-4.4) {E3 Market data\\provider};
       \node[ext] (e7) at (15.0,-0.2) {E7 Friends};
+      \node[ext] (e8) at (3.6,4.3) {E8 Email service};
+      \node[ext] (e9) at (10.4,4.3) {E9 Administrator};
 
       \draw[both] (e1) -- node[lbl, above] {input and\\display} (c1);
       \draw[link] (e2) -- node[lbl, above] {activity\\records} (c2);
@@ -290,6 +292,8 @@ specified in the Design Document.
       \draw[link] (e3) -- node[lbl, pos=0.2, left] {current\\prices} (c4);
       \draw[link] (e3) -- node[lbl, pos=0.2, right] {historical\\prices} (c6);
       \draw[link] (c8) -- node[lbl, pos=0.72, above] {shared\\updates} (e7);
+      \draw[link] (c9) -- node[lbl, pos=0.78, left] {password reset\\emails} (e8);
+      \draw[link] (e9) -- node[lbl, pos=0.4, right] {asset list and\\learning content} (e9 |- svc.north);
     \end{tikzpicture}%
   }
   \caption{System boundary of \progname{}. Unshaded boxes are components inside
@@ -299,7 +303,8 @@ specified in the Design Document.
     The light grey group contains the backend services (C3 to C8): C10 passes each
     request to the service responsible for it, and every service stores its data in
     C11. External entity E4 (Network) is not drawn because it carries every arrow
-    that crosses the boundary.}
+    that crosses the boundary. E9 (Administrator) is the development team in its
+    operating role (SRS Section~1.3).}
   \label{FigBoundary}
 \end{figure}
 
@@ -371,6 +376,13 @@ specified in the Design Document.
     GooglePlayPolicy}.                                                                                                                                                 \\
     E7 Friends                                 & Shared updates out.                                                     & Will see anything that is shared with them,
     whether or not the user intended it.                                                                                                                               \\
+    E8 Email service & The user's email address and a password reset link
+    out. & May be unavailable or delay messages, which stops users from
+    resetting a forgotten password. Must not receive any other personal or
+    health data.\\
+    E9 Administrator & Changes to the list of tradable assets and to
+    educational content in. & Can make mistakes, such as publishing an
+    incorrect explanation or removing an asset that users hold.\\
     \bottomrule
   \end{tabularx}
 \end{table}
