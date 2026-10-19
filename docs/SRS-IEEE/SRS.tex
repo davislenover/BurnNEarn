@@ -696,6 +696,200 @@ User
 \end{itemize}
 
 
+\refstepcounter{ucnum}\label{UC_ManageAccount}
+\subsection{\ucref{UC_ManageAccount}: Create and Manage Account}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has an Internet connection.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the application and selects account creation.
+\item The user enters their account information.
+\item The system creates the account.
+\item The user signs in and accesses their profile.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the account information is invalid, the system asks the user to correct it.
+\item If the user forgets their password, they can request a password reset.
+\item The user can edit their profile, download their data, or sign out.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's account and profile information are saved.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_LearnConcepts}
+\subsection{\ucref{UC_LearnConcepts}: Learn Financial and Fitness Concepts}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access the learning content.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a financial or fitness concept.
+\item The system displays an explanation of the concept.
+\item The user reads the explanation.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item The user can open an explanation from another part of the application.
+\item If the content is unavailable, the system informs the user.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user has viewed the selected concept explanation.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_InvestmentFeedback}
+\subsection{\ucref{UC_InvestmentFeedback}: Review Investment Feedback}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user has a simulated investment portfolio.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens their portfolio.
+\item The system displays the portfolio's current value and holdings.
+\item The system displays feedback about changes in portfolio value.
+\item The user reviews the feedback.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If no significant change occurred, no change feedback is shown.
+\item If one holding exceeds the concentration limit, the system explains diversification.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user can review how their investments affected their portfolio.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_KnowledgeCheck}
+\subsection{\ucref{UC_KnowledgeCheck}: Complete Knowledge Check}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user can access the learning section.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user selects a knowledge check.
+\item The system displays questions about the selected concept.
+\item The user submits their answers.
+\item The system displays the results and explanations.
+\item The system updates the user's learning progress.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the user exits before submitting, no completed result is recorded.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's learning progress reflects the completed knowledge check.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_ManageFriends}
+\subsection{\ucref{UC_ManageFriends}: Manage Friends and Social Feed}
+
+\textbf{Primary Actor}
+
+User
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The user is signed in.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The user opens the social section.
+\item The user sends a friend request to another user.
+\item The other user accepts the request.
+\item The system adds the users as friends.
+\item The user views updates shared by their friends.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the request is declined, the users are not added as friends.
+\item The user can remove an existing friend.
+\item If no updates are available, the social feed is empty.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The user's friend connections and social feed reflect the available information.
+\end{itemize}
+
+
+\refstepcounter{ucnum}\label{UC_UpdateLearning}
+\subsection{\ucref{UC_UpdateLearning}: Manage Educational Content}
+
+\textbf{Primary Actor}
+
+Administrator
+
+\textbf{Preconditions}
+\begin{itemize}
+\item The administrator has access to educational content management.
+\end{itemize}
+
+\textbf{Main Success Scenario}
+\begin{enumerate}
+\item The administrator opens the educational content.
+\item The administrator selects a concept explanation or knowledge check.
+\item The administrator adds or edits the content.
+\item The system saves the changes.
+\end{enumerate}
+
+\textbf{Alternative Flows}
+\begin{itemize}
+\item If the administrator cancels, no changes are saved.
+\item If saving fails, the previous content remains unchanged.
+\end{itemize}
+
+\textbf{Postconditions}
+\begin{itemize}
+\item The updated educational content is available to users.
+\end{itemize}
+
+
 % ============================================================== 
 \section{Functional Requirements}
 \plt{Functional requirements describe what the system should do.  They are typically
@@ -960,26 +1154,84 @@ TODO
 TODO
 
 % ============================================================== 
+
 \section{Requirements Traceability Matrices}
-
-\plt{The Requirements Traceability Matrix (RTM) is a table that shows the
-relationship between different types of requirements. It is used to ensure that
-all requirements are traceable and that no requirements are missed. The typical
-flow is: Stakeholder Need -> Use Case -> Requirement}
-
-\plt{There is also a traceability matrix between functional and nonfunctional
-  requirements. The purpose of some FRs is to satisfy NFRs.  Therefore, it is
-  important to show the relationship between the two.}
 
 \plt{Further traceability to test cases and modules will be given in other
 documents.}
 
-\begin{longtable}{p{0.15\textwidth} p{0.15\textwidth} p{0.20\textwidth} p{0.20\textwidth}}
+\begin{longtable}{p{0.25\textwidth} p{0.20\textwidth} p{0.42\textwidth}}
 
 \toprule
 Stakeholder Req & Use Case & Functional Req \\
 \midrule
-\srref{SR_Label1} & \ucref{UC_Label1} & \rref{FR_Label1} \\
+
+
+\srref{SR_EasyStart} & \ucref{UC_ManageAccount} & \rref{FR_AcctCreate} \\
+
+\srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctAgeConfirm}, \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut} \\
+
+\srref{SR_ShareProgress} & \ucref{UC_ManageAccount} & \rref{FR_AcctUsername} \\
+
+\srref{SR_ControlOwnData} & \ucref{UC_ManageAccount} & \rref{FR_AcctResetPassword}, \rref{FR_AcctEditProfile}, \rref{FR_AcctDownloadData} \\
+
+\srref{SR_AllAbilities}, \srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctBodyOptional} \\
+
+\srref{SR_ControlOwnData} & \ucref{UC_DeleteAccount} & \rref{FR_AcctDeleteConfirm}, \rref{FR_AcctDelete} \\
+
+
+
+\srref{SR_AllAbilities} & \ucref{UC_Label1}, \ucref{UC_EarnCurrency} & \rref{FR_ActEarn}, \rref{FR_ActDailyCap} \\
+
+
+\srref{SR_LearnByDoing} & \ucref{UC_ViewMarket} & \rref{FR_MktRealPrices} \\
+
+\srref{SR_LearnByDoing} & \ucref{UC_BuyAsset} & \rref{FR_MktBuy}, \rref{FR_MktNoStaleTrade}, \rref{FR_MktQueueClosed} \\
+
+
+
+\srref{SR_LearnInContext}, \srref{SR_CanadianContext} & \ucref{UC_LearnConcepts} & \rref{FR_LearnExplainConcept} \\
+
+\srref{SR_LearnInContext} & \ucref{UC_LearnConcepts} & \rref{FR_LearnInPlace} \\
+
+\srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnValueChange} \\
+
+\srref{SR_LearnByDoing}, \srref{SR_LearnFromDecisions} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnTradeEffect} \\
+
+\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice} & \ucref{UC_InvestmentFeedback} & \rref{FR_LearnConcentration} \\
+
+\srref{SR_LearnByDoing} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnKnowledgeCheck} \\
+
+\srref{SR_LearnFromDecisions} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnCheckResult} \\
+
+\srref{SR_SeeProgress} & \ucref{UC_KnowledgeCheck} & \rref{FR_LearnProgress} \\
+
+\srref{SR_UpdateContent} & \ucref{UC_UpdateLearning} & \rref{FR_LearnUpdateContent} \\
+
+
+\srref{SR_ShareProgress} & \ucref{UC_ManageFriends} & \rref{FR_SocialRequest} \\
+
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialAccept}, \rref{FR_SocialDecline}, \rref{FR_SocialRemove} \\
+
+\srref{SR_ShareProgress} & \ucref{UC_ShareProgress} & \rref{FR_SocialShare} \\
+
+\srref{SR_ControlSharing} & \ucref{UC_ShareProgress} & \rref{FR_SocialChooseFriends}, \rref{FR_SocialPreview} \\
+
+\srref{SR_ProtectData} & \ucref{UC_ShareProgress} & \rref{FR_SocialNoBody} \\
+
+\srref{SR_ShareProgress} & \ucref{UC_ManageFriends} & \rref{FR_SocialFeed} \\
+
+\srref{SR_ControlSharing} & \ucref{UC_ManageFriends} & \rref{FR_SocialDeleteUpdate} \\
+
+\srref{SR_NoHarmfulComparison} & \ucref{UC_ManageFriends} & \rref{FR_SocialNoRanking} \\
+
+
+\srref{SR_ControlOwnData} & \ucref{UC_Reminders} & \rref{FR_RemindPeriods} \\
+
+\srref{SR_ControlOwnData} & \ucref{UC_WithdrawConsent} & \rref{FR_SetWithdrawConsent} \\
+
+\srref{SR_ProtectData} & \ucref{UC_ReviewPermissions} & \rref{FR_SetPermissionList} \\
+
 \bottomrule
 
 \caption{Traceability Between Stakeholder Requirements, Use Cases, and
@@ -991,12 +1243,66 @@ Functional Requirements} \label{tab:SR2UC2FRtm}
 \toprule
 Functional Req & Nonfunctional Req \\
 \midrule
-\rref{FR_Label1} & \nfrref{NFR_Accuracy} \\
+
+
+
+\rref{FR_AcctCreate}, \rref{FR_AcctSignIn}, \rref{FR_AcctSignOut} & \nfrref{NFR_Usability}, \nfrref{NFR_Security} \\
+
+\rref{FR_AcctAgeConfirm}, \rref{FR_AcctUsername} & \nfrref{NFR_Security} \\
+
+\rref{FR_AcctResetPassword}, \rref{FR_AcctDownloadData} & \nfrref{NFR_Security} \\
+
+\rref{FR_AcctEditProfile}, \rref{FR_AcctBodyOptional} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+
+\rref{FR_AcctDeleteConfirm}, \rref{FR_AcctDelete} & \nfrref{NFR_Security}, \nfrref{NFR_Usability} \\
+
+
+\rref{FR_ActEarn}, \rref{FR_ActDailyCap} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Portability} \\
+
+
+\rref{FR_MktRealPrices} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Performance} \\
+
+\rref{FR_MktBuy} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Reliability}, \nfrref{NFR_Usability} \\
+
+\rref{FR_MktNoStaleTrade}, \rref{FR_MktQueueClosed} & \nfrref{NFR_Reliability} \\
+
+
+
+\rref{FR_LearnExplainConcept}, \rref{FR_LearnInPlace} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+
+\rref{FR_LearnValueChange}, \rref{FR_LearnTradeEffect} & \nfrref{NFR_Accuracy} \\
+
+\rref{FR_LearnConcentration} & \nfrref{NFR_Accuracy}, \nfrref{NFR_Usability} \\
+
+\rref{FR_LearnKnowledgeCheck}, \rref{FR_LearnCheckResult}, \rref{FR_LearnProgress} & \nfrref{NFR_Usability}, \nfrref{NFR_Accessibility} \\
+
+\rref{FR_LearnUpdateContent} & \nfrref{NFR_Maintainability} \\
+
+
+
+\rref{FR_SocialRequest}, \rref{FR_SocialAccept}, \rref{FR_SocialDecline}, \rref{FR_SocialRemove} & \nfrref{NFR_Security} \\
+
+\rref{FR_SocialShare}, \rref{FR_SocialChooseFriends}, \rref{FR_SocialPreview} & \nfrref{NFR_Security}, \nfrref{NFR_Usability} \\
+
+\rref{FR_SocialNoBody} & \nfrref{NFR_Security} \\
+
+\rref{FR_SocialFeed} & \nfrref{NFR_Performance}, \nfrref{NFR_Security}, \nfrref{NFR_Accessibility} \\
+
+\rref{FR_SocialDeleteUpdate} & \nfrref{NFR_Security} \\
+
+\rref{FR_SocialNoRanking} & \nfrref{NFR_Usability} \\
+
+
+\rref{FR_RemindPeriods} & \nfrref{NFR_Usability} \\
+
+\rref{FR_SetWithdrawConsent}, \rref{FR_SetPermissionList} & \nfrref{NFR_Security}, \nfrref{NFR_Usability} \\
+
 \bottomrule
 \caption{Traceability Between Functional and Nonfunctional Requirements}
 \label{tab:FR2Rtm}
 
 \end{longtable}
+
 
 % ============================================================== 
 
