@@ -723,6 +723,72 @@ with the same identifier and wording.
 % Owner: Farid
 \subsection{Accounts and Profile}
 
+\noindent \begin{itemize}
+\freq{FR_AcctCreate}
+  {The system shall let a new user create an account with an email address and
+  a password.}
+  {A test user who enters an unused email address and a valid password has an
+  account, and can sign in with them.}
+  {\srref{SR_EasyStart}, G2}
+\freq{FR_AcctAgeConfirm}
+  {The system shall not create an account until the user confirms that they are
+  at least \texttt{MIN\_USER\_AGE} years old.}
+  {A test user who does not confirm their age during sign-up has no account
+  created.}
+  {\srref{SR_ProtectData}, G3, Hazard Analysis CA2}
+\freq{FR_AcctUsername}
+  {The system shall require each user to choose a username that no other user
+  has.}
+  {A test user who tries to sign up with a username that another account
+  already uses is asked to choose a different one.}
+  {\srref{SR_ShareProgress}, G3}
+\freq{FR_AcctSignIn}
+  {The system shall let a user sign in with their email address and password.}
+  {A test user who enters their correct email address and password is signed
+  in; one who enters a wrong password is not.}
+  {\srref{SR_ProtectData}, G2}
+\freq{FR_AcctSignOut}
+  {The system shall let a signed-in user sign out.}
+  {After a test user signs out, opening the app shows the sign-in screen and
+  none of their data.}
+  {\srref{SR_ProtectData}, G3}
+\freq{FR_AcctResetPassword}
+  {The system shall let a user who has forgotten their password set a new one
+  through a link sent to their account's email address.}
+  {A test user who requests a reset receives a link at their email address,
+  and after setting a new password can sign in only with the new one.}
+  {\srref{SR_ControlOwnData}, G2}
+  \freq{FR_AcctEditProfile}
+  {The system shall let the user view and edit their profile details.}
+  {A test user who changes a profile detail sees the new value the next time
+  they open their profile.}
+  {\srref{SR_ControlOwnData}, G3}
+\freq{FR_AcctBodyOptional}
+  {The system shall not require the user to enter their height or weight in
+  order to use any feature.}
+  {A test user who leaves height and weight empty can earn currency, trade,
+  learn, and share.}
+  {\srref{SR_AllAbilities}, \srref{SR_ProtectData}, G3, G5}
+\freq{FR_AcctDownloadData}
+  {The system shall let the user download a copy of the personal data
+  \progname{} stores about them.}
+  {A test user who requests a copy receives a file containing their profile,
+  activity totals, balance, holdings, trades, and shared updates.}
+  {\srref{SR_ControlOwnData}, G3}
+\freq{FR_AcctDeleteConfirm}
+  {Before deleting an account, the system shall ask the user to confirm the
+  deletion in a message stating that it cannot be undone.}
+  {A test user who starts account deletion is shown this warning, and their
+  account still exists if they cancel.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_DeleteAccount}, G3}
+\freq{FR_AcctDelete}
+  {The system shall let the user delete their account from within the app.}
+  {A test user who confirms deletion can no longer sign in, and none of their
+  data is shown to them or to their friends.}
+  {\srref{SR_ControlOwnData}, \ucref{UC_DeleteAccount}, G3, Hazard Analysis
+  SEC-18}
+\end{itemize}
+
 % Owner: Davis
 \subsection{Activity and Rewards}
 
@@ -797,8 +863,180 @@ with the same identifier and wording.
 % Owner: Farid
 \subsection{Learning and Feedback}
 
+The requirements in this subsection refer to the core concepts in
+Table~\ref{TblCoreConcepts}. These are the concepts measured by the knowledge
+check in goal G1; the list is educational content that administrators can
+extend without changing these requirements.
+
+\begin{table}[H]
+\caption{Core concepts} \label{TblCoreConcepts}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.18\textwidth}X}
+\toprule
+\textbf{Domain} & \textbf{Core concepts}\\
+\midrule
+Investing & Stock; ETF; share; market price; portfolio value; return;
+diversification; risk and volatility; compound growth; market downturn and
+recovery\\
+Canadian accounts & Tax-Free Savings Account (TFSA); Registered Retirement
+Savings Plan (RRSP)\\
+Fitness & Each supported activity type; active minutes; rest day;
+streak\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_LearnExplainConcept}
+  {The system shall provide a concept explanation for each core concept in
+  Table~\ref{TblCoreConcepts}.}
+  {For every core concept in Table~\ref{TblCoreConcepts}, a tester can open a
+  concept explanation of it in the app.}
+  {\srref{SR_LearnInContext}, \srref{SR_CanadianContext}, G1}
+\freq{FR_LearnInPlace}
+  {The system shall let the user open the concept explanation of a core concept
+  from every screen on which that concept appears.}
+  {On every screen that shows a core concept, a tester can open its concept
+  explanation without leaving that screen.}
+  {\srref{SR_LearnInContext}, G1, G2}
+\freq{FR_LearnValueChange}
+  {When the user's portfolio value has changed by more than
+  \texttt{FEEDBACK\_THRESHOLD} since they last viewed their portfolio,
+  the system shall show feedback naming the holdings that contributed most to
+  the change.}
+  {For a test portfolio whose value has changed by more than the threshold,
+  the feedback names the holding whose value changed most.}
+  {\srref{SR_LearnFromDecisions}, G1}
+\freq{FR_LearnTradeEffect}
+  {After each trade, the system shall show the user how the trade changed the
+  share of their portfolio value held in each asset.}
+  {After a test trade, the feedback shows each holding's share of portfolio
+  value before and after the trade, and these match the values calculated from
+  the holdings.}
+  {\srref{SR_LearnByDoing}, \srref{SR_LearnFromDecisions}, G1, G4}
+\freq{FR_LearnConcentration}
+  {When a single holding is more than \texttt{CONCENTRATION\_LIMIT} of the
+  user's portfolio value, the system shall show the user an explanation of
+  diversification.}
+  {A test portfolio with one holding above \texttt{CONCENTRATION\_LIMIT} of its
+  value shows the explanation, and the explanation names no asset to buy or
+  sell (Hazard Analysis SAF-9).}
+  {\srref{SR_LearnFromDecisions}, \srref{SR_NotAdvice}, G1}
+\freq{FR_LearnKnowledgeCheck}
+  {The system shall provide a knowledge check for each core concept in
+  Table~\ref{TblCoreConcepts}.}
+  {For every core concept in Table~\ref{TblCoreConcepts}, a tester can start a
+  knowledge check on it.}
+  {\srref{SR_LearnByDoing}, G1}
+\freq{FR_LearnCheckResult}
+  {When the user finishes a knowledge check, the system shall show which of
+  their answers were correct and an explanation of the correct answer to each
+  question they got wrong.}
+  {A test user who answers one question wrongly sees that question marked
+  incorrect, together with the explanation of its correct answer.}
+  {\srref{SR_LearnFromDecisions}, G1}
+\freq{FR_LearnProgress}
+  {The system shall show the user their learning progress.}
+  {After a test user views a concept explanation and passes a knowledge check,
+  both appear in their learning progress.}
+  {\srref{SR_SeeProgress}, G1, G2}
+\freq{FR_LearnUpdateContent}
+  {The system shall let administrators add and edit concept explanations and
+  knowledge checks without releasing a new version of the app.}
+  {A concept explanation edited by an administrator is shown in its edited form
+  on a test phone whose app has not been updated.}
+  {\srref{SR_UpdateContent}, G1}
+\end{itemize}
+
 % Owner: Farid
 \subsection{Social Feed}
+
+A user can share only the kinds of update in Table~\ref{TblShareable}. Currency
+balances and portfolio values are not shareable, so that friends compare
+effort and learning rather than market results.
+
+\begin{table}[H]
+\caption{Kinds of shared update} \label{TblShareable}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.28\textwidth}X}
+\toprule
+\textbf{Kind} & \textbf{Content}\\
+\midrule
+Activity total & The user's total for one activity type over a day or a
+week\\
+Streak & The number of consecutive days with recorded activity\\
+Fitness milestone & A fitness milestone the user has reached\\
+Learning milestone & A knowledge check the user has passed\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \begin{itemize}
+\freq{FR_SocialRequest}
+  {The system shall let the user send a friend request to another user by
+  their username.}
+  {A test user who enters another user's username sends that user a friend
+  request, which the other user sees.}
+  {\srref{SR_ShareProgress}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialAccept}
+  {The system shall make two users friends only after the user who received
+  the friend request accepts it.}
+  {Two test users are not friends while a request between them is pending or
+  after it is declined, and are friends once it is accepted.}
+  {\srref{SR_ControlSharing}, G3}
+\freq{FR_SocialDecline}
+  {The system shall let the user decline a friend request.}
+  {After a test user declines a request, the two users are not friends and the
+  request is no longer shown to the user who declined it.}
+  {\srref{SR_ControlSharing}, G3}
+\freq{FR_SocialRemove}
+  {The system shall let the user remove a friend.}
+  {After a test user removes a friend, neither user sees the other's shared
+  updates.}
+  {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-13}
+\freq{FR_SocialShare}
+  {The system shall let the user share an update of a kind listed in
+  Table~\ref{TblShareable}.}
+  {A test user can share one update of each kind in Table~\ref{TblShareable},
+  and cannot share anything else.}
+  {\srref{SR_ShareProgress}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialChooseFriends}
+  {The system shall let the user choose which of their friends can see each
+  shared update.}
+  {A test update shared with one selected friend appears in that friend's
+  social feed and in no other friend's.}
+  {\srref{SR_ControlSharing}, \ucref{UC_ShareProgress}, G3, Hazard Analysis
+  SEC-13}
+\freq{FR_SocialPreview}
+  {The system shall share an update only after showing the user the update
+  exactly as their friends will see it.}
+  {For every test update, the preview shown before sharing matches what the
+  selected friends see in their social feed.}
+  {\srref{SR_ControlSharing}, \ucref{UC_ShareProgress}, G3}
+\freq{FR_SocialNoBody}
+  {The system shall not include the user's age, height, or weight in any
+  shared update.}
+  {No shared update shown to a test user's friends contains their age, height,
+  or weight.}
+  {\srref{SR_ProtectData}, G3}
+\freq{FR_SocialFeed}
+  {The system shall show the user a social feed of the updates their friends
+  have shared with them, newest first.}
+  {A test user's social feed contains every update shared with them by a friend
+  and no others, ordered by the time each was shared.}
+  {\srref{SR_ShareProgress}, G3}
+\freq{FR_SocialDeleteUpdate}
+  {The system shall let the user delete an update they have shared.}
+  {After a test user deletes a shared update, it no longer appears in any
+  friend's social feed.}
+  {\srref{SR_ControlSharing}, G3, Hazard Analysis SEC-13}
+\freq{FR_SocialNoRanking}
+  {(HA SAF-11) The system shall not rank users against each other by activity,
+  currency or portfolio performance.}
+  {No screen shown to a test user orders users by activity, currency or
+  portfolio performance, or shows a user's position relative to others.}
+  {\srref{SR_NoHarmfulComparison}, G3}
+\end{itemize}
 
 % Owner: Davis
 \subsection{Reminders and Settings}
