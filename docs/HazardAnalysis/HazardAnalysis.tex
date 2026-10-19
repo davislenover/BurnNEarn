@@ -912,6 +912,49 @@ when they are reminded keeps reminders useful and avoids late-night pressure.}
 Section~6.6, FR\_RemindPeriods.}
 {Capstone.}
 
+
+\hazreq{SAF-12}{Health notice before the first reward}
+{Before the user first earns currency, the system shall display a notice
+stating that \progname{} does not give medical advice and that users should
+consult a health professional before starting a new exercise program, and
+shall not award currency until the user acknowledges it.}
+{A new test user is shown the notice before their first reward, and earns no
+currency until they acknowledge it.}
+{Rewards encourage more activity, and fitness explanations describe exercise
+in general terms. A user with a medical condition could read either as a
+personal recommendation. The notice makes clear that \progname{} is not a
+substitute for medical advice, and fitness content stays general
+(SRS Section~1.2, Out of scope).}
+{FMEA H10, H30, L1 (physical harm).}
+{SRS Section~6.2, FR\_ActHealthNotice.}
+{Capstone.}
+
+\hazreq{SAF-13}{No interaction during activity}
+{The system shall award currency for recorded activity without requiring any
+interaction with \progname{} while the activity is in progress.}
+{A test user who records a workout without opening \progname{} during it
+receives the same currency as one who opens the app during the workout.}
+{A feature that needs a tap, check-in or timer during exercise draws the
+user's attention away from their surroundings, for example near traffic.
+Reading activity from the health platform afterwards
+(SRS Section~2.5, SC2) removes that need entirely.}
+{FMEA H11, L1 (physical harm).}
+{SRS Section~6.2, FR\_ActNoInteraction.}
+{Capstone.}
+
+\hazreq{SAF-14}{No rewards for weight or calories}
+{The system shall not base any reward, goal or milestone on the user's body
+weight, change in weight, or calories.}
+{No reward rule, goal or milestone in \progname{} uses body weight, weight
+change or calories as an input, and a test user's rewards are unchanged when
+their weight is changed or removed.}
+{Rewarding weight change or calories can reinforce harmful eating and exercise
+behaviour. Height and weight are optional (SRS Section~6.1,
+FR\_AcctBodyOptional), so no reward can depend on them.}
+{FMEA H12, L1 (physical harm), L2 (psychological harm).}
+{SRS Section~6.2, FR\_ActNoWeightReward.}
+{Capstone.}
+
 \end{description}
 
 \begin{table}[H]
@@ -978,6 +1021,119 @@ that are clearly impossible.}
 {SRS Section~6.2, FR\_ActPlausible.}
 {Capstone.}
 
+
+\hazreq{SEC-19}{Count each activity once}
+{The system shall award currency for each activity record at most once, even
+when the record is read more than once.}
+{When the same test records are read on two consecutive syncs, the user is
+rewarded for them once.}
+{Each sync re-reads recent records to catch late ones (\reqref{SEC-20}).
+Without this requirement, every re-read would reward the same activity again,
+over-rewarding the user and overstating their trends and shared milestones.
+Combining several activity sources is a stretch goal and is out of scope
+(Section~\ref{SecScopePurpose}).}
+{FMEA H4, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-19.}
+{Capstone.}
+
+\hazreq{SEC-20}{Catch late activity}
+{On each sync, the system shall read the activity records of the last
+\texttt{SYNC\_LOOKBACK\_PERIOD} and reward any record that has not already been
+rewarded.}
+{A test record written to the health platform two days after the activity took
+place is rewarded on the next sync, once.}
+{The phone's operating system can delay background syncs, and the health
+platform can receive records late, for example when a watch syncs the next day.
+Re-reading a recent window catches these records. \reqref{SEC-19} prevents the
+re-read records from being counted twice.}
+{FMEA H5, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-20.}
+{Capstone.}
+
+\hazreq{SEC-21}{Activity unavailable}
+{When the system cannot read activity data, because permission has not been
+granted or the health platform does not respond, it shall tell the user that
+activity could not be read, keep the currency already earned, and keep every
+feature that does not need new activity data usable.}
+{With health permission denied, and separately with the health platform
+returning errors, a test user is told that activity could not be read, their
+balance is unchanged, and trading, learning and the social feed still work.}
+{Permission can be declined or revoked by the operating system, and a library
+update can break reading for every user on one operating system version.
+Neither should crash the app or cost the user what they have earned.}
+{FMEA H1, H6, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-21. Implemented in part by SRS Section~6.2,
+FR\_ActNoData.}
+{Capstone.}
+
+\hazreq{SEC-22}{Balance history}
+{The system shall record every change to a user's currency balance with its
+amount, time and reason, and the balance shall always equal the sum of its
+recorded changes.}
+{For a test user after a series of rewards and trades, the balance equals the
+sum of the recorded changes, and each change shows its amount, time and
+reason.}
+{A wrong conversion rate or rounding error in a reward is otherwise invisible.
+A complete history lets the team detect it, recompute the correct balance, and
+explain any balance to the user.}
+{FMEA H8, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-22.}
+{Capstone.}
+
+\hazreq{SEC-23}{Count activity on the user's day}
+{The system shall assign each activity record to a calendar day using the
+user's time zone at the time of the activity.}
+{Test records at 23:30 and 00:30 local time are assigned to two different days,
+and a record made before a time zone change keeps the day on which it took
+place.}
+{The daily earning cap (\reqref{SAF-7}), streaks and trends all depend on which
+day a record belongs to. Using the server's time zone, or ignoring travel and
+daylight saving changes, moves activity to the wrong day.}
+{FMEA H9, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-23.}
+{Capstone.}
+
+\hazreq{SEC-24}{The server decides rewards and balances}
+{The system shall calculate rewards, balances and holdings only on the server,
+using the health platform's record times and the server's clock, and shall not
+accept these values, or times, from the app.}
+{A test request from a modified app that reports its own reward, balance or
+holding is rejected, and changing a test phone's clock does not change the
+rewards earned.}
+{A modified copy of the app, or a phone with its clock moved, can report any
+value it likes. Critical Assumption CA3 does not exclude a modified app, so the
+server must be the only authority for values that matter.}
+{FMEA H43, H51, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-24.}
+{Capstone.}
+
+\hazreq{SEC-25}{Validate every request}
+{The server shall reject any request whose inputs are missing, of the wrong
+type, or outside the limits stated in the SRS.}
+{Test requests with a missing field, a value of the wrong type, and a value
+outside its SRS limit, such as a negative trade quantity, are each rejected
+with an error and change no data.}
+{Crafted requests can bypass every check made in the app. Checking every input
+on the server stops them from corrupting data or reaching code paths that were
+never meant to receive them~\cite{OWASPMobileTop10}.}
+{FMEA H43, L4 (security loss), L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-25.}
+{Capstone.}
+
+\hazreq{SEC-26}{Backups}
+{The system shall back up all persistent data at least once every
+\texttt{BACKUP\_INTERVAL}, and restoring from a backup shall be tested before
+each release.}
+{The backup log shows a backup in every \texttt{BACKUP\_INTERVAL}, and the
+release checklist shows a successful test restore before each release.}
+{A hosting failure, faulty migration or accidental deletion would otherwise
+lose every user's progress. A backup that has never been restored may not
+work when it is needed. Backups are encrypted and covered by deletion
+(\reqref{SEC-16}, \reqref{SEC-18}).}
+{FMEA H44, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-26.}
+{Capstone.}
+
 \end{description}
 
 \subsection{Financial Understanding}
@@ -1027,6 +1183,59 @@ label next to it.}
 mistake them for results they would get with real money.}
 {FMEA H23, L6 (financial-understanding harm).}
 {SRS Section~6.3, FR\_MktLabelReturns.}
+{Capstone.}
+
+
+\hazreq{SAF-15}{Mark market scenarios}
+{The system shall mark every screen of a market scenario as a scenario, and
+shall show the historical dates being replayed.}
+{Every screen shown during a test scenario carries a scenario label and the
+dates of the period being replayed, and no screen of the live market does.}
+{A replayed crash that looks like the live market could make a user believe it
+is happening now, causing anxiety or a real-world decision based on old
+events.}
+{FMEA H24, L2 (psychological harm), L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktScenarioLabel.}
+{Capstone.}
+
+\hazreq{SAF-16}{Reviewed learning content}
+{The system shall show each concept explanation with its source and the date
+it was last reviewed, and each explanation and knowledge check answer shall be
+reviewed by a second team member before it is published.}
+{Every concept explanation shown to a test user has a source and a review date,
+and the content log shows a second reviewer for every explanation and answer
+key.}
+{An incorrect explanation or answer key teaches a wrong concept that the user
+may later apply to real money or exercise. Some rules, such as account
+contribution limits, also change over time, so each item needs a source and a
+review date.}
+{FMEA H27, H28, L6 (financial-understanding harm).}
+{SRS Section~6.4, FR\_LearnReviewed.}
+{Capstone.}
+
+\hazreq{SAF-17}{Feedback shows its basis}
+{The system shall base all feedback on a portfolio change on the user's own
+holdings and price changes, and shall show the data it is based on.}
+{For a test portfolio change, the feedback names the holdings and price
+changes it refers to, and these match the portfolio's records.}
+{Generic feedback, or feedback that names the wrong cause, teaches the wrong
+lesson from the user's own decision. Showing the data lets the user check the
+explanation (SRS Section~6.4, FR\_LearnValueChange).}
+{FMEA H29, L6 (financial-understanding harm).}
+{SRS Section~6.4, FR\_LearnFeedbackBasis.}
+{Capstone.}
+
+\hazreq{SAF-18}{Gains and losses not shown by colour alone}
+{The system shall show every gain or loss with a sign or a text label, not by
+colour alone.}
+{With the display shown in greyscale, a tester can tell every gain from every
+loss on every screen.}
+{Red and green are the colours most often confused by people with colour
+vision deficiency, so a user could read a loss as a gain. WCAG~2.2 success
+criterion 1.4.1 forbids using colour as the only means of conveying
+information~\cite{WCAG22}.}
+{FMEA H50, L6 (financial-understanding harm).}
+{SRS Section~6.3, FR\_MktGainLossLabel.}
 {Capstone.}
 
 \end{description}
@@ -1104,6 +1313,94 @@ went through. Recording it twice would change the balance and holdings in a way
 the user did not intend.}
 {FMEA H17, H46, L5 (data loss and integrity).}
 {SRS Section~6.3, FR\_MktNoDuplicate.}
+{Capstone.}
+
+
+\hazreq{SEC-27}{Prices in one currency}
+{The system shall store every price with its currency, and shall not combine
+values in different currencies without converting them.}
+{For a test portfolio holding assets priced in two different currencies,
+every stored price has a currency, and the portfolio value equals the sum of
+the holdings after conversion to one currency.}
+{Assets listed on different exchanges, such as in Canada and the United
+States, are priced in different currencies. Adding their prices without
+conversion gives a wrong portfolio value and misleading feedback.}
+{FMEA H14, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-27.}
+{Capstone.}
+
+\hazreq{SEC-28}{Apply stock splits}
+{When an asset undergoes a stock split, the system shall adjust users'
+holdings and the asset's price history so that the split does not change any
+portfolio value.}
+{For a test asset that splits 2-for-1, every holding doubles, every historical
+price halves, and every portfolio value is the same before and after.}
+{Ignoring a split shows a large false loss or gain overnight, which teaches the
+wrong lesson about the asset.}
+{FMEA H15, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-28.}
+{Capstone.}
+
+\hazreq{SEC-29}{Trade at the confirmed price}
+{The system shall execute a trade at the price shown when the user confirmed
+it. If that price is no longer the latest price, it shall show the user the new
+price and ask them to confirm again.}
+{A test trade confirmed at a price that has not changed executes at that price.
+When the price changes between viewing and confirming, the trade does not
+execute until the user confirms the new price.}
+{Prices update while the user is deciding. Executing at a different price than
+the one shown charges the user an amount they did not agree to and undermines
+trust in the simulation (SRS Section~6.3, FR\_MktBuy).}
+{FMEA H18, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-29.}
+{Capstone.}
+
+\hazreq{SEC-30}{Accurate values}
+{The system shall calculate every displayed balance and portfolio value to
+within \texttt{VALUE\_TOLERANCE} of its exact value.}
+{For test portfolios with hand-calculated values, every displayed balance and
+portfolio value differs from the hand-calculated value by at most
+\texttt{VALUE\_TOLERANCE}.}
+{Rounding errors that build up over many trades show users progress they did
+not make, and break the balance history check (\reqref{SEC-22}).}
+{FMEA H22, L5 (data loss and integrity), L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-30.}
+{Capstone.}
+
+\hazreq{SEC-31}{Separate scenario portfolios}
+{The system shall keep each market scenario's portfolio and balance separate
+from the user's live portfolio and balance.}
+{After a test user buys and sells in a scenario, their live balance and
+holdings are unchanged.}
+{A scenario is practice. If its trades changed the live portfolio, the user's
+real progress would be corrupted by a replay of the past.}
+{FMEA H25, L5 (data loss and integrity).}
+{SRS Section~7.3, SEC-31.}
+{Capstone.}
+
+\hazreq{SEC-32}{Complete scenario data}
+{The system shall offer a market scenario only after its historical data has
+been checked to contain a price for every asset in it on every trading day of
+its period.}
+{The check is run on every scenario dataset before release, and a test dataset
+with one missing day is not offered.}
+{A replay with gaps jumps between prices and misrepresents what happened in the
+period, which is the lesson the scenario is meant to teach.}
+{FMEA H26, L6 (financial-understanding harm).}
+{SRS Section~7.3, SEC-32.}
+{Capstone.}
+
+\hazreq{SEC-33}{Provider credentials stay on the server}
+{The system shall store the credentials for every external service only on the
+server, never in the app or in the code repository.}
+{Inspection of the app package and an automated scan of the repository find no
+external service credentials.}
+{A key in the app can be extracted from the installed package, and a key in
+the repository is visible to anyone with access to it. Either lets others use
+up the market data request limit, causing an outage for every user, or run up
+costs~\cite{OWASPMASVS}.}
+{FMEA H16, L4 (security loss).}
+{SRS Section~7.3, SEC-33.}
 {Capstone.}
 
 \end{description}
@@ -1195,6 +1492,18 @@ user lives or regularly goes.}
 {SRS Section~7.3, SEC-12.}
 {Capstone.}
 
+
+\hazreq{SEC-34}{Private notifications}
+{The system shall not include health data, balances or portfolio values in a
+notification unless the user has turned this on.}
+{With default settings, no notification sent to a test phone contains health
+data, a balance or a portfolio value.}
+{Notifications appear on the lock screen, where anyone near the phone can read
+them.}
+{FMEA H48, L3 (privacy loss).}
+{SRS Section~7.3, SEC-34.}
+{Capstone.}
+
 \end{description}
 
 \subsection{Social Feed}
@@ -1244,6 +1553,32 @@ built, they should be opt-in.}
 {FMEA H10, L2 (psychological harm).}
 {SRS Section~6.5, FR\_SocialNoRanking.}
 {Capstone. Opt-in leaderboards: Future, with the stretch goal.}
+
+
+\hazreq{SEC-35}{No body measurements or raw health data in shared updates}
+{The system shall not include body measurements or individual activity records
+in any shared update.}
+{No shared update shown to a test user's friends contains the user's age,
+height, weight, or an individual activity record.}
+{Shared updates are summaries the user chose, of the kinds listed in SRS
+Section~6.5. Body measurements and raw records are more sensitive than the
+summaries and are never needed to share progress.}
+{FMEA H32, L3 (privacy loss).}
+{SRS Section~6.5, FR\_SocialNoBody.}
+{Capstone.}
+
+\hazreq{SEC-36}{Friends only by acceptance}
+{The system shall make two users friends only after the user who received the
+friend request accepts it, and shall let either user remove the other at any
+time.}
+{Two test users are not friends while a request between them is pending or
+after it is declined, and stop being friends as soon as either removes the
+other.}
+{If anyone could add a user as a friend, a stranger could see their shared
+updates or contact them. Removing a friend lets a user end unwanted contact.}
+{FMEA H33, L2 (psychological harm), L3 (privacy loss).}
+{SRS Section~6.5, FR\_SocialAccept and FR\_SocialRemove.}
+{Capstone.}
 
 \end{description}
 
@@ -1311,6 +1646,59 @@ Guideline 5.1.1(v)).}
 {FMEA H39, L3 (privacy loss).}
 {SRS Section~7.3, SEC-18. Implemented in part by SRS
 Section~6.1, FR\_AcctDelete.}
+{Capstone.}
+
+
+\hazreq{SEC-37}{Adult users only}
+{The system shall not create an account until the user confirms that they are
+at least \texttt{MIN\_USER\_AGE} years old.}
+{A test user who does not confirm their age during sign-up has no account
+created.}
+{Critical Assumption CA2 limits \progname{} to adults, because collecting health
+data from minors would require additional consent. A user can still give a
+false age, which is why the hazard remains in the FMEA.}
+{FMEA H36, L3 (privacy loss).}
+{SRS Section~6.1, FR\_AcctAgeConfirm.}
+{Capstone.}
+
+\hazreq{SEC-38}{Limit sign-in attempts}
+{The system shall require passwords of at least \texttt{MIN\_PASSWORD\_LENGTH}
+characters, and after \texttt{MAX\_FAILED\_SIGNINS} failed sign-in attempts on
+an account shall refuse further attempts on it for
+\texttt{SIGNIN\_LOCKOUT\_PERIOD}.}
+{A test password shorter than \texttt{MIN\_PASSWORD\_LENGTH} is refused at
+sign-up, and after \texttt{MAX\_FAILED\_SIGNINS} wrong passwords even the
+correct password is refused until \texttt{SIGNIN\_LOCKOUT\_PERIOD} has
+passed.}
+{Short passwords and unlimited guessing are the most common ways an account is
+taken over. An account holds health and portfolio data, so a takeover is a
+High-risk hazard.}
+{FMEA H35, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-38.}
+{Capstone.}
+
+\hazreq{SEC-39}{Protect the session on the phone}
+{The system shall store the user's session only in the phone's secure
+storage.}
+{Inspection of a test phone's app storage finds the session only in the
+operating system's secure storage.}
+{A session stored in ordinary app storage can be copied by another app or from
+a backup of the phone, giving access to the account without the
+password~\cite{OWASPMASVS}.}
+{FMEA H35, L3 (privacy loss), L4 (security loss).}
+{SRS Section~7.3, SEC-39.}
+{Capstone.}
+
+\hazreq{SEC-40}{Account recovery}
+{The system shall let a user who has forgotten their password set a new one
+through a link sent to their account's email address.}
+{A test user who requests a reset receives a link at their email address, and
+after setting a new password can sign in only with the new one.}
+{A user who cannot sign in loses access to all their progress and may abandon
+the app. The link goes only to the account's email address, so recovery does
+not open a way into someone else's account.}
+{FMEA H38, L5 (data loss and integrity).}
+{SRS Section~6.1, FR\_AcctResetPassword.}
 {Capstone.}
 
 \end{description}
