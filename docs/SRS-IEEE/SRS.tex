@@ -102,11 +102,12 @@
 
 \begin{document}
 
-\title{Software Requirements Specification for \progname: subtitle describing software} 
+\title{Software Requirements Specification for \progname{}} 
 \author{\authname}
 \date{\today}
 	
 \maketitle
+\thispagestyle{empty}
 
 ~\newpage
 
@@ -638,7 +639,7 @@ services or contacts.
 Reminders are generated on the phone as local notifications, so \progname{}
 uses no push notification service.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
   font=\small,
@@ -651,14 +652,14 @@ uses no push notification service.
   flow/.style={-{Stealth[length=2mm]}},
   lbl/.style={font=\scriptsize, align=center}
 ]
-  \node[system] (sys) {\progname{}\\[2pt]\normalfont\small (mobile app and server)};
+  \node[system] (sys) {\progname{}\\[2pt]\normalfont\small (mobile app, server\\\normalfont\small and database)};
 
   \node[entity, left=4.3cm of sys] (user) {User};
   \node[entity, right=2.6cm of sys] (market) {Market data\\provider};
   \node[entity, text width=2.5cm, above=1.8cm of market] (admin)
     {Administrator};
   \node[entity, below=1.8cm of market] (email) {Email\\service};
-  \node[entity, above=1.9cm of sys] (health)
+  \node[entity, above=2.6cm of sys] (health)
     {Phone health platform\\(HealthKit or\\Health Connect)};
   \node[entity, below=1.8cm of sys] (friends) {Friends\\(other users)};
   \node[upstream, above=0.9cm of health] (sources)
@@ -666,7 +667,7 @@ uses no push notification service.
 
   % User
   \draw[flow] ([yshift=4mm]user.east) -- ([yshift=4mm]sys.west)
-    node[lbl, midway, above] {account details, trades,\\answers, friend requests,\\sharing and reminder\\choices, consent};
+    node[lbl, midway, above] {account details, trades,\\answers, goals, rest days,\\friend requests, sharing\\and reminder choices,\\consent};
   \draw[flow] ([yshift=-4mm]sys.west) -- ([yshift=-4mm]user.east)
     node[lbl, midway, below] {currency, simulated\\portfolio, activity trends,\\explanations, feedback,\\reminders, data copy};
 
@@ -678,7 +679,7 @@ uses no push notification service.
 
   % Health platform
   \draw[flow] ([xshift=-4mm]health.south) -- ([xshift=-4mm]sys.north)
-    node[lbl, midway, left] {daily activity\\totals, permission\\status};
+    node[lbl, midway, left] {activity records,\\permission status};
   \draw[flow] ([xshift=4mm]sys.north) -- ([xshift=4mm]health.south)
     node[lbl, midway, right] {permission\\requests};
 
@@ -690,7 +691,7 @@ uses no push notification service.
 
   % Administrator
   \draw[flow] (admin.south) |- ([yshift=10mm]sys.east)
-    node[lbl, pos=0.25, left] {concept explanations,\\knowledge checks};
+    node[lbl, pos=0.25, left] {asset list, concept\\explanations,\\knowledge checks};
 
   % Email service
   \draw[flow] ([yshift=-10mm]sys.east) -| (email.north)
@@ -728,7 +729,6 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \end{itemize}
 \item \progname{} Responsibilities:
 \begin{itemize}
-\item Reject profile measurements outside plausible ranges.
 \item Award currency only for activity within plausibility limits and up to a
   daily cap (Hazard Analysis SAF-7, SEC-1).
 \item Treat a day with no activity data as a day with zero activity.
@@ -751,7 +751,7 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \item Health Platform Responsibilities:
 \begin{itemize}
 \item Store activity records from the user's activity sources, and provide
-  daily totals for the activity types the user has permitted.
+  the records for the activity types the user has permitted.
 \item Grant or withdraw \progname{}'s read access as the user chooses, and
   report the current permission status.
 \item Keep the activity data it records as accurate as its activity sources
@@ -769,6 +769,7 @@ The responsibilities of each entity in Figure~\ref{Fig_SystemContext} are:
 \end{itemize}
 \item Administrator Responsibilities:
 \begin{itemize}
+\item Keep the list of tradable assets current.
 \item Keep concept explanations and knowledge checks accurate, and name no
   asset for the user to buy or sell in them (Hazard Analysis SAF-9).
 \end{itemize}
@@ -841,8 +842,8 @@ by the project brief, an external service, the law or the app stores.
 
 \item[SC\refstepcounter{scnum}\thescnum \label{SC_Platform}:] \progname{} shall
 run as a mobile app on Android phones running Android
-\texttt{MIN\_ANDROID\_VERSION} or later and on iPhones running iOS
-\texttt{MIN\_IOS\_VERSION} or later.
+\texttt{MIN\_ANDROID\_\allowbreak VERSION} or later and on iPhones running iOS
+\texttt{MIN\_IOS\_\allowbreak VERSION} or later.
 \textit{Rationale:} This project calls for a mobile app, and these are the
 versions on the devices available to the team and the supervisor for testing
 (Development Plan, Section~10).
@@ -877,7 +878,7 @@ limits, cost and permitted use are set by the provider.
 currency and simulated holdings shall have no monetary value. They cannot be
 bought with, redeemed for or exchanged for money, and \progname{} shall not
 connect to any bank or brokerage account or give personalized investment
-advice. \progname{} shall state the associated risks whenever it explains a financial concept.
+advice.
 \textit{Rationale:} Handling real money or giving personalized investment advice would bring
 \progname{} under financial regulation that the team is not licensed for.
 Keeping real money out also keeps the practice risk-free (G4).
@@ -1095,7 +1096,7 @@ interviewee have been changed. Each persona lists the stakeholder requirements
 that matter most to them, so the design can be checked against the people it
 serves.
 
-\subsection{Persona 1}
+\subsection{Persona 1: Sam}
 \begin{itemize}
   \item \textbf{Name:} Sam, 28, graduate student.
   \item \textbf{Description:} Walks to campus and back every day and has tracked
@@ -1119,7 +1120,7 @@ serves.
         \srref{SR_ProtectData}, \srref{SR_ExplainPermissions}, \srref{SR_PhoneOnly}.
 \end{itemize}
 
-\subsection{Persona 2}
+\subsection{Persona 2: Jordan}
 \begin{itemize}
   \item \textbf{Name:} Jordan, 24, early-career employee in financial services.
   \item \textbf{Description:} Took several finance courses at university, but
@@ -1147,7 +1148,7 @@ serves.
 \end{itemize}
 
 
-\subsection{Persona 3}
+\subsection{Persona 3: Aisha}
 \begin{itemize}
   \item \textbf{Name:} Aisha, 19, first-year student.
   \item \textbf{Description:} Has never invested and does not know what a stock,
@@ -1740,34 +1741,6 @@ User
 % statements. Requirements must be atomic, testable and traceable. Labels are
 % meaningful mnemonics, not numbers.
 
-% =============================================================================
-% HOW TO WRITE A FUNCTIONAL REQUIREMENT (delete this block before submitting)
-%
-% * Use \freq{label}{statement}{fit criterion}{traces}. The FR number is
-%   assigned automatically.
-% * Labels: FR_ plus the area prefix of your subsection, then a short name:
-%   FR_Acct..., FR_Act..., FR_Mkt..., FR_Learn..., FR_Social..., and FR_Remind...
-%   or FR_Set... in Reminders and Settings.
-%   The prefix keeps labels from clashing between authors.
-% * Statement: one "The system shall ..." per requirement. If it needs "and" to
-%   join two behaviours, split it into two requirements.
-% * Say WHAT, not how: no screens, libraries or algorithms. Numbers are
-%   SMALL_CAPS constants defined in Appendix C (#95).
-% * Fit criterion: one line saying how a tester decides pass or fail.
-% * Traces to, in this order: stakeholder requirement(s) (\srref{SR_...},
-%   Section 3, #127), use case(s) (\ucref{UC_...}, Section 5, #130), goal(s)
-%   G1-G5 (Section 2.2), then any HA ID. SR and UC refs print as ?? until those
-%   PRs merge. Leave out the SR or UC when none fits.
-% * Hazard Analysis requirements that are functional (SAF-1 to SAF-11, SEC-1
-%   to SEC-6) go here with their HA ID at the start of the statement, e.g.
-%   "(HA SAF-1) The system shall ...", with the same statement and fit
-%   criterion as the Hazard Analysis. Privacy and security requirements
-%   (SEC-7 to SEC-18) go in Section 7.3 or Section 8 instead.
-% * A requirement that implements part of an HA requirement without restating
-%   it ends its Traces to with the HA ID, e.g. "G3, Hazard Analysis SEC-13".
-% * Each subsection has one owner (in its comment).
-% =============================================================================
-
 This section lists what \progname{} shall do, grouped by feature area. Each
 requirement has a fit criterion and traces to the stakeholder requirements and
 use cases it refines and to the goals in Section~\ref{SecProductVision}. A
@@ -1849,20 +1822,28 @@ requirement.
 % Owner: Davis
 \subsection{Activity and Rewards}
 
+A supported activity type is one listed in
+\texttt{SUPPORTED\_ACTIVITY\_\allowbreak TYPES}. For each supported type, \progname{}
+reads the user's activity records from the health platform, shows the daily
+totals in their activity trends, and awards currency for them. Each activity
+record counts under one supported type only, so walks and runs count as steps,
+not as workout minutes. Section~\ref{SecFormal} defines the daily reward and
+the streak.
+
 \noindent \begin{itemize}
 \freq{FR_ActTypes}
-  {The system shall award virtual currency for at least
-  \texttt{MIN\_ACTIVITY\_TYPES} activity types (the supported activity types).}
-  {A tester records activity of \texttt{MIN\_ACTIVITY\_TYPES} different activity
-  types in the health platform, and each one earns currency.}
+  {The system shall award virtual currency for each activity type in
+  \texttt{SUPPORTED\_ACTIVITY\_\allowbreak TYPES}.}
+  {A tester records activity of each type in
+  \texttt{SUPPORTED\_ACTIVITY\_\allowbreak TYPES} in the health platform, and each one
+  earns currency.}
   {\srref{SR_AllAbilities}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActEarn}
   {The system shall award virtual currency for recorded activity of a supported
   activity type.}
-  {For a test user whose recorded activity in one calendar day is plausible and
-  would earn at most \texttt{MAX\_DAILY\_CURRENCY}, the balance increases by the sum, over the
-  supported activity types, of each type's daily total multiplied by its rate
-  in \texttt{EARNING\_RATES}.}
+  {For a test user whose recorded activity in one calendar day is plausible
+  and would earn at most \texttt{MAX\_DAILY\_CURRENCY}, the balance increases
+  by the daily reward $R_d$ defined in Section~\ref{SecFormal}.}
   {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActHealthNotice}
   {(HA SAF-12) Before the user first earns currency, the system shall display
@@ -1884,13 +1865,15 @@ requirement.
   as a day with zero activity.}
   {For a test user whose health platform reports no activity data for a day,
   that day shows zero activity and earns no currency.}
-  {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
+  {\srref{SR_EarnFromActivity}, \ucref{UC_RecordActivity}, G5, Hazard Analysis
+  SEC-21}
 \freq{FR_ActPlausible}
   {(HA SEC-1) The system shall not count an activity record that exceeds the
   plausibility limits for its activity type toward the user's currency,
   activity trends, streak or milestones, and shall show the user that the
   record was not counted.}
-  {A test record of more than \texttt{MAX\_DAILY\_STEPS} steps in one day, or
+  {A test record of more than \texttt{MAX\_DAILY\_STEPS} steps or
+  \texttt{MAX\_DAILY\_PUSHES} wheelchair pushes in one day, or
   a workout longer than \texttt{MAX\_WORKOUT\_DURATION}, earns no currency,
   does not appear in the user's activity trends, streak or milestones, and is
   shown to the user as not counted.}
@@ -1909,26 +1892,29 @@ requirement.
   supported activity type, with each change applying from the next day.}
   {A test user who changes their daily activity goal keeps the previous goal
   for the rest of that day and has the new goal from the next day.}
-  {\srref{SR_OwnGoals}, G5}
+  {\srref{SR_OwnGoals}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActGoalOptional}
-  {(HA SAF-3) The system shall not require the user to set an activity goal in
-  order to earn currency for recorded activity.}
+  {(HA SAF-3) The system shall not require the user to set an activity goal to
+  earn currency for recorded activity.}
   {A test user with no activity goal set who records activity receives
   currency for it.}
-  {\srref{SR_OwnGoals}, \ucref{UC_EarnCurrency}, G5}
+  {\srref{SR_OwnGoals}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActNoAutoGoal}
   {(HA SAF-4) The system shall not change a user's activity goal without the
   user's confirmation.}
   {A test user who exceeds their goal on \texttt{GOAL\_REVIEW\_PERIOD}
   consecutive days still has the same goal unless they confirm a change.}
-  {\srref{SR_OwnGoals}, G5}
+  {\srref{SR_OwnGoals}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActStreak}
-  {The system shall show the user their current streak.}
-  {A test user with no streak who meets their activity goal on three
-  consecutive days is shown a streak of 3. After a following rest day, they
-  are shown a streak of 4. After a following day on which they neither
-  meet their goal nor take a rest day, they are shown a streak of 0.}
-  {\srref{SR_SeeProgress}, G5}
+  {The system shall show the user their current streak, as defined in
+  Section~\ref{SecFormal}.}
+  {A test user with a daily step goal and no streak meets the goal on three
+  consecutive days and is shown a streak of 3. After a following rest day,
+  they are shown a streak of 4. After a following day on which they miss the
+  goal and take no rest day, they are shown a streak of 0. A test user with no
+  goal set has their streak increase by one on each day they record any
+  activity.}
+  {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActRestDay}
   {(HA SAF-1) The system shall let the user mark up to
   \texttt{REST\_DAYS\_PER\_PERIOD} days in each \texttt{STREAK\_PERIOD} as
@@ -1937,7 +1923,7 @@ requirement.
   activity that day does not have the streak reset to zero at the start of the
   following day. A request to mark more than \texttt{REST\_DAYS\_PER\_PERIOD}
   rest days in one \texttt{STREAK\_PERIOD} is refused.}
-  {\srref{SR_SafeMotivation}, G5}
+  {\srref{SR_SafeMotivation}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActNoPenalty}
   {(HA SAF-2) The system shall not reduce a user's virtual currency balance or
   simulated holdings when they miss an activity goal or their streak ends, and
@@ -1946,52 +1932,87 @@ requirement.
   balance and simulated holdings at the start of day \textit{d+1} equal those
   at the end of day \textit{d}. No friend's social feed shows the missed goal
   or the ended streak.}
-  {\srref{SR_SafeMotivation}, \srref{SR_NoHarmfulComparison}, G3, G5}
+  {\srref{SR_SafeMotivation}, \srref{SR_NoHarmfulComparison},
+  \ucref{UC_GoalsStreaks}, G3, G5}
 \freq{FR_ActMilestone}
   {The system shall show the user each milestone in \texttt{MILESTONES} when
   they reach it.}
   {A test user whose streak, or total currency earned, first reaches a value in
   \texttt{MILESTONES} is shown that milestone once.}
-  {\srref{SR_SeeProgress}, G5}
+  {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActNoWeightReward}
   {(HA SAF-14) The system shall not base any reward, goal or milestone on the
   user's body weight, change in weight, or calories.}
   {No reward rule, goal or milestone in \progname{} uses body weight, weight
   change or calories as an input, and a test user's rewards are unchanged when
   their weight is changed or removed.}
-  {\srref{SR_SafeMotivation}, \srref{SR_AllAbilities}, G5}
+  {\srref{SR_SafeMotivation}, \srref{SR_AllAbilities},
+  \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActTrends}
   {The system shall show the user their daily totals for each supported
   activity type over time.}
   {A test user with recorded activity on 14 days sees the total for each of
   those days, for each supported activity type.}
-  {\srref{SR_SeeProgress}, G2, G5}
+  {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G2, G5}
 \end{itemize}
 
 % Owner: Davis
 \subsection{Simulated Market and Portfolio}
 
+The live market is the simulated market that follows current real-world
+prices. A market scenario replays historical prices instead, with its own
+balance and holdings (\rref{FR_MktScenario}). Scenario prices are the replayed
+day's closing prices (\rref{FR_MktScenarioAdvance}), so the rules on market
+hours and price age (\rref{FR_MktPriceAge}, \rref{FR_MktNoStaleTrade} and
+\rref{FR_MktQueueClosed}) apply only to the live market. Every asset is priced in
+\texttt{QUOTE\_CURRENCY}, and one unit of virtual currency buys one unit of
+\texttt{QUOTE\_CURRENCY} worth of an asset. Section~\ref{SecFormal} defines
+trades and portfolio value.
+
 \noindent \begin{itemize}
 \freq{FR_MktAssetCount}
-  {The system shall offer at least \texttt{MIN\_TRADABLE\_ASSETS} assets for
-  trading in the simulated market.}
-  {A tester counts the assets that can be traded in the simulated market and
-  finds at least \texttt{MIN\_TRADABLE\_ASSETS}.}
+  {The system shall offer at least \texttt{MIN\_TRADABLE\_STOCKS} stocks for
+  trading in the live market.}
+  {A tester counts the stocks that can be traded in the live market and finds
+  at least \texttt{MIN\_TRADABLE\_STOCKS}. Exchange-traded funds offered in
+  addition are not counted.}
   {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
+\freq{FR_MktOneCurrency}
+  {The system shall offer only assets whose prices are quoted in
+  \texttt{QUOTE\_CURRENCY}.}
+  {Every tradable test asset has its price quoted in
+  \texttt{QUOTE\_CURRENCY}.}
+  {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4, Hazard Analysis SEC-27}
+\freq{FR_MktUpdateAssets}
+  {The system shall let an administrator add an asset to, or remove an asset
+  from, the live market without releasing a new version of the app.}
+  {After an administrator adds a test asset, users can trade it, and after the
+  administrator removes it, users can no longer buy it, with no app update in
+  between.}
+  {\srref{SR_UpdateContent}, G4}
+\freq{FR_MktRemovedHoldings}
+  {The system shall let a user who holds shares of a removed asset continue to
+  see and sell those shares.}
+  {After an administrator removes a test asset that a test user holds, the
+  user still sees the holding and can sell it.}
+  {\srref{SR_RiskFree}, \srref{SR_UpdateContent}, G4}
 \freq{FR_MktRealPrices}
-  {The system shall price each asset in the simulated market at the most recent
-  price it has obtained for that asset from the market data provider.}
-  {For a test asset, the price \progname{} shows and uses for trades equals the
-  latest price \progname{} received from the market data provider for that
-  asset.}
+  {The system shall price each asset in the live market, and each removed asset
+  a user still holds, at the most recent price it has obtained for that asset
+  from the market data provider.}
+  {For a test asset in the live market, the price \progname{} shows and uses
+  for trades equals the latest price \progname{} received from the market data
+  provider for that asset.}
   {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
 \freq{FR_MktPriceAge}
   {(HA SEC-2) The system shall display each asset price with the time it was
-  obtained, and shall mark the price as delayed when it is older than
-  \texttt{QUOTE\_STALENESS\_LIMIT}.}
-  {A test price obtained more than \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown
-  with its time and a ``Delayed'' marker. A price obtained within the limit is
-  shown with its time and no marker.}
+  obtained, and shall mark the price as delayed when the asset's market is
+  open and the price is older than \texttt{QUOTE\_STALENESS\_LIMIT}.}
+  {While a test asset's market is open, a price obtained more than
+  \texttt{QUOTE\_STALENESS\_LIMIT} ago is shown with its time and a
+  ``Delayed'' marker, and a price obtained within the limit is shown with its
+  time and no marker. While the market is closed, the last price is shown with
+  its time and no marker.}
   {\srref{SR_RealMarket}, \ucref{UC_ViewMarket}, G4}
 \freq{FR_MktSimNotice}
   {(HA SAF-8) Before the user's first trade, the system shall display a notice
@@ -2005,18 +2026,19 @@ requirement.
   real-world value, and nothing in \progname{} is financial advice.}
   {\srref{SR_NotAdvice}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktBuy}
-  {The system shall let the user buy shares of an asset using virtual currency.}
+  {The system shall let the user buy whole shares of an asset using virtual
+  currency.}
   {While a test asset's market is open, a test user with enough currency buys
   one share of it. Their balance decreases by the price shown when they
   confirmed the trade, and their holding of it increases by one.}
   {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktSell}
-  {The system shall let the user sell shares of an asset they hold for virtual
-  currency.}
+  {The system shall let the user sell whole shares of an asset they hold for
+  virtual currency.}
   {While a test asset's market is open, a test user holding one share of it
   sells it. Their balance increases by the price shown when they confirmed the
   trade, and their holding of it decreases by one.}
-  {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, G4}
+  {\srref{SR_RiskFree}, \srref{SR_LearnByDoing}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktAtomicTrade}
   {(HA SEC-5) The system shall record each trade completely, updating both the
   currency balance and the holdings, or not at all. It shall reject a purchase
@@ -2043,12 +2065,15 @@ requirement.
   trade proceeds.}
   {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktQueueClosed}
-  {(HA SEC-4) The system shall queue a trade requested while the asset's market
-  is closed, and execute it at the first price obtained after the market next
-  opens.}
+  {(HA SEC-4) The system shall queue a trade requested while the asset's
+  market is closed, and execute it at the first price obtained after the
+  market next opens. If the user's balance or holdings cannot cover the trade
+  at that price, the system shall reject it and tell the user.}
   {A test trade requested while the market is closed is shown to the user as
   queued, with a notice that it will run at the opening price, and is executed
-  at the first price obtained after the market opens.}
+  at the first price obtained after the market opens. A queued purchase that
+  costs more than the user's balance at that price, or a queued sale of more
+  shares than the user holds, is rejected, and the user is told.}
   {\srref{SR_RealMarket}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktHoldings}
   {The system shall show the user each of their holdings.}
@@ -2057,8 +2082,9 @@ requirement.
   {\srref{SR_SeeProgress}, \ucref{UC_InvestmentFeedback}, G2, G4}
 \freq{FR_MktPortfolioValue}
   {The system shall show the user their portfolio value.}
-  {For a test user with known holdings, the portfolio value shown equals the
-  sum of each holding multiplied by its asset's most recent price.}
+  {For a test user with known holdings, the portfolio value shown equals $V$
+  as defined in Section~\ref{SecFormal}: the sum of each holding multiplied by
+  its asset's most recent price.}
   {\srref{SR_SeeProgress}, \ucref{UC_InvestmentFeedback}, G2, G4}
 \freq{FR_MktLabelReturns}
   {(HA SAF-10) The system shall label every displayed return and portfolio
@@ -2080,13 +2106,25 @@ requirement.
   trades in it use the historical prices for the replayed dates. After the
   scenario, their currency balance and holdings outside it are the same as
   before it started.}
-  {\srref{SR_PastMarkets}, \srref{SR_RiskFree}, G4}
+  {\srref{SR_PastMarkets}, \srref{SR_RiskFree}, \ucref{UC_MarketScenario}, G4}
+\freq{FR_MktScenarioStart}
+  {The system shall start each market scenario with
+  \texttt{SCENARIO\_START\_BALANCE} virtual currency and no holdings.}
+  {A test user who starts a scenario has a scenario balance of
+  \texttt{SCENARIO\_START\_BALANCE} and no scenario holdings.}
+  {\srref{SR_PastMarkets}, \ucref{UC_MarketScenario}, G4}
+\freq{FR_MktScenarioAdvance}
+  {The system shall advance a market scenario by one historical trading day
+  each time the user chooses to continue.}
+  {In a test scenario, each time the user continues, the replayed date moves
+  to the next trading day and prices change to that day's closing prices.}
+  {\srref{SR_PastMarkets}, \ucref{UC_MarketScenario}, G4}
 \freq{FR_MktScenarioLabel}
   {(HA SAF-15) The system shall mark every screen of a market scenario as a
   scenario, and shall show the historical dates being replayed.}
   {Every screen shown during a test scenario carries a scenario label and the
   dates of the period being replayed, and no screen of the live market does.}
-  {\srref{SR_PastMarkets}, G4}
+  {\srref{SR_PastMarkets}, \ucref{UC_MarketScenario}, G4}
 \freq{FR_MktNoRecommend}
   {(HA SAF-9) The system shall not recommend that a user buy or sell a
   specific asset.}
@@ -2301,13 +2339,13 @@ are the same reminder types as in the Hazard Analysis.
 \small
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.14\textwidth}X>{\raggedright\arraybackslash}p{0.3\textwidth}}
 \toprule
-\textbf{Type} & \textbf{Example} & \textbf{Feature area}\\
+\textbf{Type} & \textbf{Sent when} & \textbf{Feature area}\\
 \midrule
-Activity & Progress toward today's goal, or a streak about to end & Activity and Rewards\\
-Milestone & A goal reached, or a streak or currency milestone & Activity and Rewards\\
-Portfolio & A notable change in simulated portfolio value & Simulated Market and Portfolio\\
-Learning & A new concept explanation or knowledge check is available & Learning and Feedback\\
-Social & A friend shared an update or sent a friend request & Social Feed\\
+Activity & Today is not a rest day, and either the user has not yet met today's activity goal or their streak will end if they record no activity today & Activity and Rewards\\
+Milestone & The user meets their activity goal or reaches a value in \texttt{MILESTONES} & Activity and Rewards\\
+Portfolio & Price changes have moved the user's simulated portfolio value by more than \texttt{FEEDBACK\_THRESHOLD} since the previous day & Simulated Market and Portfolio\\
+Learning & A new concept explanation or knowledge check is published & Learning and Feedback\\
+Social & A friend shares an update with the user or sends them a friend request & Social Feed\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -2328,6 +2366,19 @@ Social & A friend shared an update or sent a friend request & Social Feed\\
   user who has not chosen any periods, reminders are delivered only during
   \texttt{DEFAULT\_REMINDER\_PERIOD}.}
   {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2}
+\freq{FR_RemindTypes}
+  {The system shall let the user turn each reminder type in
+  Table~\ref{TblReminderTypes} on or off.}
+  {A test user who turns off one reminder type receives no reminders of that
+  type, and still receives reminders of the types left on.}
+  {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2}
+\freq{FR_RemindSend}
+  {The system shall send a reminder of each type that is turned on when that
+  type's event in Table~\ref{TblReminderTypes} occurs.}
+  {For each reminder type a test user has left on, causing the event in its
+  Sent when column produces one reminder of that type within the user's
+  reminder periods.}
+  {\ucref{UC_Reminders}, G2, G5}
 \freq{FR_SetWithdrawConsent}
   {The system shall let the user withdraw consent for \progname{} to read their
   health data.}
@@ -2343,6 +2394,51 @@ Social & A friend shared an update or sent a friend request & Social Feed\\
   {\srref{SR_ExplainPermissions}, \srref{SR_ProtectData},
   \ucref{UC_ReviewPermissions}, G3, Hazard Analysis SEC-8}
 \end{itemize}
+
+\subsection{Formal Definitions} \label{SecFormal}
+
+This subsection defines the daily reward, the streak, trades and portfolio
+value that the requirements in Sections 6.2 and 6.3 refer to. For a user on
+calendar day $d$ in their time zone:
+\begin{itemize}
+\item $T$ is the set of supported activity types
+  (\texttt{SUPPORTED\_ACTIVITY\_\allowbreak TYPES}).
+\item $x_{t,d}$ is the user's total of activity type $t$ on day $d$, counting
+  only plausible records (\rref{FR_ActPlausible}).
+\item $u_t$ is the amount of activity type $t$ that earns one unit of virtual
+  currency (\texttt{EARNING\_RATES}).
+\item $G_d$ is the set of the user's activity goals in effect on day $d$. A
+  goal $(t, g)$ is met when $x_{t,d} \geq g$.
+\item $\mathit{rest}_d$ is true when the user marked day $d$ as a rest day.
+\end{itemize}
+
+\paragraph{Daily reward.} The virtual currency awarded for day $d$ is
+\begin{equation}
+R_d = \min\Bigl(\text{\texttt{MAX\_DAILY\_CURRENCY}},\
+  \sum_{t \in T} \Bigl\lfloor \frac{x_{t,d}}{u_t} \Bigr\rfloor\Bigr).
+\end{equation}
+
+\paragraph{Streak.} Day $d$ counts toward the streak when
+\begin{equation}
+q_d = \mathit{rest}_d \lor \bigl(G_d \neq \emptyset \land
+  \forall (t, g) \in G_d : x_{t,d} \geq g\bigr) \lor
+  \Bigl(G_d = \emptyset \land \sum_{t \in T} x_{t,d} > 0\Bigr).
+\end{equation}
+The streak at the end of day $d$ is $s_d = s_{d-1} + 1$ if $q_d$ is true,
+and $s_d = 0$ otherwise, with $s = 0$ before the user's first day.
+
+\paragraph{Trades.} Let $B$ be the user's balance, $h_a$ the number of shares
+of asset $a$ they hold, and $p_a$ the price at which a trade of $a$ executes.
+A purchase of $n$ shares, where $n$ is a positive integer, is accepted only if
+$n \cdot p_a \leq B$, and then sets $B \gets B - n \cdot p_a$ and
+$h_a \gets h_a + n$. A sale of $n$ shares, where $n$ is a positive integer, is accepted only if $n \leq h_a$, and
+then sets $B \gets B + n \cdot p_a$ and $h_a \gets h_a - n$.
+
+\paragraph{Portfolio value.} With $p_a$ the most recent price of asset $a$, the
+portfolio value is
+\begin{equation}
+V = \sum_{a} h_a \cdot p_a.
+\end{equation}
 
 % ============================================================== 
 \section{Data Requirements}
@@ -2859,31 +2955,11 @@ and associated records must be removed within a specified period.
 % ============================================================== 
 \section{AI and Machine Learning Requirements}
 
-\plt{Refer to
-\href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/Lxx_DrMosserGuestLecture/2026_09_Capstone.pdf?ref_type=heads}{Dr.
-Mosser's guest lecture} on AI requirements.}
-
-\plt{Include only when applicable.}
-
-\subsection{Model Inputs}
-
-TODO
-
-\subsection{Model Outputs}
-
-TODO
-
-\subsection{Evaluation Metrics}
-
-\plt{Accuracy, Precision, Recall, F1, BLEU, WER, etc.}
-
-TODO
-
-\subsection{Known Limitations}
-
-\plt{Explicitly document expected failure modes.}
-
-TODO
+This section is excluded because \progname{} does not use a machine learning
+model or any other artificial intelligence component. Rewards, plausibility
+checks, streaks, feedback and reminders all follow the fixed rules in
+Section~\ref{SecFR}, so there are no model inputs, model outputs, evaluation
+metrics or known model limitations to specify.
 
 % ============================================================== 
 
@@ -2899,6 +2975,8 @@ Stakeholder Req & Use Case & Functional Req \\
 \midrule
 
 \srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenario} \\
+\srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenarioStart} \\
+\srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenarioAdvance} \\
 \srref{SR_PastMarkets} & \ucref{UC_MarketScenario} & \rref{FR_MktScenarioLabel} \\
 \srref{SR_EasyStart} & \ucref{UC_ManageAccount} & \rref{FR_AcctCreate} \\
 \srref{SR_ProtectData} & \ucref{UC_ManageAccount} & \rref{FR_AcctAgeConfirm} \\
@@ -2927,6 +3005,9 @@ Stakeholder Req & Use Case & Functional Req \\
 \srref{SR_SeeProgress} & \ucref{UC_GoalsStreaks} & \rref{FR_ActTrends} \\
 
 \srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktAssetCount} \\
+\srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktOneCurrency} \\
+\srref{SR_UpdateContent} & -- & \rref{FR_MktUpdateAssets} \\
+\srref{SR_RiskFree}, \srref{SR_UpdateContent} & -- & \rref{FR_MktRemovedHoldings} \\
 \srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktRealPrices} \\
 \srref{SR_RealMarket} & \ucref{UC_ViewMarket} & \rref{FR_MktPriceAge} \\
 \srref{SR_NotAdvice} & \ucref{UC_BuyAsset} & \rref{FR_MktSimNotice} \\
@@ -2968,6 +3049,8 @@ Stakeholder Req & Use Case & Functional Req \\
 
 \srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindPeriods} \\
 \srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindInPeriods} \\
+\srref{SR_SafeMotivation} & \ucref{UC_Reminders} & \rref{FR_RemindTypes} \\
+-- & \ucref{UC_Reminders} & \rref{FR_RemindSend} \\
 \srref{SR_ControlOwnData} & \ucref{UC_WithdrawConsent} & \rref{FR_SetWithdrawConsent} \\
 \srref{SR_ExplainPermissions}, \srref{SR_ProtectData} & \ucref{UC_ReviewPermissions} & \rref{FR_SetPermissionList} \\
 \bottomrule
@@ -3234,28 +3317,20 @@ Users are expected to keep control over which activity and portfolio information
 
 \section{Appendices}
 
+The appendices give the development plan, the values of the symbolic
+constants, the use of generative AI, and the team's reflections.
+
 \subsection{Appendix A: Additional Materials}
 
-TODO
+There are no additional materials for this version of the SRS.
 
 \subsection{Appendix B: Development Plan}
 
-\plt{This section is optional.  It is used to explain the plan for developing
-  the software.  In particular, this section gives a list of the order in which
-  the requirements will be implemented.  In the context of a course  this is
-  where you can indicate which requirements will be implemented as part of the
-  course, and which will be ``faked'' as future work.  This section can be
-  organized as a prioritized list of requirements, or it could show the
-  requirements that will be implemented for ``phase 1'', ``phase 2'', etc.}
+The Development Plan gives the project schedule and the order in which work is
+done. The Hazard Analysis Roadmap states which safety and security requirements
+are implemented in the capstone and which are left for future work.
 
 \subsection{Appendix C: Values of Auxiliary Constants}
-
-\plt{Show the values of the symbolic parameters introduced in the report.}
-
-\plt{The definition of the requirements will likely call for SYMBOLIC\_CONSTANTS.
-Their values are defined in this section for easy maintenance.}
-
-\plt{The value of FRACTION, for the Maintainability NFR would be given here.}
 
 Table~\ref{TblConstants} gives the value of each symbolic constant used in this
 document and in the Hazard Analysis (HA).
@@ -3266,34 +3341,37 @@ document and in the Hazard Analysis (HA).
 \textbf{Constant} & \textbf{Value} & \textbf{Used in}\\
 \midrule
 \endhead
-\texttt{MIN\_USER\_AGE} & 18 & \rref{FR_AcctAgeConfirm}\\
+\texttt{MIN\_USER\_AGE} & 18 & \rref{FR_AcctAgeConfirm}, HA SEC-37\\
 \texttt{MIN\_ANDROID\_VERSION} & 17 & \scref{SC_Platform}\\
 \texttt{MIN\_IOS\_VERSION} & 27 & \scref{SC_Platform}\\
 \texttt{MARKET\_DATA\_PROVIDER} & Finnhub (Development Plan) & \scref{SC_MarketData}\\
-\texttt{MIN\_ACTIVITY\_TYPES} & 5 (G5) & \rref{FR_ActTypes}\\
-\texttt{EARNING\_RATES} & 1 per 100 steps. Workouts without a step count, such as
-  cycling or swimming, earn 1 per minute & \rref{FR_ActEarn}\\
+\texttt{SUPPORTED\_ACTIVITY\_TYPES} & Steps (walking and running), wheelchair pushes, cycling, swimming, and other workouts such as strength training or team sports (5 types, G5) & \rref{FR_ActTypes}, \rref{FR_ActEarn}, HA SEC-7\\
+\texttt{EARNING\_RATES} & 1 per 100 steps, 1 per 100 wheelchair pushes, and 1 per
+  minute of cycling, swimming or another workout & \rref{FR_ActEarn}\\
 \texttt{MAX\_DAILY\_CURRENCY} & 300 & \rref{FR_ActEarn}, \rref{FR_ActDailyCap}, HA SAF-7\\
-\texttt{MIN\_TRADABLE\_ASSETS} & 50 (G4) & \rref{FR_MktAssetCount}\\
+\texttt{MIN\_TRADABLE\_STOCKS} & 50 (G4) & \rref{FR_MktAssetCount}\\
+\texttt{QUOTE\_CURRENCY} & US dollars (USD) & \rref{FR_MktOneCurrency}\\
+\texttt{SCENARIO\_START\_BALANCE} & 10,000 & \rref{FR_MktScenarioStart}\\
 \texttt{QUOTE\_STALENESS\_LIMIT} & 15 minutes (G4) & \rref{FR_MktPriceAge},
   \rref{FR_MktNoStaleTrade}, HA SEC-2, SEC-3\\
-\texttt{FEEDBACK\_THRESHOLD} & 5\% & \rref{FR_LearnValueChange}\\
+\texttt{FEEDBACK\_THRESHOLD} & 5\% & \rref{FR_LearnValueChange}, \rref{FR_RemindSend}\\
 \texttt{CONCENTRATION\_LIMIT} & 50\% & \rref{FR_LearnConcentration}\\
 \texttt{DEFAULT\_REMINDER\_PERIOD} & 9:00 to 20:00 in the user's time zone & \rref{FR_RemindInPeriods}, HA SAF-6\\
 \texttt{REST\_DAYS\_PER\_PERIOD} & 2 & \rref{FR_ActRestDay}, HA SAF-1\\
-\texttt{STREAK\_PERIOD} & 7 days & \rref{FR_ActRestDay}, HA SAF-1\\
+\texttt{STREAK\_PERIOD} & calendar week (Monday to Sunday) in the user's time zone & \rref{FR_ActRestDay}, HA SAF-1\\
 \texttt{GOAL\_REVIEW\_PERIOD} & 7 & \rref{FR_ActNoAutoGoal}, HA SAF-4\\
 \texttt{MAX\_GOAL\_INCREASE} & 10\% & HA SAF-5\\
 \texttt{MILESTONES} & Streaks of 7, 30 and 100 days, and 1,000, 10,000 and
-  100,000 currency earned in total & \rref{FR_ActMilestone}\\
+  100,000 currency earned in total & \rref{FR_ActMilestone}, \rref{FR_RemindSend}\\
 \texttt{MAX\_DAILY\_STEPS} & 150,000 & \rref{FR_ActPlausible}, HA SEC-1\\
+\texttt{MAX\_DAILY\_PUSHES} & 100,000 & \rref{FR_ActPlausible}, HA SEC-1\\
 \texttt{MAX\_WORKOUT\_DURATION} & 12 hours & \rref{FR_ActPlausible}, HA SEC-1\\
 \texttt{SESSION\_TIMEOUT} & 14 days & HA SEC-17\\
 \texttt{DATA\_DELETION\_PERIOD} & 30 days & HA SEC-18\\
 \texttt{SYNC\_LOOKBACK\_PERIOD} & 7 days & HA SEC-20\\
 \texttt{BACKUP\_INTERVAL} & 24 hours & HA SEC-26\\
 \texttt{VALUE\_TOLERANCE} & 0.01 currency units & HA SEC-30\\
-\texttt{MIN\_PASSWORD\_LENGTH} & 8 characters & HA SEC-38\\
+\texttt{MIN\_PASSWORD\_LENGTH} & 8 & HA SEC-38\\
 \texttt{MAX\_FAILED\_SIGNINS} & 5 & HA SEC-38\\
 \texttt{SIGNIN\_LOCKOUT\_PERIOD} & 15 minutes & HA SEC-38\\
 \bottomrule
@@ -3334,7 +3412,7 @@ The team remains responsible for the accuracy, completeness, consistency, and ap
 
 \subsection{Appendix E: Reflection}
 
-\plt{This isn't part of the SRS, but it is part of the course.}
+% \plt{This isn't part of the SRS, but it is part of the course.}
 
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Lifelong Learning. 
