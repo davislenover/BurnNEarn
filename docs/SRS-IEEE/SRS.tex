@@ -3341,7 +3341,24 @@ graduate attribute of Lifelong Learning.
 
 \input{../Reflection.text}
 
-\input{../SRS_Reflection.text}
+% \input{../SRS_Reflection.text}
+
+\subsubsection*{1. What went well while writing this deliverable?}
+
+\textbf{Team:} What went well was grounding the requirements in evidence
+instead of in our own assumptions. Before writing, we interviewed two
+potential users, and every stakeholder requirement in Section~3 records its
+source stakeholder and the evidence behind it, so a reader can see why each
+one exists. Splitting the document through GitHub issues also worked: each
+section had one owner, and shared conventions, such as one format for every
+functional requirement, mnemonic labels, and a single appendix for symbolic
+constants, kept five people's writing consistent. Reviewing each other's pull
+requests caught real problems before submission, such as a shared table that
+contradicted a Hazard Analysis requirement and two different words used for
+the same idea. Finally, because every requirement has a label, traceability
+became a by-product of writing: each functional requirement names the
+stakeholder requirement, use case and goal it comes from, which made the
+traceability matrices straightforward to build.
 
 \subsubsection*{2. What pain points did you experience during this deliverable,
 and how did you resolve them?}
@@ -3365,6 +3382,8 @@ Next time I will merge \texttt{main} into my branch every day instead of once at
 the end, link each branch to its issue, and agree on shared identifiers before
 writing anything that refers to them.
 
+\bigskip
+\noindent
 \textbf{Angad:} One of the main challenges I faced during this deliverable
 was keeping my sections consistent with the requirements written by other
 team members. I was responsible for the use cases, non functional
@@ -3387,6 +3406,8 @@ review each other's work throughout the process rather than
 waiting until most of our sections are finished. This would
 help reduce the amount of rework needed near the deadline.
 
+\bigskip
+\noindent
 \textbf{Davis:} The main pain point for me was how many design decisions the
 SRS involved, and how many of them crossed between sections owned by different
 people. Farid and I split the functional requirements, Angad wrote the use cases
@@ -3421,6 +3442,114 @@ Another difficulty was linking my section to requirements that teammates were st
 
 That review also helped me catch a conflict: our stretch goals included leaderboards, but the newer safety requirements prohibited rankings. I revised the likely change to explain that future opt-in leaderboards would require reviewing the safety concerns and changing the current requirements. This showed me that checking earlier documents is only part of the work, I also need to check my section against the team's latest decisions.
 
+\bigskip
+\noindent
+\textbf{Preston:}
+
+\subsubsection*{3. How many of your requirements were inspired by speaking to
+your client(s) or their proxies (e.g. your peers, stakeholders, potential
+users)?}
+
+\textbf{Team:} Most of them. Of our 25 stakeholder requirements, 19 come
+directly from our two user interviews (P01 and P02), for example earning from
+the activity users already do, seeing progress together, controlling exactly
+what friends can see, and never being compared in a way that discourages
+someone who falls behind. Three more come from our supervisor's project
+vision and the Problem Statement: trading at real-world prices, practising on
+past market periods, and respecting the market data provider's limits. The
+remaining three come from regulation and standards rather than conversation:
+control over personal data (PIPEDA), accessibility (WCAG~2.2), and keeping
+educational content up to date. Because each functional requirement traces to
+a stakeholder requirement, the interviews indirectly shaped most of the
+roughly 70 functional requirements as well. The interviews also changed
+requirements we had already planned: one participant described a step streak
+that pushed them to walk late at night, which led directly to the rest-day and
+reminder-period requirements, and both participants preferred learning by
+doing, which shaped Section~6.4.
+
+\subsubsection*{4. Which of the courses you have taken, or are currently
+taking, will help your team to be successful with your capstone project?}
+
+\textbf{Team:}
+\begin{itemize}
+  \item \textbf{SFWRENG 3RA3 (Software Requirements and Security
+  Considerations):} the basis of this SRS, including stakeholder analysis, fit
+  criteria and traceability, and of our privacy and security requirements.
+  \item \textbf{SFWRENG 2AA4 and 3A04 (Software Design):} modular design and
+  information hiding for the upcoming design documents, so that likely changes,
+  such as switching market data providers, stay local to one module.
+  \item \textbf{SFWRENG 3S03 (Software Testing):} turning our fit criteria into
+  test cases for the V\&V Plan, and unit testing with Jest and pytest.
+  \item \textbf{SFWRENG 3DB3 (Databases):} designing the PostgreSQL schema, and
+  using transactions so that every trade is recorded completely or not at all.
+  \item \textbf{SFWRENG 4HC3 (Human Computer Interfaces):} usability testing
+  against our goal that most first-time users complete core tasks without
+  help.
+  \item \textbf{SFWRENG 4C03 (Computer Networks and Security):} encrypting data
+  in transit and securing the API that the app communicates with.
+\end{itemize}
+
+\subsubsection*{5. What knowledge and skills will the team collectively need to
+acquire to successfully complete this capstone project?}
+
+\textbf{Team:}
+\begin{itemize}
+  \item \textbf{Mobile development with React Native and TypeScript} (Angad,
+  Zaid): building one interface that runs on both Android and iOS.
+  \item \textbf{Health platform integration} (Preston, Zaid): the permission
+  models and data formats of Apple HealthKit and Google Health Connect, and the
+  bridge libraries that connect them to React Native.
+  \item \textbf{Backend development with FastAPI and PostgreSQL} (Farid,
+  Davis): authentication, request validation, and transactions that keep
+  balances and holdings consistent.
+  \item \textbf{Market data and investing domain knowledge} (Davis, Farid):
+  working within the provider's request limits, market hours, stock splits,
+  currencies, and explaining investing concepts correctly to beginners.
+  \item \textbf{Privacy and mobile security} (whole team): meeting PIPEDA and
+  app store rules for health data, and securing sessions and stored data.
+  \item \textbf{Usability testing} (whole team): planning sessions with
+  beginners and measuring whether the app teaches what it claims to.
+\end{itemize}
+
+\subsubsection*{6. For each of the knowledge areas and skills identified in the
+previous question, what are at least two approaches to acquiring the knowledge
+or mastering the skill? Of the identified approaches, which will each team
+member pursue, and why did they make this choice?}
+
+\textbf{Team:}
+\begin{itemize}
+  \item \textbf{React Native:} (a) the official React Native and Expo
+  documentation and tutorials, or (b) building small screens of \progname{}
+  itself, starting from the proof of concept. Angad and Zaid will build real
+  screens, because the official guides cover the basics and the project's own
+  screens expose the problems we will actually face.
+  \item \textbf{Health platform integration:} (a) Apple's and Google's
+  developer documentation, or (b) small test apps that read steps through each
+  bridge library on a physical phone. Preston and Zaid will build the test
+  apps, because reading health data was the main risk in our Development Plan,
+  and only a real device shows how permissions and late data behave.
+  \item \textbf{FastAPI and PostgreSQL:} (a) the FastAPI tutorial and
+  PostgreSQL documentation, or (b) applying what we learned in SFWRENG 3DB3 to
+  a first version of our schema, with the backend tests running in CI. Farid
+  and Davis will do both: the tutorial first for FastAPI, which neither has
+  used before, then the schema, because trade consistency has to be designed
+  in from the start.
+  \item \textbf{Market data and investing knowledge:} (a) the Finnhub API
+  documentation and its rate limits, or (b) reputable Canadian sources such as
+  the Financial Consumer Agency of Canada. Davis will take the API
+  documentation because he owns the market engine, and Farid will use the
+  Canadian sources because he owns the learning content, which must be
+  correct.
+  \item \textbf{Privacy and security:} (a) reading PIPEDA guidance and the OWASP
+  Mobile Application Security Verification Standard, or (b) peer review of
+  each pull request against our safety and security requirements. The whole
+  team will use peer review, because it checks the actual code, with the OWASP
+  standard as the checklist.
+  \item \textbf{Usability testing:} (a) the methods from SFWRENG 4HC3, or (b)
+  short pilot sessions with friends before the formal tests. The team will run
+  pilot sessions first, because they are cheap and reveal unclear wording
+  early, then use the 4HC3 methods for the measured tests in the V\&V Plan.
+\end{itemize}
 \newpage
 
 \bibliographystyle {plainnat}
