@@ -106,6 +106,12 @@ jobs:
           # pdflatex finds lmodern.sty but not the fonts it maps to, failing
           # with "Font rm-lmr7 at 600 not found".
           sudo updmap-sys >/dev/null
+          # ...and texlive-binaries' postinst is what links /usr/bin/bibtex to
+          # bibtex.original. Without it every citation prints as "(?)".
+          if ! command -v bibtex >/dev/null && [ -x /usr/bin/bibtex.original ]; then
+            sudo ln -sf /usr/bin/bibtex.original /usr/bin/bibtex
+          fi
+          bibtex --version | head -1
 
           pdflatex --version | head -1
           pandoc --version | head -1
