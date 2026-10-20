@@ -135,8 +135,8 @@ keep up a routine, and to make investing decisions. Features that change
 behaviour can also cause harm, even when they work as intended. For example,
 one interview participant described a step streak that now makes them go out
 walking later than they should (P01). Rationales in this document cite two
-interviews with potential users, P01 and P02. P01 was a pilot interview, so its
-answers are treated as indicative. The purpose of this
+interviews with potential users, P01 and P02. Both interviews were short and
+exploratory, so their answers are treated as indicative. The purpose of this
 hazard analysis is to identify how \progname{} could cause harm and to define
 requirements that control it. Hazards are identified using Failure Mode and
 Effect Analysis (FMEA) in Section~\ref{SecFMEA}, and the resulting safety and security
@@ -216,20 +216,20 @@ provider from going offline, but it must not present old prices as current.
 
 The hazards in scope are therefore those that arise in a component inside the
 boundary, or in an external entity whose failure a component must detect or
-withstand. They fall into five categories, which match the losses in
-Section~\ref{SecScopePurpose} and the groups of requirements in
-Section~\ref{SecSafetyReqs}:
+withstand. They fall into five categories, which together cover the losses
+L1 to L6 in Section~\ref{SecScopePurpose}:
 
 \begin{enumerate}
-  \item \textbf{Health and physical safety:} injury, overexertion, or harmful
-        behaviour encouraged by rewards or fitness content.
-  \item \textbf{Privacy and security:} exposure, loss of control, or misuse of
+  \item \textbf{Health and physical safety (L1, L2):} injury, overexertion,
+        guilt or anxiety, or harmful behaviour encouraged by rewards or fitness
+        content.
+  \item \textbf{Privacy and security (L3, L4):} exposure, loss of control, or misuse of
         personal and health data.
-  \item \textbf{Data integrity:} incorrect balances, rewards, prices, or
+  \item \textbf{Data integrity (L5):} incorrect balances, rewards, prices, or
         portfolio values.
-  \item \textbf{Financial learning:} information that misleads users into a
+  \item \textbf{Financial learning (L6):} information that misleads users into a
         wrong understanding or a harmful real-world financial decision.
-  \item \textbf{Availability:} outages or data loss that prevent users from
+  \item \textbf{Availability (L5):} outages or data loss that prevent users from
         using \progname{} or cost them their progress.
 \end{enumerate}
 
@@ -332,8 +332,8 @@ specified in the Design Document.
     C2 Health data integration                                                   & Requests activity permissions and reads activity
     records from the health platform through bridge libraries.                   & Activity
     records                                                                                                                                                            \\
-    C3 Reward engine                                                             & Validates activity records and converts them into rewards. &
-    Activity records, balance                                                                                                                                          \\
+    C3 Reward engine                                                             & Converts daily activity totals into rewards, and rejects totals dated after the server's current date in the user's time zone. &
+    Daily activity totals, balance                                                                                                                                          \\
     C4 Market data service                                                       & Retrieves market prices from the provider, caches
     them, and tracks how old each price is.                                      & None                                                                                \\
     C5 Trading and portfolio engine                                              & Executes trades, maintains holdings and
@@ -689,7 +689,7 @@ requirements that address it, and each requirement links back to its hazards.
     \multicolumn{11}{l}{\textbf{C10 Backend API}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \\*[2pt]
     H40\phantomsection\label{H40} & One user can access another user's data                & Breach of health and personal data                                                     & Missing authorization check on requested records                                                       & Tests requesting other users' records                                               & 5 & 2 & High   & M & Check on every request that the data belongs to the requesting user                                                      & \reqref{SEC-15} \\
     H41\phantomsection\label{H41} & Data intercepted in transit                            & Loss of privacy                                                                        & Unencrypted connection; public Wi-Fi                                                                   & Configuration tests                                                                 & 4 & 2 & Medium & M & Encrypt all communication                                                                                                & \reqref{SEC-16} \\
-    H42\phantomsection\label{H42} & Personal data sent to a third party & Health or personal data reaches companies the user never agreed to share it with & Analytics or crash-reporting libraries that send user data; user identifiers added to market data requests & Inspect all outgoing traffic from a test phone and the server & 4 & 2 & Medium & E & Send no personal, health or location data to any third party, and send the market data provider only asset identifiers & \reqref{SEC-11} \\
+    H42\phantomsection\label{H42} & Personal data sent to a third party & Health or personal data reaches companies the user never agreed to share it with & Analytics or crash-reporting libraries that send user data; user identifiers added to market data requests & Inspect all outgoing traffic from a test phone and the server & 4 & 2 & Medium & E & Send no personal, health or location data to any third party except the user's email address and reset link to the email service, and send the market data provider only asset symbols & \reqref{SEC-11} \\
     H43\phantomsection\label{H43} & Modified app sends false activity or balances          & Unfair rewards and corrupted data                                                      & Tampered copy of the app; crafted requests                                                             & Server-side validation logs                                                         & 2 & 3 & Medium & M & Treat the server as the only authority for rewards and balances, and validate every input                                & \reqref{SEC-24}, \reqref{SEC-25} \\
     \midrule
     \multicolumn{11}{l}{\textbf{C11 Database}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \\*[2pt]
@@ -701,15 +701,15 @@ requirements that address it, and each requirement links back to its hazards.
     H47\phantomsection\label{H47} & Cached data shown as current while offline             & User makes decisions on outdated information                                           & No network; app opened offline                                                                         & Compare cache time with the current time                                            & 2 & 4 & Medium & M & Show an offline indicator and the time of the last update                                                                & \reqref{SEC-2} \\
     H48\phantomsection\label{H48} & Notification reveals health or portfolio data          & Others see private data on the lock screen                                             & Notification text includes values                                                                      & Review of notification text                                                         & 3 & 3 & Medium & M & Keep values out of notifications unless the user turns them on                                                           & \reqref{SEC-34} \\
     H49\phantomsection\label{H49} & Reminder sent at a harmful time & User exercises late at night or while unwell to keep a streak, or is disturbed at work or while asleep & Reminders scheduled without regard to the user's chosen periods; time zone changes & Tests of reminder delivery times, including across time zone changes & 3 & 3 & Medium & M & Send reminders only during the periods the user chose, or the default period if they chose none & \reqref{SAF-6} \\
-    H50\phantomsection\label{H50} & Gains and losses shown by colour alone                 & Colour-blind users misread their results                                               & Red and green used as the only indicator                                                               & Accessibility review                                                                & 2 & 3 & Medium & E & Show gains and losses with a sign and text as well as colour                                                             & \reqref{SAF-18} \\
-    H51\phantomsection\label{H51} & Phone clock changed to claim rewards                   & Unfair rewards                                                                         & User changes the date on the phone                                                                     & Compare record times with server time                                               & 2 & 2 & Low    & E & Use server time and the platform's record times, never the phone clock, for rewards                                      & \reqref{SEC-24} \\
+    H50\phantomsection\label{H50} & Gains and losses shown by colour alone                 & Colour-blind users misread their results                                               & Red and green used as the only indicator                                                               & Accessibility review                                                                & 2 & 3 & Medium & E & Show gains and losses with a sign or text as well as colour                                                             & \reqref{SAF-18} \\
+    H51\phantomsection\label{H51} & Phone clock changed to claim rewards                   & Unfair rewards                                                                         & User changes the date on the phone                                                                     & Compare the date of each daily total with the server's date                                               & 2 & 2 & Low    & M & Assign records to days on the phone using the platform's record times, and reject daily totals dated after the server's current date in the user's time zone                                      & \reqref{SEC-24} \\
   \end{longtable}
 \end{landscape}
 \restoregeometry
 
 Table~\ref{TblRiskMatrix} summarizes the analysis by placing each hazard of
 Table~\ref{TblFMEA} at its severity and likelihood; darker cells are higher
-risk classes. Of the 51 hazards, 21 are eliminated by design and the rest
+risk classes. Of the 51 hazards, 20 are eliminated by design and the rest
 are mitigated. The High-risk hazards concern the exposure of personal data
 (\hyperref[H31]{H31}, \hyperref[H35]{H35}, \hyperref[H40]{H40}, \hyperref[H45]{H45}), the user's physical safety (\hyperref[H34]{H34}), and
 trading while the market is closed (\hyperref[H19]{H19}), which is minor but affects
@@ -787,8 +787,9 @@ them in order.
 Each requirement states what \progname{} shall do, how a tester decides whether
 it is met (its fit criterion), why it is needed, which hazards and losses it
 controls, and where it appears in the Software Requirements Specification
-(SRS). Every requirement except SAF-5 appears in the SRS with the same
-identifier and wording. SAF-5 applies only if goal suggestions are added. Values written as \texttt{SMALL\_CAPS} constants are defined in SRS
+(SRS). Every requirement except SAF-5 and SEC-36 appears in the SRS with the
+same identifier and wording. SAF-5 applies only if goal suggestions are added,
+and SEC-36 is split across two SRS requirements. Values written as \texttt{SMALL\_CAPS} constants are defined in SRS
 Appendix~C. Requirements prefixed SAF address physical, psychological and
 financial-understanding harm. Requirements prefixed SEC address privacy,
 security and data integrity. Losses L1--L6 are defined in Table~\ref{TblLosses}.
@@ -1078,11 +1079,12 @@ daylight saving changes, moves activity to the wrong day.}
 
 \hazreq{SEC-24}{The server decides rewards and balances}
 {The system shall calculate rewards, balances and holdings only on the server,
-using the health platform's record times and the server's clock, and shall not
-accept these values, or times, from the app.}
+from the daily activity totals the app sends, and shall reject any reward,
+balance or holding reported by the app and any daily total dated after
+the server's current date in the user's time zone.}
 {A test request from a modified app that reports its own reward, balance or
-holding is rejected, and changing a test phone's clock does not change the
-rewards earned.}
+holding is rejected, and a test daily total dated after
+the server's current date in the user's time zone is rejected and earns nothing.}
 {A modified copy of the app, or a phone with its clock moved, can report any
 value it likes. Critical Assumption CA3 does not exclude a modified app, so the
 server must be the only authority for values that matter.}
@@ -1306,14 +1308,16 @@ the user did not intend.}
 
 
 \hazreq{SEC-27}{Prices in one currency}
-{The system shall store every price with its currency, and shall not combine
-values in different currencies without converting them.}
-{For a test portfolio holding assets priced in two different currencies,
-every stored price has a currency, and the portfolio value equals the sum of
-the holdings after conversion to one currency.}
+{The system shall store every price with its currency, and shall not use a
+price that is not in \texttt{QUOTE\_CURRENCY}.}
+{Every stored test price has a currency. A test price received in a currency
+other than \texttt{QUOTE\_CURRENCY} is not shown or used in any balance, trade
+or portfolio value.}
 {Assets listed on different exchanges, such as in Canada and the United
 States, are priced in different currencies. Adding their prices without
-conversion gives a wrong portfolio value and misleading feedback.}
+conversion gives a wrong portfolio value and misleading feedback, so
+\progname{} prices every asset in one currency (SRS Section~6.3,
+FR\_MktOneCurrency).}
 {FMEA \hazref{H14}, L5 (data loss, integrity and availability), L6 (financial-understanding harm).}
 {SRS Section~7.3, SEC-27. Implemented in part by SRS Section~6.3,
 FR\_MktOneCurrency.}
@@ -1332,12 +1336,12 @@ wrong lesson about the asset.}
 {Capstone.}
 
 \hazreq{SEC-29}{Trade at the confirmed price}
-{The system shall execute a trade at the price shown when the user confirmed
-it. If that price is no longer the latest price, it shall show the user the new
-price and ask them to confirm again.}
-{A test trade confirmed at a price that has not changed executes at that price.
-When the price changes between viewing and confirming, the trade does not
-execute until the user confirms the new price.}
+{The system shall execute a trade made while the asset's market is open at the
+price shown when the user confirmed it. If that price is no longer the latest
+price, it shall show the user the new price and ask them to confirm again.}
+{While a test asset's market is open, a trade confirmed at a price that has
+not changed executes at that price. When the price changes between viewing and
+confirming, the trade does not execute until the user confirms the new price.}
 {Prices update while the user is deciding. Executing at a different price than
 the one shown charges the user an amount they did not agree to and undermines
 trust in the simulation (SRS Section~6.3, FR\_MktBuy).}
@@ -1768,7 +1772,7 @@ controls, and where it appears in the SRS.
 \reqref{SEC-33} & \hazref{H16} & L4 & Section 7.3 & Capstone\\
 \reqref{SEC-34} & \hazref{H48} & L3 & Section 7.3 & Capstone\\
 \reqref{SEC-35} & \hazref{H32} & L3 & FR\_SocialNoBody & Capstone\\
-\reqref{SEC-36} & \hazref{H33} & L2, L3 & FR\_SocialAccept & Capstone\\
+\reqref{SEC-36} & \hazref{H33} & L2, L3 & FR\_SocialAccept, FR\_SocialRemove & Capstone\\
 \reqref{SEC-37} & \hazref{H36} & L3 & FR\_AcctAgeConfirm & Capstone\\
 \reqref{SEC-38} & \hazref{H35} & L3, L4 & Section 7.3 & Capstone\\
 \reqref{SEC-39} & \hazref{H35} & L3, L4 & Section 7.3 & Capstone\\
@@ -1781,10 +1785,11 @@ controls, and where it appears in the SRS.
 \fussy
 \section{Roadmap} \label{SecRoadmap}
 
-FitFolio's safety and security requirements 
-will be implemented during the capstone timeline. Each requirement will be
+All of \progname{}'s safety and security requirements except \reqref{SAF-5}
+will be implemented during the capstone timeline, starting with those that
+control High-risk hazards (Section~\ref{SecFMEA}). Each requirement will be
 checked using the fit criteria provided in Section~\ref{SecSafetyReqs}.
-Table~\ref{TblSafetyRoadmap} summarises the planned implementation scope.
+Table~\ref{TblSafetyRoadmap} summarizes the planned implementation scope.
 
 \begin{table}[H]
 \centering
@@ -1796,11 +1801,11 @@ Table~\ref{TblSafetyRoadmap} summarises the planned implementation scope.
 \midrule
 Capstone &
 \reqref{SAF-1}--\reqref{SAF-4},
-\reqref{SAF-6}--\reqref{SAF-11},
-\reqref{SEC-1}--\reqref{SEC-18} &
+\reqref{SAF-6}--\reqref{SAF-18},
+\reqref{SEC-1}--\reqref{SEC-40} &
 Activity and reward safeguards, reminder controls, simulated-investing
-notices, reliable trading, privacy, controlled social sharing, and account
-security.\\
+notices, reviewed learning content, reliable trading and data integrity,
+privacy, controlled social sharing, and account security.\\
 \addlinespace
 Future & \reqref{SAF-5} &
 Limits on suggested goal increases, if automatic goal suggestions are added.\\
@@ -1808,8 +1813,9 @@ Limits on suggested goal increases, if automatic goal suggestions are added.\\
 \end{tabularx}
 \end{table}
 
-The Opt-in leaderboard is a future stretch goal and will be implemented in a subsequent phase. The capstone version will
-follow \reqref{SAF-11} and exclude user rankings.
+Opt-in leaderboards are a stretch goal and would only be added if that goal
+goes ahead. The capstone version follows \reqref{SAF-11} and has no user
+rankings.
 
 \newpage{}
 
