@@ -1864,28 +1864,19 @@ AI suggestions were treated as material to review, rather than assumed to be cor
 
 \input{../Reflection.text}
 
-\begin{enumerate}
-    \item What went well while writing this deliverable? 
-    
-    \textbf{Preston:} What went well was how seamless the division of work was. We had team members create issues within the repository and all members within the team selected the open issues and got to work, all whilst trying to keep an even distribution of work. 
+\subsection*{1. What went well while writing this deliverable?}
 
-    \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
-
-    \textbf{Preston:} A pain point we experienced during the deliverable was being unable to complete some sections without information from other team members’ sections. We resolved this by communicating with each other and sharing updates so our sections remained consistent.
-
-    \item Which of your listed risks had your team thought of before this
-    deliverable, and which did you think of while doing this deliverable? For
-    the latter ones (ones you thought of while doing the Hazard Analysis), how
-    did they come about?
-    \item Other than the risk of physical harm (some projects may not have any
-    appreciable risks of this form), list at least 2 other types of risk in
-    software products. Why are they important to consider?
-
-    \textbf{Preston:} Data leaks - Our software stores personal information such as email
-addresses, authentication data, and users' physical attributes. A data leak
-could expose sensitive information and compromise users' privacy and trust.
-\end{enumerate}
+\textbf{Team:} Using one method throughout the analysis worked well. We
+    used Failure Mode and Effect Analysis with written scales for severity and
+    likelihood and a single rule for the risk class, so every rating can be
+    checked and two people rating the same hazard reach the same class. We
+    defined the losses we wanted to prevent first, which gave every hazard and
+    requirement a common reference. Dividing the work through GitHub issues
+    also worked well, as each member picked up open issues so the work stayed
+    evenly distributed. Our user interviews grounded the hazards in real
+    behaviour rather than guesses, and in the end we connected every hazard to
+    at least one requirement and every requirement back to at least one
+    hazard, so nothing in the analysis is left without a purpose.
 
 \subsection*{2. What pain points did you experience during this deliverable, and
 how did you resolve them?}
@@ -1936,6 +1927,57 @@ One difficulty was identifying which information applied to Hazard Analysis. The
 
 Another challenge was explaining how the AI-assisted content was checked without claiming more than the replies supported. I focused on the checks teammates described, including rereading the text, making sure the wording preserved their intended meaning, and reviewing tables, figures, and formatting. I checked the disclosure against their replies to make sure those details were represented accurately.
 
+\subsection*{3. Which of your listed risks had your team thought of before this
+    deliverable, and which did you think of while doing this deliverable? For
+    the latter ones (ones you thought of while doing the Hazard Analysis), how
+    did they come about?}
+
+
+\textbf{Team:} Before this deliverable, we had already identified the
+    risks that shaped our scope: keeping health data private, users mistaking
+    virtual currency or in-app content for real financial advice, the market
+    data provider's request limits, unreliable health platform libraries
+    (the two main risks in our proof of concept plan), and rewards that push
+    users to overexert, which one interview participant described from their
+    own step streak. Most of the hazards in the FMEA were new. They came from
+    going through each component and asking how its output could be missing,
+    wrong, late, or duplicated. That is how we found, for example, activity
+    counted twice when records are re-read, stock splits showing a false
+    loss, prices in different currencies being added together, and trades
+    requested while the market is closed, which became one of our High-risk
+    hazards because most users are free in the evenings. Other hazards came
+    from thinking about people other than the user: a lock-screen
+    notification revealing data to someone nearby, a colour-blind user
+    misreading gains and losses, a modified app reporting false activity, and
+    a minor giving a false age. Analysing workout routes also showed that
+    location data could reveal where a user lives, which led us to stop
+    collecting location data entirely.
+
+\subsection*{4. Other than the risk of physical harm (some projects may not have any
+    appreciable risks of this form), list at least 2 other types of risk in
+    software products. Why are they important to consider?}
+
+    \textbf{Team:}
+    \begin{itemize}
+      \item \textbf{Privacy and security:} \progname{} stores email addresses,
+      authentication data, activity totals and, optionally, body measurements.
+      A breach or an update shared with the wrong people would expose
+      sensitive information and destroy users' trust, which no later feature
+      can recover.
+      \item \textbf{Data integrity:} incorrect balances, duplicated trades or
+      lost records. Users judge the whole product by whether its numbers are
+      right, and in an educational app a wrong number also teaches a wrong
+      lesson.
+      \item \textbf{Psychological harm:} features such as streaks and
+      comparison with friends are designed to change behaviour, and the same
+      design can cause guilt or anxiety when a user falls behind. Unlike a
+      crash, this harm does not appear in testing unless we look for it.
+      \item \textbf{Legal and regulatory risk:} an app that handles health data
+      must follow privacy law and app store rules, and one that discusses
+      investing must avoid giving financial advice. Breaking these rules can
+      remove the app from the stores or create legal liability, even if
+      nothing else goes wrong.
+    \end{itemize}
 \newpage{}
 
 \addcontentsline{toc}{section}{References}
