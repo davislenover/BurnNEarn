@@ -1,0 +1,55 @@
+[project]
+name = "fitfolio-backend"
+version = "0.1.0"
+description = "FitFolio backend: REST API over HTTPS with JSON (FastAPI)"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "alembic>=1.16",
+    "fastapi>=0.120",
+    "httpx2>=2.16",
+    "psycopg[binary]>=3.2",
+    "pydantic-settings>=2.10",
+    "sqlalchemy>=2.0.40",
+    "uvicorn[standard]>=0.35",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "pytest-cov>=7.0",
+    "ruff>=0.13",
+]
+
+[tool.uv]
+# The backend is an application, not a library, so it is not built or
+# installed. Imports work because commands run from src/backend.
+package = false
+
+[tool.ruff]
+# PEP 8 line length (Development Plan, Coding Standard).
+line-length = 79
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # import order
+    "B",  # likely bugs
+    "UP",  # newer Python syntax
+    "N",  # PEP 8 naming
+    "SIM",  # simpler code
+]
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's Depends() and Query() are meant to be called in defaults.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
+
+[tool.pytest.ini_options]
+# Tests live in the repository's test folder (Development Plan, CI/CD).
+testpaths = ["../../test/backend"]
+# Lets tests import the app package without installing it.
+pythonpath = ["."]
+addopts = "-ra"

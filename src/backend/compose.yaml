@@ -1,0 +1,21 @@
+# Local PostgreSQL for development: run `docker compose up -d` in this folder.
+# The credentials match .env.example and are for local use only.
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: fitfolio
+      POSTGRES_PASSWORD: fitfolio
+      POSTGRES_DB: fitfolio
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - fitfolio-db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fitfolio -d fitfolio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  fitfolio-db:
