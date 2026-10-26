@@ -190,9 +190,9 @@ CAS741) for a partial usability survey.}
 
 \subsection{Automated Testing and Verification Tools}
 
-The backend is checked by three automated tools: Ruff for linting and
-formatting, pytest for unit and integration tests, and gitleaks for secret
-scanning. Each runs in GitHub Actions on every pull request and every push to
+Three automated tools are used: Ruff to lint and format the backend, pytest
+to run the backend's unit and integration tests, and gitleaks to scan the whole
+repository for secrets. Each runs in GitHub Actions on every pull request and every push to
 \texttt{main}, and the team's workflow requires every check to pass before a
 pull request is merged (Development Plan, Workflow Plan). The reasons for
 choosing each tool are given in the Development Plan's Expected Technology
@@ -240,6 +240,28 @@ percentage of lines executed and the line numbers that were missed. Reviewers
 can use this report to check that a pull request tests the code it adds. No
 minimum coverage is enforced at this stage. Coverage results will be
 summarized in the VnV Report.
+
+\subsubsection{Secret Scanning}
+
+The repository is public, so an API key, password, or token is exposed as soon
+as it is pushed. Secrets are kept in a local \texttt{.env} file, which Git
+ignores, and gitleaks checks for any that slip into a commit at two points:
+
+\begin{itemize}
+  \item \textbf{Before each commit:} a pre-commit hook, configured in
+    \texttt{.pre-commit-config.yaml}, scans the staged changes and stops the
+    commit if they contain a secret. Each member sets it up once per clone, as
+    described in \texttt{CONTRIBUTING.md}.
+  \item \textbf{In CI:} the \texttt{Secret scan} workflow in
+    \texttt{.github/workflows/secret-scan.yml} scans the commits in every pull
+    request and every push to \texttt{main}. This catches a secret even if the
+    hook was skipped or never set up.
+\end{itemize}
+
+Both checks use gitleaks 8.30.1, so they apply the same detection rules. Any
+secret found is redacted in the output, so a CI run does not expose it again.
+A secret that reaches the repository is revoked and replaced, since removing
+it from the history does not make it private again.
 
 \subsection{Software Validation}
 
