@@ -224,6 +224,23 @@ The \texttt{Lint (Ruff)} job in \texttt{.github/workflows/backend-ci.yml} runs
 and its tests in \texttt{test/backend}. The job fails if any rule is broken or
 any file is not formatted, so unformatted code cannot reach \texttt{main}.
 
+\subsubsection{Unit and Integration Testing}
+
+pytest is used for the backend's automated tests, which live in
+\texttt{test/backend}. The \texttt{Test (pytest + PostgreSQL)} job in
+\texttt{.github/workflows/backend-ci.yml} starts a PostgreSQL 18 container,
+applies the database migrations with Alembic, and then runs the full test
+suite. Tests that read or write data therefore run against a real database
+with the same schema the app uses, rather than a mock. The CI database is
+created fresh for each run and holds no real user data.
+
+Code coverage is measured with pytest-cov. Each CI run prints a coverage
+report that lists, for every module in the backend's \texttt{app} package, the
+percentage of lines executed and the line numbers that were missed. Reviewers
+can use this report to check that a pull request tests the code it adds. No
+minimum coverage is enforced at this stage. Coverage results will be
+summarized in the VnV Report.
+
 \subsection{Software Validation}
 
 \wss{If there is any external data that can be used for validation, you should
