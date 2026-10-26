@@ -190,20 +190,39 @@ CAS741) for a partial usability survey.}
 
 \subsection{Automated Testing and Verification Tools}
 
-\wss{What tools are you using for automated testing.  Likely a unit testing
-  framework and maybe a profiling tool, like ValGrind.  Other possible tools
-  include a static analyzer, make, continuous integration tools, test coverage
-  tools, etc.  Explain your plans for summarizing code coverage metrics.
-  Linters are another important class of tools.  For the programming language
-  you select, you should look at the available linters.  There may also be tools
-  that verify that coding standards have been respected, like flake9 for
-  Python.}
+The backend is checked by three automated tools: Ruff for linting and
+formatting, pytest for unit and integration tests, and gitleaks for secret
+scanning. Each runs in GitHub Actions on every pull request and every push to
+\texttt{main}, and the team's workflow requires every check to pass before a
+pull request is merged (Development Plan, Workflow Plan). The reasons for
+choosing each tool are given in the Development Plan's Expected Technology
+section.
 
-\wss{If you have already done this in the development plan, you can point to
-that document.}
+\subsubsection{Linting and Formatting}
 
-\wss{The details of this section will likely evolve as you get closer to the
-  implementation.}
+Ruff is used to lint and format the backend's Python code, in place of the
+separate Black and Flake8 tools. It is configured in
+\texttt{src/backend/pyproject.toml} and enforces the team's coding standard
+(Development Plan, Coding Standard), including the PEP 8 line length of 79
+characters. The enabled rule sets are:
+
+\begin{itemize}
+  \item \textbf{E, W:} pycodestyle errors and warnings (PEP 8 style).
+  \item \textbf{F:} pyflakes, such as unused imports and undefined names.
+  \item \textbf{I:} import order.
+  \item \textbf{B:} flake8-bugbear, which flags likely bugs such as mutable
+    default arguments.
+  \item \textbf{UP:} pyupgrade, which flags syntax that has a newer
+    equivalent.
+  \item \textbf{N:} PEP 8 naming conventions.
+  \item \textbf{SIM:} flake8-simplify, which flags code that can be written
+    more simply.
+\end{itemize}
+
+The \texttt{Lint (Ruff)} job in \texttt{.github/workflows/backend-ci.yml} runs
+\texttt{ruff check} and \texttt{ruff format --check} on both the backend source
+and its tests in \texttt{test/backend}. The job fails if any rule is broken or
+any file is not formatted, so unformatted code cannot reach \texttt{main}.
 
 \subsection{Software Validation}
 
