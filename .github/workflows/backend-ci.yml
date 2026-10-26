@@ -1,0 +1,76 @@
+# Backend CI: lint and test the FastAPI backend in src/backend.
+#
+# Runs on every pull request and every push to main, so it can be a required
+# check (Development Plan, CI/CD). It does not touch the documents, so it runs
+# alongside the LaTeX workflow without affecting it.
+name: Backend CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: src/backend
+
+jobs:
+  lint:
+    name: Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version-file: src/backend/.python-version
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Check lint
+        run: uv run ruff check --config pyproject.toml . ../../test/backend
+      - name: Check formatting
+        run: >-
+          uv run ruff format --check --config pyproject.toml
+          . ../../test/backend
+
+  test:
+    name: Test (pytest + PostgreSQL)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: fitfolio
+          POSTGRES_PASSWORD: fitfolio
+          POSTGRES_DB: fitfolio_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fitfolio -d fitfolio_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Throwaway CI database. No real secrets are used in CI.
+      DATABASE_URL: postgresql+psycopg://fitfolio:fitfolio@localhost:5432/fitfolio_test
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v7
+        with:
+          python-version-file: src/backend/.python-version
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv sync --locked
+      - name: Apply migrations
+        run: uv run alembic upgrade head
+      - name: Run tests
+        run: uv run pytest --cov=app --cov-report=term-missing
