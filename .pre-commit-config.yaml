@@ -1,0 +1,9 @@
+# Checks that run on your machine before each commit (https://pre-commit.com).
+# Set up once per clone: see CONTRIBUTING.md, "Secret scanning".
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      # Blocks a commit whose staged changes contain an API key, password or
+      # token. Found secrets are redacted in the output.
+      - id: gitleaks
