@@ -270,52 +270,117 @@ the symbolic constants in SRS Appendix C, such as
 If a constant changes, the expected outputs of the tests that use it change
 with it.
 
-\subsubsection{Area of Testing1}
+\subsubsection{Activity and Rewards}
 
-\wss{It would be nice to have a blurb here to explain why the subsections below
-  cover the requirements.  References to the SRS would be good here.  If a section
-  covers tests for input constraints, you should reference the data constraints
-  table in the SRS.}
-		
-\paragraph{Title for Test}
+These tests cover the activity and rewards requirements in SRS Section 6.2
+(FR12 to FR27). Expected currency comes from the daily reward $R_d$ in SRS
+Section 6.7, with the values in SRS Appendix C: one unit of currency per 100
+steps or wheelchair pushes, one per minute of cycling, swimming, or another
+workout, and at most \texttt{MAX\_DAILY\_CURRENCY} (300) per day.
+
+The server calculates rewards only from the daily activity totals the app
+sends (Hazard Analysis, SEC-24), and stores no start or end times (SRS Data
+Dictionary, Activity Record). Tests of the reward rules therefore run against
+the backend with daily totals. Tests that need the time of each activity,
+such as assigning it to a calendar day or checking a workout's length, run
+against the frontend with Jest.
 
 \begin{enumerate}
 
-\item{test-id1\\}
+\item{\textbf{test-act-1: Earning for each activity type}\\}
 
-Control: Manual versus Automatic
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs.  Output is not how you
-are going to return the results of the test.  The output is the expected
-result.}
+Requirements: FR12, FR13
 
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-					
-How test will be performed: 
-					
-\item{test-id2\\}
+Control: Automatic
 
-Control: Manual versus Automatic
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
+Initial State: Six test users, each with a balance of 0, the health notice
+acknowledged, no activity goal, and no activity on day $d$.
 
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
+Input: For day $d$, users 1 to 5 each have a total for one supported type:
+2,550 steps, 1,099 wheelchair pushes, 20 minutes of cycling, 15 minutes of
+swimming, and 30 minutes of strength training, which counts as another
+workout. User 6 has all five totals.
 
-How test will be performed: 
+Output: The balances of users 1 to 5 increase by 25, 10, 20, 15, and 30. The
+balance of user 6 increases by 100.
+
+Test Case Derivation: By $R_d$, each type earns
+$\lfloor x_{t,d} / u_t \rfloor$, so 2,550 steps earn 25 and 1,099 pushes earn
+10, which also checks that partial units are rounded down. Each minute of a
+workout earns 1. User 6 earns the sum, $25 + 10 + 20 + 15 + 30 = 100$, which
+is below the daily cap of 300.
+
+How test will be performed: A pytest test sends each user's daily totals to
+the backend, then reads each balance through the API.
+
+\item{\textbf{test-act-2: Daily earning cap}\\}
+
+Requirements: FR18
+
+Control: Automatic
+
+Initial State: Three test users, each with a balance of 0, the health notice
+acknowledged, and no activity on day $d$.
+
+Input: For day $d$, the users have totals of 29,900, 30,000, and 40,000 steps.
+
+Output: The balances increase by 299, 300, and 300.
+
+Test Case Derivation: $R_d = \min(300, \lfloor x_{t,d} / 100 \rfloor)$ gives
+299, 300, and $\min(300, 400) = 300$. The three totals check the cap just
+below, at, and above \texttt{MAX\_DAILY\_CURRENCY}.
+
+How test will be performed: As in test-act-1.
+
+\item{\textbf{test-act-3: Activity counts toward the day in the user's time
+zone}\\}
+
+Requirements: FR18
+
+Control: Automatic
+
+Initial State: A test user whose phone is set to the America/Toronto time zone
+(UTC$-$5 in January).
+
+Input: Two step records: 20,000 steps ending at 23:30 local time on January
+14, 2027 (04:30 UTC on January 15), and 20,000 steps ending at 00:30 local
+time on January 15, 2027.
+
+Output: The app's daily totals are 20,000 steps for January 14 and 20,000
+steps for January 15.
+
+Test Case Derivation: FR18 counts each activity toward the calendar day in the
+user's time zone at the time of the activity. Each day then earns
+$\lfloor 20000 / 100 \rfloor = 200$. Grouping the records by UTC day instead
+would put 40,000 steps on January 15, which earns only the cap of 300, so the
+test detects the wrong grouping.
+
+How test will be performed: A Jest test passes the two records, with their
+timestamps and the user's time zone, to the app's code that builds daily
+totals, and checks the totals it returns.
+
+\item{\textbf{test-act-4: Day with no activity data}\\}
+
+Requirements: FR16
+
+Control: Automatic
+
+Initial State: A test user with a balance of 100, the health notice
+acknowledged, and no activity goal.
+
+Input: The backend receives no activity totals for day $d$, and its clock is
+then moved to day $d+1$.
+
+Output: Day $d$ shows a total of 0 for every supported type, and the balance
+is still 100.
+
+Test Case Derivation: FR16 treats a day with no data as a day with zero
+activity. With $x_{t,d} = 0$ for every type, $R_d = 0$.
+
+How test will be performed: A pytest test reads the totals for day $d$ and the
+balance through the API.
 
 \end{enumerate}
-
-\subsubsection{Area of Testing2}
-
-...
 
 \subsection{Tests for Nonfunctional Requirements}
 
