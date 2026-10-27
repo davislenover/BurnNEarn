@@ -34,7 +34,7 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Oct 26, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
+Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -194,13 +194,14 @@ CAS741) for a partial usability survey.}
 
 \subsection{Automated Testing and Verification Tools}
 
-Three automated tools are used: Ruff to lint and format the backend, pytest
-to run the backend's unit and integration tests, and gitleaks to scan the whole
-repository for secrets. Each runs in GitHub Actions on every pull request and every push to
-\texttt{main}, and the team's workflow requires every check to pass before a
-pull request is merged (Development Plan, Workflow Plan). The reasons for
-choosing each tool are given in the Development Plan's Expected Technology
-section.
+Ruff lints and formats the backend's Python code, and pytest runs its unit and
+integration tests. For the frontend, ESLint and Prettier lint and format the
+TypeScript code, and Jest runs its unit tests. gitleaks scans the whole
+repository for secrets. Each runs in GitHub Actions on every pull request and
+every push to \texttt{main}, and the team's workflow requires every check to
+pass before a pull request is merged (Development Plan, Workflow Plan). The
+reasons for choosing each tool are given in the Development Plan's Expected
+Technology section.
 
 \subsubsection{Linting and Formatting}
 
@@ -228,6 +229,12 @@ The \texttt{Lint (Ruff)} job in \path{.github/workflows/backend-ci.yml} runs
 and its tests in \path{test/backend}. The job fails if any rule is broken or
 any file is not formatted, so unformatted code cannot reach \texttt{main}.
 
+The frontend's TypeScript code will be linted with ESLint, which catches
+common mistakes, and formatted with Prettier, configured to use four spaces
+for indentation to match the coding standard. Both will run in CI on every
+pull request and fail the check if any rule is broken or any file is not
+formatted, in the same way as Ruff.
+
 \subsubsection{Unit and Integration Testing}
 
 pytest is used for the backend's automated tests, which live in
@@ -244,6 +251,11 @@ percentage of lines executed and the line numbers that were missed. Reviewers
 can use this report to check that a pull request tests the code it adds. No
 minimum coverage is enforced at this stage. Coverage results will be
 summarized in the VnV Report.
+
+The frontend's unit tests will use Jest, which works directly with React
+Native, and will run in CI alongside the backend tests. Jest has built-in
+coverage reporting, so frontend coverage will be reported on each run and
+summarized in the VnV Report in the same way.
 
 \subsubsection{Secret Scanning}
 
