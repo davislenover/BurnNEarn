@@ -304,11 +304,14 @@ workout. User 6 has all five totals.
 Output: The balances of users 1 to 5 increase by 25, 10, 20, 15, and 30. The
 balance of user 6 increases by 100.
 
-Test Case Derivation: By $R_d$, each type earns
+Test Case Derivation: Users 1 to 5 each have a single type, so each balance
+increase is that type's reward alone, and a type that earns nothing or earns
+at the wrong rate shows up on its own (FR12). By $R_d$, each type earns
 $\lfloor x_{t,d} / u_t \rfloor$, so 2,550 steps earn 25 and 1,099 pushes earn
 10, which also checks that partial units are rounded down. Each minute of a
-workout earns 1. User 6 earns the sum, $25 + 10 + 20 + 15 + 30 = 100$, which
-is below the daily cap of 300.
+workout earns 1. User 6 checks that $R_d$ adds up the rewards of all types
+(FR13): $25 + 10 + 20 + 15 + 30 = 100$. This is below the daily cap of 300, so
+the cap cannot hide a wrong sum.
 
 How test will be performed: A pytest test sends each user's daily totals to
 the backend, then reads each balance through the API.
