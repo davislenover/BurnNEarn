@@ -283,7 +283,8 @@ sends (Hazard Analysis, SEC-24), and stores no start or end times (SRS Data
 Dictionary, Activity Record). Tests of the reward rules therefore run against
 the backend with daily totals. Tests that need the time of each activity,
 such as assigning it to a calendar day or checking a workout's length, run
-against the frontend with Jest.
+against the frontend with Jest. The plausibility limits are input constraints
+on activity records, so each limit is tested at its value and just above it.
 
 \begin{enumerate}
 
@@ -382,6 +383,93 @@ activity. With $x_{t,d} = 0$ for every type, $R_d = 0$.
 
 How test will be performed: A pytest test reads the totals for day $d$ and the
 balance through the API.
+
+\item{\textbf{test-act-5: Daily step and push limits}\\}
+
+Requirements: FR17
+
+Control: Automatic
+
+Initial State: Four test users, each with a balance of 0, the health notice
+acknowledged, no activity goal, a streak of 6, and no activity on day $d$.
+
+Input: For day $d$, the users have totals of 150,000 steps, 150,001 steps,
+100,000 wheelchair pushes, and 100,001 wheelchair pushes.
+
+Output: The totals at each limit (150,000 steps and 100,000 pushes) are
+counted: those users' balances increase by 300, the totals appear in their
+activity trends, their streaks become 7, and they reach the 7-day streak
+milestone. The totals over each limit earn nothing, do not appear in the
+users' trends, reset their streaks to 0, reach no milestone, and are marked as
+not counted in the API's response.
+
+Test Case Derivation: Each user has one total, so each limit is checked on its
+own. The limits are \texttt{MAX\_DAILY\_\allowbreak STEPS} (150,000) and
+\texttt{MAX\_DAILY\_\allowbreak PUSHES} (100,000), and FR17 leaves out a record
+only when it exceeds its limit, so a total at the limit is counted and a total
+one above it is not. Testing both sides of each limit catches a check that
+uses $\geq$ instead of $>$. The totals at the limit earn
+more than the cap, so $R_d = 300$. With no goal set, any counted activity
+extends the streak (SRS Section 6.7), so a streak of 6 becomes 7, the first
+streak in \texttt{MILESTONES}. A total over the limit is left out of
+$x_{t,d}$, so $R_d = 0$ and day $d$ does not count toward the streak, which
+resets it to 0. Starting from a streak of 6 means that a wrongly counted total
+would reach the 7-day milestone, so the test also checks that a total that is
+not counted reaches no milestone.
+
+How test will be performed: A pytest test sends each user's totals, then reads
+the balance, trends, streak, and each total's status through the API.
+
+\item{\textbf{test-act-6: Workout length limit}\\}
+
+Requirements: FR17
+
+Control: Automatic
+
+Initial State: A test user whose phone has no activity recorded on days $d$
+and $d+1$.
+
+Input: A cycling record on day $d$ lasting exactly 12 hours, and a cycling
+record on day $d+1$ lasting 12 hours and 1 minute.
+
+Output: The app counts the first workout, giving a cycling total of 720
+minutes for day $d$. It leaves the second workout out, giving a cycling total
+of 0 for day $d+1$, and marks it as not counted.
+
+Test Case Derivation: \texttt{MAX\_WORKOUT\_DURATION} is 12 hours, and FR17
+leaves out only a workout longer than it, so the two records check the limit
+at its value and one minute above it. They are on separate days because two
+workouts this long cannot fit in one day. Checking a single workout's length
+needs its start and end times, which only the phone stores, so the app applies
+this limit before it sends the daily total.
+
+How test will be performed: A Jest test passes the records to the app's code
+that builds daily totals, and checks the total and each record's status.
+
+\item{\textbf{test-act-7: Showing a record as not counted}\\}
+
+Requirements: FR17
+
+Control: Manual
+
+Initial State: A test user signed in on a test device, with the health notice
+acknowledged.
+
+Input: The tester enters a cycling workout of 12 hours and 1 minute for the
+previous day in the phone's health platform, then opens \progname{}.
+
+Output: \progname{} shows the workout as not counted, and the user's balance,
+activity trends, and streak are the same as before the workout was entered.
+
+Test Case Derivation: FR17 requires the user to be shown that the record was
+not counted. test-act-5 and test-act-6 check the underlying values
+automatically, and this test checks the whole path on a real device. The
+workout is entered for the previous day so that all of it fits within one
+finished day, whatever time the test is run.
+
+How test will be performed: The tester notes the balance, trends, and streak,
+enters the workout, then checks the same values and the workout's label in
+\progname{}.
 
 \end{enumerate}
 
