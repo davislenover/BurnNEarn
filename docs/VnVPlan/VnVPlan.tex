@@ -582,6 +582,87 @@ How test will be performed: A pytest test sends each day's total and the
 weight changes, moving the backend's clock between days, and reads the balance
 at the end of each day.
 
+\item{\textbf{test-act-12: Goal changes apply from the next day}\\}
+
+Requirements: FR19
+
+Control: Automatic
+
+Initial State: A test user with a daily goal of 10,000 steps, a streak of 3,
+the health notice acknowledged, and no activity on days $d$ and $d+1$.
+
+Input: On day $d$, the user lowers the goal to 5,000 steps. The user then has
+a total of 6,000 steps on each of days $d$ and $d+1$.
+
+Output: The goal in effect is 10,000 steps on day $d$ and 5,000 steps on day
+$d+1$. The streak is 0 at the end of day $d$ and 1 at the end of day $d+1$.
+
+Test Case Derivation: FR19 applies a goal change from the next day, so the
+goal in effect on day $d$ is still 10,000. Day $d$'s 6,000 steps miss it, so
+day $d$ does not count toward the streak (SRS Section 6.7) and the streak
+resets to 0. On day $d+1$, 6,000 steps meet the new goal of 5,000, so the
+streak becomes 1. The daily total is between the old and new goals, so
+whether each day counts shows which goal was in effect. The goal is lowered,
+not raised, because applying changes from the next day is what stops a user
+from lowering a goal to keep the current day's streak alive (Hazard Analysis,
+SAF-4). The streak starts at 3 so that a change applied on the same day would
+give a streak of 4 instead of 0.
+
+How test will be performed: A pytest test sends the goal change and then the
+day's total, moves the backend's clock to day $d+1$, sends that day's total,
+and reads the goal in effect and the streak for each day through the API.
+
+\item{\textbf{test-act-13: Earning without a goal}\\}
+
+Requirements: FR20
+
+Control: Automatic
+
+Initial State: Two test users, each with a balance of 0, the health notice
+acknowledged, and no activity on day $d$. User 1 has no activity goal. User 2
+has a daily goal of 3,000 steps.
+
+Input: For day $d$, both users have a total of 4,000 steps.
+
+Output: Both balances increase by 40.
+
+Test Case Derivation: User 1 is the case in the fit criterion of FR20: a user
+with no goal who records activity earns currency. User 2 has the same steps
+and meets their goal, so comparing the two shows whether a user without a goal
+earns less than one who meets a goal. $R_d$ has no goal term (SRS Section
+6.7), so both earn $\lfloor 4000 / 100 \rfloor = 40$. A reward that paid extra
+for meeting a goal would push users to set goals they did not choose (Hazard
+Analysis, SAF-3), and this test would detect one.
+
+How test will be performed: As in test-act-1.
+
+\item{\textbf{test-act-14: No automatic goal changes}\\}
+
+Requirements: FR21
+
+Control: Automatic
+
+Initial State: A test user with a daily goal of 5,000 steps, the health notice
+acknowledged, and no activity on days $d$ to $d+6$.
+
+Input: The user has a total of 10,000 steps on each of days $d$ to $d+6$, and
+does not change the goal. The backend's clock is then moved to day $d+7$.
+
+Output: The goal in effect on day $d+7$ is still 5,000 steps.
+
+Test Case Derivation: The fit criterion of FR21 has the user exceed their goal
+on \texttt{GOAL\_REVIEW\_PERIOD} (7) consecutive days, which are days $d$ to
+$d+6$. Each day's total is twice the goal, so the goal is clearly exceeded
+throughout, which is when an automatic increase would be most likely. A goal
+change applies from the next day (FR19), so a change made at the end of the
+period would first take effect on day $d+7$, which is when the goal is read.
+The user confirms no change, so any goal other than 5,000 fails the test. A
+change the user does confirm is tested in test-act-12.
+
+How test will be performed: A pytest test sends each day's total, moving the
+backend's clock between days, and reads the goal in effect on day $d+7$
+through the API.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
