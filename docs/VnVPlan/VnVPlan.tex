@@ -332,7 +332,7 @@ Output: The balances increase by 299, 300, and 300.
 
 Test Case Derivation: $R_d = \min(300, \lfloor x_{t,d} / 100 \rfloor)$ gives
 299, 300, and $\min(300, 400) = 300$. The three totals check the cap just
-below, at, and above \texttt{MAX\_DAILY\_CURRENCY}.
+below, at, and above \texttt{MAX\_DAILY\_CURRENCY} (300).
 
 How test will be performed: As in test-act-1.
 
@@ -410,8 +410,10 @@ only when it exceeds its limit, so a total at the limit is counted and a total
 one above it is not. Testing both sides of each limit catches a check that
 uses $\geq$ instead of $>$. The totals at the limit earn
 more than the cap, so $R_d = 300$. With no goal set, any counted activity
-extends the streak (SRS Section 6.7), so a streak of 6 becomes 7, the first
-streak in \texttt{MILESTONES}. A total over the limit is left out of
+extends the streak (SRS Section 6.7), so a streak of 6 becomes 7. FR25 shows
+each milestone in \texttt{MILESTONES} (streaks of 7, 30, and 100 days, and
+1,000, 10,000, and 100,000 currency earned in total), so a streak of 7 reaches
+the first streak milestone. A total over the limit is left out of
 $x_{t,d}$, so $R_d = 0$ and day $d$ does not count toward the streak, which
 resets it to 0. Starting from a streak of 6 means that a wrongly counted total
 would reach the 7-day milestone, so the test also checks that a total that is
