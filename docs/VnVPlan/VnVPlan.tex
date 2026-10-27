@@ -232,12 +232,43 @@ the contents of the subsections.}
 
 \subsection{Tests for Functional Requirements}
 
-\wss{Subsets of the tests may be in related, so this section is divided into
-  different areas.  If there are no identifiable subsets for the tests, this
-  level of document structure can be removed.}
+The tests in this section are grouped into the same six areas as the
+functional requirements (FRs) in SRS Section 6: Accounts and Profile, Activity
+and Rewards, Simulated Market and Portfolio, Learning and Feedback, Social
+Feed, and Reminders and Settings. Each test is derived from the fit criterion
+of the FRs it covers, so an FR is verified when all of its tests pass. Every
+FR is covered by at least one test, and the traceability table that ends the
+System Tests section maps each test back to its FRs.
 
-\wss{Include a blurb here to explain why the subsections below
-  cover the requirements.  References to the SRS would be good here.}
+Each test follows the format of the template, with these conventions:
+
+\begin{itemize}
+  \item \textbf{Test ID:} \texttt{test-}\textit{area}\texttt{-}\textit{n},
+    where \textit{area} is \texttt{acct}, \texttt{act}, \texttt{mkt},
+    \texttt{learn}, \texttt{social}, or \texttt{remind}, matching the SRS
+    labels for each area, and \textit{n} numbers the tests within the area.
+  \item \textbf{Requirements:} the FRs the test covers, by their SRS number.
+  \item \textbf{Control:} \textit{Automatic} tests run with pytest against the
+    backend's API, or with Jest for the frontend, on every pull request (see
+    Automated Testing and Verification Tools). \textit{Manual} tests are run by
+    a tester on an Android or iOS test device, mostly to check what the user
+    sees.
+\end{itemize}
+
+Automated tests send activity records and market prices to the backend
+directly, in place of the health platform and the market data provider, so
+every input and expected value is known. The accuracy of those services is out
+of scope (see Objectives). Manual tests record activity on a test device
+through the phone's health platform, so they also check that \progname{} reads
+it correctly.
+
+Tests that depend on the calendar day run in a fixed time zone, with the
+backend's clock set to known dates, so that daily totals, streaks, and rest
+days can be tested without waiting for real days to pass. Expected values use
+the symbolic constants in SRS Appendix C, such as
+\texttt{MAX\_DAILY\_CURRENCY}, with their current values given in parentheses.
+If a constant changes, the expected outputs of the tests that use it change
+with it.
 
 \subsubsection{Area of Testing1}
 
