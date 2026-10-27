@@ -473,6 +473,115 @@ How test will be performed: The tester notes the balance, trends, and streak,
 enters the workout, then checks the same values and the workout's label in
 \progname{}.
 
+\item{\textbf{test-act-8: No currency before the health notice is
+acknowledged}\\}
+
+Requirements: FR14
+
+Control: Automatic
+
+Initial State: A new test user with a balance of 0 who has not acknowledged
+the health notice.
+
+Input: The user has a total of 5,000 steps on day $d$. On day $d+1$, the user
+acknowledges the notice, and the app's next sync sends the totals for day $d$
+and for day $d+1$, which has 3,000 steps.
+
+Output: The balance is 0 at the end of day $d$ and 80 at the end of day $d+1$.
+
+Test Case Derivation: FR14 allows no currency until the notice is
+acknowledged, so day $d$ earns nothing while the notice is unacknowledged.
+Each sync re-reads the last \texttt{SYNC\_LOOKBACK\_\allowbreak PERIOD} (7
+days) and rewards any record not already rewarded (Hazard Analysis, SEC-20),
+so once the notice is acknowledged, day $d$'s 5,000 steps earn 50 alongside
+day $d+1$'s $\lfloor 3000 / 100 \rfloor = 30$. The two days have different
+totals so that the final balance shows which days were rewarded: 30 would mean
+day $d$ was never rewarded, and 80 means both were.
+
+How test will be performed: A pytest test sends day $d$'s total, moves the
+backend's clock to day $d+1$, sends the acknowledgement and then both days'
+totals, and reads the balance at the end of each day.
+
+\item{\textbf{test-act-9: Health notice shown before the first reward}\\}
+
+Requirements: FR14
+
+Control: Manual
+
+Initial State: A new account signed in on a test device for the first time,
+with activity already recorded in the phone's health platform.
+
+Input: The tester opens \progname{}.
+
+Output: Before any currency is awarded, \progname{} shows a notice stating
+that it does not give medical advice and that users should consult a health
+professional before starting a new exercise program. The balance stays 0 until
+the tester acknowledges the notice.
+
+Test Case Derivation: This is the notice and behaviour FR14 requires.
+The health platform already has activity when \progname{} is first opened,
+so there is currency the app could award straight away, and the test shows
+that the notice comes before it.
+
+How test will be performed: The tester compares the notice's text with FR14,
+and checks the balance before and after acknowledging it.
+
+\item{\textbf{test-act-10: Rewards without opening the app}\\}
+
+Requirements: FR15
+
+Control: Manual
+
+Initial State: Two test users on separate test devices, each with the health
+notice acknowledged and no activity recorded for the current day.
+
+Input: Both testers record a workout of between 10 and 11 minutes with the
+phone's own workout tracking. Tester A keeps \progname{} closed for the whole
+workout. Tester B opens \progname{} during it. Both open \progname{} after
+the workout.
+
+Output: Both balances increase by 10.
+
+Test Case Derivation: At one unit per minute, a workout of between 10 and 11
+minutes earns 10, since partial minutes are rounded down. FR15 requires the
+same reward whether or not the user interacts with \progname{} during the
+activity. The two testers do the workout together, so the only difference
+between them is whether they open \progname{} during it.
+
+How test will be performed: Each tester notes their balance before the
+workout and compares it with the balance after opening \progname{}.
+
+\item{\textbf{test-act-11: Rewards ignore body weight and calories}\\}
+
+Requirements: FR26
+
+Control: Automatic
+
+Initial State: A test user with a body weight of 70 kg, a balance of 0, the
+health notice acknowledged, and no activity on days $d$ to $d+2$.
+
+Input: The user has a total of 30 minutes of cycling on each of days $d$,
+$d+1$, and $d+2$. Before day $d+1$, the weight is changed to 90 kg, and before
+day $d+2$, it is removed.
+
+Output: The balance increases by 30 on each day, to 90 at the end of day
+$d+2$.
+
+Test Case Derivation: The fit criterion of FR26 changes and removes the
+user's weight, so this test does the same, with the same activity on each day.
+Only the weight differs between the days, so if it affected the reward, at
+least one day would earn a different amount. $R_d$ depends only on activity
+totals and earning rates, so 30 minutes of cycling earns 30 on each day. The
+activity record has no calorie field (SRS Data Dictionary), so calories cannot
+reach the reward calculation. Goals are pairs of an activity type and an
+amount (SRS Section 6.7), and \texttt{MILESTONES} are streaks of 7, 30, and
+100 days and 1,000, 10,000, and 100,000 currency earned in total (SRS Appendix
+C), so neither uses weight or calories either.
+
+How test will be performed: A pytest test sends each day's total and the
+weight changes, moving the backend's clock between days, and reads the balance
+at the end of each day.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
