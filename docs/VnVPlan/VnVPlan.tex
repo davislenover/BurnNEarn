@@ -15,6 +15,9 @@
 \input{../Comments.text}
 \input{../Common.text}
 
+% Let lines holding long file paths stretch instead of overflowing.
+\setlength{\emergencystretch}{3em}
+
 \begin{document}
 
 \title{System Verification and Validation Plan for \progname{}} 
@@ -203,7 +206,7 @@ section.
 
 Ruff is used to lint and format the backend's Python code, in place of the
 separate Black and Flake8 tools. It is configured in
-\texttt{src/backend/pyproject.toml} and enforces the team's coding standard
+\path{src/backend/pyproject.toml} and enforces the team's coding standard
 (Development Plan, Coding Standard), including the PEP 8 line length of 79
 characters. The enabled rule sets are:
 
@@ -220,16 +223,16 @@ characters. The enabled rule sets are:
     more simply.
 \end{itemize}
 
-The \texttt{Lint (Ruff)} job in \texttt{.github/workflows/backend-ci.yml} runs
+The \texttt{Lint (Ruff)} job in \path{.github/workflows/backend-ci.yml} runs
 \texttt{ruff check} and \texttt{ruff format --check} on both the backend source
-and its tests in \texttt{test/backend}. The job fails if any rule is broken or
+and its tests in \path{test/backend}. The job fails if any rule is broken or
 any file is not formatted, so unformatted code cannot reach \texttt{main}.
 
 \subsubsection{Unit and Integration Testing}
 
 pytest is used for the backend's automated tests, which live in
-\texttt{test/backend}. The \texttt{Test (pytest + PostgreSQL)} job in
-\texttt{.github/workflows/backend-ci.yml} starts a PostgreSQL 18 container,
+\path{test/backend}. The \texttt{Test (pytest + PostgreSQL)} job in
+\path{.github/workflows/backend-ci.yml} starts a PostgreSQL 18 container,
 applies the database migrations with Alembic, and then runs the full test
 suite. Tests that read or write data therefore run against a real database
 with the same schema the app uses, rather than a mock. The CI database is
@@ -245,16 +248,16 @@ summarized in the VnV Report.
 \subsubsection{Secret Scanning}
 
 The repository is public, so an API key, password, or token is exposed as soon
-as it is pushed. Secrets are kept in a local \texttt{.env} file, which Git
+as it is pushed. Secrets are kept in a local \path{.env} file, which Git
 ignores, and gitleaks checks for any that slip into a commit at two points:
 
 \begin{itemize}
   \item \textbf{Before each commit:} a pre-commit hook, configured in
-    \texttt{.pre-commit-config.yaml}, scans the staged changes and stops the
+    \path{.pre-commit-config.yaml}, scans the staged changes and stops the
     commit if they contain a secret. Each member sets it up once per clone, as
-    described in \texttt{CONTRIBUTING.md}.
+    described in \path{CONTRIBUTING.md}.
   \item \textbf{In CI:} the \texttt{Secret scan} workflow in
-    \texttt{.github/workflows/secret-scan.yml} scans the commits in every pull
+    \path{.github/workflows/secret-scan.yml} scans the commits in every pull
     request and every push to \texttt{main}. This catches a secret even if the
     hook was skipped or never set up.
 \end{itemize}
