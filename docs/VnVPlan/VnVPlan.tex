@@ -663,6 +663,118 @@ How test will be performed: A pytest test sends each day's total, moving the
 backend's clock between days, and reads the goal in effect on day $d+7$
 through the API.
 
+\item{\textbf{test-act-15: Streak with a goal}\\}
+
+Requirements: FR22, FR23
+
+Control: Automatic
+
+Initial State: A test user with a daily goal of 5,000 steps, a streak of 0,
+the health notice acknowledged, no rest days, and no activity on days $d$ to
+$d+4$.
+
+Input: The user has totals of 6,000, 5,000, and 6,000 steps on days $d$ to
+$d+2$. Day $d+3$ is marked as a rest day and has no activity. Day $d+4$ is not
+a rest day and has 4,999 steps.
+
+Output: The streak at the end of days $d$ to $d+4$ is 1, 2, 3, 4, and 0.
+
+Test Case Derivation: The days follow the fit criterion of FR22: three days
+that meet the goal give a streak of 3, a rest day then gives 4, and a missed
+day then gives 0. By SRS Section 6.7, a day counts toward the streak when the
+user meets every goal, so $x_{t,d} \geq g$, or when it is a rest day. Day
+$d+1$ has exactly the goal and day $d+4$ is one step below it, so the goal is
+checked at its value and just below, which catches a check that uses $>$
+instead of $\geq$. Day $d+4$ also has activity, which shows that with a goal
+set, recording activity is not enough to keep the streak. As in the fit
+criterion of FR23, the rest day has no activity, so the streak continues
+because of the rest day alone.
+
+How test will be performed: A pytest test sends each day's total or rest day,
+moving the backend's clock between days, and reads the streak at the end of
+each day through the API.
+
+\item{\textbf{test-act-16: Streak with more than one goal}\\}
+
+Requirements: FR22
+
+Control: Automatic
+
+Initial State: A test user with daily goals of 5,000 steps and 20 minutes of
+cycling, a streak of 0, the health notice acknowledged, and no activity on
+days $d$ and $d+1$.
+
+Input: The user has 8,000 steps and 20 minutes of cycling on day $d$, and
+8,000 steps and 19 minutes of cycling on day $d+1$.
+
+Output: The streak is 1 at the end of day $d$ and 0 at the end of day $d+1$.
+
+Test Case Derivation: SRS Section 6.7 counts a day toward the streak only when
+the user meets every goal in effect. Day $d$ meets both goals. On day $d+1$,
+the step goal is met but cycling is one minute short, so the streak resets.
+The two days differ only in cycling, so the change in the streak comes from
+the cycling goal alone. This catches a streak that counts a day when any one
+goal is met.
+
+How test will be performed: As in test-act-15.
+
+\item{\textbf{test-act-17: Streak without a goal}\\}
+
+Requirements: FR22
+
+Control: Automatic
+
+Initial State: A test user with no activity goal, a streak of 0, the health
+notice acknowledged, and no activity on days $d$ to $d+2$.
+
+Input: The user has 50 steps on day $d$ and 1 minute of swimming on day $d+1$.
+The backend receives no activity totals for day $d+2$.
+
+Output: The streak at the end of days $d$ to $d+2$ is 1, 2, and 0.
+
+Test Case Derivation: The fit criterion of FR22 increases the streak of a
+user with no goal on each day they record any activity, and SRS Section 6.7
+counts such a day when the sum of the day's totals is above 0. The 50 steps
+earn no currency, since $\lfloor 50 / 100 \rfloor = 0$, so day $d$ shows that
+the streak depends on activity, not on currency earned. Day $d+1$ uses a
+different activity type to show that any supported type counts, not only
+steps. Day $d+2$ has no activity, which counts as zero (FR16), so the streak
+resets.
+
+How test will be performed: As in test-act-15.
+
+\item{\textbf{test-act-18: Rest day limit}\\}
+
+Requirements: FR23
+
+Control: Automatic
+
+Initial State: A test user with no rest days marked, in the week from Monday,
+January 4, 2027, to Sunday, January 10, 2027.
+
+Input: The user asks to mark rest days on Tuesday, January 5, Thursday, January
+7, Sunday, January 10, and Monday, January 11, 2027. Each request is made on
+the day it is for.
+
+Output: The requests for January 5, 7, and 11 are accepted, and the request
+for January 10 is refused. The user's rest days are January 5, 7, and 11.
+
+Test Case Derivation: \texttt{REST\_DAYS\_PER\_PERIOD} is 2 and
+\texttt{STREAK\_PERIOD} is a calendar week from Monday to Sunday in the user's
+time zone (SRS Appendix C). January 5 and 7 use the two rest days of the week
+of January 4, so the request for January 10 is a third in the same week and
+is refused. January 10 is a Sunday, so the request also checks that Sunday
+ends the week that began on Monday. If weeks started on Sunday, it would be
+the first rest day of a new week and would be accepted. January 11 is the next
+Monday, so it starts a new week and is accepted. A rolling 7-day window would
+still contain January 5 and 7 and would refuse it. Each request is made on its
+own day so that the test does not depend on whether rest days can be marked
+for other days.
+
+How test will be performed: A pytest test moves the backend's clock to each
+date, sends the rest day request, checks whether it is accepted, and then
+reads the user's rest days through the API.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
