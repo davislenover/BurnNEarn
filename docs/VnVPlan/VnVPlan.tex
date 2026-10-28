@@ -14,6 +14,7 @@
 
 \input{../Comments.text}
 \input{../Common.text}
+\newcommand{\nfrref}[1]{NFR2}
 
 \begin{document}
 
@@ -159,12 +160,29 @@ has already been verified by its implementation team.}
 
 \subsection{Custom Documents}
 
-\wss{Summarize the CDs (Custom Documents) that were tackled by this project.  CDs 
-can include usability testing, code walkthroughs, user documentation, formal
-proof, GenderMag personas, Design Thinking, etc.  CDs should have already
-been approved by the course instructor as included in your problem statement.
-You can use a pull request to update your CDs (in TeamComposition.csv or
-Repos.csv) if your plan changes as a result of the VnV planning exercise.}
+% \wss{Summarize the CDs (Custom Documents) that were tackled by this project.  CDs 
+% can include usability testing, code walkthroughs, user documentation, formal
+% proof, GenderMag personas, Design Thinking, etc.  CDs should have already
+% been approved by the course instructor as included in your problem statement.
+% You can use a pull request to update your CDs (in TeamComposition.csv or
+% Repos.csv) if your plan changes as a result of the VnV planning exercise.}
+
+\progname{} has two custom documents (CDs), one in each term, as listed in
+Section~4 of the Problem Statement and Goals. They are the project's extras,
+and both feed directly into validation.
+
+\paragraph{Design Thinking Report (Fall).} This report explores what young
+adults want to track about their fitness and what they hope to learn about
+investing. Its main evidence is two exploratory interviews with potential
+users, held on October~14, 2026, and referred to as P01 and P02. These
+interviews are the source of most of the stakeholder requirements in SRS
+Section~3 and of Personas~1 and~2 in SRS Section~4. For V\&V, the report
+provides the needs that validation checks the product against. It also
+exposes a gap that validation must close: neither interviewee was a beginner
+at investing, so the needs of beginners, represented by Persona~3, come from
+the Problem Statement rather than from users. The usability tests in this plan
+therefore recruit participants who are beginners at investing
+(Section~\ref{SecSoftwareValidation}).
 
 \subsection{Relevant Documentation}
 
@@ -251,7 +269,7 @@ that document.}
 \wss{The details of this section will likely evolve as you get closer to the
   implementation.}
 
-\subsection{Software Validation}
+\subsection{Software Validation} \label{SecSoftwareValidation}
 
 \wss{If there is any external data that can be used for validation, you should
   point to it here.  If there are no plans for validation, you should state that
@@ -536,7 +554,7 @@ This is where you can place additional information.
 The definition of the test cases will call for SYMBOLIC\_CONSTANTS.
 Their values are defined in this section for easy maintenance.
 
-\subsection{Usability Survey Questions?}
+\subsection{Usability Survey Questions} \label{SecUsabilitySurvey}
 
 \wss{This is a section that would be appropriate for some projects.}
 
