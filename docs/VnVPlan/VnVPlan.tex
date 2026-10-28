@@ -913,7 +913,10 @@ with a test provider that returns the prices each test chooses, so every
 expected price is known. Each test also sets whether the asset's market is
 open, so tests that depend on market hours can run at any time of day. Price
 age is measured with the backend's clock. Manual tests use the real provider,
-so they also check that \progname{} shows real prices.
+so they also check that \progname{} shows real prices. The exceptions are
+manual tests that need a price change the real market is unlikely to give
+during the test, such as a large change in portfolio value. These run the
+release build against a test backend that uses the test provider.
 
 \begin{enumerate}
 
@@ -1521,6 +1524,100 @@ How test will be performed: A pytest test sets the test provider's prices and
 reads the portfolio value through the API. A Jest test renders the app's
 portfolio screen with that response and checks the value shown. Both values
 are compared with 223.23 to within \texttt{VALUE\_TOLERANCE}.
+
+\item{\textbf{test-mkt-20: Simulated labels}\\}
+
+Requirements: FR43
+
+Control: Manual
+
+Initial State: A test user signed in on a test device with the release build
+of \progname{}, connected to a test backend that uses the test provider. The
+user bought 2 shares of asset A and 1 share of asset B at 40.00 each. Both
+prices were 40.00 on the previous day, when the user last viewed their
+portfolio, and are now 50.00 for A and 30.00 for B. Portfolio notifications
+are on, and the test is run within the user's reminder period. The user also
+has a market scenario in progress, continued until one of its holdings has
+risen and another has fallen.
+
+Input: The tester opens every screen in \progname{}'s navigation, and each
+notification received during the test.
+
+Output: Every return and portfolio value shown on a screen or in a
+notification has a ``Simulated'' label next to it.
+
+Test Case Derivation: The fit criterion of FR43 covers every screen that shows
+a return or portfolio value, so the setup makes every kind of value appear. A
+has a gain of 25\% and B a loss of 25\%, so returns of both signs are shown.
+The portfolio value has risen from $3 \cdot 40 = 120$ to
+$2 \cdot 50 + 30 = 130$, a change of 8.3\%, which is more than
+\texttt{FEEDBACK\_THRESHOLD} (5\%). This brings up the feedback on the change
+in value (FR52) and the portfolio notification (FR75), which both show
+values. The scenario adds its own screens. Notifications are included because
+FR43 covers every displayed return and value, not only those on screens. The
+screens come from the app's navigation, so a screen added later is also added
+to the test.
+
+How test will be performed: The tester lists the screens in the app's
+navigation, opens each one, and records any return or portfolio value that has
+no ``Simulated'' label next to it.
+
+\item{\textbf{test-mkt-21: Gains and losses without colour}\\}
+
+Requirements: FR44
+
+Control: Manual
+
+Initial State: As in test-mkt-20, with the phone's greyscale display setting
+turned on.
+
+Input: The tester opens the same screens and notifications as in test-mkt-20.
+
+Output: The tester can tell every gain from every loss, each shown with a sign
+or a text label.
+
+Test Case Derivation: The fit criterion of FR44 shows the display in
+greyscale, which removes the difference between a gain shown only in green and
+a loss shown only in red. A's gain and B's loss are both 25\%, so their size
+cannot tell them apart, and only a sign or label can. The setup from
+test-mkt-20 puts a gain or a loss on every screen that shows a return.
+
+How test will be performed: The tester turns on the phone's greyscale setting,
+opens each screen and notification, and records any gain or loss that cannot
+be told apart from the other without colour.
+
+\item{\textbf{test-mkt-22: No recommendations}\\}
+
+Requirements: FR49
+
+Control: Manual
+
+Initial State: As in test-mkt-20.
+
+Input: The tester opens the same screens and notifications as in test-mkt-20,
+and makes one trade to bring up the feedback after a trade (FR53). A reviewer
+then reads every message template in the app and backend, and every item of
+educational content.
+
+Output: No screen, notification, template, or content item tells the user to
+buy or sell a named asset, or presents an asset as a ``recommended pick''.
+
+Test Case Derivation: The fit criterion of FR49 covers every screen and
+notification. The places where \progname{} names assets in text about the
+portfolio are the feedback on the change in value (FR52), which names the
+holdings that changed most, the feedback after a trade (FR53), and the
+explanation of diversification (FR54). A holds $100 / 130 = 76.9\%$ of the
+portfolio value, which is more than \texttt{CONCENTRATION\_LIMIT} (50\%), so
+the setup brings up all three. The explanation of diversification is about
+the holding that is too large, which makes it the most likely place for a
+message such as ``sell A''. Some messages appear only in conditions that the
+walkthrough does not create, so the review of every template covers them.
+Educational content can change after release (FR58), so the review checks the
+content at the time of the test.
+
+How test will be performed: The tester records any text that tells the user to
+buy or sell a named asset or presents an asset as a pick. The reviewer does
+the same for each message template and content item.
 
 \end{enumerate}
 
