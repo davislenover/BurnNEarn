@@ -1682,6 +1682,71 @@ carried on from the first would start with those instead.
 How test will be performed: A pytest test starts each scenario, reads its
 balance and holdings through the API, and sends the trade in $S_1$.
 
+\item{\textbf{test-mkt-25: Advancing a scenario}\\}
+
+Requirements: FR47
+
+Control: Automatic
+
+Initial State: A test scenario that starts on Thursday, April 9, 2020, with
+test historical data for asset A on each trading day. The closing prices are
+102.00 on April 9, 98.00 on Monday, April 13, and 101.00 on Tuesday, April 14,
+and the opening prices on those days are 100.00, 99.00, and 97.50. There is no
+data for April 10 to 12.
+
+Input: The user starts the scenario and continues twice.
+
+Output: On starting, the replayed date is April 9 and A's price is 102.00.
+After the first continue, the date is April 13 and the price is 98.00. After
+the second, the date is April 14 and the price is 101.00.
+
+Test Case Derivation: FR47 moves the replayed date to the next trading day
+and the prices to that day's closing prices. April 10, 2020, was Good Friday,
+when US markets were closed, and April 11 and 12 were a weekend, so the next
+trading day after April 9 is April 13. This catches a scenario that advances
+by calendar days, or that skips weekends but not market holidays, since both
+would land on April 10. The second continue is an ordinary step from one
+weekday to the next. Each day's opening price differs from its closing price,
+so a scenario that used opening prices would show different prices. The first
+day is checked as well, since a scenario starts on a replayed day and uses
+its closing price too.
+
+How test will be performed: A pytest test starts the scenario, sends each
+request to continue, and reads the replayed date and A's price through the
+API after each step.
+
+\item{\textbf{test-mkt-26: Scenario labels}\\}
+
+Requirements: FR48
+
+Control: Manual
+
+Initial State: A test user signed in on a test device with the release build
+of \progname{}, with at least one market scenario available.
+
+Input: The tester starts a scenario and opens every screen in \progname{}'s
+navigation that can be reached during it, makes a trade, and continues to the
+next day. The tester then leaves the scenario and opens every screen of the
+live market.
+
+Output: Every screen shown during the scenario carries a scenario label and
+the dates of the period being replayed. No screen of the live market carries
+a scenario label.
+
+Test Case Derivation: The fit criterion of FR48 covers every screen of a
+scenario and every screen of the live market. The Hazard Analysis (SAF-15)
+gives the reason: a replayed crash that looks like the live market could make
+a user believe it is happening now. Some screens appear only after a trade or
+after continuing, so the tester does both. The live market is checked after
+leaving the scenario, which catches a label that stays on after the user
+leaves. The screens come from the app's navigation, as in test-mkt-20.
+Scenario prices come from stored historical data, not the market data
+provider, so this test needs no test backend.
+
+How test will be performed: The tester lists the screens in the app's
+navigation, opens each one during the scenario and then in the live market,
+and records any screen whose label or dates are wrong or missing.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
