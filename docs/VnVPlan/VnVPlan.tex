@@ -1863,6 +1863,112 @@ cannot be why a reminder is missing.
 
 How test will be performed: As in test-remind-2, with one run for each type.
 
+\item{\textbf{test-remind-4: Activity reminders}\\}
+
+Requirements: FR75
+
+Control: Automatic
+
+Initial State: Six test users with the default reminder period and every
+reminder type turned on, in a fixed time zone. Their state on day $d$, all
+recorded before 9:00, with no activity recorded after it, is:
+
+\begin{itemize}
+  \item User 1: a goal of 5,000 steps, 2,000 steps, and a streak of 0.
+  \item User 2: a goal of 5,000 steps, 6,000 steps, and a streak of 0.
+  \item User 3: as user 1, with day $d$ marked as a rest day.
+  \item User 4: no goal, no activity, and a streak of 3.
+  \item User 5: no goal, 50 steps, and a streak of 3.
+  \item User 6: no goal, no activity, and a streak of 0.
+\end{itemize}
+
+Input: The test clock runs through day $d$.
+
+Output: Users 1 and 4 each receive exactly one Activity reminder, between
+9:00 and 20:00. Users 2, 3, 5, and 6 receive no Activity reminder.
+
+Test Case Derivation: An Activity reminder is sent when the day is not a rest
+day, and either the user has not yet met the day's goal or their streak will
+end if they record no activity (SRS Section 6.6). User 1 has only the first
+reason, since a streak of 0 cannot end, and user 4 has only the second, since
+they have no goal. Each user who gets no reminder differs from one of these
+two in one way: user 2 from user 1 by meeting the goal, user 3 from user 1 by
+the rest day, user 5 from user 4 by recording activity, which keeps a streak
+with no goal (test-act-17), and user 6 from user 4 by having no streak to
+lose. FR75 sends one reminder for each event, so a reminder repeated through
+the day is also detected.
+
+How test will be performed: A Jest test gives the app each user's goal,
+totals, streak, and rest days, runs the test clock through day $d$, and
+records each Activity notification sent to the test notification service.
+
+\item{\textbf{test-remind-5: Milestone and Portfolio reminders}\\}
+
+Requirements: FR75
+
+Control: Automatic
+
+Initial State: Five test users with the default reminder period and every
+reminder type turned on, in a fixed time zone, on day $d$. User 1 has a goal
+of 5,000 steps, no steps yet, and no currency earned. User 2 has no goal and
+has earned 990 currency in total. Users 1 and 2 have a streak of 0, so no
+streak milestone can be reached. Users 3, 4, and 5 each hold 1 share of a different asset
+whose price at the previous day's close was 100.00.
+
+Input: User 1 records 5,000 steps at 10:00 and 2,000 more at 15:00. User 2
+records 1,000 steps at 10:00. At 11:00, the prices of the assets held by
+users 3, 4, and 5 become 105.00, 105.01, and 94.99.
+
+Output: Users 1 and 2 each receive exactly one Milestone reminder. Users 4
+and 5 each receive one Portfolio reminder, and user 3 receives none. All are
+delivered between 9:00 and 20:00.
+
+Test Case Derivation: A Milestone reminder is sent when the user meets their
+goal or reaches a value in \texttt{MILESTONES} (SRS Section 6.6), so there is
+one user for each. User 1 meets the goal at 10:00, and the steps at 15:00
+check that meeting it once gives one reminder, not one for each sync. User 2's
+1,000 steps earn 10, which brings their total to 1,000, the first currency
+value in \texttt{MILESTONES}, at a known time. A Portfolio reminder is sent
+when the portfolio value has moved by more than \texttt{FEEDBACK\_THRESHOLD}
+(5\%) since the previous day. Each of users 3 to 5 holds one share of one
+asset, so the change in value is the change in price: exactly 5\% for user 3,
+which is not more than the threshold, and 5.01\% for user 4, which is. User 5's
+price falls by 5.01\%, which catches a check that looks only for gains, since
+the value has moved by more than the threshold in either direction.
+
+How test will be performed: A Jest test gives the app each event at its time,
+in the form of the backend's responses, runs the test clock through day $d$,
+and records each notification sent to the test notification service.
+
+\item{\textbf{test-remind-6: Learning and Social reminders}\\}
+
+Requirements: FR75
+
+Control: Automatic
+
+Initial State: A test user with the default reminder period and every reminder
+type turned on, in a fixed time zone, with two friends, F and G.
+
+Input: On day $d$, an administrator publishes a new concept explanation at
+10:00, publishes a new knowledge check at 11:00, and edits an existing concept
+explanation at 12:00. At 13:00, F shares an update with the user. At 14:00, G
+shares an update with F only.
+
+Output: The user receives two Learning reminders, for the new explanation and
+the new knowledge check, and one Social reminder, for F's update. All are
+delivered between 9:00 and 20:00.
+
+Test Case Derivation: A Learning reminder is sent when a new concept
+explanation or knowledge check is published (SRS Section 6.6), so one of each
+is published. An edit does not publish new content, so it gives no reminder,
+which catches a system that reminds every user each time content is
+corrected. A Social reminder is sent when a friend shares an update with the
+user or sends a friend request. Friend requests are tested in test-remind-2,
+so this test uses a shared update. G chooses to share only with F (FR66), so a
+reminder for G's update would tell the user about an update they cannot see.
+
+How test will be performed: As in test-remind-5.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
