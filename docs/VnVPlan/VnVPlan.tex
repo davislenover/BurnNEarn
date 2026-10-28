@@ -1468,6 +1468,60 @@ How test will be performed: The tester requests the trade in the evening and
 notes the balance. After the open, the tester checks the trade's status, time,
 and price in \progname{}, and the new balance.
 
+\item{\textbf{test-mkt-18: Holdings}\\}
+
+Requirements: FR41
+
+Control: Automatic
+
+Initial State: A test user who holds 3 shares of asset A and 7 shares of asset
+B, both in the live market.
+
+Input: The user's holdings are read and shown.
+
+Output: The holdings show asset A with 3 shares and asset B with 7 shares, and
+no other assets.
+
+Test Case Derivation: The fit criterion of FR41 has a user who owns shares of
+two assets see both holdings, each with the number of shares held. The two
+holdings have different numbers of shares, so a number shown under the wrong
+asset is detected.
+
+How test will be performed: A pytest test reads the holdings through the API.
+A Jest test renders the app's holdings screen with that response and checks
+the assets and numbers of shares shown.
+
+\item{\textbf{test-mkt-19: Portfolio value}\\}
+
+Requirements: FR42
+
+Control: Automatic
+
+Initial State: A test user with a balance of 100 who holds 3 shares of asset
+A, 7 shares of asset B, and 2 shares of asset C. A and B are in the live
+market, and C has been removed from it. The last prices from the test provider
+are 41.50 for A, 12.34 for B, and 5.05 for C.
+
+Input: The test provider sends a new price of 42.25 for A. The user's
+portfolio value is then read and shown.
+
+Output: The portfolio value is 223.23.
+
+Test Case Derivation: By SRS Section 6.7, $V = \sum_a h_a \cdot p_a$ with the
+most recent price of each asset, so
+$V = 3 \cdot 42.25 + 7 \cdot 12.34 + 2 \cdot 5.05
+= 126.75 + 86.38 + 10.10 = 223.23$, a value calculated by hand as the fit
+criterion of FR42 requires. The setup is chosen so that three common mistakes
+each give a value more than \texttt{VALUE\_TOLERANCE} (0.01) away from it.
+Using A's old price would give 220.98. Leaving out C, which is removed from the market
+but still held (FR31), would give 213.13. Adding the balance, which $V$ does
+not include, would give 323.23.
+
+How test will be performed: A pytest test sets the test provider's prices and
+reads the portfolio value through the API. A Jest test renders the app's
+portfolio screen with that response and checks the value shown. Both values
+are compared with 223.23 to within \texttt{VALUE\_TOLERANCE}.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
