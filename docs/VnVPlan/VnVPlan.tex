@@ -1619,6 +1619,69 @@ How test will be performed: The tester records any text that tells the user to
 buy or sell a named asset or presents an asset as a pick. The reviewer does
 the same for each message template and content item.
 
+\item{\textbf{test-mkt-23: Trading in a market scenario}\\}
+
+Requirements: FR45
+
+Control: Automatic
+
+Initial State: A test scenario that replays a market downturn, in which the
+closing price of asset A is 100.00 on its first trading day $t_1$ and 90.00
+on the next, $t_2$. In the live market, A's current price is 150.00. A test
+user with a live balance of 500 who holds 2 shares of A and has acknowledged
+the simulated market notice.
+
+Input: The user starts the scenario and buys 10 shares of A on day $t_1$. The
+user then continues to day $t_2$, sells the 10 shares, and leaves the
+scenario.
+
+Output: The purchase leaves a scenario balance of 9,000 and 10 shares, and
+the sale leaves a scenario balance of 9,900 and no shares. Throughout the
+scenario and after leaving it, the user's live balance is 500 and they hold 2
+shares of A.
+
+Test Case Derivation: FR45 trades in a scenario at the historical prices for
+the replayed dates. The purchase costs $10 \cdot 100 = 1000$ of the
+\texttt{SCENARIO\_START\_BALANCE} (10,000), and the sale returns
+$10 \cdot 90 = 900$, a loss that fits a downturn as in the fit criterion. A
+purchase at the live price would cost 1,500 and leave 8,500, so the scenario
+balance shows which price was used. The user holds the same asset in the live
+market, so a scenario trade that changed the live holding would show. The live
+balance of 500 is less than the purchase's cost of 1,000, so a purchase that
+drew on the live balance would be refused. The live balance and holding are
+checked during the scenario as well as after it, since a change that was
+undone when the user left would still mix the two portfolios.
+
+How test will be performed: A pytest test starts the scenario, sends each
+trade and the request to continue, and reads the scenario and live balances
+and holdings through the API after each step and after leaving.
+
+\item{\textbf{test-mkt-24: Starting balance of a scenario}\\}
+
+Requirements: FR46
+
+Control: Automatic
+
+Initial State: Two test scenarios, $S_1$ and $S_2$, each including asset A at
+a closing price of 100.00 on its first day. A test user with a live balance of
+500 who holds 2 shares of A and has acknowledged the simulated market notice.
+
+Input: The user starts $S_1$, buys 10 shares of A, and leaves $S_1$. The user
+then starts $S_2$.
+
+Output: On starting $S_1$, and again on starting $S_2$, the scenario balance
+is 10,000 and the user holds no scenario shares.
+
+Test Case Derivation: FR46 starts every scenario with a balance of
+\texttt{SCENARIO\_START\_\allowbreak BALANCE} (10,000) and no holdings. The
+user's live balance of 500 and live shares differ from these, so a scenario
+that copied the live portfolio would start with 500 and 2 shares. The trade
+in $S_1$ leaves a balance of 9,000 and 10 shares, so a second scenario that
+carried on from the first would start with those instead.
+
+How test will be performed: A pytest test starts each scenario, reads its
+balance and holdings through the API, and sends the trade in $S_1$.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
