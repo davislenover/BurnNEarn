@@ -1234,6 +1234,108 @@ test-mkt-11.
 
 How test will be performed: As in test-mkt-9, with sales.
 
+\item{\textbf{test-mkt-11: Trades limited by balance and holdings}\\}
+
+Requirements: FR37
+
+Control: Automatic
+
+Initial State: Two test users who hold no assets and have acknowledged the
+simulated market notice, with balances of 120.00 and 119.99. An asset in the
+live market with a current price of 40.00.
+
+Input: While the market is open, each user asks to buy 3 shares. User 1 then
+asks to sell 4 shares, and then 3 shares.
+
+Output: User 1's purchase is accepted, leaving a balance of 0.00 and 3 shares.
+User 2's purchase is refused, and their balance is still 119.99 with no
+shares. User 1's sale of 4 shares is refused and changes neither the balance
+nor the holding. Their sale of 3 shares is accepted, leaving a balance of
+120.00 and no shares.
+
+Test Case Derivation: SRS Section 6.7 accepts a purchase only when
+$n \cdot p_a \leq B$ and a sale only when $n \leq h_a$, and FR37 rejects any
+trade outside these limits. Each limit is tested at its value and just past
+it. Three shares cost $3 \cdot 40 = 120$, which equals user 1's balance and
+is more than user 2's by 0.01, the smallest amount a cost can exceed a
+balance by. User 1 then holds 3 shares, so a sale of 3 is at the limit and a
+sale of 4 is one share over it. This catches a check that uses $<$ instead of
+$\leq$. The refused trades are checked for changes to both the balance and the
+holding, since FR37 requires that a rejected trade change neither.
+
+How test will be performed: A pytest test sends each trade and reads the
+balance and holdings of each user through the API after each one.
+
+\item{\textbf{test-mkt-12: Interrupted trades}\\}
+
+Requirements: FR37
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000 who holds no assets and has
+acknowledged the simulated market notice. An asset in the live market with a
+current price of 40.00.
+
+Input: While the market is open, the user asks to buy 1 share, and the
+backend is made to fail after it updates one of the balance and the holding
+but before it updates the other. The user then makes a new request to buy 1
+share, with no failure. Last, the user asks to sell 1 share, and the backend
+is made to fail in the same way.
+
+Output: After the first purchase, the balance is 1,000 and the user holds no
+shares. After the second purchase, the balance is 960 and the user holds 1
+share. After the sale, the balance is still 960 and the user still holds 1
+share.
+
+Test Case Derivation: FR37 records each trade completely or not at all, so a
+trade that fails partway leaves both the balance and the holding as they
+were. The failure is placed between the two updates because that is the only
+point where a trade could be left half done, with the currency spent but no
+share received, or the reverse. The order of the two updates depends on the
+backend's design, so the failure comes after whichever update is first. The
+completed purchase is the second case in the fit criterion of FR37, a trade
+that changes both values: $1000 - 40 = 960$ and one share. Purchases and
+sales update the values in opposite directions, so both are interrupted.
+
+How test will be performed: A pytest test replaces the backend's step for the
+later of the two updates with one that raises an error, sends the trade, and
+then reads the balance and holdings through the API. It restores the step
+before the second purchase and replaces it again before the sale.
+
+\item{\textbf{test-mkt-13: Duplicate trade requests}\\}
+
+Requirements: FR38
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000 who holds no assets and has
+acknowledged the simulated market notice. An asset in the live market with a
+current price of 40.00.
+
+Input: While the market is open, the user sends request $R$ to buy 1 share,
+and its response is dropped. The app sends $R$ again. The user then sends a
+new request $R'$ to buy 1 share.
+
+Output: After both copies of $R$, the balance is 960, the user holds 1 share,
+and their trade history has one trade. Both responses to $R$ refer to that
+trade. After $R'$, the balance is 920, the user holds 2 shares, and the
+history has two trades.
+
+Test Case Derivation: The dropped response is the case in the fit criterion of
+FR38: the app cannot tell whether the trade happened, so it retries. A retry
+sends the same request, so it carries the same identifier as the original,
+and FR38 records the trade only once. $R'$ asks for the same asset and number
+of shares as $R$, but is a new request, so it is recorded. This catches a
+system that drops a trade because it matches an earlier one, which would stop
+a user who really wants to buy the same thing twice. The test is also run
+with both copies of $R$ sent at the same time, which catches a check for
+duplicates that two requests can both pass before either is recorded.
+
+How test will be performed: A pytest test sends $R$, discards the response,
+sends $R$ again, then sends $R'$, and reads the balance, holdings, and trade
+history through the API after each request. A second run sends both copies of
+$R$ at once from two threads.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
