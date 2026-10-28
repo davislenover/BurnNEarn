@@ -134,6 +134,9 @@ Oct 19, 2026 & 1.0 & Angad: 5 Use Cases, 7.3 Privacy and Data Retention,
 Oct 19, 2026 & 1.0 & Preston Grewal: 7.1 Major Data Entities, 7.2 Data
 Dictionary, Appendix D.\\
 Oct 19, 2026 & 1.0 & Zaid: 12 Likely Changes, 13 Unlikely Changes.\\
+Oct 27, 2026 & 1.1 & Davis Lenover: 6.6 Reminders and Settings, FR77
+revised because iOS does not tell apps which health data types they may
+read.\\
 \bottomrule
 \end{tabularx}
 
@@ -2363,6 +2366,13 @@ Social & A friend shares an update with the user or sends them a friend request 
 \end{tabularx}
 \end{table}
 
+The settings also cover the user's health data. The two health platforms
+report permissions differently. Health Connect on Android tells an app which
+data types it may read. Apple HealthKit does not tell an app whether the user
+allowed it to read a data type, and an app without permission sees no data, as
+if none had been recorded~\citep{AppleHealthKit, GoogleHealthConnect}.
+\rref{FR_SetPermissionList} is written to fit both platforms.
+
 \noindent \begin{itemize}
 \freq{FR_RemindPeriods}
   {The system shall let the user choose the time periods in which they receive
@@ -2400,10 +2410,18 @@ Social & A friend shares an update with the user or sends them a friend request 
   {\srref{SR_ControlOwnData}, \ucref{UC_WithdrawConsent}, G3, Hazard Analysis
   SEC-9}
 \freq{FR_SetPermissionList}
-  {The system shall show the user which health data types \progname{} has
-  permission to read, and the feature that uses each type.}
-  {A test user who has granted health permissions sees each permitted data
-  type listed with the feature that uses it.}
+  {The system shall show the user each health data type that \progname{} asks
+  to read and the feature that uses each type. Where the phone's health
+  platform reports whether the user allowed \progname{} to read a type, the
+  system shall show it. Where the platform does not report this, the system
+  shall say so and tell the user where to review the permission in the
+  phone's settings.}
+  {On Android, a test user who allowed some of the requested data types and
+  denied others sees every requested type with the feature that uses it, each
+  marked as allowed or not allowed as in Health Connect. On iOS, a test user
+  sees every requested type with the feature that uses it, a statement that
+  iOS does not tell apps which types were allowed, and where to review them in
+  the phone's Health settings.}
   {\srref{SR_ExplainPermissions}, \srref{SR_ProtectData},
   \ucref{UC_ReviewPermissions}, G3, Hazard Analysis SEC-8}
 \end{itemize}
