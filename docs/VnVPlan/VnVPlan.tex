@@ -1045,6 +1045,76 @@ administrator tools, and after each change, the tester checks the live market
 and their holdings and makes the trade. At the end, the tester checks the
 installed version again.
 
+\item{\textbf{test-mkt-5: Prices from the latest quote}\\}
+
+Requirements: FR32
+
+Control: Automatic
+
+Initial State: Asset A is in the live market, and its last price from the
+test provider is 40.00. Asset B has been removed from the live market, and its
+last price is 30.00. A test user with a balance of 1,000 who holds one share
+of B and has acknowledged the simulated market notice.
+
+Input: While the market is open, the test provider sends new prices of 41.50
+for A and 32.25 for B. The user then reads both prices, buys one share of A,
+and sells their share of B.
+
+Output: The prices read are 41.50 for A and 32.25 for B. After the purchase,
+the balance is 958.50, and after the sale, it is 990.75. The user holds one
+share of A and none of B.
+
+Test Case Derivation: FR32 prices each asset in the live market, and each
+removed asset that a user still holds, at the latest price from the provider,
+so the test has one asset of each kind. Each asset has an older price and a
+newer one, so a trade or display that used an old or cached price would give
+a different result. By the trade rules in SRS Section 6.7, the purchase gives
+$1000 - 41.50 = 958.50$ and the sale gives $958.50 + 32.25 = 990.75$. Using
+the old price of A would give 992.25, using the old price of B would give
+988.50, and using both would give 990.00, so the final balance shows which
+prices were used. B still gets new prices after it is removed because
+otherwise its price would become older than \texttt{QUOTE\_STALENESS\_LIMIT},
+and FR39 would then refuse the sale that FR31 allows.
+
+How test will be performed: A pytest test sets the test provider's prices,
+reads both prices through the API, sends the two trades, and reads the
+balance and holdings after each one.
+
+\item{\textbf{test-mkt-6: Price time and the delayed marker}\\}
+
+Requirements: FR33
+
+Control: Automatic
+
+Initial State: An asset in the live market with one price, obtained from the
+test provider at time $p$. The provider sends no later price during the test.
+
+Input: While the asset's market is open, the price is read at 15 minutes
+after $p$ and at 15 minutes and 1 second after $p$. The market then closes,
+and the price is read 2 days after $p$.
+
+Output: All three reads show the price with time $p$. Only the read at 15
+minutes and 1 second after $p$ is marked as delayed.
+
+Test Case Derivation: \texttt{QUOTE\_STALENESS\_LIMIT} is 15 minutes (SRS
+Appendix C), from Problem Statement Goal 4. FR33 marks a price as delayed only
+when it is older than the limit, so a price exactly 15 minutes old is not
+delayed and one a second older is. The backend's clock is set by the test, so
+a difference of one second can be tested exactly. The read while the market is
+closed is far older than the limit, which checks that the marker depends on
+the market being open, as the fit criterion of FR33 requires. This is the case
+of a price from the last close being shown overnight or on a weekend. No new
+price is obtained during the test, so every read returns the stored price.
+Reading a stored price does not change the time it was obtained (SRS Data
+Dictionary, Market Data), so all three reads show time $p$. A time that
+changed on each read would hide the delay.
+
+How test will be performed: A pytest test sets the test provider's price,
+moves the backend's clock to each time, and reads the price, its time, and
+whether it is delayed through the API. A Jest test then renders the app's
+price display with each of the three responses and checks that it shows the
+time and shows the ``Delayed'' marker only for the delayed price.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
