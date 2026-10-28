@@ -900,6 +900,83 @@ and compares them with the totals sent.
 
 \end{enumerate}
 
+\subsubsection{Simulated Market and Portfolio}
+
+These tests cover the simulated market and portfolio requirements in SRS
+Section 6.3 (FR28 to FR49). Expected balances, holdings, and portfolio values
+come from the definitions of trades and portfolio value in SRS Section 6.7,
+and are compared to within \texttt{VALUE\_TOLERANCE} (0.01) (NFR1). All
+prices are in \texttt{QUOTE\_CURRENCY} (US dollars).
+
+Automated tests replace the market data provider, Finnhub (SRS Appendix C),
+with a test provider that returns the prices each test chooses, so every
+expected price is known. Each test also sets whether the asset's market is
+open, so tests that depend on market hours can run at any time of day. Price
+age is measured with the backend's clock. Manual tests use the real provider,
+so they also check that \progname{} shows real prices.
+
+\begin{enumerate}
+
+\item{\textbf{test-mkt-1: Number of tradable stocks}\\}
+
+Requirements: FR28
+
+Control: Manual
+
+Initial State: A new test user, who holds no assets, signed in on a test
+device with the release build of \progname{}.
+
+Input: The tester opens the live market and counts the stocks that can be
+bought, leaving out exchange-traded funds (ETFs).
+
+Output: The count is at least \texttt{MIN\_TRADABLE\_STOCKS} (50).
+
+Test Case Derivation: \texttt{MIN\_TRADABLE\_STOCKS} is 50 (SRS Appendix C),
+from Problem Statement Goal 4. The fit criterion of FR28 counts only stocks,
+so ETFs are left out. The user holds nothing, so a removed asset that a user
+still holds (FR31) cannot be counted by mistake. The asset list is set by
+administrators on the server (FR30), not in the app's code, so the test runs
+against the list that users will actually see.
+
+How test will be performed: The tester scrolls through the live market list,
+counts each stock with an option to buy it, and records the count.
+
+\item{\textbf{test-mkt-2: Prices in one currency}\\}
+
+Requirements: FR29
+
+Control: Automatic
+
+Initial State: Three test assets, each with a current price of 50.00. The
+test provider quotes two of them, both listed in the United States, in US
+dollars, and the third, listed in Canada, in Canadian dollars. A test user
+with a balance of 1,000 who has acknowledged the simulated market notice.
+
+Input: An administrator adds the three assets to the live market. While the
+market is open, the user then reads the list of tradable assets and asks to
+buy one share of each of the three assets.
+
+Output: The list contains only the two assets quoted in US dollars, each with
+its price in US dollars. Their purchases are accepted, and the purchase of the
+asset quoted in Canadian dollars is refused.
+
+Test Case Derivation: FR29 offers only assets quoted in US dollars, the
+value of \texttt{QUOTE\_CURRENCY} (SRS Appendix C). An asset listed in Canada
+is the case the Hazard Analysis gives for a price in another currency
+(SEC-27), so the third asset is one that the test expects not to be offered.
+Without it, the test could not fail. Each share costs 50.00, well below the
+balance, and every price is current, so a refused purchase can only be due to
+the currency. Checking both the list and a purchase catches an asset that is
+hidden from the list but can still be traded. The third asset may be refused
+when it is added or left out of the list afterwards, and the test passes
+either way, since in both cases it is not offered.
+
+How test will be performed: A pytest test sets the test provider's prices,
+adds the assets as an administrator, reads the list of tradable assets through
+the API, sends each purchase, and checks which are accepted.
+
+\end{enumerate}
+
 \subsection{Tests for Nonfunctional Requirements}
 
 \wss{The nonfunctional requirements for accuracy will likely just reference the
