@@ -1323,8 +1323,8 @@ history has two trades.
 
 Test Case Derivation: The dropped response is the case in the fit criterion of
 FR38: the app cannot tell whether the trade happened, so it retries. A retry
-sends the same request, so it carries the same identifier as the original,
-and FR38 records the trade only once. $R'$ asks for the same asset and number
+keeps the original request's identifier (SRS Data Dictionary, Trade), so FR38
+records the trade only once. $R'$ asks for the same asset and number
 of shares as $R$, but is a new request, so it is recorded. This catches a
 system that drops a trade because it matches an earlier one, which would stop
 a user who really wants to buy the same thing twice. The test is also run
@@ -1335,6 +1335,138 @@ How test will be performed: A pytest test sends $R$, discards the response,
 sends $R$ again, then sends $R'$, and reads the balance, holdings, and trade
 history through the API after each request. A second run sends both copies of
 $R$ at once from two threads.
+
+\item{\textbf{test-mkt-14: No trades on out-of-date prices}\\}
+
+Requirements: FR39
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000 who holds no assets and has
+acknowledged the simulated market notice. An asset with a price of 40.00,
+obtained from the test provider at time $p$. The asset's market is open
+throughout the test.
+
+Input: At 15 minutes after $p$, the user asks to buy 1 share. At 15 minutes
+and 1 second after $p$, the user asks to buy 1 share and to sell 1 share. The
+test provider then sends a new price of 41.00, and the user asks to buy 1
+share again.
+
+Output: The first purchase is executed, leaving a balance of 960 and 1 share.
+The purchase and sale at 15 minutes and 1 second are refused with a response
+saying that the price is out of date, and the balance and holding do not
+change. The last purchase is executed at 41.00, leaving a balance of 919 and
+2 shares.
+
+Test Case Derivation: FR39 uses \texttt{QUOTE\_STALENESS\_LIMIT} (15 minutes),
+the same limit that FR33 uses to mark a price as delayed (Hazard Analysis,
+SEC-3), so the test uses the same times as test-mkt-6: a trade at the limit
+proceeds, and one a second past it is refused. FR39 applies to every trade,
+so both a purchase and a sale are refused. The new price shows that the
+refusals were due only to the price's age, and that trading resumes once a
+current price is obtained, at that price (FR32): $960 - 41 = 919$.
+
+How test will be performed: A pytest test sets the test provider's prices,
+moves the backend's clock to each time, sends each trade, and reads the
+response, balance, and holdings through the API. A Jest test renders the
+app's response to a refused trade and checks that the user is told the price
+is out of date.
+
+\item{\textbf{test-mkt-15: Trades queued while the market is closed}\\}
+
+Requirements: FR40
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000 who holds no assets and has
+acknowledged the simulated market notice. An asset whose market is closed,
+with a last price of 40.00 from the previous close.
+
+Input: While the market is closed, the user asks to buy 1 share. The market
+then opens, and the test provider sends a price of 42.00 and then a price of
+43.00. The user's balance and holdings are then read.
+
+Output: The response gives the trade the status queued, with a notice that it
+will run at the opening price. After the market opens, the trade is executed
+at 42.00, leaving a balance of 958 and 1 share.
+
+Test Case Derivation: FR40 queues a trade requested while the market is closed
+and executes it at the first price obtained after the market opens. The last
+price before the open, the first price after it, and a later price are all
+different, giving balances of 960, 958, and 957, so the balance shows which
+price was used. The later price arrives before the balance is read, which
+catches a backend that runs queued trades at whatever price is current when
+it reaches them, not at the first price after the open. The price from the
+previous close is older than \texttt{QUOTE\_STALENESS\_LIMIT}, so the test
+also checks that FR39 does not refuse the trade while the market is closed.
+
+How test will be performed: A pytest test sends the purchase while the market
+is closed, checks the response, opens the market, sends the two prices, and
+reads the balance, holdings, and trade through the API. A Jest test renders
+the app's response to the queued trade and checks that it shows the trade as
+queued with the notice.
+
+\item{\textbf{test-mkt-16: Queued trades that can no longer be covered}\\}
+
+Requirements: FR40
+
+Control: Automatic
+
+Initial State: An asset whose market is closed, with a last price of 40.00.
+Three test users who have acknowledged the simulated market notice. Users 1
+and 2 hold no assets and have balances of 100.00 and 99.99. User 3 holds 1
+share of the asset and has a balance of 0.
+
+Input: While the market is closed, users 1 and 2 each ask to buy 2 shares,
+and user 3 makes two separate requests to sell 1 share. The market then opens,
+and the first price is 50.00.
+
+Output: User 1's purchase is executed, leaving a balance of 0.00 and 2 shares.
+User 2's purchase is rejected, user 2 is told, and their balance is still
+99.99 with no shares. One of user 3's sales is executed, leaving a balance of
+50.00 and no shares. The other is not executed, and user 3 is told.
+
+Test Case Derivation: When they are requested, all the trades can be covered
+at the last price: 2 shares cost $2 \cdot 40 = 80$, which both balances cover,
+and user 3 holds the share that each sale needs. At the opening price, 2
+shares cost $2 \cdot 50 = 100$, which equals user 1's balance and is 0.01 more
+than user 2's, so the limit is tested at its value and just past it, as in
+test-mkt-11. The two sales together need 2 shares and user 3 holds 1, so only
+one can be executed. The second sale may be refused when it is requested or
+rejected when the market opens. Either way it is not executed and the user is
+told, so the test passes in both cases.
+
+How test will be performed: As in test-mkt-15, with the status of each user's
+trades also read through the API.
+
+\item{\textbf{test-mkt-17: Queued trade with real prices}\\}
+
+Requirements: FR40
+
+Control: Manual
+
+Initial State: A test user who has acknowledged the simulated market notice
+and has enough currency to buy 1 share of a stock in the live market, signed
+in on a test device with the release build of \progname{}.
+
+Input: While the US market is closed, the tester asks to buy 1 share of the
+stock. After the market opens at 9:30~a.m.\ Eastern time on the next trading
+day, the tester opens \progname{}.
+
+Output: When it is requested, the trade is shown as queued, with a notice that
+it will run at the opening price. After the open, the trade is shown as
+executed, at a time after 9:30~a.m.\ Eastern time, and the balance has fallen
+by its price.
+
+Test Case Derivation: The automated tests of FR40, test-mkt-15 and
+test-mkt-16, use the test provider. This test checks the queue with the real
+provider, where the first price after the open arrives whenever the provider
+publishes it, and on a real device, where the user sees the queued trade and
+its notice.
+
+How test will be performed: The tester requests the trade in the evening and
+notes the balance. After the open, the tester checks the trade's status, time,
+and price in \progname{}, and the new balance.
 
 \end{enumerate}
 
