@@ -1115,6 +1115,125 @@ whether it is delayed through the API. A Jest test then renders the app's
 price display with each of the three responses and checks that it shows the
 time and shows the ``Delayed'' marker only for the delayed price.
 
+\item{\textbf{test-mkt-7: No trade before the simulated market notice is
+acknowledged}\\}
+
+Requirements: FR34
+
+Control: Automatic
+
+Initial State: A new test user with a balance of 1,000 who holds no assets,
+has acknowledged the health notice, and has not acknowledged the simulated
+market notice. An asset in the live market with a current price of 50.00.
+
+Input: While the market is open, the user asks to buy one share. The user then
+acknowledges the simulated market notice and asks to buy one share again.
+
+Output: The first request is refused with a response saying that the notice
+must be acknowledged, and the balance is still 1,000 with no shares. The
+second request is accepted, leaving a balance of 950 and one share.
+
+Test Case Derivation: FR34 does not complete the first trade until the user
+acknowledges the notice. The balance covers the share and the price is
+current, so the notice is the only reason for the first request to be
+refused, and the second request, made after the acknowledgement, is accepted.
+The user has already acknowledged the health notice (FR14), which catches a
+system that treats the two notices as one.
+
+How test will be performed: A pytest test sends the first purchase, checks the
+response, balance, and holdings, sends the acknowledgement and the second
+purchase, and reads the balance and holdings again through the API.
+
+\item{\textbf{test-mkt-8: Simulated market notice shown before the first
+trade}\\}
+
+Requirements: FR34
+
+Control: Manual
+
+Initial State: A new test account on a test device that has acknowledged the
+health notice, has earned enough currency from recorded activity to buy one
+share of a stock in the live market, and has not made a trade.
+
+Input: While the US market is open, the tester tries to buy one share of the
+stock.
+
+Output: Before the trade completes, \progname{} shows a notice stating that
+the market is simulated, that virtual currency and holdings have no
+real-world value, and that nothing in \progname{} is financial advice. The
+balance and holdings do not change until the tester acknowledges the notice,
+and the purchase then completes.
+
+Test Case Derivation: The three statements are the ones listed in the fit
+criterion of FR34. test-mkt-7 checks the server's rule, and this test checks
+what the user sees on a real device. The test uses the real provider, so it is
+run while the US market is open, so that the trade completes instead of being
+queued (FR40).
+
+How test will be performed: The tester compares the notice's text with the
+three statements, and checks the balance and holdings before and after
+acknowledging it.
+
+\item{\textbf{test-mkt-9: Buying whole shares}\\}
+
+Requirements: FR35
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000 who holds no assets and has
+acknowledged the simulated market notice. An asset in the live market with a
+current price of 40.00.
+
+Input: While the market is open, the user asks to buy 0, 0.5, and $-1$
+shares, then 1 share, then 3 shares.
+
+Output: The requests for 0, 0.5, and $-1$ shares are refused, and the balance
+is still 1,000. After the purchase of 1 share, the balance is 960 and the user
+holds 1 share. After the purchase of 3 shares, the balance is 840 and the
+user holds 4.
+
+Test Case Derivation: FR35 lets the user buy only whole shares, and SRS
+Section 6.7 accepts a purchase of $n$ shares only when $n$ is a positive
+integer. The number of shares is an input, so the test uses three kinds of
+value that are not allowed, a fraction (0.5), zero, and a negative number, and
+the smallest value that is (1). A purchase of $-1$ shares that was accepted would
+work as a sale and add 40 to the balance. The purchase of 1 share is the fit
+criterion of FR35: the balance falls by the price shown, $1000 - 40 = 960$,
+and the holding rises by one. The purchase of 3 shares checks that the cost is
+$n \cdot p_a = 3 \cdot 40 = 120$, not the price of one share.
+
+How test will be performed: A pytest test sends each purchase and reads the
+balance and holdings through the API after each one.
+
+\item{\textbf{test-mkt-10: Selling whole shares}\\}
+
+Requirements: FR36
+
+Control: Automatic
+
+Initial State: A test user with a balance of 100 who holds 5 shares of an
+asset and has acknowledged the simulated market notice. The asset is in the
+live market with a current price of 40.00.
+
+Input: While the market is open, the user asks to sell 0, 0.5, and $-1$
+shares, then 1 share, then 2 shares.
+
+Output: The requests for 0, 0.5, and $-1$ shares are refused, and the balance
+and holding are unchanged. After the sale of 1 share, the balance is 140 and
+the user holds 4 shares. After the sale of 2 shares, the balance is 220 and
+the user holds 2.
+
+Test Case Derivation: SRS Section 6.7 accepts a sale of $n$ shares only when
+$n$ is a positive integer, so the number of shares is tested as in
+test-mkt-9. A sale of $-1$ shares that was accepted would work as a purchase.
+The sale of 1 share is the fit criterion of FR36: the balance rises by the
+price shown, $100 + 40 = 140$, and the holding falls by one. The sale of 2
+shares checks that the proceeds are $n \cdot p_a = 80$. The user keeps some
+shares, so the limit on selling more shares than are held is left to
+test-mkt-11.
+
+How test will be performed: As in test-mkt-9, with sales.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
