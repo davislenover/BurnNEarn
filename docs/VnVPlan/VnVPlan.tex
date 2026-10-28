@@ -1749,6 +1749,122 @@ and records any screen whose label or dates are wrong or missing.
 
 \end{enumerate}
 
+\subsubsection{Reminders and Settings}
+
+These tests cover the reminders and settings requirements in SRS Section 6.6
+(FR72 to FR77). The reminder types are Activity, Milestone, Portfolio,
+Learning, and Social, each sent when the event in the SRS's table of reminder
+types occurs. A user who has not chosen any reminder periods receives
+reminders during \texttt{DEFAULT\_REMINDER\_PERIOD} (9:00 to 20:00 in their
+time zone).
+
+Reminders are local notifications that the app creates on the phone, with no
+push notification service (SRS Section 2.3). The automated reminder tests
+therefore run against the frontend with Jest, with the phone's clock and its
+notification service replaced by test versions, so that the time of each
+event and of each reminder delivered are known. A reminder period includes
+its start time but not its end time, so two periods that meet, such as 9:00
+to 12:00 and 12:00 to 15:00, do not both include 12:00.
+
+\begin{enumerate}
+
+\item{\textbf{test-remind-1: Choosing reminder periods}\\}
+
+Requirements: FR72
+
+Control: Manual
+
+Initial State: A test user signed in on a test device, who has not chosen any
+reminder periods.
+
+Input: The tester sets two reminder periods, 7:00 to 8:30 and 18:00 to 19:00,
+closes \progname{} completely, and opens it again.
+
+Output: The reminder settings show both periods, 7:00 to 8:30 and 18:00 to
+19:00.
+
+Test Case Derivation: The fit criterion of FR72 has the user set a period
+and see it in their settings the next time they open the app, so the app is
+closed completely, not only sent to the background. FR72 allows more than one
+period, so two are set, which checks that saving the second does not replace
+the first. Both periods differ from \texttt{DEFAULT\_REMINDER\_PERIOD}, and the
+first begins before it, so settings that fell back to the default would be
+detected.
+
+How test will be performed: The tester sets the periods in the reminder
+settings, closes the app from the phone's app switcher, opens it again, and
+checks the periods shown.
+
+\item{\textbf{test-remind-2: Reminders only in the chosen periods}\\}
+
+Requirements: FR73
+
+Control: Automatic
+
+Initial State: Two test users with every reminder type turned on, in a fixed
+time zone. User 1 has reminder periods of 7:00 to 8:30 and 18:00 to 19:00.
+User 2 has not chosen any periods.
+
+Input: For user 1, friend requests arrive at 6:59, 7:00, 8:29, 8:30, 12:00,
+and 19:00, and the event of each other reminder type occurs at 12:00. For
+user 2, friend requests arrive at 8:59, 9:00, 19:59, and 20:00. The clock then
+runs to the end of the next day.
+
+Output: User 1's Social reminders are delivered at 7:00, 7:00, 8:29, 18:00,
+18:00, and 7:00 the next day, and their other reminders at 18:00. User 2's
+reminders are delivered at 9:00, 9:00, 19:59, and 9:00 the next day. No
+reminder is delivered outside the user's periods.
+
+Test Case Derivation: The fit criterion of FR73 has one user with chosen
+periods and one without, so there are two users, and user 2's reminders
+follow \texttt{DEFAULT\_REMINDER\_PERIOD} (9:00 to 20:00). User 1's first
+period, and user 2's default period, are each tested at both ends, at the
+boundary and one minute before it. A period includes its start but not its
+end, so a request at 7:00 or 8:29 is delivered at once, while one at 6:59 or
+8:30 is not. The request at 12:00 is between user 1's two periods, and the one
+at 19:00 is at the end of the second period, so it is delivered the next day.
+An event outside a period is delivered at the start of
+the next period, since FR75 requires each event to produce one reminder within
+the user's periods. Social reminders are used for the boundaries because a
+friend request is still relevant whenever its reminder arrives, so the
+expected time depends only on the periods. The other four types each have an
+event at 12:00, which checks that every type follows the periods, not only
+Social reminders. Their events are chosen so that they still hold at 18:00:
+for example, the user records no activity that day, so the Activity reminder
+is still due.
+
+How test will be performed: A Jest test sets each user's periods, sets the
+test clock to each time and causes each event, runs the clock to the end of
+the next day, and records the type and time of every notification sent to the
+test notification service.
+
+\item{\textbf{test-remind-3: Turning reminder types off}\\}
+
+Requirements: FR74
+
+Control: Automatic
+
+Initial State: A test user with the default reminder period and every
+reminder type turned on, in a fixed time zone.
+
+Input: The test is run five times, once for each reminder type. In each run,
+that type is turned off, and at 12:00 the event of every reminder type occurs.
+
+Output: In each run, the user receives one reminder of each of the four types
+left on, and none of the type turned off.
+
+Test Case Derivation: The fit criterion of FR74 has one type turned off,
+which then sends no reminders while the types left on still do. Each type has
+its own switch, so each is turned off in its own run. The event of every type
+occurs in every run, so a switch that turned off the wrong type, or more than
+one type, would show up as a missing reminder of a type left on. The events
+are at 12:00, inside \texttt{DEFAULT\_REMINDER\_PERIOD}, so the periods
+cannot be why a reminder is missing.
+
+How test will be performed: As in test-remind-2, with one run for each type.
+
+\end{enumerate}
+
 \subsection{Tests for Nonfunctional Requirements}
 
 \wss{The nonfunctional requirements for accuracy will likely just reference the
