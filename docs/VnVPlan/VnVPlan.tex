@@ -1969,6 +1969,85 @@ reminder for G's update would tell the user about an update they cannot see.
 
 How test will be performed: As in test-remind-5.
 
+\item{\textbf{test-remind-7: No health data read after consent is
+withdrawn}\\}
+
+Requirements: FR76
+
+Control: Automatic
+
+Initial State: A test user who has consented to \progname{} reading their
+health data. The phone's health platform is replaced by a test version that
+records every read and holds activity records for the current day.
+
+Input: The app syncs. The user then withdraws consent in the app, and new
+activity records are added to the test health platform. The app is closed and
+opened again, its background sync runs, and the user opens their activity
+trends.
+
+Output: The test health platform records reads during the first sync and none
+after the withdrawal. The app sends no activity totals to the backend after
+the withdrawal.
+
+Test Case Derivation: The fit criterion of FR76 requires that no further
+health data be read after the user withdraws consent in the app. Withdrawing
+consent in the app does not remove \progname{}'s permission in the phone's
+settings, and on iOS the app cannot remove it, so the health platform would
+still answer reads. The app must stop reading on its own, so the test watches
+the app's reads, not the permission. The sync before the withdrawal shows that
+the test platform records reads, so the test cannot pass only because no read
+was ever recorded. After the withdrawal, the test tries each way the app can
+read health data: opening the app, the background sync, and the activity
+screen. The new records give the app something to read.
+
+How test will be performed: A Jest test replaces the health platform and the
+backend's activity endpoint with test versions, runs the steps, and checks the
+reads and requests each one records.
+
+\item{\textbf{test-remind-8: Health permission list}\\}
+
+Requirements: FR77
+
+Control: Manual
+
+Initial State: Two new test users, one on an Android test device and one on
+an iOS test device, each with the release build of \progname{}.
+
+Input: On each device, when \progname{} asks for health permissions, the
+tester allows steps and workouts and denies wheelchair pushes. The tester then
+opens the health permission list in \progname{}'s settings. On Android, the
+tester then allows wheelchair pushes in Health Connect and opens the list
+again.
+
+Output:
+\begin{itemize}
+  \item Android: every requested data type is listed with the feature that
+    uses it. Steps and workouts are marked as allowed and wheelchair pushes as
+    not allowed, as in Health Connect. After pushes are allowed, they are
+    marked as allowed.
+  \item iOS: every requested data type is listed with the feature that uses
+    it, with a statement that iOS does not tell apps which types were allowed
+    and where to review them in the Health settings. No type is marked as
+    allowed or not allowed.
+\end{itemize}
+
+Test Case Derivation: FR77's fit criterion has one case for each platform,
+since Health Connect reports which types an app may read and HealthKit does
+not (SRS Section 6.6), so there is one device for each. The tester allows
+some types and denies one, which is the case where the list can be wrong: a
+list of the requested types shown as allowed would mark pushes as allowed on
+Android. Pushes are denied because they are the type a user who does not use
+a wheelchair is most likely to deny. Allowing pushes afterwards checks that
+the Android list reads the current permissions, not the answers given at
+setup, since users can change them at any time. On iOS, \progname{} cannot
+know which types were allowed, so any type marked as allowed or not allowed
+would be a guess.
+
+How test will be performed: On Android, the tester compares the list with
+\progname{}'s permissions in Health Connect. On iOS, the tester checks the
+statement and follows the directions to confirm they lead to \progname{}'s
+permissions in the Health settings.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
