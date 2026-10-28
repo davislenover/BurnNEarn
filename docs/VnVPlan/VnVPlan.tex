@@ -93,8 +93,19 @@ custom document, and lists the documents this plan draws on.
 
 \subsection{Summary}
 
-\wss{Say what software is being tested.  Give its name and a brief overview of
-  its general functions.}
+% \wss{Say what software is being tested.  Give its name and a brief overview of
+%   its general functions.}
+
+The software being tested is \progname{}, a mobile application in which
+young adults earn virtual currency from the physical activity their phone
+records and invest it in a simulated market that follows real-world prices.
+\progname{} consists of a mobile app for Android and iOS, built with React
+Native and TypeScript, and a server built with FastAPI and a PostgreSQL
+database. The app reads activity from the phone's health platform (Apple
+HealthKit or Google Health Connect), and the server obtains asset prices from
+the market data provider, Finnhub. The full system and its context are
+described in Section~2.3 of the Software Requirements
+Specification~\citep[SRS;][]{SRS0}.
 
 \subsection{Objectives}
 
