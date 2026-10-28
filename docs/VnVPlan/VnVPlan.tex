@@ -107,6 +107,37 @@ the market data provider, Finnhub. The full system and its context are
 described in Section~2.3 of the Software Requirements
 Specification~\citep[SRS;][]{SRS0}.
 
+The functions of \progname{} fall into the six feature areas of SRS
+Section~6, which also organize the system tests in Section~\ref{SecSystemTests}
+of this plan:
+
+\begin{itemize}
+  \item \textbf{Accounts and profile:} creating an account, signing in and out,
+        resetting a password, editing the profile, downloading a copy of one's
+        data, and deleting the account.
+  \item \textbf{Activity and rewards:} reading activity records for the
+        supported activity types, converting plausible activity into virtual
+        currency up to a daily cap, and tracking goals, streaks, rest days and
+        milestones.
+  \item \textbf{Simulated market and portfolio:} buying and selling whole shares
+        of at least 50 real-world stocks at prices that follow the real market,
+        showing holdings and portfolio value, and practising in market scenarios
+        that replay past periods.
+  \item \textbf{Learning and feedback:} explaining financial and fitness
+        concepts where they appear, giving feedback on the user's own trades and
+        portfolio changes, and testing understanding with knowledge checks.
+  \item \textbf{Social feed:} adding friends by username and sharing selected
+        statistics and milestones with chosen friends.
+  \item \textbf{Reminders and settings:} sending reminders only in the periods
+        the user chooses, and letting the user review and withdraw health data
+        permissions.
+\end{itemize}
+
+Because \progname{} handles health data and presents financial information
+that users may act on, the plan also verifies the safety and security
+requirements identified in the Hazard Analysis~\citep[HA;][]{HA}, which the
+SRS restates in Sections~6 and~7.3.
+
 \subsection{Objectives}
 
 \wss{State what is intended to be accomplished.  The objective will be around
@@ -240,7 +271,7 @@ as a Rev 0 demo for the supervisor.}
 
 \wss{This section might reference back to the SRS verification section.}
 
-\section{System Tests}
+\section{System Tests} \label{SecSystemTests}
 
 \wss{There should be text between all headings, even if it is just a roadmap of
 the contents of the subsections.}
