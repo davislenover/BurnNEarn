@@ -975,6 +975,76 @@ How test will be performed: A pytest test sets the test provider's prices,
 adds the assets as an administrator, reads the list of tradable assets through
 the API, sends each purchase, and checks which are accepted.
 
+\item{\textbf{test-mkt-3: Adding and removing an asset}\\}
+
+Requirements: FR30, FR31
+
+Control: Automatic
+
+Initial State: A test asset that is not in the live market, with a price of
+40.00 from the test provider throughout the test. A test user with a balance
+of 1,000 who holds no assets and has acknowledged the simulated market notice.
+
+Input: While the market is open, an administrator adds the asset to the live
+market, and the user buys one share. The administrator then removes the asset.
+The user asks to buy another share, reads the list of tradable assets and
+their holdings, and sells their share.
+
+Output: The first purchase is accepted, leaving a balance of 960 and one
+share. The second purchase is refused, and the balance is still 960. After
+the removal, the asset is not in the list of tradable assets, but the user's
+holdings still show one share of it. The sale is accepted, leaving a balance
+of 1,000 and no shares.
+
+Test Case Derivation: The steps follow the fit criteria of FR30 and FR31: an
+added asset can be traded, a removed asset can no longer be bought, and a user
+who holds a removed asset still sees it and can sell it. By the trade rules
+in SRS Section 6.7, the purchase gives $1000 - 40 = 960$ and the sale gives
+$960 + 40 = 1000$. The price stays at 40.00 so that each change in the
+balance comes only from a trade being accepted. The pricing of a removed
+asset is tested in test-mkt-5. The second purchase is made while the user
+still holds the asset, so the test catches a server that lets a user who
+holds a removed asset keep buying it.
+
+How test will be performed: A pytest test adds and removes the asset as an
+administrator, sends each trade, and reads the balance, holdings, and list of
+tradable assets through the API after each step.
+
+\item{\textbf{test-mkt-4: Changing the asset list without an app update}\\}
+
+Requirements: FR30, FR31
+
+Control: Manual
+
+Initial State: A test user with a balance of 1,000 who holds no assets and has
+acknowledged the simulated market notice, signed in on a test device with the
+release build of \progname{}. A stock listed in the United States that is not
+in the live market.
+
+Input: While the US market is open, an administrator adds the stock to the
+live market, and the tester buys one share of it. The administrator then
+removes the stock. The tester tries to buy another share, then opens their
+holdings and sells the share.
+
+Output: After it is added, the stock appears in the live market and can be
+bought. After it is removed, it no longer appears in the live market and
+cannot be bought, but the holding is still shown and the sale completes. The
+installed version of \progname{} is the same at the end of the test as at the
+start.
+
+Test Case Derivation: The fit criterion of FR30 requires that no app update
+happen between the changes, which only a test on an installed app can show.
+test-mkt-3 checks the server's rules, and this test checks that the installed
+app follows the change. The tester may close and reopen \progname{}, but not
+update it. The test uses the real provider, so it is run while the US market
+is open. Otherwise, each trade would be queued until the market opens (FR40).
+
+How test will be performed: The tester notes the installed version of
+\progname{}. An administrator adds and removes the stock with the server's
+administrator tools, and after each change, the tester checks the live market
+and their holdings and makes the trade. At the end, the tester checks the
+installed version again.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
