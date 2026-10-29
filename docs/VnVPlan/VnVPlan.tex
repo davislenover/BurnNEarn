@@ -558,6 +558,144 @@ checks that a reset for one account does not reach or change another.
 How test will be performed: A pytest test sends the reset request, reads the
 email from the test mailbox, follows the link through the API, and sends the
 sign-in requests.
+
+\item{\textbf{test-acct-6: Editing the profile}\\}
+
+Requirements: FR7
+
+Control: Manual
+
+Initial State: A test user signed in on a test device, with a height of 170
+cm in their profile.
+
+Input: The tester changes the height to 175 cm and saves it, closes
+\progname{} completely, opens it again, and opens the profile.
+
+Output: The profile shows a height of 175 cm.
+
+Test Case Derivation: The fit criterion of FR7 is that the user sees the new
+value the next time they open their profile. Closing the app between saving
+and reopening checks that the change was stored, and not only kept on the
+screen.
+
+How test will be performed: The tester follows the input steps on the test
+device and records the height shown.
+
+\item{\textbf{test-acct-7: Using every feature without height or weight}\\}
+
+Requirements: FR8
+
+Control: Automatic
+
+Initial State: A test user with no height or weight in their profile, a
+balance of 0, the health notice and simulated market notice acknowledged, and
+one accepted friend. Test asset A is priced at 20.00, its market is open, and
+its price is within \texttt{QUOTE\_STALENESS\_LIMIT} (15 minutes).
+
+Input: A daily total of 5,000 steps for day $d$. The user then buys 1 share of
+A, opens the concept explanation of \textit{Stock}, completes the knowledge
+check on \textit{Stock} with every answer correct, and shares their streak
+with their friend.
+
+Output: The balance increases by 50, then decreases by 20.00 to 30.00 when the
+share is bought. The explanation opens, the knowledge check returns a result,
+and the shared streak appears in the friend's social feed. No request is
+refused for missing height or weight.
+
+Test Case Derivation: The fit criterion of FR8 names four features, earning,
+trading, learning and sharing, and the test uses each one with both values
+empty. 5,000 steps earn $\lfloor 5000 / 100 \rfloor = 50$ (SRS Section 6.7),
+and one share at 20.00 costs 20.00. A feature that wrongly required height or
+weight would refuse its request or fail to calculate a result.
+
+How test will be performed: A pytest test sends each request through the API
+and checks each response, the balance, and the friend's feed.
+
+\item{\textbf{test-acct-8: Downloading a copy of one's data}\\}
+
+Requirements: FR9
+
+Control: Automatic
+
+Initial State: A test user with the username \texttt{sam\_test}, an age of
+25, a height of 170 cm, and a weight of 68 kg. They have daily totals of 4,000
+steps on day $d-1$ and 6,000 steps on day $d$, one purchase of 2 shares of
+asset A at 15.00 each, a balance of 70.00, and one shared update of their
+streak. A second user, their friend \texttt{jordan\_test}, has their own
+activity, holdings and shared updates.
+
+Input: A request from \texttt{sam\_test} for a copy of their data.
+
+Output: The user receives a JavaScript Object Notation (JSON) file containing
+their username, age, height and weight, both daily totals, the balance of
+70.00, the holding of 2 shares of A, the purchase with its price of 15.00, and
+the shared update. It contains none of \texttt{jordan\_test}'s activity,
+holdings or shared updates.
+
+Test Case Derivation: The fit criterion of FR9 lists the profile, activity
+totals, balance, holdings, trades and shared updates, and each has a known
+value here so the file can be checked field by field. The balance is
+$100 - 2 \cdot 15.00 = 70.00$ for a user who earned 100 from 10,000 steps. The
+SRS sets JSON as the format for data that \progname{} exchanges (SRS Section
+1.2). The friend's data checks that the copy contains only the requester's
+data.
+
+How test will be performed: A pytest test sets up both users through the API,
+requests the copy, parses the file, and compares each field with the values
+above.
+
+\item{\textbf{test-acct-9: Confirming account deletion}\\}
+
+Requirements: FR10
+
+Control: Manual
+
+Initial State: A test user signed in on a test device.
+
+Input: The tester starts account deletion, reads the confirmation message, and
+chooses to cancel. The tester then signs out and signs in again.
+
+Output: Before anything is deleted, a message states that deleting the
+account cannot be undone. After cancelling, the user can sign in again and
+their data is unchanged.
+
+Test Case Derivation: The fit criterion of FR10 is that the warning is shown
+and the account still exists if the user cancels. Signing in again checks
+that cancelling did not disable the account or start its deletion.
+
+How test will be performed: The tester follows the input steps on the test
+device and records the message and the result of signing in.
+
+\item{\textbf{test-acct-10: Deleting an account}\\}
+
+Requirements: FR11
+
+Control: Automatic
+
+Initial State: Test users \texttt{sam\_test} and \texttt{jordan\_test} are
+friends. \texttt{sam\_test} has shared one update with \texttt{jordan\_test}
+and holds a valid session.
+
+Input: \texttt{sam\_test} requests account deletion and confirms it.
+
+Output: Signing in as \texttt{sam\_test} is refused. A request made with
+\texttt{sam\_test}'s earlier session is refused. \texttt{jordan\_test}'s
+social feed no longer contains \texttt{sam\_test}'s update, and
+\texttt{sam\_test} is no longer in their friend list.
+
+Test Case Derivation: The fit criterion of FR11 is that the user can no
+longer sign in and that none of their data is shown to them or to their
+friends. The earlier session checks that deletion also ends existing sessions,
+since otherwise data would still be shown to the user. The friend's feed and
+friend list check what friends can see. Removal from the server and its
+backups within \texttt{DATA\_DELETION\_PERIOD} (30 days) is a Hazard Analysis
+requirement (SEC-18) in SRS Section 7.3 and is verified with the
+nonfunctional requirements.
+
+How test will be performed: A pytest test sends the deletion and
+confirmation through the API, then tries to sign in, sends a request with the
+old session, and reads \texttt{jordan\_test}'s feed and friend list.
+
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
