@@ -448,6 +448,116 @@ would let it through.
 How test will be performed: A pytest test sends the three requests to the
 backend's API and checks each response.
 
+\item{\textbf{test-acct-2: No account without confirming age}\\}
+
+Requirements: FR2
+
+Control: Automatic and Manual
+
+Initial State: The email addresses \texttt{young1@fitfolio.test} and
+\texttt{young2@fitfolio.test} are not used by any account.
+
+Input: Two sign-up requests with otherwise valid details: one for
+\texttt{young1@fitfolio.test} with the age confirmation set to false, and one
+for \texttt{young2@fitfolio.test} with the age confirmation left out. On a
+test device, the tester then fills in the sign-up screen for
+\texttt{young3@fitfolio.test} without confirming their age.
+
+Output: Both requests are refused, and signing in with either email address
+fails because no account exists. On the device, no account is created for
+\texttt{young3@fitfolio.test}, and the screen shows that the age
+confirmation is required.
+
+Test Case Derivation: FR2 (Hazard Analysis, SEC-37) creates no account until
+the user confirms they are at least \texttt{MIN\_USER\_AGE} (18) years old. A
+request with the confirmation missing checks that the backend does not treat
+a missing value as confirmed. The backend is tested directly because a
+modified app could skip the check on the sign-up screen (Hazard Analysis,
+H43), and the device check confirms that the screen enforces it too.
+
+How test will be performed: A pytest test sends the two requests and then
+tries to sign in with each address. The tester then tries the sign-up screen
+on a test device and records whether an account was created.
+
+\item{\textbf{test-acct-3: Unique usernames}\\}
+
+Requirements: FR3
+
+Control: Automatic
+
+Initial State: An account with the username \texttt{sam\_test} exists, as
+created in test-acct-1. No account uses the email address
+\texttt{jordan@fitfolio.test}.
+
+Input: A sign-up request for \texttt{jordan@fitfolio.test} with the username
+\texttt{sam\_test}, followed by a second request with the same details except
+the username \texttt{jordan\_test}.
+
+Output: The first request is refused with a message asking the user to choose
+a different username, and no account is created. The second request
+succeeds.
+
+Test Case Derivation: FR3 asks a user who chooses a username already in use
+to choose a different one. The second request shows that the refusal was
+caused by the username alone, since every other detail is the same.
+
+How test will be performed: A pytest test sends both requests and checks
+each response and which accounts exist afterwards.
+
+\item{\textbf{test-acct-4: Signing out}\\}
+
+Requirements: FR5
+
+Control: Manual
+
+Initial State: A test user with a balance of 250 and the username
+\texttt{sam\_test}, signed in on a test device.
+
+Input: The tester opens the home screen and notes the balance shown, signs
+out, closes \progname{} completely, and opens it again.
+
+Output: After reopening, \progname{} shows the sign-in screen. Neither the
+balance of 250 nor the username \texttt{sam\_test} appears on any screen
+reachable without signing in.
+
+Test Case Derivation: The fit criterion of FR5 is that after signing out,
+opening the app shows the sign-in screen and none of the user's data. Closing
+the app completely checks that the sign-out is kept on the phone and is not
+just a change of screen. The balance and username are known values, so the
+tester can check that neither is shown.
+
+How test will be performed: The tester follows the input steps on the test
+device and records each screen shown after reopening.
+
+\item{\textbf{test-acct-5: Resetting a forgotten password}\\}
+
+Requirements: FR6
+
+Control: Automatic
+
+Initial State: An account for \texttt{sam@fitfolio.test} with the password
+\texttt{Walk2026run}, and a second account for \texttt{jordan@fitfolio.test}.
+The email service is replaced by a test mailbox.
+
+Input: A password reset request for \texttt{sam@fitfolio.test}. The test opens
+the link in the email the mailbox receives and sets the new password
+\texttt{Swim2027lap}. It then signs in with each password.
+
+Output: The mailbox receives exactly one email, addressed to
+\texttt{sam@fitfolio.test} and containing a reset link. After the reset,
+signing in with \texttt{Walk2026run} is refused and signing in with
+\texttt{Swim2027lap} succeeds. The account for \texttt{jordan@fitfolio.test}
+receives no email and its password is unchanged.
+
+Test Case Derivation: FR6 (Hazard Analysis, SEC-40) sends the link to the
+account's own email address, and its fit criterion is that the user can then
+sign in only with the new password. Checking the old password catches a reset
+that adds a new password without removing the old one. The second account
+checks that a reset for one account does not reach or change another.
+
+How test will be performed: A pytest test sends the reset request, reads the
+email from the test mailbox, follows the link through the API, and sends the
+sign-in requests.
 \end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
