@@ -352,59 +352,103 @@ the contents of the subsections.}
 
 \subsection{Tests for Functional Requirements}
 
-\wss{Subsets of the tests may be in related, so this section is divided into
-  different areas.  If there are no identifiable subsets for the tests, this
-  level of document structure can be removed.}
+% \wss{Subsets of the tests may be in related, so this section is divided into
+%   different areas.  If there are no identifiable subsets for the tests, this
+%   level of document structure can be removed.}
 
-\wss{Include a blurb here to explain why the subsections below
-  cover the requirements.  References to the SRS would be good here.}
+% \wss{Include a blurb here to explain why the subsections below
+%   cover the requirements.  References to the SRS would be good here.}
 
-\subsubsection{Area of Testing1}
+% \subsubsection{Area of Testing1}
 
-\wss{It would be nice to have a blurb here to explain why the subsections below
-  cover the requirements.  References to the SRS would be good here.  If a section
-  covers tests for input constraints, you should reference the data constraints
-  table in the SRS.}
+% \wss{It would be nice to have a blurb here to explain why the subsections below
+%   cover the requirements.  References to the SRS would be good here.  If a section
+%   covers tests for input constraints, you should reference the data constraints
+%   table in the SRS.}
 		
-\paragraph{Title for Test}
+% \paragraph{Title for Test}
+
+% \begin{enumerate}
+
+% \item{test-id1\\}
+
+% Control: Manual versus Automatic
+					
+% Initial State: 
+					
+% Input: 
+					
+% Output: \wss{The expected result for the given inputs.  Output is not how you
+% are going to return the results of the test.  The output is the expected
+% result.}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+					
+% How test will be performed: 
+					
+% \item{test-id2\\}
+
+% Control: Manual versus Automatic
+					
+% Initial State: 
+					
+% Input: 
+					
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed: 
+
+% \end{enumerate}
+
+% \subsubsection{Area of Testing2}
+
+% ...
+
+\subsubsection{Accounts and Profile}
+
+These tests cover the accounts and profile requirements in SRS Section 6.1
+(FR1 to FR11). Automatic tests create their own test accounts through the
+backend's API, with email addresses in the reserved \texttt{.test} domain, so
+no message can reach a real person. Tests of password reset replace the email
+service with a test mailbox that records every message sent to it, so the
+test can read the reset link and check who it was sent to. Passwords in the
+inputs are at least \texttt{MIN\_PASSWORD\_LENGTH} (8) characters long, so
+that the password rule in the Hazard Analysis (SEC-38) does not reject them
+for a reason unrelated to the test.
 
 \begin{enumerate}
 
-\item{test-id1\\}
+\item{\textbf{test-acct-1: Creating an account and signing in}\\}
 
-Control: Manual versus Automatic
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs.  Output is not how you
-are going to return the results of the test.  The output is the expected
-result.}
+Requirements: FR1, FR4
 
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-					
-How test will be performed: 
-					
-\item{test-id2\\}
+Control: Automatic
 
-Control: Manual versus Automatic
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
+Initial State: No account uses the email address \texttt{sam@fitfolio.test}
+or the username \texttt{sam\_test}.
 
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
+Input: A sign-up request with the email address \texttt{sam@fitfolio.test},
+the username \texttt{sam\_test}, the password \texttt{Walk2026run}, and the age
+confirmed. Then two sign-in requests with that email address: one with the
+password \texttt{Walk2026run}, and one with \texttt{Walk2026ruN}.
 
-How test will be performed: 
+Output: The sign-up succeeds and an account with that email address exists.
+The first sign-in succeeds and returns a session. The second is refused and
+returns no session.
+
+Test Case Derivation: The fit criterion of FR1 is that a user who enters an
+unused email address and a valid password has an account and can sign in with
+them, which the first sign-in shows. FR4 signs in a user with the correct
+password and refuses a wrong one. The wrong password differs from the correct
+one only in the case of its last letter, so a comparison that ignored case
+would let it through.
+
+How test will be performed: A pytest test sends the three requests to the
+backend's API and checks each response.
 
 \end{enumerate}
-
-\subsubsection{Area of Testing2}
-
-...
 
 \subsection{Tests for Nonfunctional Requirements}
 
