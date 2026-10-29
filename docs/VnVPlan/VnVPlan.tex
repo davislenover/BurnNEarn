@@ -140,22 +140,66 @@ SRS restates in Sections~6 and~7.3.
 
 \subsection{Objectives}
 
-\wss{State what is intended to be accomplished.  The objective will be around
-  the qualities that are most important for your project.  You might have
-  something like: ``build confidence in the software correctness,''
-  ``demonstrate adequate usability.'' etc.  You won't list all of the qualities,
-  just those that are most important.}
+The objectives below are the qualities the team most needs to be confident in,
+given the time and people available. They are listed in priority order, with
+the SRS goals (G) and non-functional requirements (NFR) each one comes from.
 
-\wss{You should also list the objectives that are out of scope.  You don't have 
-the resources to do everything, so what will you be leaving out.  For instance, 
-if you are not going to verify the quality of usability, state this.  It is also 
-worthwhile to justify why the objectives are left out.}
+\begin{itemize}
+  \item \textbf{Correct currency, rewards, and portfolio values.} Build
+    confidence that activity earns the right amount of virtual currency, that
+    each activity is rewarded only once, and that balances, trades, and
+    portfolio values are calculated correctly, including when a trade is
+    interrupted or repeated (G4, G5, NFR1 Accuracy, NFR6 Reliability). This
+    comes first because users judge the app by whether its numbers are right,
+    and in an educational app a wrong number also teaches a wrong lesson.
+  \item \textbf{Private and secure user data.} Demonstrate that private
+    information, including health data, is available only to authenticated and
+    authorized users, and that nothing is shared with friends unless the user
+    chooses to share it (G3, NFR7 Security). \progname{} handles health data,
+    so a leak would harm users and break the privacy rules it must follow
+    (SRS, SC6).
+  \item \textbf{Adequate usability and accessibility.} Validate through
+    usability testing that first-time users can complete the core activity and
+    investing tasks without help, including with enlarged text, and that
+    participants improve on the before-and-after knowledge check (G1, G2, NFR2
+    Usability, NFR8 Accessibility). The results will be reported in the
+    Usability Report.
+  \item \textbf{Core features on Android and iOS.} Demonstrate that the core
+    features work on both supported platforms (NFR4 Portability). Since one
+    React Native codebase targets both, the same acceptance tests are run on
+    each.
+\end{itemize}
 
-\wss{The objectives are important because they highlight that you are aware of 
-limitations in your resources for verification and validation.  You can't do everything, 
-so what are you going to prioritize?  As an example, if your system depends on an 
-external library, you can explicitly state that you will assume that external library 
-has already been verified by its implementation team.}
+The following are out of scope, because the team does not control them or does
+not have the resources to verify them:
+
+\begin{itemize}
+  \item \textbf{External libraries and services.} The phone's health platform
+    (Apple HealthKit or Health Connect), the libraries that connect to it, the
+    market data provider, and frameworks such as FastAPI, SQLAlchemy, and
+    PostgreSQL are assumed to have been verified by their own teams. How
+    \progname{} handles wrong, missing, late, or duplicated data from these
+    services is still in scope (Hazard Analysis, CA4).
+  \item \textbf{Accuracy of recorded activity and market prices.}
+    \progname{} rewards the activity the health platform records and values
+    portfolios at the provider's prices. Whether a phone counts steps
+    correctly, or whether a quoted price matches the exchange, cannot be
+    checked by the team. The team verifies how \progname{} uses these values,
+    but not the values themselves.
+  \item \textbf{Load and scalability testing.} No requirement covers large
+    numbers of users, and during the project the app will be used only by the
+    team, the supervisor, and usability test participants. Performance is
+    checked only as stated in NFR5.
+  \item \textbf{Attacks from a compromised phone or hosting provider.}
+    Security testing covers \progname{}'s own authentication and
+    authorization. A rooted or jailbroken phone and the hosting provider's
+    physical security are outside the team's control (Hazard Analysis, CA3 and
+    CA5). No external penetration test is planned.
+  \item \textbf{Long-term effects on users.} Whether \progname{} changes users'
+    fitness habits or financial decisions over months cannot be measured within
+    the project. Learning is measured only by the short-term knowledge check in
+    G1.
+\end{itemize}
 
 \subsection{Custom Documents}
 
