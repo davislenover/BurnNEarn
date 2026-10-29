@@ -87,10 +87,56 @@ This document ... \wss{provide an introductory blurb and roadmap of the
 
 \section{General Information}
 
+This section identifies the software under test, states the objectives of
+verification and validation (V\&V) and what is out of scope, summarizes the
+custom documents, and lists the documents this plan draws on.
+
 \subsection{Summary}
 
-\wss{Say what software is being tested.  Give its name and a brief overview of
-  its general functions.}
+% \wss{Say what software is being tested.  Give its name and a brief overview of
+%   its general functions.}
+
+The software being tested is \progname{}, a mobile application in which
+young adults earn virtual currency from the physical activity their phone
+records and invest it in a simulated market that follows real-world prices.
+\progname{} consists of a mobile app for Android and iOS, built with React
+Native and TypeScript, and a server built with FastAPI and a PostgreSQL
+database. The app reads activity from the phone's health platform (Apple
+HealthKit or Google Health Connect), and the server obtains asset prices from
+the market data provider, Finnhub. The full system and its context are
+described in Section~2.3 of the Software Requirements
+Specification~\citep[SRS;][]{SRS0}.
+
+The functions of \progname{} fall into the six feature areas of SRS
+Section~6, which also organize the system tests in Section~\ref{SecSystemTests}
+of this plan:
+
+\begin{itemize}
+  \item \textbf{Accounts and profile:} creating an account, signing in and out,
+        resetting a password, editing the profile, downloading a copy of one's
+        data, and deleting the account.
+  \item \textbf{Activity and rewards:} reading activity records for the
+        supported activity types, converting plausible activity into virtual
+        currency up to a daily cap, and tracking goals, streaks, rest days and
+        milestones.
+  \item \textbf{Simulated market and portfolio:} buying and selling whole shares
+        of at least 50 real-world stocks at prices that follow the real market,
+        showing holdings and portfolio value, and practising in market scenarios
+        that replay past periods.
+  \item \textbf{Learning and feedback:} explaining financial and fitness
+        concepts where they appear, giving feedback on the user's own trades and
+        portfolio changes, and testing understanding with knowledge checks.
+  \item \textbf{Social feed:} adding friends by username and sharing selected
+        statistics and milestones with chosen friends.
+  \item \textbf{Reminders and settings:} sending reminders only in the periods
+        the user chooses, and letting the user review and withdraw health data
+        permissions.
+\end{itemize}
+
+Because \progname{} handles health data and presents financial information
+that users may act on, the plan also verifies the safety and security
+requirements identified in the Hazard Analysis~\citep[HA;][]{HA}, which the
+SRS restates in Sections~6 and~7.3.
 
 \subsection{Objectives}
 
@@ -113,12 +159,42 @@ has already been verified by its implementation team.}
 
 \subsection{Custom Documents}
 
-\wss{Summarize the CDs (Custom Documents) that were tackled by this project.  CDs 
-can include usability testing, code walkthroughs, user documentation, formal
-proof, GenderMag personas, Design Thinking, etc.  CDs should have already
-been approved by the course instructor as included in your problem statement.
-You can use a pull request to update your CDs (in TeamComposition.csv or
-Repos.csv) if your plan changes as a result of the VnV planning exercise.}
+% \wss{Summarize the CDs (Custom Documents) that were tackled by this project.  CDs 
+% can include usability testing, code walkthroughs, user documentation, formal
+% proof, GenderMag personas, Design Thinking, etc.  CDs should have already
+% been approved by the course instructor as included in your problem statement.
+% You can use a pull request to update your CDs (in TeamComposition.csv or
+% Repos.csv) if your plan changes as a result of the VnV planning exercise.}
+
+\progname{} has two custom documents (CDs), one in each term, as listed in
+Section~4 of the Problem Statement and Goals. They are the project's extras,
+and both feed directly into validation.
+
+\paragraph{Design Thinking Report (Fall).} This report explores what young
+adults want to track about their fitness and what they hope to learn about
+investing. Its main evidence is two exploratory interviews with potential
+users, held on October~14, 2026, and referred to as P01 and P02. These
+interviews are the source of most of the stakeholder requirements in SRS
+Section~3 and of Personas~1 and~2 in SRS Section~4. For V\&V, the report
+provides the needs that validation checks the product against. It also
+exposes a gap that validation must close: neither interviewee was a beginner
+at investing, so the needs of beginners, represented by Persona~3, come from
+the Problem Statement rather than from users. The usability tests in this plan
+therefore recruit participants who are beginners at investing
+(Section~\ref{SecSoftwareValidation}).
+
+\paragraph{Usability Report (Winter).} This report documents usability
+testing of the working application, covering onboarding, earning currency from
+activity, trading, learning, and sharing. The usability tests specified in
+this plan are the ones the report will run and record: the participant
+profile, the tasks, the observations, and the questionnaire are defined here
+(Section~\ref{SecSoftwareValidation} and Appendix~\ref{SecUsabilitySurvey}),
+and the report presents their results. These tests produce the evidence for
+NFR2 (Usability) and for goals G1 (at least 70\% of participants improve
+their score on a before-and-after knowledge check) and G2 (at least 80\% of
+first-time participants complete the core tasks without outside help) from
+SRS Section~2.2. Because the tests need a working application, they take
+place after the Rev~0 demonstration.
 
 \subsection{Relevant Documentation}
 
@@ -205,7 +281,7 @@ that document.}
 \wss{The details of this section will likely evolve as you get closer to the
   implementation.}
 
-\subsection{Software Validation}
+\subsection{Software Validation} \label{SecSoftwareValidation}
 
 \wss{If there is any external data that can be used for validation, you should
   point to it here.  If there are no plans for validation, you should state that
@@ -225,7 +301,7 @@ as a Rev 0 demo for the supervisor.}
 
 \wss{This section might reference back to the SRS verification section.}
 
-\section{System Tests}
+\section{System Tests} \label{SecSystemTests}
 
 \wss{There should be text between all headings, even if it is just a roadmap of
 the contents of the subsections.}
@@ -490,7 +566,7 @@ This is where you can place additional information.
 The definition of the test cases will call for SYMBOLIC\_CONSTANTS.
 Their values are defined in this section for easy maintenance.
 
-\subsection{Usability Survey Questions?}
+\subsection{Usability Survey Questions} \label{SecUsabilitySurvey}
 
 \wss{This is a section that would be appropriate for some projects.}
 
