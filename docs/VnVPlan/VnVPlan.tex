@@ -3,13 +3,15 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 
-% Keep each questionnaire question's choices on the same page as the question.
+% Keep each questionnaire question and its choices together on one page.
 \makeatletter
 \newenvironment{choices}
-  {\@beginparpenalty=10000 \begin{itemize}\@itempenalty=10000}
+  {\interlinepenalty=10000 \@beginparpenalty=10000
+   \begin{itemize}\@itempenalty=10000}
   {\end{itemize}}
 \newenvironment{letteredchoices}
-  {\@beginparpenalty=10000 \begin{enumerate}\@itempenalty=10000}
+  {\interlinepenalty=10000 \@beginparpenalty=10000
+   \begin{enumerate}\@itempenalty=10000}
   {\end{enumerate}}
 \makeatother
 \usepackage{hyperref}
@@ -727,7 +729,8 @@ After-study questionnaire & The day after the last day (15 minutes) &
   usability, what worked and what did not, and the knowledge check again
   (G1)\\
 Debrief interview & Right after the questionnaire (30 minutes) &
-  Why things worked or did not, in the participant's own words\\
+  Why things worked or did not, in the participant's own words, and how
+  they used their portfolio\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -752,8 +755,8 @@ follow up on specific entries, such as why a screen was confusing or what the
 participant expected to happen instead. The debrief comes after the
 after-study questionnaire, so that the conversation cannot change the
 participant's answers or their score on the knowledge check. At the end of the
-debrief, the team answers any questions the participant has about the app or
-the study.
+debrief, the team goes through the knowledge check answers with the
+participant and answers any questions they have about the app or the study.
 
 \subsubsection{Before-Study Questionnaire} \label{SecBeforeStudy}
 
@@ -803,27 +806,40 @@ makes sure that only first-time users count toward G2 and NFR2.
 How willing a participant is to take risks is likely to shape how they use
 their portfolio. People often describe themselves differently from how they
 act, so these questions describe everyday situations instead of asking about
-risk directly. There are no right answers. In the debrief, the interviewer
-compares them with how the participant used their portfolio.
+risk directly. They were written for this study, based on the kinds of
+questions in a published risk tolerance scale~\citep{GrableLytton1999}. In the
+debrief, the participant shows the interviewer their holdings and trades in
+\progname{}, and the interviewer compares them with these answers.
+
+On the form, this part is titled ``Your money choices'', so that the title
+does not say what is being measured. Participants see this instruction before
+the questions:
+
+\begin{quote}
+There are no right or wrong answers. For each question, choose what you would
+most likely do.
+\end{quote}
 
 {\renewcommand{\labelenumi}{B\arabic{enumi}.}
 \renewcommand{\theenumi}{B\arabic{enumi}}
 \begin{enumerate}
   \item Imagine you have saved \$1,000 that you will not need for five years.
-    What would you do with it?
+    You can keep it in a savings account, which pays a small amount of
+    guaranteed interest, or invest it in something such as stocks, whose value
+    can rise or fall. What would you do with it?
     \begin{choices}
-      \item[$\circ$] Keep all of it in a savings account
-      \item[$\circ$] Keep most of it in a savings account and invest the rest
-      \item[$\circ$] Invest most of it and keep the rest in a savings account
+      \item[$\circ$] Keep all of it in the savings account
+      \item[$\circ$] Keep most of it in the savings account and invest the rest
+      \item[$\circ$] Invest most of it and keep the rest in the savings account
       \item[$\circ$] Invest all of it
     \end{choices}
-  \item You invested \$1,000, and a month later it is worth \$800. What would
-    you most likely do?
+  \item Imagine you invested \$1,000 in the stock market, and a month later it
+    is worth \$800. What would you most likely do?
     \begin{choices}
-      \item[$\circ$] Sell all of it, so that you do not lose any more
+      \item[$\circ$] Sell all of it
       \item[$\circ$] Sell some of it
-      \item[$\circ$] Keep it and wait
-      \item[$\circ$] Invest more while prices are lower
+      \item[$\circ$] Keep all of it and wait
+      \item[$\circ$] Keep all of it and invest more
     \end{choices}
   \item You can put \$1,000 into one of these for a year. Which would you
     choose?
