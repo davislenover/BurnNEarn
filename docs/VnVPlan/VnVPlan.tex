@@ -244,10 +244,10 @@ therefore recruit participants who are beginners at investing
 (Section~\ref{SecSoftwareValidation}).
 
 \paragraph{Usability Report (Winter).} This report documents usability
-testing of the working application, covering onboarding, earning currency from
-activity, trading, learning, and sharing. The usability tests specified in
-this plan are the ones the report will run and record: the participant
-profile, the tasks, the observations, and the questionnaire are defined here
+testing of the working application's core loop: earning currency from steps,
+buying shares, and following the portfolio's value. The usability tests
+specified in this plan are the ones the report will run and record: the
+participant profile, the tasks, and the questions are defined here
 (Section~\ref{SecSoftwareValidation} and Appendix~\ref{SecUsabilitySurvey}),
 and the report presents their results. These tests produce the evidence for
 NFR2 (Usability) and for goals G1 (at least 70\% of participants improve
@@ -701,13 +701,17 @@ Their values are defined in this section for easy maintenance.
 % \wss{This is a section that would be appropriate for some projects.}
 
 Participants use \progname{} on their own phones for 4 to 7 days, as part of
-their normal routine, rather than in one supervised session. Several of the
-features being tested span multiple days: earning rewards each day, keeping a
-streak, taking a rest day, and seeing a portfolio's value change as prices
-move. A longer study is therefore needed to test them. The study includes at
-least three weekdays, so that participants can buy shares while the market is
-open. The participant profile and the study procedure are given in
-Section~\ref{SecSoftwareValidation}.
+their normal routine, rather than in one supervised session. The study uses
+the version of \progname{} from the Revision~0 demonstration and tests its core
+loop (Development Plan, Section~9): earning virtual currency from steps, buying
+shares of stocks at real prices, and following the portfolio's value. Two
+of the features being tested span multiple days: earning rewards each day and
+seeing a portfolio's value change as prices move. A longer study is therefore
+needed to test them. The study includes at least three weekdays, so that
+participants can buy shares while the market is open. If more features are
+ready in time, such as streaks or explanations of concepts, the matching
+questions are added before the study starts. The participant profile and the
+study procedure are given in Section~\ref{SecSoftwareValidation}.
 
 \begin{table}[!ht]
 \caption{Parts of the usability study} \label{TblUsabilityStudyParts}
@@ -724,13 +728,12 @@ Before-study questionnaire & Day 1, before installing the app (10 minutes) &
 Experience log & Any time, as things happen &
   What the participant was doing, what worked, what did not, and any help
   they needed\\
-After-study questionnaire & The day after the last day (15 minutes) &
-  Core tasks done without help (G2, NFR2), larger text (NFR8), overall
-  usability, what worked and what did not, and the knowledge check again
-  (G1)\\
+After-study questionnaire & The day after the last day (10 minutes) &
+  Core tasks done without help (G2, NFR2), larger text (NFR8), and the
+  knowledge check again (G1)\\
 Debrief interview & Right after the questionnaire (30 minutes) &
-  Why things worked or did not, in the participant's own words, and how
-  they used their portfolio\\
+  What worked and what did not, and why, and how the participant used their
+  portfolio\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -745,8 +748,7 @@ name.
 Participants are asked to add to the experience log whenever something works
 well, goes wrong, or confuses them, rather than at a set time. Each entry is
 then written while the details are fresh, since they are easily forgotten by
-the end of the study. The after-study questionnaire asks about the study as a
-whole.
+the end of the study.
 
 The study ends with a debrief, an interview in which a team member asks the
 participant about everything they experienced. The interviewer reads the
@@ -869,13 +871,6 @@ with you at the end of the study.
       \item You have lent the company money, and it will pay you interest.
       \item You can buy the company's products at a discount.
     \end{letteredchoices}
-  \item What is an exchange-traded fund (ETF)?
-    \begin{letteredchoices}
-      \item A savings account at a bank that pays a fixed interest rate.
-      \item A group of many investments that you can buy and sell like one
-        stock.
-      \item The stock of one company that pays a fixed amount each year.
-    \end{letteredchoices}
   \item What is a stock's market price?
     \begin{letteredchoices}
       \item The price the company set when it first sold its shares.
@@ -914,37 +909,6 @@ with you at the end of the study.
       \item Stock B is more volatile, so its value is harder to predict in the
         short term.
     \end{letteredchoices}
-  \item You invest \$100, and it grows by 10\% each year. You leave all of it
-    invested. How much will you have after 2 years?
-    \begin{letteredchoices}
-      \item \$110
-      \item \$120
-      \item \$121
-    \end{letteredchoices}
-  \item In a market downturn, the prices of most stocks fall at the same time.
-    What has happened to the stock market as a whole after past downturns?
-    \begin{letteredchoices}
-      \item Prices generally recovered within a few days.
-      \item Prices generally recovered, but some recoveries took many years.
-      \item Prices generally stayed at their lower level for good.
-    \end{letteredchoices}
-  \item Under Canadian tax rules, which is generally true of investment growth
-    inside a Tax-Free Savings Account (TFSA)?
-    \begin{letteredchoices}
-      \item It is not taxed, even when you take it out.
-      \item It is not taxed until you take it out.
-      \item It is not taxed for the first five years.
-    \end{letteredchoices}
-  \item Under Canadian tax rules, which is generally true of a Registered
-    Retirement Savings Plan (RRSP)?
-    \begin{letteredchoices}
-      \item Money you put in can lower your tax now, and money you take out is
-        taxed later.
-      \item Money you put in can lower your tax now, and money you take out is
-        never taxed.
-      \item Money you put in is taxed now, and money you take out is taxed
-        again later.
-    \end{letteredchoices}
   \item Why might two people who walk the same distance record different
     numbers of steps?
     \begin{letteredchoices}
@@ -952,30 +916,10 @@ with you at the end of the study.
       \item Their phones were set to different daily step goals.
       \item Steps taken indoors are not counted by the phone.
     \end{letteredchoices}
-  \item What are active minutes?
-    \begin{letteredchoices}
-      \item Minutes in which the phone's screen is on.
-      \item Minutes spent moving at least as hard as a brisk walk.
-      \item Every minute of the day in which you are awake.
-    \end{letteredchoices}
-  \item Which statement about rest days is true?
-    \begin{letteredchoices}
-      \item They help the body recover and lower the risk of injury.
-      \item A rest day undoes the fitness gained in the days before it.
-      \item Taking a rest day shows that a person is not serious about
-        fitness.
-    \end{letteredchoices}
-  \item What is an activity streak?
-    \begin{letteredchoices}
-      \item The number of days in a row on which you met your goal or took a
-        rest day.
-      \item The number of days this week on which you met your activity goal.
-      \item The number of days in a row on which you opened the app.
-    \end{letteredchoices}
 \end{enumerate}}
 
-The questions cover the core concepts in SRS Section~6.4, with steps standing
-for all the activity types. Each has one correct answer
+The questions cover the core concepts from SRS Section~6.4 that participants
+meet in the core loop. Each has one correct answer
 (Table~\ref{TblKnowledgeCheckKey}), and the form also offers ``I don't know''.
 The after-study questionnaire asks the same questions again. A correct answer
 scores 1 and a wrong answer scores minus one half, so guessing does not raise a
@@ -990,20 +934,12 @@ point, and G1 is met if at least 70\% of participants improve.
 \textbf{Question} & \textbf{Core concept} & \textbf{Answer}\\
 \midrule
 C1 & Stock and share & (a)\\
-C2 & Exchange-traded fund (ETF) & (b)\\
-C3 & Market price & (b)\\
-C4 & Portfolio value & (c)\\
-C5 & Return & (b)\\
-C6 & Diversification & (b)\\
-C7 & Risk and volatility & (a)\\
-C8 & Compound growth & (c)\\
-C9 & Market downturn and recovery & (b)\\
-C10 & Tax-Free Savings Account (TFSA) & (a)\\
-C11 & Registered Retirement Savings Plan (RRSP) & (a)\\
-C12 & Activity types (steps as the example) & (a)\\
-C13 & Active minutes & (b)\\
-C14 & Rest day & (a)\\
-C15 & Streak & (a)\\
+C2 & Market price & (b)\\
+C3 & Portfolio value & (c)\\
+C4 & Return & (b)\\
+C5 & Diversification & (b)\\
+C6 & Risk and volatility & (a)\\
+C7 & Activity type (steps) & (a)\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1020,12 +956,10 @@ the date and time on its own.
 \begin{enumerate}
   \item Which part of \progname{} were you using?
     \begin{choices}
-      \item[$\circ$] Setting up the app or my account
-      \item[$\circ$] My activity, streak or rewards
-      \item[$\circ$] The market or my portfolio
-      \item[$\circ$] Learning about money or fitness
-      \item[$\circ$] Friends or sharing
-      \item[$\circ$] Reminders or settings
+      \item[$\circ$] Setting up the app
+      \item[$\circ$] My steps or rewards
+      \item[$\circ$] The stock list or buying shares
+      \item[$\circ$] My portfolio
       \item[$\circ$] Something else
     \end{choices}
   \item How did it go?
@@ -1044,10 +978,86 @@ the date and time on its own.
     \end{choices}
 \end{enumerate}}
 
-The choices in L1 follow the feature areas in SRS Section~6, so the Usability
-Report can group entries by area. L4 shows where a participant needed help
-from outside the app. Any such help with a core task counts against G2, even if
-their after-study answers do not mention it.
+The choices in L1 follow the core loop, so the Usability Report can group
+entries by step. L4 shows where a participant needed help from outside the
+app.
+
+\subsubsection{After-Study Questionnaire} \label{SecAfterStudy}
+
+Participants complete this questionnaire the day after the last day of the
+study, just before the debrief. It has no written questions, since the debrief
+covers what worked and what did not. Its parts continue from the before-study
+questionnaire.
+
+\paragraph{Part D: Core tasks.}
+
+These four tasks, which follow the core loop in order, are the core tasks for
+this study. For each task, participants choose one of these answers:
+
+\begin{choices}
+  \item[$\circ$] Yes, without help from outside the app
+  \item[$\circ$] Yes, but I needed help from outside the app at least once
+  \item[$\circ$] No, I tried but could not
+  \item[$\circ$] No, I did not try
+\end{choices}
+
+{\renewcommand{\labelenumi}{D\arabic{enumi}.}
+\renewcommand{\theenumi}{D\arabic{enumi}}
+\begin{enumerate}
+  \item Let \progname{} read your steps.
+  \item See the currency you earned from your steps.
+  \item Buy shares of a stock.
+  \item Check how much your portfolio is worth.
+\end{enumerate}}
+
+A participant completes the core tasks if they choose the first answer for all
+four, and none of their log entries shows outside help with one of them. G2
+and NFR2 are met if at least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%) of
+first-time participants complete the core tasks.
+
+\paragraph{Part E: Larger text.}
+
+On one weekday of the study, the team sends each participant the steps for
+their kind of phone to set its text size to the setting closest to
+\texttt{MAX\_TEXT\_SCALE} (200\%) of the default. It asks them to buy at least
+one share and check their portfolio that day.
+
+{\renewcommand{\labelenumi}{E\arabic{enumi}.}
+\renewcommand{\theenumi}{E\arabic{enumi}}
+\begin{enumerate}
+  \item On the day you used larger text, could you still read everything and
+    use every button in \progname{}?
+    \begin{choices}
+      \item[$\circ$] Yes
+      \item[$\circ$] Mostly, but some text or buttons were cut off or hidden
+      \item[$\circ$] No, I could not use some screens
+      \item[$\circ$] I did not use larger text
+    \end{choices}
+\end{enumerate}}
+
+The interviewer asks about any answer other than Yes in the debrief, to find
+which screens had the problem. NFR8 is met if at least one participant on each
+kind of phone used larger text, and no participant reports a problem on a
+screen used for a core task.
+
+\paragraph{Part F: Knowledge check again.}
+
+Participants answer C1 to C7 again, with the same instruction as before, and
+then one more question:
+
+{\renewcommand{\labelenumi}{F\arabic{enumi}.}
+\renewcommand{\theenumi}{F\arabic{enumi}}
+\begin{enumerate}
+  \item During the study, did you search online or ask anyone about the topics
+    in these questions?
+    \begin{choices}
+      \item[$\circ$] Yes
+      \item[$\circ$] No
+    \end{choices}
+\end{enumerate}}
+
+A participant who answers Yes, or who had full marks before the study, is
+left out of the G1 results.
 
 \clearpage
 
