@@ -18,6 +18,11 @@ STARTING_SYMBOLS = {
     "JPM",
     "V",
     "AMD",
+    "F",
+    "PINS",
+    "T",
+    "PFE",
+    "NKE",
 }
 
 

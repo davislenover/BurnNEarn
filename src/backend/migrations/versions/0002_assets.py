@@ -28,6 +28,13 @@ STARTING_STOCKS = [
     ("JPM", "JPMorgan Chase & Co."),
     ("V", "Visa Inc."),
     ("AMD", "Advanced Micro Devices, Inc."),
+    # Under 50 USD, so a new user can buy a whole share after about a day of
+    # steps.
+    ("F", "Ford Motor Company"),
+    ("PINS", "Pinterest, Inc."),
+    ("T", "AT&T Inc."),
+    ("PFE", "Pfizer Inc."),
+    ("NKE", "NIKE, Inc."),
 ]
 
 
