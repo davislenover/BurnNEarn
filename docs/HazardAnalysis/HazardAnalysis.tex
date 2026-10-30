@@ -1608,10 +1608,8 @@ kept secure (P02).}
 {SRS Section~7.3, SEC-16.}
 {Capstone.}
 
-\hazreq{SEC-17}{Session expiry}
-{The system shall end a session when the user signs out of it or when it has
-not been used for \texttt{SESSION\_TIMEOUT}, after which the user must sign in
-again.}
+\hazreq{SEC-17}{Session expiry and revocation}
+{The system shall invalidate a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. Signing out of one session shall leave the account's other valid sessions unchanged.}
 {A test session is rejected after the user signs out of it, and after it is
 left unused for longer than \texttt{SESSION\_TIMEOUT}. In both cases the user
 must sign in again to continue.}
