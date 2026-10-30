@@ -140,6 +140,8 @@ read.\\
 Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 2.4 User Characteristics,
 3 Stakeholder Requirements, 6.2 Activity and Rewards: narrowed the intended
 users to people who walk, run, or use a wheelchair.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 6.2 Activity and Rewards,
+6.7 Formal Definitions, 7.2 Data Dictionary: defined milestones.\\
 \bottomrule
 \end{tabularx}
 
@@ -456,7 +458,7 @@ its entry links to that definition.
   Diversification                                    & The extent to which a portfolio's value is spread across different assets, so that a fall in one asset has a limited effect on the whole.                               \\
   Exchange-traded fund\phantomsection\label{def:etf} & A fund that holds a collection of assets, such as the stocks of many companies, and is itself traded like a stock.                                                      \\
   Feedback                                           & An explanation, specific to the user's own portfolio or activity, of what happened and why; for example, why their portfolio's value fell on a given day.               \\
-  Fitness milestone                                  & A stated level of activity reached by the user, such as their first week with activity recorded every day.                                                              \\
+  Fitness milestone                                  & A streak length or total of virtual currency earned, listed in \texttt{MILESTONES}, that the user has reached (Section~\ref{SecFormal}).                                  \\
   Friend                                             & Another \progname{} user who has accepted a user's friend request.                                                                                                      \\
   Health platform                                    & The service built into a smartphone's operating system that stores health and activity data, such as Apple HealthKit on iOS and Google Health Connect on Android.       \\
   Holding                                            & The number of shares of one asset that a user owns.                                                                                                                     \\
@@ -1851,8 +1853,8 @@ A supported activity type is one listed in
 reads the user's activity records from the health platform, shows the daily
 totals in their activity trends, and awards currency for them. Each activity
 record counts under one supported type only, so walks and runs count as steps,
-not as workout minutes. Section~\ref{SecFormal} defines the daily reward and
-the streak.
+not as workout minutes. Section~\ref{SecFormal} defines the daily reward, the
+streak, and milestones.
 
 \progname{} can reward only what the health platform holds, and what it holds
 depends on the user's devices and apps. Apple states that wheelchair pushes are
@@ -1966,9 +1968,10 @@ through workout records instead.
   \ucref{UC_GoalsStreaks}, G3, G5}
 \freq{FR_ActMilestone}
   {The system shall show the user each milestone in \texttt{MILESTONES} when
-  they reach it.}
+  they reach it, as defined in Section~\ref{SecFormal}.}
   {A test user whose streak, or total currency earned, first reaches a value in
-  \texttt{MILESTONES} is shown that milestone once.}
+  \texttt{MILESTONES} is shown that milestone once. A streak that ends and later
+  reaches the same value does not show it again.}
   {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActNoWeightReward}
   {(HA SAF-14) The system shall not base any reward, goal or milestone on the
@@ -2442,8 +2445,8 @@ if none had been recorded~\citep{AppleHealthKit, GoogleHealthConnect}.
 
 \subsection{Formal Definitions} \label{SecFormal}
 
-This subsection defines the daily reward, the streak, trades and portfolio
-value that the requirements in Sections 6.2 and 6.3 refer to. For a user on
+This subsection defines the daily reward, the streak, milestones, trades and
+portfolio value that the requirements in Sections 6.2 and 6.3 refer to. For a user on
 calendar day $d$ in their time zone:
 \begin{itemize}
 \item $T$ is the set of supported activity types
@@ -2471,6 +2474,17 @@ q_d = \mathit{rest}_d \lor \bigl(G_d \neq \emptyset \land
 \end{equation}
 The streak at the end of day $d$ is $s_d = s_{d-1} + 1$ if $q_d$ is true,
 and $s_d = 0$ otherwise, with $s = 0$ before the user's first day.
+
+\paragraph{Milestones.} The values in \texttt{MILESTONES} are streak lengths and
+totals of currency earned. Let $E$ be the total of the daily rewards $R_d$
+awarded to the user so far. Spending currency does not reduce $E$, and neither
+currency from selling shares nor a market scenario's balance adds to it. The
+user reaches a streak milestone of $m$ days the first time $s_d \geq m$, and a
+currency milestone of $m$ the first time $E \geq m$. Each milestone is reached
+only once per user, so a streak that ends and later grows to the same length
+does not reach it again. Meeting a daily activity goal is not a milestone,
+although it does send a reminder of the Milestone type
+(Table~\ref{TblReminderTypes}).
 
 \paragraph{Trades.} Let $B$ be the user's balance, $h_a$ the number of shares
 of asset $a$ they hold, and $p_a$ the price at which a trade of $a$ executes.
@@ -2635,6 +2649,10 @@ the following day.\\
 
 \texttt{rest\_days} & List &
 Calendar dates selected as rest days for streak calculations.\\
+
+\texttt{milestones\_reached} & List &
+Values in \texttt{MILESTONES} the user has reached, with the date each was
+reached. A milestone already in this list is not shown again.\\
 
 \texttt{learning\_progress} & List &
 Learning records containing the content identifier, completion
