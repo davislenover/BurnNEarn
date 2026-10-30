@@ -686,7 +686,45 @@ Their values are defined in this section for easy maintenance.
 
 \subsection{Usability Survey Questions} \label{SecUsabilitySurvey}
 
-\wss{This is a section that would be appropriate for some projects.}
+% \wss{This is a section that would be appropriate for some projects.}
+
+Participants use \progname{} on their own phones for 4 to 7 days, as part of
+their normal routine, rather than in one supervised session. A longer study
+covers what a single session cannot: earning rewards on several days, keeping
+a streak, taking a rest day, and seeing a portfolio's value change as prices
+move. The study includes at least three weekdays, so that participants can buy
+shares while the market is open. The participant profile and the study
+procedure are given in Section~\ref{SecSoftwareValidation}.
+
+\begin{table}[!ht]
+\caption{Usability study questionnaires} \label{TblUsabilityQuestionnaires}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.21\textwidth}
+  >{\raggedright\arraybackslash}p{0.22\textwidth}
+  >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Questionnaire} & \textbf{When} & \textbf{What it measures}\\
+\midrule
+Before the study & Day 1, before installing the app (10 minutes) &
+  Background, investing experience, and the knowledge check before using the
+  app (G1)\\
+Daily check-in & End of each day (2 minutes) &
+  What the participant did, what worked, what did not, and any help needed\\
+After the study & The day after the last day (15 minutes) &
+  Core tasks done without help (G2, NFR2), larger text (NFR8), overall
+  usability, what worked and what did not, and the knowledge check again
+  (G1)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Because the team does not watch participants while they use the app, the
+evidence comes from the three questionnaires in
+Table~\ref{TblUsabilityQuestionnaires}. Each is an online form, and responses
+are recorded under a participant ID rather than a name.
+
+The daily check-in asks about problems while they are fresh, since details are
+easily forgotten by the end of the week. The after-study questionnaire then
+asks about the study as a whole.
 
 \newpage{}
 
