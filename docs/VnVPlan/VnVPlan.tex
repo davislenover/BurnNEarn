@@ -1473,27 +1473,40 @@ Requirements: FR40
 Control: Manual
 
 Initial State: A test user who has acknowledged the simulated market notice
-and has enough currency to buy 1 share of a stock in the live market, signed
-in on a test device with the release build of \progname{}.
+and has enough currency to buy 1 share of a widely traded stock in the live
+market, signed in on a test device with the release build of \progname{}.
 
-Input: While the US market is closed, the tester asks to buy 1 share of the
-stock. After the market opens at 9:30~a.m.\ Eastern time on the next trading
-day, the tester opens \progname{}.
+Input: While the US market is closed, the tester notes the last price
+\progname{} shows for the stock and asks to buy 1 share. The tester then keeps
+\progname{} closed until at least 30 minutes after the market opens at
+9:30~a.m.\ Eastern time on the next trading day, and opens it.
 
 Output: When it is requested, the trade is shown as queued, with a notice that
-it will run at the opening price. After the open, the trade is shown as
-executed, at a time after 9:30~a.m.\ Eastern time, and the balance has fallen
-by its price.
+it will run at the opening price. When \progname{} is opened, the trade is
+shown as executed, at a time after 9:30~a.m.\ Eastern time and before the app
+was opened, and at a price different from the one noted. The balance has
+fallen by that price.
 
-Test Case Derivation: The automated tests of FR40, test-mkt-15 and
-test-mkt-16, use the test provider. This test checks the queue with the real
-provider, where the first price after the open arrives whenever the provider
-publishes it, and on a real device, where the user sees the queued trade and
-its notice.
+Test Case Derivation: This test exists because the automated tests of FR40,
+test-mkt-15 and test-mkt-16, cannot show how the queue behaves with real
+prices. In those tests, the test provider sends the first price after the open
+when the test chooses. With the real provider, that price arrives whenever the
+provider publishes it, and a quote just after the open may still be the last
+price from before it. FR40 requires the first price obtained after the market
+opens, so a trade run at that older price is the failure this test looks for.
+It compares the two prices because a trade that executed after 9:30~a.m.\ at
+the older price would otherwise pass. A widely traded stock is used because its
+price is very likely to change overnight, so a matching price points to this
+failure. The tester waits 30 minutes, which is longer than
+\texttt{QUOTE\_STALENESS\_LIMIT} (15 minutes), so an execution time before the
+app was opened shows that the backend ran the trade by itself. The test also
+checks, on a real device, that the user sees the queued trade and its notice.
 
 How test will be performed: The tester requests the trade in the evening and
-notes the balance. After the open, the tester checks the trade's status, time,
-and price in \progname{}, and the new balance.
+notes the stock's last price and the balance. After waiting, the tester checks
+the trade's status, time, and price in \progname{}, and the new balance. If the
+execution price matches the noted price, the tester repeats the test with
+another stock, and a second match fails the test.
 
 \item{\textbf{test-mkt-18: Holdings}\\}
 
