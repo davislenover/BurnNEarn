@@ -137,6 +137,9 @@ Oct 19, 2026 & 1.0 & Zaid: 12 Likely Changes, 13 Unlikely Changes.\\
 Oct 27, 2026 & 1.1 & Davis Lenover: 6.6 Reminders and Settings, FR77
 revised because iOS does not tell apps which health data types they may
 read.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 2.4 User Characteristics,
+3 Stakeholder Requirements, 6.2 Activity and Rewards: narrowed the intended
+users to people who walk, run, or use a wheelchair.\\
 \bottomrule
 \end{tabularx}
 
@@ -277,9 +280,10 @@ investing habits because investing advice is confusing and learning by doing
 risks real money, while beginners at exercise lose motivation before they see
 results.
 
-\paragraph{Intended users.} Adults aged 18 or older, most of them students or
-people in their first jobs, with little or no investing experience and any
-level of fitness (Section~\ref{SecUserCharacteristics}).
+\paragraph{Intended users.} Adults aged 18 or older who walk, run, or use a
+wheelchair, most of them students or people in their first jobs, with little
+or no investing experience and any level of fitness
+(Section~\ref{SecUserCharacteristics}).
 
 \paragraph{Major functionality.} Within scope, \progname{}:
 \begin{itemize}
@@ -310,6 +314,9 @@ these benefits are stated as non-functional requirements.
         real-world security;
   \item give medical or training advice: it does not diagnose conditions,
         prescribe exercise programs, or set diet or weight goals;
+  \item promise support for every physical ability: it is designed for users
+        who walk, run, or use a wheelchair, and rewards only the supported
+        activity types;
   \item integrate directly with wearable devices (a stretch goal), since all
         activity is read through the phone's health platform;
   \item offer every listed security, or options, futures, short selling, or
@@ -827,6 +834,7 @@ starting their first job (Problem Statement and Goals, Section~1). The user of
   permissions, and use common mobile app controls.
   \item Carries an Android or iOS phone during everyday activity. No wearable
   device or fitness expertise is required.
+  \item Walks, runs, or uses a wheelchair.
   \item Reads English, and has the numeracy of Grade~9 mathematics: working
   with percentages, comparing values, and reading a simple line chart.
   \item Needs no prior knowledge of investing terms such as stock,
@@ -971,8 +979,8 @@ requirements that refine it.
           \emph{Source:} SH1, SH2. \emph{Evidence:} Both participants track activity with their phone (P01, P02). Tracking should be ``as touchless as possible'': an app that must be started and stopped by hand is easily left running for hours and gives wrong results (P01). Approximate step counts are acceptable to users (P01). \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_UsefulRewards}:] Rewards for activity shall have a visible use to the user beyond the activity count itself.\\
           \emph{Source:} SH1, SH2. \emph{Evidence:} A long step streak gives one participant nothing but pride (P01); rewards have not changed the other's habits, although a tangible reward might make them work out more (P02). \emph{Goal:} G5.
-    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level or physical ability shall be able to earn rewards, whatever kinds of activity they do.\\
-          \emph{Source:} SH1, SH6. \emph{Evidence:} Participants' activity goes well beyond walking: basketball, skating, and pickup hockey (P01); soccer, weightlifting, climbing stairs, and rock climbing (P02). The target users have any level of fitness (Problem Statement). \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level who walk, run, or use a wheelchair shall be able to earn rewards for the activity types \progname{} supports.\\
+          \emph{Source:} SH1, SH6. \emph{Evidence:} Participants' activity goes well beyond walking: basketball, skating, and pickup hockey (P01); soccer, weightlifting, climbing stairs, and rock climbing (P02). The target users have any level of fitness (Problem Statement). Both health platforms have data types for steps and wheelchair pushes~\citep{AppleHealthKit, GoogleHealthConnect}, which is what lets \progname{} reward these users' everyday movement. \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_OwnGoals}:] Users shall choose their own activity goals, or set none, and shall not be pressured to raise them.\\
           \emph{Source:} SH1. \emph{Evidence:} One participant has kept the same step goal for over a year, because a higher one takes too much time (P01); the other sets no goals and keeps only a mental check that they ``at least did something'' (P02). \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_SafeMotivation}:] Features that motivate activity shall not encourage users to exercise when it is unsafe, such as late at night, while injured, or beyond a healthy amount.\\
@@ -1845,6 +1853,12 @@ totals in their activity trends, and awards currency for them. Each activity
 record counts under one supported type only, so walks and runs count as steps,
 not as workout minutes. Section~\ref{SecFormal} defines the daily reward and
 the streak.
+
+\progname{} can reward only what the health platform holds, and what it holds
+depends on the user's devices and apps. Apple states that wheelchair pushes are
+recorded on Apple Watch in wheelchair mode~\citep{AppleHealthKit}, so a
+wheelchair user with only a phone may have no push counts. That user earns
+through workout records instead.
 
 \noindent \begin{itemize}
 \freq{FR_ActTypes}
