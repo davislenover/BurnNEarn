@@ -702,11 +702,8 @@ Their values are defined in this section for easy maintenance.
 
 % \wss{This is a section that would be appropriate for some projects.}
 
-Participants use \progname{} on their own Android phones for 4 to 7 days, as
-part of their normal routine, rather than in one supervised session. Only
-Android phones are used, since installing a test version of the app on someone
-else's iPhone needs a paid Apple developer account and Apple's review. The app
-on iPhone is covered by the system tests instead (Section~2.2). The study uses
+Participants use \progname{} on their own phones for 4 to 7 days, as part of
+their normal routine, rather than in one supervised session. The study uses
 the version of \progname{} from the Revision~0 demonstration and tests its core
 loop (Development Plan, Section~9): earning virtual currency from steps, buying
 shares of stocks at real prices, and following the portfolio's value. Shares
@@ -784,6 +781,11 @@ measurements.
       \item[$\circ$] Yes
       \item[$\circ$] No
     \end{choices}
+  \item Which kind of phone will you use during the study?
+    \begin{choices}
+      \item[$\circ$] Android
+      \item[$\circ$] iPhone
+    \end{choices}
   \item Which statement best describes your experience with investing?
     \begin{choices}
       \item[$\circ$] I have never invested and know little about it
@@ -799,11 +801,12 @@ measurements.
 \end{enumerate}}
 
 A participant must be at least \texttt{MIN\_USER\_AGE} (18) years old (SRS,
-Appendix~C) and a beginner at investing, which means any answer to A2 except
-``I invest regularly'', and must not have used \progname{} before (A3). The
+Appendix~C) and a beginner at investing, which means any answer to A3 except
+``I invest regularly'', and must not have used \progname{} before (A4). The
 team checks these when recruiting, and the form confirms them. The team also
 checks that the participant's phone runs Android
-\texttt{MIN\_ANDROID\_VERSION} (17) or later (SRS, SC1).
+\texttt{MIN\_ANDROID\_VERSION} (17) or iOS \texttt{MIN\_IOS\_VERSION} (27) or
+later (SRS, SC1). A2 records which kind of phone each result comes from.
 
 \paragraph{Part B: Attitude to risk.}
 
@@ -1017,7 +1020,7 @@ core tasks.
 \paragraph{Part E: Larger text.}
 
 On one weekday of the study, the team sends each participant the steps for
-their phone to set its text size to the setting closest to
+their kind of phone to set its text size to the setting closest to
 \texttt{MAX\_TEXT\_SCALE} (200\%) of the default. It asks them to buy at least
 one share and check their portfolio that day.
 
@@ -1034,8 +1037,8 @@ one share and check their portfolio that day.
     \end{choices}
 \end{enumerate}}
 
-NFR8 is met on Android if at least one participant used larger text, and no
-participant reports a problem on a screen used for a core task.
+NFR8 is met if at least one participant on each kind of phone used larger
+text, and no participant reports a problem on a screen used for a core task.
 
 \paragraph{Part F: Knowledge check again.}
 
