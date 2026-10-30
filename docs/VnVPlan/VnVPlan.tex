@@ -250,11 +250,11 @@ specified in this plan are the ones the report will run and record: the
 participant profile, the tasks, and the questions are defined here
 (Section~\ref{SecSoftwareValidation} and Appendix~\ref{SecUsabilitySurvey}),
 and the report presents their results. These tests produce the evidence for
-NFR2 (Usability) and for goals G1 (at least 70\% of participants improve
-their score on a before-and-after knowledge check) and G2 (at least 80\% of
-first-time participants complete the core tasks without outside help) from
-SRS Section~2.2. Because the tests need a working application, they take
-place after the Rev~0 demonstration.
+NFR2 (Usability), NFR8 (Accessibility), and goals G1 (at least 70\% of
+participants improve their score on a before-and-after knowledge check) and
+G2 (at least 80\% of first-time participants complete the core tasks without
+outside help) from SRS Section~2.2. Because the tests need a working
+application, they take place after the Rev~0 demonstration.
 
 \subsection{Relevant Documentation}
 
@@ -756,9 +756,7 @@ participant's log and questionnaire answers beforehand, so the interview can
 follow up on specific entries, such as why a screen was confusing or what the
 participant expected to happen instead. The debrief comes after the
 after-study questionnaire, so that the conversation cannot change the
-participant's answers or their score on the knowledge check. At the end of the
-debrief, the team goes through the knowledge check answers with the
-participant and answers any questions they have about the app or the study.
+participant's answers or their score on the knowledge check.
 
 \subsubsection{Before-Study Questionnaire} \label{SecBeforeStudy}
 
@@ -809,9 +807,9 @@ How willing a participant is to take risks is likely to shape how they use
 their portfolio. People often describe themselves differently from how they
 act, so these questions describe everyday situations instead of asking about
 risk directly. They were written for this study, based on the kinds of
-questions in a published risk tolerance scale~\citep{GrableLytton1999}. In the
-debrief, the participant shows the interviewer their holdings and trades in
-\progname{}, and the interviewer compares them with these answers.
+questions in a published risk tolerance scale~\citep{GrableLytton1999}. The
+Usability Report compares these answers with what the participant shows and
+tells the interviewer in the debrief (I7).
 
 On the form, this part is titled ``Your money choices'', so that the title
 does not say what is being measured. Participants see this instruction before
@@ -1035,8 +1033,7 @@ one share and check their portfolio that day.
     \end{choices}
 \end{enumerate}}
 
-The interviewer asks about any answer other than Yes in the debrief, to find
-which screens had the problem. NFR8 is met if at least one participant on each
+NFR8 is met if at least one participant on each
 kind of phone used larger text, and no participant reports a problem on a
 screen used for a core task.
 
@@ -1058,6 +1055,39 @@ then one more question:
 
 A participant who answers Yes, or who had full marks before the study, is
 left out of the G1 results.
+
+\subsubsection{Debrief Interview} \label{SecDebrief}
+
+The debrief takes about 30 minutes, in person or by video call. One team
+member asks the questions and a second takes notes. The interviewer asks open
+questions and does not explain how the app works until the end, so that the
+answers describe the participant's own experience.
+A question that starts with a condition in italics is asked only when the
+condition applies, and is skipped for anything the participant has already
+explained.
+
+{\renewcommand{\labelenumi}{I\arabic{enumi}.}
+\renewcommand{\theenumi}{I\arabic{enumi}}
+\begin{enumerate}
+  \item Walk me through how you used \progname{} during the study.
+  \item What worked well for you, and why?
+  \item What was the most confusing or frustrating moment? What did you expect
+    to happen instead?
+  \item \emph{For each log entry where L2 was not ``It went well'' or L4 was not
+    ``No'':} You wrote that \ldots{} Can you tell me more about that?
+  \item \emph{For each Part~D task not answered ``Yes, without help from
+    outside the app'':} What happened with this task?
+  \item \emph{If E1 was not ``Yes'' or ``I did not use larger text'':} Which
+    screens had the problem, and what happened on them?
+  \item Can you show me your portfolio? How did you decide what to do with
+    your currency, and what, if anything, did you do as prices moved?
+  \item What, if anything, did you learn from using \progname{}?
+  \item If you could change one thing about \progname{}, what would it be?
+\end{enumerate}}
+
+After I9, the interviewer goes through the knowledge check answers with the
+participant and answers their questions. The Usability Report groups the notes
+by step of the core loop, in the same way as the log entries.
 
 \clearpage
 
