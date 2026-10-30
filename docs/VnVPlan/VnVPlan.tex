@@ -707,11 +707,10 @@ loop (Development Plan, Section~9): earning virtual currency from steps, buying
 shares of stocks at real prices, and following the portfolio's value. Two
 of the features being tested span multiple days: earning rewards each day and
 seeing a portfolio's value change as prices move. A longer study is therefore
-needed to test them. The study includes at least three weekdays, so that
-participants can buy shares while the market is open. If more features are
-ready in time, such as streaks or explanations of concepts, the matching
-questions are added before the study starts. The participant profile and the
-study procedure are given in Section~\ref{SecSoftwareValidation}.
+needed to test them. The study includes at least three days when the stock
+market is open, so that participants can buy shares and see prices change. The
+participant profile and the study procedure are given in
+Section~\ref{SecSoftwareValidation}.
 
 \begin{table}[!ht]
 \caption{Parts of the usability study} \label{TblUsabilityStudyParts}
@@ -797,9 +796,9 @@ measurements.
 
 A participant must be at least \texttt{MIN\_USER\_AGE} (18) years old (SRS,
 Appendix~C) and a beginner at investing, which means any answer to A3 except
-``I invest regularly''. The team checks both when recruiting, and the form
-confirms them. A2 lets results be compared between Android and iOS, and A4
-makes sure that only first-time users count toward G2 and NFR2.
+``I invest regularly'', and must not have used \progname{} before (A4). The
+team checks these when recruiting, and the form confirms them. A2 records
+which kind of phone each result comes from.
 
 \paragraph{Part B: Attitude to risk.}
 
@@ -916,13 +915,14 @@ with you at the end of the study.
     \end{letteredchoices}
 \end{enumerate}}
 
-The questions cover the core concepts from SRS Section~6.4 that participants
-meet in the core loop. Each has one correct answer
+The questions cover the core concepts from SRS Section~6.4 that the core loop
+involves. Each has one correct answer
 (Table~\ref{TblKnowledgeCheckKey}), and the form also offers ``I don't know''.
 The after-study questionnaire asks the same questions again. A correct answer
-scores 1 and a wrong answer scores minus one half, so guessing does not raise a
-score on average. A participant improves if their score goes up by at least 1
-point, and G1 is met if at least 70\% of participants improve.
+scores 1, ``I don't know'' scores 0, and a wrong answer scores minus one half,
+so guessing does not raise a score on average. A participant improves if their
+score goes up by at least 1 point, and G1 is met if at least 70\% of
+participants improve, apart from those left out in Part~F.
 
 \begin{table}[!ht]
 \caption{Knowledge check answers} \label{TblKnowledgeCheckKey}
@@ -954,11 +954,11 @@ the date and time on its own.
 \begin{enumerate}
   \item Which part of \progname{} were you using?
     \begin{choices}
-      \item[$\circ$] Setting up the app
-      \item[$\circ$] My steps or rewards
-      \item[$\circ$] The stock list or buying shares
+      \item[$\circ$] Letting \progname{} read my steps
+      \item[$\circ$] My currency or rewards
+      \item[$\circ$] Buying shares
       \item[$\circ$] My portfolio
-      \item[$\circ$] Something else
+      \item[$\circ$] Something else, such as installing the app
     \end{choices}
   \item How did it go?
     \begin{choices}
@@ -972,13 +972,13 @@ the date and time on its own.
       \item[$\circ$] No
       \item[$\circ$] Yes, I searched online
       \item[$\circ$] Yes, I asked someone
-      \item[$\circ$] Yes, something else (please describe)
+      \item[$\circ$] Yes, something else
     \end{choices}
 \end{enumerate}}
 
-The choices in L1 follow the core loop, so the Usability Report can group
-entries by step. L4 shows where a participant needed help from outside the
-app.
+The first four choices in L1 match the core tasks D1 to D4, so the Usability
+Report can group entries by task. L4 shows where a participant needed help
+from outside the app.
 
 \subsubsection{After-Study Questionnaire} \label{SecAfterStudy}
 
@@ -990,7 +990,8 @@ questionnaire.
 \paragraph{Part D: Core tasks.}
 
 These four tasks, which follow the core loop in order, are the core tasks for
-this study. For each task, participants choose one of these answers:
+this study. Participants are given them on Day~1 as things to try during the
+study. For each task, participants choose one of these answers:
 
 \begin{choices}
   \item[$\circ$] Yes, without help from outside the app
@@ -1009,9 +1010,11 @@ this study. For each task, participants choose one of these answers:
 \end{enumerate}}
 
 A participant completes the core tasks if they choose the first answer for all
-four, and none of their log entries shows outside help with one of them. G2
-and NFR2 are met if at least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%) of
-first-time participants complete the core tasks.
+four, and none of their log entries shows outside help with one of them. Help
+from the team with installing the app, or with a problem on the team's side
+such as the server being down, is not outside help. G2 and NFR2 are met if at
+least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%) of participants complete the
+core tasks.
 
 \paragraph{Part E: Larger text.}
 
@@ -1045,8 +1048,8 @@ then one more question:
 {\renewcommand{\labelenumi}{F\arabic{enumi}.}
 \renewcommand{\theenumi}{F\arabic{enumi}}
 \begin{enumerate}
-  \item During the study, did you search online or ask anyone about the topics
-    in these questions?
+  \item During the study, did you look up the answer to any of these questions,
+    or ask anyone about them?
     \begin{choices}
       \item[$\circ$] Yes
       \item[$\circ$] No
