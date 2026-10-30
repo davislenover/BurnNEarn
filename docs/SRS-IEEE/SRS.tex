@@ -142,6 +142,9 @@ Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 2.4 User Characteristics,
 users to people who walk, run, or use a wheelchair.\\
 Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 6.2 Activity and Rewards,
 6.7 Formal Definitions, 7.2 Data Dictionary: defined milestones.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 6.2 Activity and Rewards, 7.2 Data
+Dictionary: FR14 now places the health notice before the health data consent,
+and 6.2 states how activity from before the notice is treated.\\
 \bottomrule
 \end{tabularx}
 
@@ -1862,6 +1865,14 @@ recorded on Apple Watch in wheelchair mode~\citep{AppleHealthKit}, so a
 wheelchair user with only a phone may have no push counts. That user earns
 through workout records instead.
 
+\progname{} does not start or stop activity tracking. The health platform
+records activity whether or not \progname{} is open or even installed, so
+\progname{} cannot stop a user from recording activity before they acknowledge
+the health notice (\rref{FR_ActHealthNotice}). It holds back what comes after:
+reading and rewarding. Activity already in the health platform when the user
+acknowledges the notice and consents is rewarded on the first sync, as far back
+as \texttt{SYNC\_LOOKBACK\_PERIOD} (SEC-20).
+
 \noindent \begin{itemize}
 \freq{FR_ActTypes}
   {The system shall award virtual currency for each activity type in
@@ -1878,12 +1889,14 @@ through workout records instead.
   by the daily reward $R_d$ defined in Section~\ref{SecFormal}.}
   {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActHealthNotice}
-  {(HA SAF-12) Before the user first earns currency, the system shall display
-  a notice stating that \progname{} does not give medical advice and that
-  users should consult a health professional before starting a new exercise
-  program, and shall not award currency until the user acknowledges it.}
-  {A new test user is shown the notice before their first reward, and earns no
-  currency until they acknowledge it.}
+  {(HA SAF-12) Before the system first asks for the user's consent to read their
+  health data, it shall display a notice stating that \progname{} does not give
+  medical advice and that users should consult a health professional before
+  starting a new exercise program. It shall not read health data or award
+  currency until the user acknowledges the notice.}
+  {A new test user is shown the notice before they are asked for consent to read
+  their health data. Until they acknowledge it, no health data is read and they
+  earn no currency, even if a daily total reaches the server for them.}
   {\srref{SR_SafeMotivation}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActNoInteraction}
   {(HA SAF-13) The system shall award currency for recorded activity without
@@ -2631,6 +2644,10 @@ Weight in kilograms.\\
 \texttt{health\_consent} & Boolean &
 Whether the user consents to health-data access. Withdrawing
 consent stops further health-data reads.\\
+
+\texttt{health\_notice\_\allowbreak acknowledged\_at} & Timestamp &
+Time the user acknowledged the health notice. While this is absent, no health
+data is read and no currency is awarded.\\
 
 \texttt{consent\_updated\_at} & Timestamp &
 Time health-data consent was last granted or withdrawn.\\

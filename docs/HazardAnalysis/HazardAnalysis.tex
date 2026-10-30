@@ -61,6 +61,8 @@ Oct 19, 2026 & Davis Lenover & 2 Scope and Purpose of Hazard Analysis,
 6 Safety and Security Requirements.\\
 Oct 19, 2026 & Preston Grewal & 7 Roadmap.\\
 Oct 19, 2026 & Zaid & Appendix: Generative AI Use Disclosure.\\
+Oct 30, 2026 & Davis Lenover & 6 Safety and Security Requirements: SAF-12 now
+places the health notice before the health data consent.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -897,12 +899,14 @@ Section~6.6, FR\_RemindPeriods.}
 
 
 \hazreq{SAF-12}{Health notice before the first reward}
-{Before the user first earns currency, the system shall display a notice
-stating that \progname{} does not give medical advice and that users should
-consult a health professional before starting a new exercise program, and
-shall not award currency until the user acknowledges it.}
-{A new test user is shown the notice before their first reward, and earns no
-currency until they acknowledge it.}
+{Before the system first asks for the user's consent to read their health
+data, it shall display a notice stating that \progname{} does not give medical
+advice and that users should consult a health professional before starting a
+new exercise program. It shall not read health data or award currency until the
+user acknowledges the notice.}
+{A new test user is shown the notice before they are asked for consent to read
+their health data. Until they acknowledge it, no health data is read and they
+earn no currency, even if a daily total reaches the server for them.}
 {Rewards encourage more activity, and fitness explanations describe exercise
 in general terms. A user with a medical condition could read either as a
 personal recommendation. The notice makes clear that \progname{} is not a
