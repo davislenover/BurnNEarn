@@ -698,6 +698,273 @@ old session, and reads \texttt{jordan\_test}'s feed and friend list.
 
 \end{enumerate}
 
+\subsubsection{Learning and Feedback}
+
+These tests cover the learning and feedback requirements in SRS Section 6.4
+(FR50 to FR60). The core concepts are the 20 concepts in SRS Table 6.4: ten
+investing concepts, two Canadian account types, and eight fitness concepts,
+one for each of the five supported activity types plus active minutes, rest
+day and streak. Tests of feedback and knowledge check results use test
+portfolios and a test knowledge check whose values are known, so the expected
+feedback can be calculated by hand. Prices are sent to the backend directly,
+as in the Simulated Market and Portfolio tests, and every test asset's market
+is open with a price within \texttt{QUOTE\_STALENESS\_LIMIT} (15 minutes).
+
+\begin{enumerate}
+
+\item{\textbf{test-learn-1: Content for every core concept}\\}
+
+Requirements: FR50, FR55
+
+Control: Automatic and Manual
+
+Initial State: The release build of \progname{} on a test device, with its
+published educational content, and a test user signed in.
+
+Input: A list of the 20 core concepts in SRS Table 6.4. For each concept, the
+tester opens its concept explanation from the learning section and starts its
+knowledge check.
+
+Output: For every one of the 20 concepts, an explanation opens and a
+knowledge check starts. A pytest test also finds a published explanation and
+a published knowledge check for every concept in the list.
+
+Test Case Derivation: The fit criteria of FR50 and FR55 require an explanation
+and a knowledge check for every core concept, so the test checks the full
+list rather than a sample. The automatic check catches a concept with no
+published content. The manual check catches content that is published but
+cannot be reached in the app.
+
+How test will be performed: A pytest test reads the published content through
+the API and compares it with the list. The tester then works through the list
+on the device, ticking off each concept and recording any that fail.
+
+\item{\textbf{test-learn-2: Explanations where concepts appear}\\}
+
+Requirements: FR51
+
+Control: Manual
+
+Initial State: A test user signed in on a test device, holding shares of two
+test assets, with a streak of at least 1 and at least one completed trade.
+
+Input: The tester opens every screen in \progname{}'s navigation. On each
+screen, for every core concept shown, the tester opens its explanation and
+then closes it. On the purchase screen, the tester first enters a quantity of
+3.
+
+Output: Every core concept shown on a screen opens its explanation without
+leaving that screen. After the explanation is closed, the same screen is shown
+with its state unchanged; on the purchase screen, the quantity is still 3.
+
+Test Case Derivation: The fit criterion of FR51 covers every screen on which a
+core concept appears. The user holds shares, has a streak and has traded so
+that the portfolio, activity and trade feedback screens show their concepts,
+such as portfolio value, return and streak. The quantity on the purchase
+screen detects an explanation that leaves the screen, since returning to a
+new copy of the screen would clear it. The screens come from the app's
+navigation, as in test-mkt-20.
+
+How test will be performed: The tester lists the screens in the app's
+navigation, records each core concept shown on each one, opens each
+explanation, and records any that cannot be opened in place.
+
+\item{\textbf{test-learn-3: Feedback on a change in portfolio value}\\}
+
+Requirements: FR52, FR60
+
+Control: Automatic
+
+Initial State: Three test users, each holding 10 shares of asset A and 10 of
+asset B. Each last viewed their portfolio when A and B were both priced at
+50.00, a portfolio value of 1,000.00.
+
+Input: Before each user views their portfolio again, the prices change to:
+user 1, A 56.00 and B 49.00; user 2, A 57.00 and B 49.00; user 3, A 50.00 and
+B 43.00. Each user then views their portfolio.
+
+Output: User 1 is shown no feedback on the change. User 2 is shown feedback
+that names A as the holding that changed most, with A's price change from
+50.00 to 57.00 and B's from 50.00 to 49.00. User 3 is shown feedback that
+names B as the holding that changed most, with B's price change from 50.00 to
+43.00.
+
+Test Case Derivation: \texttt{FEEDBACK\_THRESHOLD} is 5\%, and FR52 gives
+feedback only when the value has changed by more than it. User 1's value is
+$10 \cdot 56 + 10 \cdot 49 = 1050$, a change of exactly 5\%, so no feedback
+is shown. User 2's is $570 + 490 = 1060$, a change of 6\%, and A changed by
+70.00 against B's 10.00. User 3's is $500 + 430 = 930$, a change of $-7\%$, so
+a fall also produces feedback, and B changed by 70.00 against A's 0. Taking
+the largest change by its size rather than its sign makes B the answer for
+user 3; a calculation that took the largest increase would name A. FR60
+(Hazard Analysis, SAF-17) bases feedback on the user's own holdings and price
+changes and shows them, so the prices in the feedback must match the test
+prices.
+
+How test will be performed: A pytest test sets each user's holdings, records
+the view at the starting prices, sends the new prices to the backend, and
+reads each user's portfolio and feedback through the API.
+
+\item{\textbf{test-learn-4: Effect of a trade on each holding's share}\\}
+
+Requirements: FR53
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000.00, holding 10 shares of
+asset A and 10 of asset B, priced at 40.00 and 60.00. The prices do not change
+during the test.
+
+Input: The user buys 5 shares of A. The user then sells all 15 shares of A.
+
+Output: After the purchase, the feedback shows A going from 40\% to 50\% of
+the portfolio value and B from 60\% to 50\%. After the sale, it shows A going
+from 50\% to 0\% and B from 50\% to 100\%.
+
+Test Case Derivation: FR53 shows each holding's share of the portfolio value
+before and after each trade. Before the purchase, A is $400 / 1000 = 40\%$ and
+B is $600 / 1000 = 60\%$. After it, A is $600 / 1200 = 50\%$ and B is
+$600 / 1200 = 50\%$. After the sale, A is worth 0 and B is the whole
+portfolio of 600. The prices give whole percentages, so the expected values
+need no rounding, and the sale checks a holding that drops to zero.
+
+How test will be performed: A pytest test sends each trade through the API
+and checks the before and after shares in each response.
+
+\item{\textbf{test-learn-5: Explaining diversification}\\}
+
+Requirements: FR54
+
+Control: Automatic
+
+Initial State: A test user with a balance of 500.00, holding 5 shares of
+asset A and 5 of asset B, both priced at 100.00.
+
+Input: The user views their portfolio. The user then buys 1 share of B and
+views their portfolio again.
+
+Output: The first view shows no explanation of diversification. The second
+view shows one, and its text contains none of the symbols or names of the
+assets on the tradable asset list.
+
+Test Case Derivation: \texttt{CONCENTRATION\_LIMIT} is 50\%, and FR54 explains
+diversification only when one holding is more than it. Before the purchase,
+each holding is exactly $500 / 1000 = 50\%$, so no explanation is shown.
+After it, B is $600 / 1100 \approx 54.5\%$, which is above the limit. The fit
+criterion also requires that the explanation names no asset to buy or sell
+(Hazard Analysis, SAF-9), and checking the text against the whole asset list
+covers every asset it could name.
+
+How test will be performed: A pytest test sets up the portfolio, reads the
+portfolio view before and after the purchase, and searches the explanation's
+text for each symbol and name on the asset list.
+
+\item{\textbf{test-learn-6: Results of a knowledge check}\\}
+
+Requirements: FR56
+
+Control: Automatic and Manual
+
+Initial State: A published test knowledge check with three questions, whose
+correct answers are b, a and c, and whose explanation of question 2's answer
+is known. A test user signed in.
+
+Input: The user answers b, c and c.
+
+Output: Questions 1 and 3 are marked correct. Question 2 is marked incorrect
+and shown with the explanation of its correct answer, a.
+
+Test Case Derivation: FR56 marks which answers were correct and explains the
+correct answer to each question answered wrongly. The answers get the first
+and last questions right, so the test also catches results that are matched
+to the wrong question. The explanation is known, so the test can check that
+the right one is shown.
+
+How test will be performed: A pytest test submits the answers through the API
+and checks the result. The tester then completes the same check on a test
+device with the same answers and records what is shown.
+
+\item{\textbf{test-learn-7: Learning progress}\\}
+
+Requirements: FR57
+
+Control: Automatic
+
+Initial State: A new test user with no learning progress.
+
+Input: The user opens the explanation of \textit{Diversification}, completes
+the knowledge check on \textit{Diversification} with every answer correct,
+and completes the knowledge check on \textit{Stock} with every answer wrong.
+
+Output: The user's learning progress shows the \textit{Diversification}
+explanation as viewed and its knowledge check as passed. It does not show the
+\textit{Stock} knowledge check as passed.
+
+Test Case Derivation: The fit criterion of FR57 is that a viewed explanation
+and a passed knowledge check both appear in the user's progress. The SRS does
+not set a pass mark, so the test uses all answers correct and all answers
+wrong, which pass and fail under any reasonable pass mark. The failed check
+shows that progress records only passed checks.
+
+How test will be performed: A pytest test sends each action through the API
+and reads the user's learning progress.
+
+\item{\textbf{test-learn-8: Updating content without an app update}\\}
+
+Requirements: FR58
+
+Control: Manual
+
+Initial State: A test device with a release build of \progname{} installed,
+and automatic app updates turned off.
+
+Input: An administrator appends the sentence ``Test edit for V\&V.'' to the
+explanation of \textit{Stock} and publishes a new knowledge check titled
+``V\&V test check''. The tester then opens the \textit{Stock} explanation and
+the list of knowledge checks on the test device.
+
+Output: The explanation of \textit{Stock} ends with the added sentence, and
+the new knowledge check is in the list. The app's version number is the same
+as before.
+
+Test Case Derivation: The fit criterion of FR58 is that an edited explanation
+is shown on a phone whose app has not been updated. FR58 also covers adding
+content, so the test adds a knowledge check as well. Turning off automatic
+updates and checking the version number shows that no app update was
+involved.
+
+How test will be performed: The tester records the app's version number,
+makes the changes as an administrator, opens the content on the device, and
+records what is shown and the version number again. The test content is then
+removed.
+
+\item{\textbf{test-learn-9: Sources, review dates and second reviewers}\\}
+
+Requirements: FR59
+
+Control: Automatic
+
+Initial State: The published educational content and its content log.
+
+Input: Every published concept explanation and knowledge check.
+
+Output: Every explanation has a source and a review date that is not after
+today. Every explanation and every knowledge check answer key has a reviewer
+recorded in the content log who is not its author.
+
+Test Case Derivation: FR59 (Hazard Analysis, SAF-16) shows each explanation
+with its source and review date, and requires a second team member to review
+each explanation and answer key before it is published. A reviewer who is the
+author would not be a second team member, and a review date in the future
+could not be real.
+
+How test will be performed: A pytest test reads all published content and the
+content log, and lists every item that fails a check. It runs on every pull
+request that changes educational content, so content cannot be published
+without a second reviewer.
+
+\end{enumerate}
+
 \subsection{Tests for Nonfunctional Requirements}
 
 \wss{The nonfunctional requirements for accuracy will likely just reference the
