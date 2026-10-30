@@ -962,10 +962,9 @@ Output: The count is at least \texttt{MIN\_TRADABLE\_STOCKS} (50).
 
 Test Case Derivation: \texttt{MIN\_TRADABLE\_STOCKS} is 50 (SRS Appendix C),
 from Problem Statement Goal 4. The fit criterion of FR28 counts only stocks,
-so ETFs are left out. The user holds nothing, so a removed asset that a user
-still holds (FR31) cannot be counted by mistake. The asset list is set by
-administrators on the server (FR30), not in the app's code, so the test runs
-against the list that users will actually see.
+so ETFs are left out. The asset list is set by administrators on the server
+(FR30), not in the app's code, so the test runs against the list that users
+will actually see.
 
 How test will be performed: The tester scrolls through the live market list,
 counts each stock with an option to buy it, and records the count.
@@ -1015,29 +1014,28 @@ Initial State: A test asset that is not in the live market, with a price of
 of 1,000 who holds no assets and has acknowledged the simulated market notice.
 
 Input: While the market is open, an administrator adds the asset to the live
-market, and the user buys one share. The administrator then removes the asset.
-The user asks to buy another share, reads the list of tradable assets and
-their holdings, and sells their share.
+market, and the user buys 2 shares. The administrator then removes the asset,
+and the user asks to buy 1 share.
 
-Output: The first purchase is accepted, leaving a balance of 960 and one
-share. The second purchase is refused, and the balance is still 960. After
-the removal, the asset is not in the list of tradable assets, but the user's
-holdings still show one share of it. The sale is accepted, leaving a balance
-of 1,000 and no shares.
+Output: The first purchase is accepted, leaving a balance of 920 and 2 shares.
+After the removal, the asset is not in the list of tradable assets and the
+user holds no shares of it. The balance is 1,000, the trade history shows a
+sale of 2 shares at 40.00, and the user is told what was sold and at what
+price. The purchase after the removal is refused, and the balance is still
+1,000.
 
 Test Case Derivation: The steps follow the fit criteria of FR30 and FR31: an
-added asset can be traded, a removed asset can no longer be bought, and a user
-who holds a removed asset still sees it and can sell it. By the trade rules
-in SRS Section 6.7, the purchase gives $1000 - 40 = 960$ and the sale gives
-$960 + 40 = 1000$. The price stays at 40.00 so that each change in the
-balance comes only from a trade being accepted. The pricing of a removed
-asset is tested in test-mkt-5. The second purchase is made while the user
-still holds the asset, so the test catches a server that lets a user who
-holds a removed asset keep buying it.
+added asset can be traded, and removing it sells the user's shares at its most
+recent price and stops it from being bought. By the trade rules in SRS Section
+6.7, the purchase gives $1000 - 2 \cdot 40 = 920$ and the sale gives
+$920 + 2 \cdot 40 = 1000$. The user holds 2 shares so that a sale of only one
+would show. The price stays at 40.00 so that each change in the balance comes
+only from a trade. The market is open and the price is current here, and
+test-mkt-27 covers a closed market, an old price, and queued trades.
 
 How test will be performed: A pytest test adds and removes the asset as an
-administrator, sends each trade, and reads the balance, holdings, and list of
-tradable assets through the API after each step.
+administrator, sends each purchase, and reads the balance, holdings, trade
+history, and list of tradable assets through the API after each step.
 
 \item{\textbf{test-mkt-4: Changing the asset list without an app update}\\}
 
@@ -1052,27 +1050,28 @@ in the live market.
 
 Input: While the US market is open, an administrator adds the stock to the
 live market, and the tester buys one share of it. The administrator then
-removes the stock. The tester tries to buy another share, then opens their
-holdings and sells the share.
+removes the stock, and the tester checks \progname{}.
 
 Output: After it is added, the stock appears in the live market and can be
 bought. After it is removed, it no longer appears in the live market and
-cannot be bought, but the holding is still shown and the sale completes. The
-installed version of \progname{} is the same at the end of the test as at the
-start.
+cannot be bought, the holding is gone, the balance has increased by the price
+of the sale, and \progname{} tells the tester what was sold and at what price.
+The installed version of \progname{} is the same at the end of the test as at
+the start.
 
 Test Case Derivation: The fit criterion of FR30 requires that no app update
 happen between the changes, which only a test on an installed app can show.
 test-mkt-3 checks the server's rules, and this test checks that the installed
 app follows the change. The tester may close and reopen \progname{}, but not
 update it. The test uses the real provider, so it is run while the US market
-is open. Otherwise, each trade would be queued until the market opens (FR40).
+is open. Otherwise, the purchase would be queued until the market opens (FR40).
 
 How test will be performed: The tester notes the installed version of
 \progname{}. An administrator adds and removes the stock with the server's
-administrator tools, and after each change, the tester checks the live market
-and their holdings and makes the trade. At the end, the tester checks the
-installed version again.
+administrator tools. After the addition, the tester buys a share. After the
+removal, the tester checks the live market, their holdings and balance, and the
+message about the sale. At the end, the tester checks the installed version
+again.
 
 \item{\textbf{test-mkt-5: Prices from the latest quote}\\}
 
@@ -1080,34 +1079,29 @@ Requirements: FR32
 
 Control: Automatic
 
-Initial State: Asset A is in the live market, and its last price from the
-test provider is 40.00. Asset B has been removed from the live market, and its
-last price is 30.00. A test user with a balance of 1,000 who holds one share
-of B and has acknowledged the simulated market notice.
+Initial State: An asset in the live market whose last price from the test
+provider is 40.00. A test user with a balance of 1,000 who holds no assets and
+has acknowledged the simulated market notice.
 
-Input: While the market is open, the test provider sends new prices of 41.50
-for A and 32.25 for B. The user then reads both prices, buys one share of A,
-and sells their share of B.
+Input: While the market is open, the test provider sends a new price of 41.50.
+The user reads the price and buys one share. The test provider then sends a
+new price of 42.25, and the user reads the price and sells the share.
 
-Output: The prices read are 41.50 for A and 32.25 for B. After the purchase,
-the balance is 958.50, and after the sale, it is 990.75. The user holds one
-share of A and none of B.
+Output: The prices read are 41.50 and 42.25. After the purchase, the balance
+is 958.50, and after the sale, it is 1,000.75, with no shares.
 
-Test Case Derivation: FR32 prices each asset in the live market, and each
-removed asset that a user still holds, at the latest price from the provider,
-so the test has one asset of each kind. Each asset has an older price and a
-newer one, so a trade or display that used an old or cached price would give
-a different result. By the trade rules in SRS Section 6.7, the purchase gives
-$1000 - 41.50 = 958.50$ and the sale gives $958.50 + 32.25 = 990.75$. Using
-the old price of A would give 992.25, using the old price of B would give
-988.50, and using both would give 990.00, so the final balance shows which
-prices were used. B still gets new prices after it is removed because
-otherwise its price would become older than \texttt{QUOTE\_STALENESS\_LIMIT},
-and FR39 would then refuse the sale that FR31 allows.
+Test Case Derivation: FR32 prices each asset at the latest price from the
+provider, and its fit criterion covers both the price shown and the price used
+for trades. The price changes before each trade, so a trade or display that
+used an old or cached price would give a different result. By the trade rules
+in SRS Section 6.7, the purchase gives $1000 - 41.50 = 958.50$ and the sale
+gives $958.50 + 42.25 = 1000.75$. Using the old price for the purchase would
+leave 960 after it, and using the old price for the sale would leave 1,000.00
+at the end.
 
 How test will be performed: A pytest test sets the test provider's prices,
-reads both prices through the API, sends the two trades, and reads the
-balance and holdings after each one.
+reads each price through the API, sends the two trades, and reads the balance
+and holdings after each one.
 
 \item{\textbf{test-mkt-6: Price time and the delayed marker}\\}
 
@@ -1531,29 +1525,26 @@ Requirements: FR42
 Control: Automatic
 
 Initial State: A test user with a balance of 100 who holds 3 shares of asset
-A, 7 shares of asset B, and 2 shares of asset C. A and B are in the live
-market, and C has been removed from it. The last prices from the test provider
-are 41.50 for A, 12.34 for B, and 5.05 for C.
+A and 7 shares of asset B, both in the live market. The last prices from the
+test provider are 41.50 for A and 12.34 for B.
 
 Input: The test provider sends a new price of 42.25 for A. The user's
 portfolio value is then read and shown.
 
-Output: The portfolio value is 223.23.
+Output: The portfolio value is 213.13.
 
 Test Case Derivation: By SRS Section 6.7, $V = \sum_a h_a \cdot p_a$ with the
 most recent price of each asset, so
-$V = 3 \cdot 42.25 + 7 \cdot 12.34 + 2 \cdot 5.05
-= 126.75 + 86.38 + 10.10 = 223.23$, a value calculated by hand as the fit
-criterion of FR42 requires. The setup is chosen so that three common mistakes
-each give a value more than \texttt{VALUE\_TOLERANCE} (0.01) away from it.
-Using A's old price would give 220.98. Leaving out C, which is removed from the market
-but still held (FR31), would give 213.13. Adding the balance, which $V$ does
-not include, would give 323.23.
+$V = 3 \cdot 42.25 + 7 \cdot 12.34 = 126.75 + 86.38 = 213.13$, a value
+calculated by hand as the fit criterion of FR42 requires. The setup is chosen
+so that two common mistakes each give a value more than
+\texttt{VALUE\_TOLERANCE} (0.01) away from it. Using A's old price would give
+210.88. Adding the balance, which $V$ does not include, would give 313.13.
 
 How test will be performed: A pytest test sets the test provider's prices and
 reads the portfolio value through the API. A Jest test renders the app's
 portfolio screen with that response and checks the value shown. Both values
-are compared with 223.23 to within \texttt{VALUE\_TOLERANCE}.
+are compared with 213.13 to within \texttt{VALUE\_TOLERANCE}.
 
 \item{\textbf{test-mkt-20: Simulated labels}\\}
 
@@ -1776,6 +1767,45 @@ provider, so this test needs no test backend.
 How test will be performed: The tester lists the screens in the app's
 navigation, opens each one during the scenario and then in the live market,
 and records any screen whose label or dates are wrong or missing.
+
+\item{\textbf{test-mkt-27: Removing an asset while its market is closed}\\}
+
+Requirements: FR31
+
+Control: Automatic
+
+Initial State: An asset in the live market whose market is closed, with a last
+price of 40.00 obtained 2 days ago. Three test users who have acknowledged the
+simulated market notice. User 1 has a balance of 100 and holds 2 shares. User 2
+has a balance of 1,000, holds no shares, and has a queued purchase of 1 share.
+User 3 has a balance of 0, holds 1 share, and has a queued sale of 1 share.
+
+Input: An administrator removes the asset, and the market then opens. User 1's
+case is then repeated with the market open at the time of the removal and the
+same old price.
+
+Output: In both runs, user 1 holds no shares, has a balance of 180, and is told
+what was sold and at what price. User 2's purchase is rejected, user 2 is told,
+and their balance is still 1,000. User 3 holds no shares and has a balance of
+40, and their queued sale is rejected, and they are told. After the removal,
+the backend asks the test provider for no more prices for the asset.
+
+Test Case Derivation: FR31 sells at the most recent price whether or not the
+market is open, so user 1 receives $100 + 2 \cdot 40 = 180$. Waiting for a new
+price would mean tracking the asset after it is removed, and a delisted asset
+may never get one. The price is older than \texttt{QUOTE\_STALENESS\_LIMIT} (15
+minutes), so the run with the market open checks that FR39 does not refuse the
+sale, and the run with the market closed checks that FR40 does not queue it. A
+queued trade would otherwise wait for an opening price that never comes, so
+user 2's purchase is rejected. User 3 has both a holding and a queued sale, so
+a balance of 80 would show the share being sold twice. Checking the test
+provider's requests confirms that the backend stops tracking the asset, which
+is the reason for selling at removal.
+
+How test will be performed: A pytest test sets up the holdings and queued
+trades, removes the asset as an administrator, reads each user's balance,
+holdings, and trades through the API, and checks the requests recorded by the
+test provider.
 
 \end{enumerate}
 
