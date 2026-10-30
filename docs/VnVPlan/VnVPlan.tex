@@ -481,17 +481,23 @@ Requirements: FR14
 Control: Automatic
 
 Initial State: A new test user with a balance of 0 who has not acknowledged
-the health notice.
+the health notice or consented to \progname{} reading their health data.
 
-Input: The user has a total of 5,000 steps on day $d$. On day $d+1$, the user
-acknowledges the notice, and the app's next sync sends the totals for day $d$
-and for day $d+1$, which has 3,000 steps.
+Input: The backend receives a total of 5,000 steps for day $d$. On day $d+1$,
+the user acknowledges the notice and consents, and the app's next sync sends
+the totals for day $d$ and for day $d+1$, which has 3,000 steps.
 
 Output: The balance is 0 at the end of day $d$ and 80 at the end of day $d+1$.
+The app reads no health data and asks for no consent until the notice is
+acknowledged.
 
 Test Case Derivation: FR14 allows no currency until the notice is
-acknowledged, so day $d$ earns nothing while the notice is unacknowledged.
-Each sync re-reads the last \texttt{SYNC\_LOOKBACK\_\allowbreak PERIOD} (7
+acknowledged, even if a daily total reaches the server, so day $d$ earns
+nothing at first. The app reads no health data before then, so that total can
+only come from an app bug or a modified app, and the test checks that the
+server does not rely on the app to enforce the notice. Activity already in the
+health platform is rewarded on the first sync after the notice (SRS Section
+6.2). Each sync re-reads the last \texttt{SYNC\_LOOKBACK\_\allowbreak PERIOD} (7
 days) and rewards any record not already rewarded (Hazard Analysis, SEC-20),
 so once the notice is acknowledged, day $d$'s 5,000 steps earn 50 alongside
 day $d+1$'s $\lfloor 3000 / 100 \rfloor = 30$. The two days have different
@@ -499,32 +505,44 @@ totals so that the final balance shows which days were rewarded: 30 would mean
 day $d$ was never rewarded, and 80 means both were.
 
 How test will be performed: A pytest test sends day $d$'s total, moves the
-backend's clock to day $d+1$, sends the acknowledgement and then both days'
-totals, and reads the balance at the end of each day.
+backend's clock to day $d+1$, sends the acknowledgement, the consent, and then
+both days' totals, and reads the balance at the end of each day. A Jest test
+replaces the health platform with a test version that records every read, as
+in test-remind-7, starts the app for a new user, and checks that no read and
+no consent request happen before the notice is acknowledged.
 
-\item{\textbf{test-act-9: Health notice shown before the first reward}\\}
+\item{\textbf{test-act-9: Health notice shown before the consent request}\\}
 
 Requirements: FR14
 
 Control: Manual
 
 Initial State: A new account signed in on a test device for the first time,
-with activity already recorded in the phone's health platform.
+with activity from the previous day already recorded in the phone's health
+platform.
 
-Input: The tester opens \progname{}.
+Input: The tester opens \progname{}, acknowledges the notice, and consents to
+\progname{} reading their health data.
 
-Output: Before any currency is awarded, \progname{} shows a notice stating
-that it does not give medical advice and that users should consult a health
-professional before starting a new exercise program. The balance stays 0 until
-the tester acknowledges the notice.
+Output: Before asking for consent, \progname{} shows a notice stating that it
+does not give medical advice and that users should consult a health
+professional before starting a new exercise program. The consent request does
+not appear and the balance stays 0 until the tester acknowledges the notice.
+After the tester consents, the recorded activity earns currency on the first
+sync.
 
-Test Case Derivation: This is the notice and behaviour FR14 requires.
-The health platform already has activity when \progname{} is first opened,
-so there is currency the app could award straight away, and the test shows
-that the notice comes before it.
+Test Case Derivation: This is the notice and the order FR14 requires. The
+health platform already has activity when \progname{} is first opened, so
+there is currency the app could award straight away, and the test shows that
+the notice comes before it. That activity then earns currency, because
+\progname{} rewards activity already in the health platform, as far back as
+\texttt{SYNC\_LOOKBACK\_\allowbreak PERIOD} (7 days) (SRS Section 6.2). The
+activity is from the previous day so that it is within this period. test-act-8
+checks the amounts, and this test checks the same path on a real device.
 
 How test will be performed: The tester compares the notice's text with FR14,
-and checks the balance before and after acknowledging it.
+checks that no consent request appears before acknowledging it, and checks the
+balance before acknowledging it and after the first sync.
 
 \item{\textbf{test-act-10: Rewards without opening the app}\\}
 
@@ -1129,15 +1147,19 @@ Initial State: A new test user with a balance of 1,000 who holds no assets,
 has acknowledged the health notice, and has not acknowledged the simulated
 market notice. An asset in the live market with a current price of 50.00.
 
-Input: While the market is open, the user asks to buy one share. The user then
-acknowledges the simulated market notice and asks to buy one share again.
+Input: While the market is open, the backend receives a request from the user
+to buy one share. The user then acknowledges the simulated market notice, and
+the backend receives a second request to buy one share.
 
 Output: The first request is refused with a response saying that the notice
 must be acknowledged, and the balance is still 1,000 with no shares. The
 second request is accepted, leaving a balance of 950 and one share.
 
-Test Case Derivation: FR34 does not complete the first trade until the user
-acknowledges the notice. The balance covers the share and the price is
+Test Case Derivation: FR34 refuses a trade request that reaches the server
+before the user acknowledges the notice. The app shows the notice before it
+sends a trade (test-mkt-8), so the first request can only come from an app bug
+or a modified app, and the test checks that the server does not rely on the
+app to enforce the notice. The balance covers the share and the price is
 current, so the notice is the only reason for the first request to be
 refused, and the second request, made after the acknowledgement, is accepted.
 The user has already acknowledged the health notice (FR14), which catches a
