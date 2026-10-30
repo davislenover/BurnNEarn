@@ -242,7 +242,7 @@ provides the needs that validation checks the product against. It also
 exposes a gap that validation must close: neither interviewee was a beginner
 at investing, so the needs of beginners, represented by Persona~3, come from
 the Problem Statement rather than from users. The usability tests in this plan
-therefore recruit participants who are beginners at investing
+therefore recruit mainly participants who are beginners at investing
 (Section~\ref{SecSoftwareValidation}).
 
 \paragraph{Usability Report (Winter).} This report documents usability
@@ -801,12 +801,17 @@ measurements.
 \end{enumerate}}
 
 A participant must be at least \texttt{MIN\_USER\_AGE} (18) years old (SRS,
-Appendix~C) and a beginner at investing, which means any answer to A3 except
-``I invest regularly'', and must not have used \progname{} before (A4). The
-team checks these when recruiting, and the form confirms them. The team also
-checks that the participant's phone runs Android
-\texttt{MIN\_ANDROID\_VERSION} (17) or iOS \texttt{MIN\_IOS\_VERSION} (27) or
-later (SRS, SC1). A2 records which kind of phone each result comes from.
+Appendix~C) and must not have used \progname{} before (A4). The team checks
+these when recruiting, and the form confirms them. The team also checks that
+the participant's phone runs Android \texttt{MIN\_ANDROID\_VERSION} (17) or iOS
+\texttt{MIN\_IOS\_VERSION} (27) or later (SRS, SC1). A2 records which kind of
+phone each result comes from.
+
+Most participants are beginners at investing, which means any answer to A3
+except ``I invest regularly''. One or two participants who invest regularly
+also take part, since their experience gives useful feedback. They do the same
+study, but their results are reported separately and do not count toward G1,
+G2, or NFR2.
 
 \paragraph{Part B: Attitude to risk.}
 
@@ -923,8 +928,8 @@ Each has one correct answer
 The after-study questionnaire asks the same questions again. A correct answer
 scores 1, ``I don't know'' scores 0, and a wrong answer scores minus one half,
 so guessing does not raise a score on average. A participant improves if their
-score goes up by at least 1 point, and G1 is met if at least 70\% of
-participants improve, apart from those left out in Part~F.
+score goes up by at least 1 point, and G1 is met if at least 70\% of beginners
+improve, apart from those left out in Part~F.
 
 \begin{table}[!ht]
 \caption{Knowledge check answers} \label{TblKnowledgeCheckKey}
@@ -1014,8 +1019,8 @@ A participant completes the core tasks if they choose the first answer for all
 four, and none of their log entries shows outside help with one of them. Help
 from the team with installing the app, or with a problem on the team's side
 such as the server being down, is not outside help. G2 and NFR2 are met if at
-least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%) of participants complete the
-core tasks.
+least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%) of beginners complete the core
+tasks.
 
 \paragraph{Part E: Larger text.}
 
@@ -1085,10 +1090,12 @@ explained.
   \item Can you show me your portfolio? How did you decide what to do with
     your currency, and what, if anything, did you do as prices moved?
   \item What, if anything, did you learn from using \progname{}?
+  \item \emph{If A3 was ``I invest regularly'':} How does \progname{} compare
+    with how you invest now, and what do you think a beginner would find hard?
   \item If you could change one thing about \progname{}, what would it be?
 \end{enumerate}}
 
-After I9, the interviewer goes through the knowledge check answers with the
+After I10, the interviewer goes through the knowledge check answers with the
 participant and answers their questions. The Usability Report groups the notes
 by step of the core loop, in the same way as the log entries.
 
