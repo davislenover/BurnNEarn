@@ -1301,56 +1301,90 @@ needs to be well-documented, with meaningful names for all of the tests.}
 
 \subsection{Tests for Functional Requirements}
 
-\wss{Most of the verification will be through automated unit testing.  If
-  appropriate specific modules can be verified by a non-testing based
-  technique.  That can also be documented in this section.}
+% \wss{Most of the verification will be through automated unit testing.  If
+%   appropriate specific modules can be verified by a non-testing based
+%   technique.  That can also be documented in this section.}
 
-\subsubsection{Module 1}
+% \subsubsection{Module 1}
 
-\wss{Include a blurb here to explain why the subsections below cover the module.
-  References to the MIS would be good.  You will want tests from a black box
-  perspective and from a white box perspective.  Explain to the reader how the
-  tests were selected.}
+% \wss{Include a blurb here to explain why the subsections below cover the module.
+%   References to the MIS would be good.  You will want tests from a black box
+%   perspective and from a white box perspective.  Explain to the reader how the
+%   tests were selected.}
+
+% \begin{enumerate}
+
+% \item{test-id1\\}
+
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
+					
+% Initial State: 
+					
+% Input: 
+					
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed: 
+					
+% \item{test-id2\\}
+
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
+					
+% Initial State: 
+					
+% Input: 
+					
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed: 
+
+% \item{...\\}
+    
+% \end{enumerate}
+
+% \subsubsection{Module 2}
+
+% ...
+
+The detailed design (Module Interface Specification, MIS) has not been
+written yet, so the unit tests below are organized by the three areas of
+SRS Section 6 rather than by module. Once the MIS is complete, each area will
+be mapped to its modules, and each access program of those modules will get
+at least one test of its normal behaviour and one for each boundary or error
+case in its specification. The cases listed here are the ones already known
+from the SRS: boundaries of the symbolic constants, and rules whose failure
+the system tests above would detect only indirectly. Backend units are tested
+with pytest in \texttt{test/backend}, and app units with Jest, on every pull
+request.
+
+\subsubsection{Accounts and Profile}
+
+These tests check the account rules on the backend, below the API, so that a
+failure points to the rule that caused it rather than to the request.
 
 \begin{enumerate}
-
-\item{test-id1\\}
-
-Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-  be automatic}
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
-
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-How test will be performed: 
-					
-\item{test-id2\\}
-
-Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-  be automatic}
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
-
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-How test will be performed: 
-
-\item{...\\}
-    
+  \item \textbf{ut-acct-1: Password length.} A password of 7 characters is
+    refused and one of 8 is accepted, testing \texttt{MIN\_PASSWORD\_LENGTH}
+    (8) on both sides (Hazard Analysis, SEC-38).
+  \item \textbf{ut-acct-2: Age confirmation.} Sign-up details with the age
+    confirmation true are accepted. False and missing are both refused (FR2).
+  \item \textbf{ut-acct-3: Username in use.} Checking \texttt{sam\_test} when
+    an account already uses it reports it as taken, and checking
+    \texttt{jordan\_test} reports it as free (FR3).
+  \item \textbf{ut-acct-4: Stored passwords.} After sign-up with the password
+    \texttt{Walk2026run}, the stored value is not equal to the password,
+    checking the stored value against the password succeeds, and checking it
+    against \texttt{Walk2026ruN} fails (FR4).
+  \item \textbf{ut-acct-5: Reset links.} A reset link works once for the
+    account it was issued to. Using it a second time, or for another account,
+    is refused (FR6).
 \end{enumerate}
-
-\subsubsection{Module 2}
-
-...
 
 \subsection{Tests for Nonfunctional Requirements}
 
