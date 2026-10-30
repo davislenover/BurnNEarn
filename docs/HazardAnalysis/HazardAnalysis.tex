@@ -1608,8 +1608,12 @@ kept secure (P02).}
 {SRS Section~7.3, SEC-16.}
 {Capstone.}
 
-\hazreq{SEC-17}{Session expiry and revocation}
-{The system shall invalidate a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. Signing out of one session shall leave the account's other valid sessions unchanged.}
+\hazreq{SEC-17}{Session expiry and sign-out}
+{The system shall end a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. Signing out of one session shall leave the account's other valid sessions unchanged.
+
+The system shall let a signed-in user select “Sign out of all devices.” This action shall end all existing sessions for that account, including the session used to request it. Sessions belonging to other accounts shall remain unchanged.
+
+For either sign-out action, the system shall end the affected sessions before reporting success. Once a session ends, the server shall reject further requests using that session. The system shall not allow the session to be renewed without the user signing in again.}
 {A test session is rejected after the user signs out of it, and after it is
 left unused for longer than \texttt{SESSION\_TIMEOUT}. In both cases the user
 must sign in again to continue.}
