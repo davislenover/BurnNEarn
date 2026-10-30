@@ -138,23 +138,13 @@ Oct 27, 2026 & 1.1 & Davis Lenover: 6.6 Reminders and Settings, FR77
 revised because iOS does not tell apps which health data types they may
 read.\\
 Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 2.4 User Characteristics,
-3 Stakeholder Requirements, 6.2 Activity and Rewards: narrowed the intended
-users to people who walk, run, or use a wheelchair.\\
-Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 6.2 Activity and Rewards,
-6.7 Formal Definitions, 7.2 Data Dictionary: defined milestones.\\
-Oct 30, 2026 & 1.2 & Davis Lenover: 6.2 Activity and Rewards, 7.2 Data
-Dictionary: FR14 now places the health notice before the health data consent,
-and 6.2 states how activity from before the notice is treated.\\
-Oct 30, 2026 & 1.2 & Davis Lenover: 6.3 Simulated Market and Portfolio, 7.2
-Data Dictionary: FR34 now has the server refuse a trade before the simulated
-market notice is acknowledged.\\
-Oct 30, 2026 & 1.2 & Davis Lenover: 6.2 Activity and Rewards, 6.7 Formal
-Definitions, 7.2 Data Dictionary, 7.3 Privacy and Data Retention: each user now
-starts fresh on the day they acknowledge the health notice, and SEC-20 no longer
-rewards earlier activity.\\
-Oct 30, 2026 & 1.2 & Davis Lenover: 6.6 Reminders and Settings: FR75 now allows
-a reminder to arrive the next time the app runs, since the health platforms do
-not guarantee that it can run while closed.\\
+3 Stakeholder Requirements, 6.2, 6.3, 6.6 and 6.7 Functional Requirements, 7.2
+Data Dictionary, 7.3 Privacy and Data Retention: narrowed the intended users,
+defined milestones, placed the health notice before the health data consent
+(FR14), had the server refuse trades before the simulated market notice (FR34),
+started each user fresh on the day they acknowledge the health notice (SEC-20,
+FR27), allowed reminders to arrive the next time the app runs (FR75), and sold a
+removed asset's shares automatically (FR31, FR32).\\
 \bottomrule
 \end{tabularx}
 
@@ -2026,7 +2016,9 @@ hours and price age (\rref{FR_MktPriceAge}, \rref{FR_MktNoStaleTrade} and
 \rref{FR_MktQueueClosed}) apply only to the live market. Every asset is priced in
 \texttt{QUOTE\_CURRENCY}, and one unit of virtual currency buys one unit of
 \texttt{QUOTE\_CURRENCY} worth of an asset. Section~\ref{SecFormal} defines
-trades and portfolio value.
+trades and portfolio value. Once an asset is removed from the live market
+(\rref{FR_MktRemovedHoldings}), \progname{} stops obtaining prices for it.
+Market scenarios are not affected, because they replay stored prices.
 
 \noindent \begin{itemize}
 \freq{FR_MktAssetCount}
@@ -2050,15 +2042,20 @@ trades and portfolio value.
   between.}
   {\srref{SR_UpdateContent}, G4}
 \freq{FR_MktRemovedHoldings}
-  {The system shall let a user who holds shares of a removed asset continue to
-  see and sell those shares.}
-  {After an administrator removes a test asset that a test user holds, the
-  user still sees the holding and can sell it.}
+  {When an administrator removes an asset from the live market, the system shall
+  sell every user's shares of it at its most recent price, add the proceeds to
+  their balance, reject any queued trades for it, and tell each affected user
+  what was sold and at what price. This sale is not a trade request, so
+  \rref{FR_MktNoStaleTrade} and \rref{FR_MktQueueClosed} do not apply to it.}
+  {After an administrator removes a test asset that a test user holds, whether or
+  not its market is open, the user holds no shares of it, their balance has
+  increased by the number of shares multiplied by its most recent price, the sale
+  appears in their trade history, and they are told what was sold and at what
+  price. A queued trade for the asset is rejected, and the user is told.}
   {\srref{SR_RiskFree}, \srref{SR_UpdateContent}, G4}
 \freq{FR_MktRealPrices}
-  {The system shall price each asset in the live market, and each removed asset
-  a user still holds, at the most recent price it has obtained for that asset
-  from the market data provider.}
+  {The system shall price each asset in the live market at the most recent price
+  it has obtained for that asset from the market data provider.}
   {For a test asset in the live market, the price \progname{} shows and uses
   for trades equals the latest price \progname{} received from the market data
   provider for that asset.}
