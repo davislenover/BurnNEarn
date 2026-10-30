@@ -1624,10 +1624,12 @@ Attempts to renew a session after sign-out or expiry fail. The user can
 regain access by signing in again with the correct email address and
 password. Neither sign-out action affects sessions belonging to another
 test account.}
-{A lost or shared phone, or a stolen session, gives access to a user's health
-and portfolio data for as long as the session stays valid. Ending
-unused sessions limits that window, and ending a session at sign-out stops a
-copied session from being reused (SRS Section~6.1, FR\_AcctSignOut).}
+{A lost or shared phone can give another person access to the user's
+health and portfolio data while its session remains valid. An inactivity
+timeout does not end that access if the person keeps using the session.
+Signing out of all devices lets the account owner end existing sessions
+from another device. Ending sessions on the server also prevents copied
+session tokens from being reused (SRS Section~6.1, FR\_AcctSignOut).}
 {FMEA \hazref{H37}, L3 (privacy loss), L4 (security loss).}
 {SRS Section~7.3, SEC-17.}
 {Capstone.}
