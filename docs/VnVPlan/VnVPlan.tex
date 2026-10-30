@@ -1411,6 +1411,29 @@ has a hand-calculated expected value.
     incorrect. All correct and all wrong are also tested (FR56).
 \end{enumerate}
 
+\subsubsection{Social Feed}
+
+The visibility rule decides every check in the social feed system tests, so
+it is tested on its own for every combination of its inputs.
+
+\begin{enumerate}
+  \item \textbf{ut-social-1: Visibility.} An update is visible to a viewer
+    exactly when the viewer is its author, or is both a selected viewer and
+    currently a friend of the author. The test checks all four combinations of
+    selected or not and friend or not, and the author (FR64, FR66; Hazard
+    Analysis, SEC-13).
+  \item \textbf{ut-social-2: Friend requests.} A pending request becomes
+    accepted only when its recipient accepts it, and declined when its
+    recipient declines it. Accepting by the sender, and accepting a declined
+    request, are refused (FR62, FR63).
+  \item \textbf{ut-social-3: Building an update.} Each of the four kinds in
+    SRS Table 6.5 builds an update, and any other kind is refused. No built
+    update contains an age, height, weight, individual record, location or
+    time of day (FR65, FR68; Hazard Analysis, SEC-14).
+  \item \textbf{ut-social-4: Feed order.} Updates shared at 10:00, 10:05 and
+    10:10 are returned newest first, whatever order they are given in (FR69).
+\end{enumerate}
+
 \subsection{Tests for Nonfunctional Requirements}
 
 \wss{If there is a module that needs to be independently assessed for
