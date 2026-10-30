@@ -145,6 +145,9 @@ Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 6.2 Activity and Rewards,
 Oct 30, 2026 & 1.2 & Davis Lenover: 6.2 Activity and Rewards, 7.2 Data
 Dictionary: FR14 now places the health notice before the health data consent,
 and 6.2 states how activity from before the notice is treated.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 6.3 Simulated Market and Portfolio, 7.2
+Data Dictionary: FR34 now has the server refuse a trade before the simulated
+market notice is acknowledged.\\
 \bottomrule
 \end{tabularx}
 
@@ -2067,8 +2070,9 @@ trades and portfolio value.
   advice. The system shall not complete the first trade until the user
   acknowledges the notice.}
   {A new test user who attempts their first trade is shown the notice and
-  cannot complete the trade until they acknowledge it. The notice contains all
-  three statements: the market is simulated, currency and holdings have no
+  cannot complete the trade until they acknowledge it, and a trade request that
+  reaches the server before then is refused. The notice contains all three
+  statements: the market is simulated, currency and holdings have no
   real-world value, and nothing in \progname{} is financial advice.}
   {\srref{SR_NotAdvice}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktBuy}
@@ -2648,6 +2652,10 @@ consent stops further health-data reads.\\
 \texttt{health\_notice\_\allowbreak acknowledged\_at} & Timestamp &
 Time the user acknowledged the health notice. While this is absent, no health
 data is read and no currency is awarded.\\
+
+\texttt{market\_notice\_\allowbreak acknowledged\_at} & Timestamp &
+Time the user acknowledged the simulated market notice. While this is absent,
+no trade is completed.\\
 
 \texttt{consent\_updated\_at} & Timestamp &
 Time health-data consent was last granted or withdrawn.\\

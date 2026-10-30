@@ -63,6 +63,8 @@ Oct 19, 2026 & Preston Grewal & 7 Roadmap.\\
 Oct 19, 2026 & Zaid & Appendix: Generative AI Use Disclosure.\\
 Oct 30, 2026 & Davis Lenover & 6 Safety and Security Requirements: SAF-12 now
 places the health notice before the health data consent.\\
+Oct 30, 2026 & Davis Lenover & 6 Safety and Security Requirements: SAF-8 now has
+the server refuse a trade before the notice is acknowledged.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1135,8 +1137,8 @@ the market is simulated, that virtual currency and holdings have no real-world
 value, and that nothing in \progname{} is financial advice. The system shall
 not complete the first trade until the user acknowledges the notice.}
 {A new test user who attempts their first trade is shown the notice and cannot
-complete the trade until they acknowledge it. The notice contains all three
-statements: the market is simulated, currency and holdings have no real-world
+complete the trade until they acknowledge it, and a trade request that reaches
+the server before then is refused. The notice contains all three statements: the market is simulated, currency and holdings have no real-world
 value, and nothing in \progname{} is financial advice.}
 {\progname{} teaches investing by letting users practise, and people learn how
 to act from what they practise: one participant said that formal study did not
