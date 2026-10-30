@@ -745,6 +745,230 @@ participant's answers or their score on the knowledge check. At the end of the
 debrief, the team answers any questions the participant has about the app or
 the study.
 
+\subsubsection{Before-Study Questionnaire} \label{SecBeforeStudy}
+
+Participants complete this questionnaire on Day~1, before installing
+\progname{}. Part~A asks about their background, and Part~B is the knowledge
+check for G1. The team fills in the participant ID before sending the form.
+The form asks for no name, contact details, or health measurements such as
+weight or daily steps, since the study does not need them.
+
+\paragraph{Part A: Background}
+
+{\renewcommand{\labelenumi}{A\arabic{enumi}.}
+\renewcommand{\theenumi}{A\arabic{enumi}}
+\begin{enumerate}
+  \item Are you 18 years old or older?
+    \begin{itemize}
+      \item[$\circ$] Yes
+      \item[$\circ$] No
+    \end{itemize}
+  \item Which kind of phone will you use during the study?
+    \begin{itemize}
+      \item[$\circ$] Android
+      \item[$\circ$] iPhone
+    \end{itemize}
+  \item How do you keep track of your physical activity now? Choose all that
+    apply.
+    \begin{itemize}
+      \item[$\circ$] My phone's built-in health app
+      \item[$\circ$] Another fitness app
+      \item[$\circ$] A smartwatch or fitness band
+      \item[$\circ$] I do not track my activity
+    \end{itemize}
+  \item Which statement best describes your experience with investing?
+    \begin{itemize}
+      \item[$\circ$] I have never invested and know little about it
+      \item[$\circ$] I have never invested, but I know some of the basics
+      \item[$\circ$] I have invested a little, for example in a TFSA
+      \item[$\circ$] I invest regularly
+    \end{itemize}
+  \item Have you used an investing app or a stock market simulator before?
+    \begin{itemize}
+      \item[$\circ$] Yes (please name it)
+      \item[$\circ$] No
+    \end{itemize}
+  \item Do you use a larger text size on your phone than the default?
+    \begin{itemize}
+      \item[$\circ$] Yes
+      \item[$\circ$] No
+      \item[$\circ$] Not sure
+    \end{itemize}
+  \item What, if anything, would you most like to learn about investing or
+    fitness? (Optional, written answer)
+\end{enumerate}}
+
+Each question has a purpose in the study. A1 confirms that the participant is
+at least \texttt{MIN\_USER\_AGE} (18) years old (SRS, Appendix~C), and a
+participant who answers No cannot take part. A2 lets results be compared
+between Android and iOS (NFR4). A3 and A4 show whether participants match the
+typical user described in the SRS, and A4 confirms that they are beginners at
+investing (Section~\ref{SecSoftwareValidation}). A5 and A6 help explain the
+results, since a participant who has used a similar app, or who already uses
+larger text, may find some tasks easier. A7 gives the interviewer something to
+ask about in the debrief.
+
+\paragraph{Part B: Knowledge check}
+
+Participants see this instruction before the questions:
+
+\begin{quote}
+This is not a test of you. It helps us see what \progname{} teaches. Please
+answer without looking anything up, and choose ``I don't know'' rather than
+guessing.
+\end{quote}
+
+Each question has one correct answer. The form also offers ``I don't know'' as
+the last choice of every question, and shows the other choices in a random
+order. Participants do not see their score or the correct answers until the
+debrief, so the before-study check does not teach them the answers.
+
+{\renewcommand{\labelenumi}{B\arabic{enumi}.}
+\renewcommand{\theenumi}{B\arabic{enumi}}
+\begin{enumerate}
+  \item What does it mean to own one share of a company's stock?
+    \begin{enumerate}
+      \item You own a small part of the company.
+      \item You have lent the company money, and it must pay you back.
+      \item You are guaranteed a part of the company's profits each year.
+    \end{enumerate}
+  \item What is an exchange-traded fund (ETF)?
+    \begin{enumerate}
+      \item A savings account that pays a fixed interest rate.
+      \item A fund that holds many investments, such as the stocks of many
+        companies, and is traded like a stock.
+      \item The stock of a single company that pays a fixed amount each year.
+    \end{enumerate}
+  \item What is a stock's market price?
+    \begin{enumerate}
+      \item The price the company set when it first sold its shares.
+      \item The most recent price at which one share was traded on the
+        exchange.
+      \item The average price of the stock over the past year.
+    \end{enumerate}
+  \item You own 3 shares of a stock priced at \$20 and 2 shares of a stock
+    priced at \$50. What is the value of your portfolio?
+    \begin{enumerate}
+      \item \$70
+      \item \$100
+      \item \$160
+    \end{enumerate}
+  \item You bought one share for \$50, and it is now worth \$60. What is your
+    return?
+    \begin{enumerate}
+      \item 10\%
+      \item 20\%
+      \item 120\%
+    \end{enumerate}
+  \item Why might an investor spread their money across many different
+    investments?
+    \begin{enumerate}
+      \item To make sure they never lose money.
+      \item So that a fall in one investment has a smaller effect on the whole
+        portfolio.
+      \item To earn the highest possible return.
+    \end{enumerate}
+  \item The price of Stock A often rises or falls by 5\% in a day. The price of
+    Stock B rarely moves more than 1\% in a day. Which statement is true?
+    \begin{enumerate}
+      \item Stock A is more volatile, so its value is harder to predict in the
+        short term.
+      \item Stock B is more volatile, so its value is harder to predict in the
+        short term.
+      \item Stock A will earn more than Stock B over time.
+    \end{enumerate}
+  \item You invest \$100, and it grows by 10\% each year. You leave all of it
+    invested. How much will you have after 2 years?
+    \begin{enumerate}
+      \item \$110
+      \item \$120
+      \item \$121
+    \end{enumerate}
+  \item In a market downturn, the prices of most stocks fall at the same time.
+    What has happened to the stock market as a whole after past downturns?
+    \begin{enumerate}
+      \item Prices always recovered within a few weeks.
+      \item Prices generally recovered over time, although some recoveries
+        took many years.
+      \item Prices never recovered.
+    \end{enumerate}
+  \item How is investment growth inside a Tax-Free Savings Account (TFSA)
+    taxed?
+    \begin{enumerate}
+      \item It is not taxed, even when you withdraw it.
+      \item It is taxed when you withdraw it.
+      \item It is taxed every year.
+    \end{enumerate}
+  \item Which statement about a Registered Retirement Savings Plan (RRSP) is
+    true?
+    \begin{enumerate}
+      \item Contributions lower your taxable income now, and withdrawals are
+        generally taxed as income later.
+      \item Contributions are taxed now, and withdrawals are never taxed.
+      \item Money in an RRSP cannot be invested.
+    \end{enumerate}
+  \item Why might two people who walk the same distance record different
+    numbers of steps?
+    \begin{enumerate}
+      \item Their strides are different lengths.
+      \item Steps are only counted while the phone's screen is on.
+      \item Steps are only counted on days with a workout.
+    \end{enumerate}
+  \item What are active minutes?
+    \begin{enumerate}
+      \item Minutes in which the phone's screen is on.
+      \item Minutes spent moving at a moderate or higher intensity, such as
+        brisk walking.
+      \item Any minute in which the phone records at least one step.
+    \end{enumerate}
+  \item Why are rest days part of a fitness routine?
+    \begin{enumerate}
+      \item They give the body time to recover, which helps prevent injury.
+      \item Only professional athletes need them.
+      \item They undo the progress from earlier workouts.
+    \end{enumerate}
+  \item What is an activity streak?
+    \begin{enumerate}
+      \item The number of days in a row on which you met your activity goal.
+      \item The total number of steps you have ever taken.
+      \item The longest workout you have recorded.
+    \end{enumerate}
+\end{enumerate}}
+
+Table~\ref{TblKnowledgeCheckKey} gives the correct answer to each question and
+the core concept it covers. Together, the questions cover every core concept
+listed in SRS Section~6.4. Each correct answer scores 1, and a wrong answer or
+``I don't know'' scores 0, for a score out of 15. The after-study
+questionnaire repeats the same 15 questions. A participant improves if their
+after-study score is higher than their before-study score, and G1 is met if at
+least 70\% of participants improve.
+
+\begin{table}[!ht]
+\caption{Knowledge check answers} \label{TblKnowledgeCheckKey}
+\small
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Question} & \textbf{Core concept} & \textbf{Answer}\\
+\midrule
+B1 & Stock and share & (a)\\
+B2 & Exchange-traded fund (ETF) & (b)\\
+B3 & Market price & (b)\\
+B4 & Portfolio value & (c)\\
+B5 & Return & (b)\\
+B6 & Diversification & (b)\\
+B7 & Risk and volatility & (a)\\
+B8 & Compound growth & (c)\\
+B9 & Market downturn and recovery & (b)\\
+B10 & Tax-Free Savings Account (TFSA) & (a)\\
+B11 & Registered Retirement Savings Plan (RRSP) & (a)\\
+B12 & Activity types, using steps & (a)\\
+B13 & Active minutes & (b)\\
+B14 & Rest day & (a)\\
+B15 & Streak & (a)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
 \newpage{}
 
 \section{Appendix --- Generative AI Use Disclosure}
