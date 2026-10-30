@@ -1698,7 +1698,9 @@ password~\cite{OWASPMASVS}.}
 
 \hazreq{SEC-40}{Account recovery}
 {The system shall let a user who has forgotten their password set a new one
-through a link sent to their account's email address.}
+through a link sent to their account's email address.
+
+When a user successfully resets their password, the system shall end all existing sessions for that account on the server before reporting success.}
 {A test user who requests a reset receives a link at their email address, and
 after setting a new password can sign in only with the new one.}
 {A user who cannot sign in loses access to all their progress and may abandon
