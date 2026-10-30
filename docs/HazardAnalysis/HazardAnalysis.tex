@@ -1614,7 +1614,16 @@ kept secure (P02).}
 The system shall let a signed-in user select “Sign out of all devices.” This action shall end all existing sessions for that account, including the session used to request it. Sessions belonging to other accounts shall remain unchanged.
 
 For either sign-out action, the system shall end the affected sessions before reporting success. Once a session ends, the server shall reject further requests using that session. The system shall not allow the session to be renewed without the user signing in again.}
-{When a test account signed in on two devices, signing out on one device causes further requests using that session to be rejected. The other device's session remains valid. A session left unused for \texttt{SESSION\_TIMEOUT} is rejected when next used.}
+{When a test account signed in on two devices, signing out on one device causes further requests using that session to be rejected. The other device's session remains valid. A session left unused for \texttt{SESSION\_TIMEOUT} is rejected when next used.
+
+Selecting ``Sign out of all devices'' ends both sessions before success
+is reported, even if the second device was actively being used. Further
+requests using either session are rejected.
+
+Attempts to renew a session after sign-out or expiry fail. The user can
+regain access by signing in again with the correct email address and
+password. Neither sign-out action affects sessions belonging to another
+test account.}
 {A lost or shared phone, or a stolen session, gives access to a user's health
 and portfolio data for as long as the session stays valid. Ending
 unused sessions limits that window, and ending a session at sign-out stops a
