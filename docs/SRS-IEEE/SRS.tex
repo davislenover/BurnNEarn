@@ -148,6 +148,10 @@ and 6.2 states how activity from before the notice is treated.\\
 Oct 30, 2026 & 1.2 & Davis Lenover: 6.3 Simulated Market and Portfolio, 7.2
 Data Dictionary: FR34 now has the server refuse a trade before the simulated
 market notice is acknowledged.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 6.2 Activity and Rewards, 6.7 Formal
+Definitions, 7.2 Data Dictionary, 7.3 Privacy and Data Retention: each user now
+starts fresh on the day they acknowledge the health notice, and SEC-20 no longer
+rewards earlier activity.\\
 \bottomrule
 \end{tabularx}
 
@@ -1869,12 +1873,13 @@ wheelchair user with only a phone may have no push counts. That user earns
 through workout records instead.
 
 \progname{} does not start or stop activity tracking. The health platform
-records activity whether or not \progname{} is open or even installed, so
-\progname{} cannot stop a user from recording activity before they acknowledge
-the health notice (\rref{FR_ActHealthNotice}). It holds back what comes after:
-reading and rewarding. Activity already in the health platform when the user
-acknowledges the notice and consents is rewarded on the first sync, as far back
-as \texttt{SYNC\_LOOKBACK\_PERIOD} (SEC-20).
+records activity whether or not \progname{} is open or even installed, so it
+may already hold activity when a user first opens \progname{}. Each user starts
+fresh on their first day, the calendar day they acknowledge the health notice
+(\rref{FR_ActHealthNotice}). Activity from that day counts, including activity
+from earlier that day. Activity from before it does not count toward the user's
+currency, activity trends, streak or milestones, however much the health
+platform holds.
 
 \noindent \begin{itemize}
 \freq{FR_ActTypes}
@@ -1999,9 +2004,11 @@ as \texttt{SYNC\_LOOKBACK\_PERIOD} (SEC-20).
   \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActTrends}
   {The system shall show the user their daily totals for each supported
-  activity type over time.}
+  activity type over time, starting from their first day
+  (Section~\ref{SecFormal}).}
   {A test user with recorded activity on 14 days sees the total for each of
-  those days, for each supported activity type.}
+  those days, for each supported activity type. Activity from before their first
+  day is not shown.}
   {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G2, G5}
 \end{itemize}
 
@@ -2468,8 +2475,11 @@ calendar day $d$ in their time zone:
 \begin{itemize}
 \item $T$ is the set of supported activity types
   (\texttt{SUPPORTED\_ACTIVITY\_\allowbreak TYPES}).
+\item The user's first day is the calendar day on which they acknowledge the
+  health notice (\rref{FR_ActHealthNotice}).
 \item $x_{t,d}$ is the user's total of activity type $t$ on day $d$, counting
-  only plausible records (\rref{FR_ActPlausible}).
+  only plausible records (\rref{FR_ActPlausible}). It is 0 for any day before
+  the user's first day, whatever the health platform holds.
 \item $u_t$ is the amount of activity type $t$ that earns one unit of virtual
   currency (\texttt{EARNING\_RATES}).
 \item $G_d$ is the set of the user's activity goals in effect on day $d$. A
@@ -2651,7 +2661,8 @@ consent stops further health-data reads.\\
 
 \texttt{health\_notice\_\allowbreak acknowledged\_at} & Timestamp &
 Time the user acknowledged the health notice. While this is absent, no health
-data is read and no currency is awarded.\\
+data is read and no currency is awarded. The calendar day of this time is the
+user's first day (Section~\ref{SecFormal}).\\
 
 \texttt{market\_notice\_\allowbreak acknowledged\_at} & Timestamp &
 Time the user acknowledged the simulated market notice. While this is absent,
@@ -3002,10 +3013,12 @@ syncs, the user is rewarded for them once.
 
 \item[SEC-20 (Catch late activity).] On each sync, the system shall read the activity records of the last
 \texttt{SYNC\_LOOKBACK\_PERIOD} and reward any record that has not already
-been rewarded.
+been rewarded, unless it is from before the day the user acknowledged the health
+notice.
 
 \textit{Fit criterion:} A test record written to the health platform two days
-after the activity took place is rewarded on the next sync, once.
+after the activity took place is rewarded on the next sync, once. A test record
+from before the day the user acknowledged the health notice earns nothing.
 
 \item[SEC-21 (Activity unavailable).] When the system cannot read activity data, because permission has not been
 granted or the health platform does not respond, it shall tell the user that
