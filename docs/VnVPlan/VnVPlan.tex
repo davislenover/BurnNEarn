@@ -2,6 +2,16 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+
+% Keep each questionnaire question's choices on the same page as the question.
+\makeatletter
+\newenvironment{choices}
+  {\@beginparpenalty=10000 \begin{itemize}\@itempenalty=10000}
+  {\end{itemize}}
+\newenvironment{letteredchoices}
+  {\@beginparpenalty=10000 \begin{enumerate}\@itempenalty=10000}
+  {\end{enumerate}}
+\makeatother
 \usepackage{hyperref}
 \hypersetup{
     colorlinks,
@@ -707,8 +717,8 @@ Section~\ref{SecSoftwareValidation}.
 \textbf{Part} & \textbf{When} & \textbf{What it measures}\\
 \midrule
 Before-study questionnaire & Day 1, before installing the app (10 minutes) &
-  Background, investing experience, and the knowledge check before using the
-  app (G1)\\
+  Background, attitude to risk, and the knowledge check before using the app
+  (G1)\\
 Experience log & Any time, as things happen &
   What the participant was doing, what worked, what did not, and any help
   they needed\\
@@ -747,201 +757,214 @@ the study.
 
 \subsubsection{Before-Study Questionnaire} \label{SecBeforeStudy}
 
-Participants complete this questionnaire on Day~1, before installing
-\progname{}. Part~A asks about their background, and Part~B is the knowledge
-check for G1. The team fills in the participant ID before sending the form.
-The form asks for no name, contact details, or health measurements such as
-weight or daily steps, since the study does not need them.
+Participants complete this questionnaire on Day~1, after they agree to take
+part and before they install \progname{}. It has three parts: background,
+attitude to risk, and the knowledge check for G1. Answers are recorded under
+the participant ID, and the form asks for no name, contact details, or health
+measurements.
 
-\paragraph{Part A: Background}
+\paragraph{Part A: Background.}
 
 {\renewcommand{\labelenumi}{A\arabic{enumi}.}
 \renewcommand{\theenumi}{A\arabic{enumi}}
 \begin{enumerate}
   \item Are you 18 years old or older?
-    \begin{itemize}
+    \begin{choices}
       \item[$\circ$] Yes
       \item[$\circ$] No
-    \end{itemize}
+    \end{choices}
   \item Which kind of phone will you use during the study?
-    \begin{itemize}
+    \begin{choices}
       \item[$\circ$] Android
       \item[$\circ$] iPhone
-    \end{itemize}
-  \item How do you keep track of your physical activity now? Choose all that
-    apply.
-    \begin{itemize}
-      \item[$\circ$] My phone's built-in health app
-      \item[$\circ$] Another fitness app
-      \item[$\circ$] A smartwatch or fitness band
-      \item[$\circ$] I do not track my activity
-    \end{itemize}
+    \end{choices}
   \item Which statement best describes your experience with investing?
-    \begin{itemize}
+    \begin{choices}
       \item[$\circ$] I have never invested and know little about it
       \item[$\circ$] I have never invested, but I know some of the basics
-      \item[$\circ$] I have invested a little, for example in a TFSA
+      \item[$\circ$] I have invested a little, for example in stocks or a fund
       \item[$\circ$] I invest regularly
-    \end{itemize}
-  \item Have you used an investing app or a stock market simulator before?
-    \begin{itemize}
-      \item[$\circ$] Yes (please name it)
-      \item[$\circ$] No
-    \end{itemize}
-  \item Do you use a larger text size on your phone than the default?
-    \begin{itemize}
+    \end{choices}
+  \item Have you used \progname{} before this study?
+    \begin{choices}
       \item[$\circ$] Yes
       \item[$\circ$] No
-      \item[$\circ$] Not sure
-    \end{itemize}
-  \item What, if anything, would you most like to learn about investing or
-    fitness? (Optional, written answer)
+    \end{choices}
 \end{enumerate}}
 
-Each question has a purpose in the study. A1 confirms that the participant is
-at least \texttt{MIN\_USER\_AGE} (18) years old (SRS, Appendix~C), and a
-participant who answers No cannot take part. A2 lets results be compared
-between Android and iOS (NFR4). A3 and A4 show whether participants match the
-typical user described in the SRS, and A4 confirms that they are beginners at
-investing (Section~\ref{SecSoftwareValidation}). A5 and A6 help explain the
-results, since a participant who has used a similar app, or who already uses
-larger text, may find some tasks easier. A7 gives the interviewer something to
-ask about in the debrief.
+A participant must be at least \texttt{MIN\_USER\_AGE} (18) years old (SRS,
+Appendix~C) and a beginner at investing, which means any answer to A3 except
+``I invest regularly''. The team checks both when recruiting, and the form
+confirms them. A2 lets results be compared between Android and iOS, and A4
+makes sure that only first-time users count toward G2 and NFR2.
 
-\paragraph{Part B: Knowledge check}
+\paragraph{Part B: Attitude to risk.}
 
-Participants see this instruction before the questions:
-
-\begin{quote}
-This is not a test of you. It helps us see what \progname{} teaches. Please
-answer without looking anything up, and choose ``I don't know'' rather than
-guessing.
-\end{quote}
-
-Each question has one correct answer. The form also offers ``I don't know'' as
-the last choice of every question, and shows the other choices in a random
-order. Participants do not see their score or the correct answers until the
-debrief, so the before-study check does not teach them the answers.
+How willing a participant is to take risks is likely to shape how they use
+their portfolio. People often describe themselves differently from how they
+act, so these questions describe everyday situations instead of asking about
+risk directly. There are no right answers. In the debrief, the interviewer
+compares them with how the participant used their portfolio.
 
 {\renewcommand{\labelenumi}{B\arabic{enumi}.}
 \renewcommand{\theenumi}{B\arabic{enumi}}
 \begin{enumerate}
+  \item Imagine you have saved \$1,000 that you will not need for five years.
+    What would you do with it?
+    \begin{choices}
+      \item[$\circ$] Keep all of it in a savings account
+      \item[$\circ$] Keep most of it in a savings account and invest the rest
+      \item[$\circ$] Invest most of it and keep the rest in a savings account
+      \item[$\circ$] Invest all of it
+    \end{choices}
+  \item You invested \$1,000, and a month later it is worth \$800. What would
+    you most likely do?
+    \begin{choices}
+      \item[$\circ$] Sell all of it, so that you do not lose any more
+      \item[$\circ$] Sell some of it
+      \item[$\circ$] Keep it and wait
+      \item[$\circ$] Invest more while prices are lower
+    \end{choices}
+  \item You can put \$1,000 into one of these for a year. Which would you
+    choose?
+    \begin{choices}
+      \item[$\circ$] One that will be worth between \$1,000 and \$1,050
+      \item[$\circ$] One that will be worth between \$900 and \$1,200
+      \item[$\circ$] One that will be worth between \$600 and \$1,600
+    \end{choices}
+\end{enumerate}}
+
+\paragraph{Part C: Knowledge check.}
+
+Participants see this instruction before the questions:
+
+\begin{quote}
+This is not a test of you. Please answer without looking anything up, and
+choose ``I don't know'' rather than guessing. We will go through the answers
+with you at the end of the study.
+\end{quote}
+
+{\renewcommand{\labelenumi}{C\arabic{enumi}.}
+\renewcommand{\theenumi}{C\arabic{enumi}}
+\begin{enumerate}
   \item What does it mean to own one share of a company's stock?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item You own a small part of the company.
-      \item You have lent the company money, and it must pay you back.
-      \item You are guaranteed a part of the company's profits each year.
-    \end{enumerate}
+      \item You have lent the company money, and it will pay you interest.
+      \item You can buy the company's products at a discount.
+    \end{letteredchoices}
   \item What is an exchange-traded fund (ETF)?
-    \begin{enumerate}
-      \item A savings account that pays a fixed interest rate.
-      \item A fund that holds many investments, such as the stocks of many
-        companies, and is traded like a stock.
-      \item The stock of a single company that pays a fixed amount each year.
-    \end{enumerate}
+    \begin{letteredchoices}
+      \item A savings account at a bank that pays a fixed interest rate.
+      \item A group of many investments that you can buy and sell like one
+        stock.
+      \item The stock of one company that pays a fixed amount each year.
+    \end{letteredchoices}
   \item What is a stock's market price?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item The price the company set when it first sold its shares.
-      \item The most recent price at which one share was traded on the
-        exchange.
+      \item The price at which one share was last bought and sold.
       \item The average price of the stock over the past year.
-    \end{enumerate}
-  \item You own 3 shares of a stock priced at \$20 and 2 shares of a stock
-    priced at \$50. What is the value of your portfolio?
-    \begin{enumerate}
+    \end{letteredchoices}
+  \item You bought 3 shares of one stock at \$20 each and 2 shares of another
+    stock at \$50 each. The first stock is now priced at \$30 and the second at
+    \$40. What is your portfolio worth now?
+    \begin{letteredchoices}
       \item \$70
-      \item \$100
       \item \$160
-    \end{enumerate}
+      \item \$170
+    \end{letteredchoices}
   \item You bought one share for \$50, and it is now worth \$60. What is your
     return?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item 10\%
       \item 20\%
       \item 120\%
-    \end{enumerate}
+    \end{letteredchoices}
   \item Why might an investor spread their money across many different
     investments?
-    \begin{enumerate}
-      \item To make sure they never lose money.
-      \item So that a fall in one investment has a smaller effect on the whole
-        portfolio.
-      \item To earn the highest possible return.
-    \end{enumerate}
+    \begin{letteredchoices}
+      \item So that they are sure not to lose any money.
+      \item So that if one investment drops, the total drops less.
+      \item So that they pay less tax on what their investments earn.
+    \end{letteredchoices}
   \item The price of Stock A often rises or falls by 5\% in a day. The price of
     Stock B rarely moves more than 1\% in a day. Which statement is true?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item Stock A is more volatile, so its value is harder to predict in the
         short term.
+      \item Stock A is more volatile, so it will earn more than Stock B over
+        time.
       \item Stock B is more volatile, so its value is harder to predict in the
         short term.
-      \item Stock A will earn more than Stock B over time.
-    \end{enumerate}
+    \end{letteredchoices}
   \item You invest \$100, and it grows by 10\% each year. You leave all of it
     invested. How much will you have after 2 years?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item \$110
       \item \$120
       \item \$121
-    \end{enumerate}
+    \end{letteredchoices}
   \item In a market downturn, the prices of most stocks fall at the same time.
     What has happened to the stock market as a whole after past downturns?
-    \begin{enumerate}
-      \item Prices always recovered within a few weeks.
-      \item Prices generally recovered over time, although some recoveries
-        took many years.
-      \item Prices never recovered.
-    \end{enumerate}
-  \item How is investment growth inside a Tax-Free Savings Account (TFSA)
-    taxed?
-    \begin{enumerate}
-      \item It is not taxed, even when you withdraw it.
-      \item It is taxed when you withdraw it.
-      \item It is taxed every year.
-    \end{enumerate}
-  \item Which statement about a Registered Retirement Savings Plan (RRSP) is
-    true?
-    \begin{enumerate}
-      \item Contributions lower your taxable income now, and withdrawals are
-        generally taxed as income later.
-      \item Contributions are taxed now, and withdrawals are never taxed.
-      \item Money in an RRSP cannot be invested.
-    \end{enumerate}
+    \begin{letteredchoices}
+      \item Prices generally recovered within a few days.
+      \item Prices generally recovered, but some recoveries took many years.
+      \item Prices generally stayed at their lower level for good.
+    \end{letteredchoices}
+  \item Under Canadian tax rules, which is generally true of investment growth
+    inside a Tax-Free Savings Account (TFSA)?
+    \begin{letteredchoices}
+      \item It is not taxed, even when you take it out.
+      \item It is not taxed until you take it out.
+      \item It is not taxed for the first five years.
+    \end{letteredchoices}
+  \item Under Canadian tax rules, which is generally true of a Registered
+    Retirement Savings Plan (RRSP)?
+    \begin{letteredchoices}
+      \item Money you put in can lower your tax now, and money you take out is
+        taxed later.
+      \item Money you put in can lower your tax now, and money you take out is
+        never taxed.
+      \item Money you put in is taxed now, and money you take out is taxed
+        again later.
+    \end{letteredchoices}
   \item Why might two people who walk the same distance record different
     numbers of steps?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item Their strides are different lengths.
-      \item Steps are only counted while the phone's screen is on.
-      \item Steps are only counted on days with a workout.
-    \end{enumerate}
+      \item Their phones were set to different daily step goals.
+      \item Steps taken indoors are not counted by the phone.
+    \end{letteredchoices}
   \item What are active minutes?
-    \begin{enumerate}
+    \begin{letteredchoices}
       \item Minutes in which the phone's screen is on.
-      \item Minutes spent moving at a moderate or higher intensity, such as
-        brisk walking.
-      \item Any minute in which the phone records at least one step.
-    \end{enumerate}
-  \item Why are rest days part of a fitness routine?
-    \begin{enumerate}
-      \item They give the body time to recover, which helps prevent injury.
-      \item Only professional athletes need them.
-      \item They undo the progress from earlier workouts.
-    \end{enumerate}
+      \item Minutes spent moving at least as hard as a brisk walk.
+      \item Every minute of the day in which you are awake.
+    \end{letteredchoices}
+  \item Which statement about rest days is true?
+    \begin{letteredchoices}
+      \item They help the body recover and lower the risk of injury.
+      \item A rest day undoes the fitness gained in the days before it.
+      \item Taking a rest day shows that a person is not serious about
+        fitness.
+    \end{letteredchoices}
   \item What is an activity streak?
-    \begin{enumerate}
-      \item The number of days in a row on which you met your activity goal.
-      \item The total number of steps you have ever taken.
-      \item The longest workout you have recorded.
-    \end{enumerate}
+    \begin{letteredchoices}
+      \item The number of days in a row on which you met your goal or took a
+        rest day.
+      \item The number of days this week on which you met your activity goal.
+      \item The number of days in a row on which you opened the app.
+    \end{letteredchoices}
 \end{enumerate}}
 
-Table~\ref{TblKnowledgeCheckKey} gives the correct answer to each question and
-the core concept it covers. Together, the questions cover every core concept
-listed in SRS Section~6.4. Each correct answer scores 1, and a wrong answer or
-``I don't know'' scores 0, for a score out of 15. The after-study
-questionnaire repeats the same 15 questions. A participant improves if their
-after-study score is higher than their before-study score, and G1 is met if at
-least 70\% of participants improve.
+The questions cover the core concepts in SRS Section~6.4, with steps standing
+for all the activity types. Each has one correct answer
+(Table~\ref{TblKnowledgeCheckKey}), and the form also offers ``I don't know''.
+The after-study questionnaire asks the same questions again. A correct answer
+scores 1 and a wrong answer scores minus one half, so guessing does not raise a
+score on average. A participant improves if their score goes up by at least 1
+point, and G1 is met if at least 70\% of participants improve.
 
 \begin{table}[!ht]
 \caption{Knowledge check answers} \label{TblKnowledgeCheckKey}
@@ -950,26 +973,26 @@ least 70\% of participants improve.
 \toprule
 \textbf{Question} & \textbf{Core concept} & \textbf{Answer}\\
 \midrule
-B1 & Stock and share & (a)\\
-B2 & Exchange-traded fund (ETF) & (b)\\
-B3 & Market price & (b)\\
-B4 & Portfolio value & (c)\\
-B5 & Return & (b)\\
-B6 & Diversification & (b)\\
-B7 & Risk and volatility & (a)\\
-B8 & Compound growth & (c)\\
-B9 & Market downturn and recovery & (b)\\
-B10 & Tax-Free Savings Account (TFSA) & (a)\\
-B11 & Registered Retirement Savings Plan (RRSP) & (a)\\
-B12 & Activity types, using steps & (a)\\
-B13 & Active minutes & (b)\\
-B14 & Rest day & (a)\\
-B15 & Streak & (a)\\
+C1 & Stock and share & (a)\\
+C2 & Exchange-traded fund (ETF) & (b)\\
+C3 & Market price & (b)\\
+C4 & Portfolio value & (c)\\
+C5 & Return & (b)\\
+C6 & Diversification & (b)\\
+C7 & Risk and volatility & (a)\\
+C8 & Compound growth & (c)\\
+C9 & Market downturn and recovery & (b)\\
+C10 & Tax-Free Savings Account (TFSA) & (a)\\
+C11 & Registered Retirement Savings Plan (RRSP) & (a)\\
+C12 & Activity types (steps as the example) & (a)\\
+C13 & Active minutes & (b)\\
+C14 & Rest day & (a)\\
+C15 & Streak & (a)\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\newpage{}
+\clearpage
 
 \section{Appendix --- Generative AI Use Disclosure}
 
