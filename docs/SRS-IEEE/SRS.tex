@@ -152,6 +152,9 @@ Oct 30, 2026 & 1.2 & Davis Lenover: 6.2 Activity and Rewards, 6.7 Formal
 Definitions, 7.2 Data Dictionary, 7.3 Privacy and Data Retention: each user now
 starts fresh on the day they acknowledge the health notice, and SEC-20 no longer
 rewards earlier activity.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 6.6 Reminders and Settings: FR75 now allows
+a reminder to arrive the next time the app runs, since the health platforms do
+not guarantee that it can run while closed.\\
 \bottomrule
 \end{tabularx}
 
@@ -2407,6 +2410,13 @@ Social & A friend shares an update with the user or sends them a friend request 
 \end{tabularx}
 \end{table}
 
+Reminders are created on the phone, and \progname{} cannot rely on running while
+it is closed: HealthKit may not allow reads while the phone is locked, and Health
+Connect allows background reads only if the user grants an extra
+permission~\citep{AppleHealthKit, GoogleHealthConnect}. A reminder that depends
+on new data can therefore arrive after its event, and \rref{FR_RemindSend} is
+written to allow this.
+
 The settings also cover the user's health data. The two health platforms
 report permissions differently. Health Connect on Android tells an app which
 data types it may read. Apple HealthKit does not tell an app whether the user
@@ -2437,11 +2447,12 @@ if none had been recorded~\citep{AppleHealthKit, GoogleHealthConnect}.
   type, and still receives reminders of the types left on.}
   {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2}
 \freq{FR_RemindSend}
-  {The system shall send a reminder of each type that is turned on when that
-  type's event in Table~\ref{TblReminderTypes} occurs.}
+  {The system shall send a reminder of each type that is turned on after that
+  type's event in Table~\ref{TblReminderTypes} occurs, the next time \progname{}
+  runs on the phone, whether in the background or because the user opened it.}
   {For each reminder type a test user has left on, causing the event in its
-  Sent when column produces one reminder of that type within the user's
-  reminder periods.}
+  Sent when column and then opening \progname{} produces one reminder of that
+  type within the user's reminder periods.}
   {\ucref{UC_Reminders}, G2, G5}
 \freq{FR_SetWithdrawConsent}
   {The system shall let the user withdraw consent for \progname{} to read their
