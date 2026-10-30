@@ -14,7 +14,7 @@
 
 \input{../Comments.text}
 \input{../Common.text}
-
+\setlength{\emergencystretch}{3em}
 \begin{document}
 
 \title{System Verification and Validation Plan for \progname{}} 
@@ -962,6 +962,252 @@ How test will be performed: A pytest test reads all published content and the
 content log, and lists every item that fails a check. It runs on every pull
 request that changes educational content, so content cannot be published
 without a second reviewer.
+
+\end{enumerate}
+
+\subsubsection{Social Feed}
+
+These tests cover the social feed requirements in SRS Section 6.5 (FR61 to
+FR71). They use four test users, \texttt{alex\_test}, \texttt{bea\_test},
+\texttt{cal\_test} and \texttt{dev\_test}, referred to as A, B, C and D. Unless
+a test says otherwise, A is friends with B and C and not with D. Automatic
+tests act as each user through the API with that user's own session, so every
+check is made from the point of view of the user who would see the result.
+The times at which updates are shared are set by the backend's test clock.
+
+\begin{enumerate}
+
+\item{\textbf{test-social-1: Sending a friend request}\\}
+
+Requirements: FR61
+
+Control: Automatic
+
+Initial State: A and D are not friends and have no request between them.
+
+Input: A sends a friend request to the username \texttt{dev\_test}.
+
+Output: D's list of received requests contains one pending request from A.
+
+Test Case Derivation: The fit criterion of FR61 is that entering another
+user's username sends them a request that they can see. The check is made
+from D's side, which is where the request must appear.
+
+How test will be performed: A pytest test sends the request as A and reads
+D's received requests as D.
+
+\item{\textbf{test-social-2: Friends only after acceptance}\\}
+
+Requirements: FR62, FR63
+
+Control: Automatic
+
+Initial State: A has no request with C or D. C and D have each shared an
+update with all their friends.
+
+Input: A sends a request to D. A then tries to accept that request as A. D
+declines it. A sends a request to C, and C accepts it.
+
+Output: While A's request to D is pending, A and D are not friends and A sees
+none of D's updates. A's attempt to accept their own request is refused, and
+the request stays pending. After D declines, A and D are still not friends,
+and the request is no longer in D's list of received requests. After C
+accepts, A and C are in each other's friend lists.
+
+Test Case Derivation: FR62 makes two users friends only after the user who
+received the request accepts it, so the sender accepting their own request
+must not count. FR63 lets the recipient decline, after which the two are not
+friends and the decliner no longer sees the request. The accepted request to
+C shows that acceptance does create the friendship, so the refusals are not
+caused by friendships never forming.
+
+How test will be performed: A pytest test sends each action as the user named
+in the input and reads the friend lists, received requests and feeds after
+each step.
+
+\item{\textbf{test-social-3: Removing a friend}\\}
+
+Requirements: FR64
+
+Control: Automatic
+
+Initial State: A and B are friends. A has shared update $U_1$ with B, and B
+has shared update $U_2$ with A.
+
+Input: A removes B as a friend.
+
+Output: $U_1$ is no longer in B's feed, and $U_2$ is no longer in A's feed.
+Neither user is in the other's friend list.
+
+Test Case Derivation: The fit criterion of FR64 is that after the removal,
+neither user sees the other's shared updates. Each user has shared one
+update, so the test checks both directions; removing only the remover's view
+would leave $U_1$ in B's feed.
+
+How test will be performed: A pytest test reads both feeds before and after
+the removal.
+
+\item{\textbf{test-social-4: Kinds of update that can be shared}\\}
+
+Requirements: FR65, FR68
+
+Control: Automatic and Manual
+
+Initial State: A has 8,000 steps today, a streak of 12, has reached the 7-day
+streak milestone, and has passed the knowledge check on
+\textit{Diversification}. A's profile has an age of 25, a height of 170 cm
+and a weight of 68 kg, and A has a balance of 450 and a step record of 4,200
+steps from 9:00 to 10:00 today.
+
+Input: A shares with B one update of each kind in SRS Table 6.5: their step
+total for today, their streak, the 7-day streak milestone, and the
+\textit{Diversification} knowledge check. A then sends requests to share their
+balance, their portfolio value, their weight, and the 4,200-step record. On a
+test device, the tester opens A's share screen.
+
+Output: B's feed contains the four updates, showing 8,000 steps, a streak of
+12, the 7-day streak milestone and the \textit{Diversification} knowledge
+check. None of them contains A's age, height or weight, or any time of day.
+The four other requests are refused and add nothing to B's feed. The share
+screen offers only the four kinds of update.
+
+Test Case Derivation: The fit criterion of FR65 is that the user can share one
+update of each kind in SRS Table 6.5 and nothing else, so the test shares
+each kind and tries four things outside the table. FR68 (Hazard Analysis,
+SEC-35) excludes body measurements and individual activity records, which the
+weight and the 4,200-step record test. The Hazard Analysis also excludes the
+exact time of an activity (SEC-14), which is why no time of day may appear.
+The device check covers the app, since the requests test only the backend.
+
+How test will be performed: A pytest test sends each share request as A and
+reads B's feed as B. The tester then records the options on the share screen.
+
+\item{\textbf{test-social-5: Choosing who sees an update}\\}
+
+Requirements: FR66
+
+Control: Automatic
+
+Initial State: A is friends with B, C and D.
+
+Input: A shares update $U_1$ with B only, and update $U_2$ with B and C. C
+then requests $U_1$ by its identifier.
+
+Output: B's feed contains $U_1$ and $U_2$. C's feed contains $U_2$ only. D's
+feed contains neither. C's request for $U_1$ is refused.
+
+Test Case Derivation: The fit criterion of FR66 is that an update shared with
+selected friends appears in their feeds and no other friend's. D is a friend
+who was never selected, which checks that sharing with some friends does not
+share with all. C's direct request checks that an unselected friend cannot
+get the update another way (Hazard Analysis, SEC-15).
+
+How test will be performed: A pytest test shares both updates as A, reads each
+feed as its owner, and sends C's request as C.
+
+\item{\textbf{test-social-6: Preview before sharing}\\}
+
+Requirements: FR67
+
+Control: Manual
+
+Initial State: Two test devices, one signed in as A and one as B, who are
+friends. A has activity, a streak, a milestone and a passed knowledge check,
+as in test-social-4.
+
+Input: On A's device, the tester starts sharing each of the four kinds of
+update with B, takes a screenshot of the preview, and confirms. For a fifth
+update, the tester cancels at the preview.
+
+Output: A preview is shown before every update is shared. Each update in B's
+feed shows the same values and text as its preview. The cancelled update does
+not appear in B's feed.
+
+Test Case Derivation: The fit criterion of FR67 is that for every update the
+preview matches what the selected friends see, so each of the four kinds is
+checked on B's own device. Cancelling at the preview checks that the preview
+comes before sharing, since an update shared before its preview would already
+be in B's feed.
+
+How test will be performed: The tester compares each screenshot with the
+matching update on B's device and records any difference.
+
+\item{\textbf{test-social-7: Contents and order of the feed}\\}
+
+Requirements: FR69
+
+Control: Automatic
+
+Initial State: B is friends with A and C and not with D. No updates have been
+shared.
+
+Input: A shares $U_1$ with B at 10:00. C shares $U_2$ with B at 10:05. A shares
+$U_3$ with C only at 10:10. D shares $U_4$ with all their friends at 10:15. B
+then reads their feed.
+
+Output: B's feed contains exactly $U_2$ followed by $U_1$.
+
+Test Case Derivation: FR69 shows every update shared with the user by a
+friend, and no others, newest first. $U_1$ and $U_2$ are shared with B by
+friends, so both appear, with $U_2$ first because it is newer. $U_3$ is from a
+friend but not shared with B, and $U_4$ is from a user who is not B's friend,
+so neither appears. Each update is shared at a different time, so only one
+order is correct.
+
+How test will be performed: A pytest test sets the backend's clock to each
+time, shares each update as its author, and reads B's feed as B.
+
+\item{\textbf{test-social-8: Deleting a shared update}\\}
+
+Requirements: FR70
+
+Control: Automatic
+
+Initial State: A has shared update $U$ with B and C.
+
+Input: A deletes $U$. B then requests $U$ by its identifier.
+
+Output: $U$ is no longer in B's or C's feed, and B's request for $U$ is
+refused.
+
+Test Case Derivation: The fit criterion of FR70 is that a deleted update no
+longer appears in any friend's feed, so both friends it was shared with are
+checked. The direct request checks that the update was removed and not only
+hidden from feeds.
+
+How test will be performed: A pytest test deletes $U$ as A, reads B's and
+C's feeds, and sends B's request.
+
+\item{\textbf{test-social-9: No rankings between users}\\}
+
+Requirements: FR71
+
+Control: Manual
+
+Initial State: Test user A is friends with B, C and D, signed in on a test
+device. Their totals today are A 20,000 steps, B 12,000, C 1,000 and D 5,000,
+and their balances follow the same order. C has shared an update with A at
+10:00, B at 10:05 and D at 10:10.
+
+Input: The tester opens every screen in \progname{}'s navigation, including
+the friend list and the social feed.
+
+Output: No screen orders users by activity, currency or portfolio
+performance, or shows a user's position relative to others, such as ``1st''
+or ``top''. No list of A's friends is in the order B, D, C or C, D, B. The
+feed lists D's, B's and C's updates in that order.
+
+Test Case Derivation: The fit criterion of FR71 (Hazard Analysis, SAF-11)
+covers every screen. The test data is chosen so that an ordering by activity
+or balance can be told apart from every order that is allowed. Sorted by
+activity, A's friends are B, D, C (or C, D, B from lowest), which differs from
+their alphabetical order, B, C, D. The feed must be newest first (FR69), which
+gives D, B, C, so a feed sorted by activity would also stand out. The screens
+come from the app's navigation, as in test-mkt-20.
+
+How test will be performed: The tester opens each screen, records the order
+in which users appear on any screen that lists more than one, and records any
+ranking, position or ``top'' label.
 
 \end{enumerate}
 
