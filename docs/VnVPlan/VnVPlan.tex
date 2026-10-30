@@ -1386,6 +1386,31 @@ failure points to the rule that caused it rather than to the request.
     is refused (FR6).
 \end{enumerate}
 
+\subsubsection{Learning and Feedback}
+
+The feedback rules are calculations on a portfolio, so they are tested as
+functions with portfolios given directly, with no database or API. Each test
+has a hand-calculated expected value.
+
+\begin{enumerate}
+  \item \textbf{ut-learn-1: Feedback threshold.} With a value of 1,000.00 at
+    the last view, a new value of 1,050.00 (a change of exactly
+    \texttt{FEEDBACK\_THRESHOLD}, 5\%) gives no feedback, and 1,050.01 and
+    949.99 both give feedback (FR52).
+  \item \textbf{ut-learn-2: Largest change.} For changes of $+70$ in A and
+    $-10$ in B, A is named. For $0$ in A and $-70$ in B, B is named (FR52).
+  \item \textbf{ut-learn-3: Shares of the portfolio.} For holdings worth
+    100.00, 100.00 and 100.00, each share is one third, and the shares add up
+    to 100\% within \texttt{VALUE\_TOLERANCE} (0.01). For a single holding, its
+    share is 100\% (FR53).
+  \item \textbf{ut-learn-4: Concentration limit.} Holdings worth 500.00 and
+    500.00 (exactly \texttt{CONCENTRATION\_LIMIT}, 50\%) give no explanation,
+    and 501.00 and 499.00 give one (FR54).
+  \item \textbf{ut-learn-5: Grading.} For a check with answers b, a and c, the
+    answers b, c and c give questions 1 and 3 correct and question 2
+    incorrect. All correct and all wrong are also tested (FR56).
+\end{enumerate}
+
 \subsection{Tests for Nonfunctional Requirements}
 
 \wss{If there is a module that needs to be independently assessed for
