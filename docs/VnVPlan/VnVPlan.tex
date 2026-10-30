@@ -454,8 +454,8 @@ Requirements: FR17
 
 Control: Manual
 
-Initial State: A test user signed in on a test device, with the health notice
-acknowledged.
+Initial State: A test user signed in on a test device, who acknowledged the
+health notice at least two days ago.
 
 Input: The tester enters a cycling workout of 12 hours and 1 minute for the
 previous day in the phone's health platform, then opens \progname{}.
@@ -467,7 +467,9 @@ Test Case Derivation: FR17 requires the user to be shown that the record was
 not counted. test-act-5 and test-act-6 check the underlying values
 automatically, and this test checks the whole path on a real device. The
 workout is entered for the previous day so that all of it fits within one
-finished day, whatever time the test is run.
+finished day, whatever time the test is run. The user acknowledged the notice
+before that day, because activity from before the user's first day would not
+count for a different reason (SRS Section 6.7).
 
 How test will be performed: The tester notes the balance, trends, and streak,
 enters the workout, then checks the same values and the workout's label in
@@ -480,36 +482,43 @@ Requirements: FR14
 
 Control: Automatic
 
-Initial State: A new test user with a balance of 0 who has not acknowledged
-the health notice or consented to \progname{} reading their health data.
+Initial State: A new test user with a balance of 0 and no activity goal, who
+has not acknowledged the health notice or consented to \progname{} reading
+their health data.
 
 Input: The backend receives a total of 5,000 steps for day $d$. On day $d+1$,
-the user acknowledges the notice and consents, and the app's next sync sends
-the totals for day $d$ and for day $d+1$, which has 3,000 steps.
+the user records 3,000 steps, then acknowledges the notice and consents. The
+backend then receives the totals for days $d$ and $d+1$.
 
-Output: The balance is 0 at the end of day $d$ and 80 at the end of day $d+1$.
-The app reads no health data and asks for no consent until the notice is
-acknowledged.
+Output: The balance is 0 at the end of day $d$ and 30 at the end of day $d+1$.
+At the end of day $d+1$, the streak is 1 and the activity trends show only day
+$d+1$. The app reads no health data and asks for no consent until the notice is
+acknowledged, and its first sync sends no total for a day before the user's
+first day.
 
 Test Case Derivation: FR14 allows no currency until the notice is
 acknowledged, even if a daily total reaches the server, so day $d$ earns
 nothing at first. The app reads no health data before then, so that total can
 only come from an app bug or a modified app, and the test checks that the
-server does not rely on the app to enforce the notice. Activity already in the
-health platform is rewarded on the first sync after the notice (SRS Section
-6.2). Each sync re-reads the last \texttt{SYNC\_LOOKBACK\_\allowbreak PERIOD} (7
-days) and rewards any record not already rewarded (Hazard Analysis, SEC-20),
-so once the notice is acknowledged, day $d$'s 5,000 steps earn 50 alongside
-day $d+1$'s $\lfloor 3000 / 100 \rfloor = 30$. The two days have different
-totals so that the final balance shows which days were rewarded: 30 would mean
-day $d$ was never rewarded, and 80 means both were.
+server does not rely on the app to enforce the notice. The user's first day is
+the calendar day they acknowledge the notice, $d+1$ (SRS Section 6.7), and
+SEC-20 does not reward records from before it, so day $d$ still earns nothing
+when its total is sent again. The app should not send that total, so this also
+checks that the server does not rely on the app to leave it out. Day $d+1$ earns
+$\lfloor 3000 / 100 \rfloor = 30$. Its steps come before the acknowledgement,
+which checks that the cut-off is the calendar day and not the moment of
+acknowledgement. The two days have different totals so that the final balance
+shows which days were rewarded: 80 would mean day $d$ was rewarded too. With no
+goal set, the streak would be 2 if day $d$ counted (SRS Section 6.7).
 
 How test will be performed: A pytest test sends day $d$'s total, moves the
 backend's clock to day $d+1$, sends the acknowledgement, the consent, and then
-both days' totals, and reads the balance at the end of each day. A Jest test
-replaces the health platform with a test version that records every read, as
-in test-remind-7, starts the app for a new user, and checks that no read and
-no consent request happen before the notice is acknowledged.
+both days' totals, and reads the balance at the end of each day, then the
+streak and trends. A Jest test replaces the health platform with a test version
+that records every read, as in test-remind-7, and holds records from the
+previous day. It starts the app for a new user, checks that no read and no
+consent request happen before the notice is acknowledged, and checks that the
+first sync sends no total for the previous day.
 
 \item{\textbf{test-act-9: Health notice shown before the consent request}\\}
 
@@ -517,9 +526,9 @@ Requirements: FR14
 
 Control: Manual
 
-Initial State: A new account signed in on a test device for the first time,
-with activity from the previous day already recorded in the phone's health
-platform.
+Initial State: A new account signed in on a test device for the first time.
+The phone's health platform already holds workouts from earlier days and no
+activity from the current day.
 
 Input: The tester opens \progname{}, acknowledges the notice, and consents to
 \progname{} reading their health data.
@@ -527,22 +536,21 @@ Input: The tester opens \progname{}, acknowledges the notice, and consents to
 Output: Before asking for consent, \progname{} shows a notice stating that it
 does not give medical advice and that users should consult a health
 professional before starting a new exercise program. The consent request does
-not appear and the balance stays 0 until the tester acknowledges the notice.
-After the tester consents, the recorded activity earns currency on the first
-sync.
+not appear until the tester acknowledges the notice. After the tester consents
+and the first sync finishes, the balance is still 0 and the earlier workouts do
+not appear in the activity trends.
 
-Test Case Derivation: This is the notice and the order FR14 requires. The
-health platform already has activity when \progname{} is first opened, so
-there is currency the app could award straight away, and the test shows that
-the notice comes before it. That activity then earns currency, because
-\progname{} rewards activity already in the health platform, as far back as
-\texttt{SYNC\_LOOKBACK\_\allowbreak PERIOD} (7 days) (SRS Section 6.2). The
-activity is from the previous day so that it is within this period. test-act-8
-checks the amounts, and this test checks the same path on a real device.
+Test Case Derivation: This is the notice and the order FR14 requires. A new
+user's health platform may already hold many workouts, so the test starts with
+some. They are from before the user's first day (SRS Section 6.7), so they earn
+nothing and are not shown (FR27). There is no activity from the current day, so
+any currency after the first sync could only come from those workouts.
+test-act-8 sends totals to the backend directly, and this test checks the same
+rule on a real device, with real records in the health platform.
 
 How test will be performed: The tester compares the notice's text with FR14,
 checks that no consent request appears before acknowledging it, and checks the
-balance before acknowledging it and after the first sync.
+balance and activity trends after the first sync.
 
 \item{\textbf{test-act-10: Rewards without opening the app}\\}
 
