@@ -61,6 +61,8 @@ Oct 19, 2026 & Davis Lenover & 2 Scope and Purpose of Hazard Analysis,
 6 Safety and Security Requirements.\\
 Oct 19, 2026 & Preston Grewal & 7 Roadmap.\\
 Oct 19, 2026 & Zaid & Appendix: Generative AI Use Disclosure.\\
+Oct 30, 2026 & Zaid & Updated SEC-17 and SEC-40, H37,
+the risk matrix, and traceability.\\
 Oct 30, 2026 & Davis Lenover & 6 Safety and Security Requirements: SAF-12 now
 places the health notice before the health data consent.\\
 Oct 30, 2026 & Davis Lenover & 6 Safety and Security Requirements: SAF-8 now has
@@ -689,7 +691,7 @@ requirements that address it, and each requirement links back to its hazards.
     \multicolumn{11}{l}{\textbf{C9 Accounts and authentication}}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \\*[2pt]
     H35\phantomsection\label{H35} & Account taken over                                     & Loss of privacy; account data changed or deleted                                       & Weak or reused passwords; repeated guessing                                                            & Monitor failed sign-in attempts                                                     & 4 & 3 & High   & M & Enforce password rules, limit sign-in attempts, and store session tokens in the phone's secure storage                   & \reqref{SEC-38}, \reqref{SEC-39} \\
     H36\phantomsection\label{H36} & A person under 18 creates an account                   & Health data collected from a minor without the consent the law may require             & False age entered at sign-up                                                                           & Not reliably detectable                                                             & 3 & 2 & Medium & M & Require users to confirm they are 18 or older, and delete the account if told otherwise                                  & \reqref{SEC-37} \\
-    H37\phantomsection\label{H37} & Session stays valid after logout or a lost phone       & Another person uses the account                                                        & Sessions that never expire                                                                             & Tests of session expiry                                                             & 3 & 2 & Medium & M & Expire sessions and allow signing out of all devices                                                                     & \reqref{SEC-17} \\
+    H37\phantomsection\label{H37} & Session stays valid after sign-out or password reset, or on a lost phone       & Unauthorized account access and exposure of private data                                                  & Missing session expiry or sign-out controls                                                      & Tests of expiry, single-device and all-device sign-out, and password reset                                                              & 4 & 2 & Medium & M & End sessions on sign-out or inactivity, support all-device sign-out, and end all sessions after a successful password reset.                                                                      & \reqref{SEC-17}, \reqref{SEC-40} \\
     H38\phantomsection\label{H38} & User cannot sign in                                    & User is locked out of their progress and may abandon the app                           & Forgotten password; authentication service outage                                                      & Monitor sign-in failures and outages                                                & 2 & 3 & Medium & M & Provide password reset by email and show a clear error message when sign-in fails                                        & \reqref{SEC-40} \\
     H39\phantomsection\label{H39} & Account deletion incomplete                            & Personal data kept against the user's wishes; breach of PIPEDA                         & Data left in tables or backups                                                                         & Tests that delete an account and search for its data                                & 3 & 2 & Medium & E & Delete all personal data within \texttt{DATA\_DELETION\_PERIOD} of a request                                                    & \reqref{SEC-18} \\
     \midrule
@@ -1622,17 +1624,28 @@ kept secure (P02).}
 {SRS Section~7.3, SEC-16.}
 {Capstone.}
 
-\hazreq{SEC-17}{Session expiry}
-{The system shall end a session when the user signs out of it or when it has
-not been used for \texttt{SESSION\_TIMEOUT}, after which the user must sign in
-again.}
-{A test session is rejected after the user signs out of it, and after it is
-left unused for longer than \texttt{SESSION\_TIMEOUT}. In both cases the user
-must sign in again to continue.}
-{A lost or shared phone, or a stolen session, gives access to a user's health
-and portfolio data for as long as the session stays valid. Ending
-unused sessions limits that window, and ending a session at sign-out stops a
-copied session from being reused (SRS Section~6.1, FR\_AcctSignOut).}
+\hazreq{SEC-17}{Session expiry and sign-out}
+{The system shall end a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. Signing out of one session shall leave the account's other valid sessions unchanged.
+
+The system shall let a signed-in user select “Sign out of all devices.” This action shall end all existing sessions for that account, including the session used to request it. Sessions belonging to other accounts shall remain unchanged.
+
+For either sign-out action, the system shall end the affected sessions before reporting success. Once a session ends, the server shall reject further requests using that session. The system shall not allow the session to be renewed without the user signing in again.}
+{When a test account is signed in on two devices, signing out on one device causes further requests using that session to be rejected. The other device's session remains valid. A session left unused for \texttt{SESSION\_TIMEOUT} is rejected when next used.
+
+Selecting ``Sign out of all devices'' ends both sessions before success
+is reported, even if the second device was actively being used. Further
+requests using either session are rejected.
+
+Attempts to renew a session after sign-out or expiry fail. The user can
+regain access by signing in again with the correct email address and
+password. Neither sign-out action affects sessions belonging to another
+test account.}
+{A lost or shared phone can give another person access to the user's
+health and portfolio data while its session remains valid. An inactivity
+timeout does not end that access if the person keeps using the session.
+Signing out of all devices lets the account owner end existing sessions
+from another device. Ending sessions on the server also prevents copied
+session tokens from being reused (SRS Section~6.1, FR\_AcctSignOut).}
 {FMEA \hazref{H37}, L3 (privacy loss), L4 (security loss).}
 {SRS Section~7.3, SEC-17.}
 {Capstone.}
@@ -1701,13 +1714,21 @@ password~\cite{OWASPMASVS}.}
 
 \hazreq{SEC-40}{Account recovery}
 {The system shall let a user who has forgotten their password set a new one
-through a link sent to their account's email address.}
-{A test user who requests a reset receives a link at their email address, and
-after setting a new password can sign in only with the new one.}
-{A user who cannot sign in loses access to all their progress and may abandon
-the app. The link goes only to the account's email address, so recovery does
-not open a way into someone else's account.}
-{FMEA \hazref{H38}, L5 (data loss, integrity and availability).}
+through a link sent to their account's email address.
+
+When a user successfully resets their password, the system shall end all existing sessions for that account on the server before reporting success. The server shall reject further requests using those sessions, and the sessions shall not be renewed. The user must sign in again with the new password to regain access.
+
+Requesting a reset link without completing the password reset shall not
+end existing sessions. Resetting one account's password shall leave
+other accounts' sessions unchanged.}
+{When a test account is signed in on two devices, requesting a password reset sends a link to the account's email address and leaves both sessions valid.
+
+After the user sets a new password through the link, both existing sessions have ended before success is reported, even if one device was actively being used. Further requests using either session are rejected, and attempts to renew either session fail. Signing in with the old password fails, while signing in with the new password succeeds. Another test account's sessions remain valid.}
+{A user who forgets their password needs a way to regain access to their
+account and progress. Sending the reset link to the account's email address provides that recovery route (SRS Section~6.1, FR\_AcctResetPassword).
+
+Changing the password alone does not end access through an existing session on a lost or shared phone. Ending all existing sessions after a successful reset removes that access and requires a new sign-in. Waiting until the reset is completed prevents someone from ending the user's sessions merely by requesting a reset link.}
+{FMEA \hazref{H37}, \hazref{H38}, L3 (privacy loss), L4 (security loss), L5 (data loss, integrity and availability).}
 {SRS Section~6.1, FR\_AcctResetPassword.}
 {Capstone.}
 
@@ -1790,7 +1811,7 @@ controls, and where it appears in the SRS.
 \reqref{SEC-37} & \hazref{H36} & L3 & FR\_AcctAgeConfirm & Capstone\\
 \reqref{SEC-38} & \hazref{H35} & L3, L4 & Section 7.3 & Capstone\\
 \reqref{SEC-39} & \hazref{H35} & L3, L4 & Section 7.3 & Capstone\\
-\reqref{SEC-40} & \hazref{H38} & L5 & FR\_AcctResetPassword & Capstone\\
+\reqref{SEC-40} & \hazref{H37}, \hazref{H38} & L3, L4, L5 & FR\_AcctResetPassword & Capstone\\
 \end{longtable}
 }
 
