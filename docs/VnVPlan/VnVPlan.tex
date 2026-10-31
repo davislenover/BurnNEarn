@@ -3893,7 +3893,27 @@ usability questionnaire had a similar problem. It grew long and elaborate, and I
 could see that justifying all of it would be hard. I resolved this by cutting it
 back to what each goal actually needs and limiting the study to the core loop.
 Next time I will check requirements more carefully before moving on, since every
-requirement we keep has to be tested later.
+requirement we keep has to be tested later.\\
+
+\noindent\textbf{Farid:} My first pain point was coordinating with Davis on
+Section~4.1. We split the section by feature area, but I branched from
+\texttt{main} before his tests were merged, and we had both replaced the same
+part of the template. The result was a merge conflict, and my tests had no
+introduction above them, since the conventions they depended on were on his
+branch. I resolved it by merging his work into my branch and placing my areas
+around his in the order of SRS Section~6. Next time, when two of us write
+parts of the same section, I will branch from the teammate's branch or agree
+first on who writes the shared text. The second pain point was that writing
+tests with exact inputs and expected outputs exposed gaps in requirements I
+had written myself. FR57 records a passed knowledge check but never says what
+a pass is, FR3 does not say whether usernames are case-sensitive, and FR52
+does not say what feedback to give when the previous portfolio value was zero.
+I could not write an exact expected output for any of these. Where I could, I
+designed around the gap, for example by using all-correct and all-wrong
+answers for FR57, and I raised each gap as an issue so the SRS gets fixed
+instead of the test hiding it. This showed me that a requirement with a fit
+criterion can still be impossible to test, and that writing the test is a
+good way to find out.\\
 
 \subsubsection*{3. What knowledge and skills will the team collectively need to
 acquire to successfully complete the verification and validation of your
