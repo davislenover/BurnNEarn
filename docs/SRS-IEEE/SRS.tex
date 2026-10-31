@@ -1785,9 +1785,12 @@ requirement.
 \noindent \begin{itemize}
 \freq{FR_AcctCreate}
   {The system shall let a new user create an account with an email address and
-  a password.}
+  a password, and shall refuse an email address that another account already
+  uses.}
   {A test user who enters an unused email address and a valid password has an
-  account, and can sign in with them.}
+  account, and can sign in with them. A test user who tries to sign up with an
+  email address that another account already uses is refused, and no account is
+  created.}
   {\srref{SR_EasyStart}, G2}
 \freq{FR_AcctAgeConfirm}
   {(HA SEC-37) The system shall not create an account until the user confirms

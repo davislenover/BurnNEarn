@@ -559,29 +559,31 @@ How test will be performed: A pytest test sends the two requests and then
 tries to sign in with each address. The tester then tries the sign-up screen
 on a test device and records whether an account was created.
 
-\item{\textbf{test-acct-3: Unique usernames}\\}
+\item{\textbf{test-acct-3: Unique usernames and email addresses}\\}
 
-Requirements: FR3
+Requirements: FR1, FR3
 
 Control: Automatic
 
-Initial State: An account with the username \texttt{sam\_test} exists, as
-created in test-acct-1. No account uses the email address
-\texttt{jordan@fitfolio.test}.
+Initial State: An account with the email address \texttt{sam@fitfolio.test} and
+the username \texttt{sam\_test} exists, as created in test-acct-1. No account
+uses the email address \texttt{jordan@fitfolio.test}.
 
-Input: A sign-up request for \texttt{jordan@fitfolio.test} with the username
-\texttt{sam\_test}, followed by a second request with the same details except
-the username \texttt{jordan\_test}.
+Input: Three sign-up requests: for \texttt{jordan@fitfolio.test} with the
+username \texttt{sam\_test}; for \texttt{sam@fitfolio.test} with the username
+\texttt{jordan\_test}; and for \texttt{jordan@fitfolio.test} with the username
+\texttt{jordan\_test}.
 
 Output: The first request is refused with a message asking the user to choose
-a different username, and no account is created. The second request
-succeeds.
+a different username. The second is refused because the email address is
+already in use. Neither creates an account. The third request succeeds.
 
-Test Case Derivation: FR3 asks a user who chooses a username already in use
-to choose a different one. The second request shows that the refusal was
-caused by the username alone, since every other detail is the same.
+Test Case Derivation: FR3 asks a user who chooses a username already in use to
+choose a different one, and FR1 refuses an email address already in use. The
+last request combines details from the first two, so it shows that each refusal
+was caused by the one detail already in use.
 
-How test will be performed: A pytest test sends both requests and checks
+How test will be performed: A pytest test sends the three requests and checks
 each response and which accounts exist afterwards.
 
 \item{\textbf{test-acct-4: Signing out}\\}
