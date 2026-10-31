@@ -2,6 +2,18 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+
+% Keep each questionnaire question and its choices together on one page.
+\makeatletter
+\newenvironment{choices}
+  {\interlinepenalty=10000 \@beginparpenalty=10000
+   \begin{itemize}\@itempenalty=10000}
+  {\end{itemize}}
+\newenvironment{letteredchoices}
+  {\interlinepenalty=10000 \@beginparpenalty=10000
+   \begin{enumerate}\@itempenalty=10000}
+  {\end{enumerate}}
+\makeatother
 \usepackage{hyperref}
 \hypersetup{
     colorlinks,
@@ -35,6 +47,8 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
+Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
+  updates to 2.3.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -228,21 +242,21 @@ provides the needs that validation checks the product against. It also
 exposes a gap that validation must close: neither interviewee was a beginner
 at investing, so the needs of beginners, represented by Persona~3, come from
 the Problem Statement rather than from users. The usability tests in this plan
-therefore recruit participants who are beginners at investing
+therefore recruit mainly participants who are beginners at investing
 (Section~\ref{SecSoftwareValidation}).
 
 \paragraph{Usability Report (Winter).} This report documents usability
-testing of the working application, covering onboarding, earning currency from
-activity, trading, learning, and sharing. The usability tests specified in
-this plan are the ones the report will run and record: the participant
-profile, the tasks, the observations, and the questionnaire are defined here
+testing of the working application's core loop: earning currency from steps,
+buying shares, and following the portfolio's value. The usability tests
+specified in this plan are the ones the report will run and record: the
+participant profile, the tasks, and the questions are defined here
 (Section~\ref{SecSoftwareValidation} and Appendix~\ref{SecUsabilitySurvey}),
 and the report presents their results. These tests produce the evidence for
-NFR2 (Usability) and for goals G1 (at least 70\% of participants improve
-their score on a before-and-after knowledge check) and G2 (at least 80\% of
-first-time participants complete the core tasks without outside help) from
-SRS Section~2.2. Because the tests need a working application, they take
-place after the Rev~0 demonstration.
+NFR2 (Usability), NFR8 (Accessibility), and goals G1 (at least 70\% of
+participants improve their score on a before-and-after knowledge check) and
+G2 (at least 80\% of first-time participants complete the core tasks without
+outside help) from SRS Section~2.2. Because the tests need a working
+application, they take place after the Rev~0 demonstration.
 
 \subsection{Relevant Documentation}
 
@@ -2523,9 +2537,406 @@ Their values are defined in this section for easy maintenance.
 
 \subsection{Usability Survey Questions} \label{SecUsabilitySurvey}
 
-\wss{This is a section that would be appropriate for some projects.}
+% \wss{This is a section that would be appropriate for some projects.}
 
-\newpage{}
+Participants use \progname{} on their own phones for 4 to 7 days, as part of
+their normal routine, rather than in one supervised session. The study uses
+the version of \progname{} from the Revision~0 demonstration and tests its core
+loop (Development Plan, Section~9): earning virtual currency from steps, buying
+shares of stocks at real prices, and following the portfolio's value. Shares
+are bought whole, and steps earn 1 unit of currency per 100 steps (SRS,
+\texttt{EARNING\_RATES}), so the stock list used in the study includes at least
+five stocks priced under 50 USD when the study starts. A participant can then
+afford a share after about a day of walking. Two
+of the features being tested span multiple days: earning rewards each day and
+seeing a portfolio's value change as prices move. A longer study is therefore
+needed to test them. The study includes at least three days when the stock
+market is open, so that participants can buy shares and see prices change. The
+participant profile and the study procedure are given in
+Section~\ref{SecSoftwareValidation}.
+
+\begin{table}[!ht]
+\caption{Parts of the usability study} \label{TblUsabilityStudyParts}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.21\textwidth}
+  >{\raggedright\arraybackslash}p{0.22\textwidth}
+  >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Part} & \textbf{When} & \textbf{What it measures}\\
+\midrule
+Before-study questionnaire & Day 1, before installing the app (10 minutes) &
+  Background, attitude to risk, and the knowledge check before using the app
+  (G1)\\
+Experience log & Any time, as things happen &
+  What the participant was doing, what worked, what did not, and any help
+  they needed\\
+After-study questionnaire & The day after the last day (10 minutes) &
+  Core tasks done without help (G2, NFR2), larger text (NFR8), and the
+  knowledge check again (G1)\\
+Debrief interview & Right after the questionnaire (30 minutes) &
+  What worked and what did not, and why, and how the participant used their
+  portfolio\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Because the team does not watch participants while they use the app, the
+evidence comes from what participants record themselves and what they tell the
+team at the end, in the four parts listed in Table~\ref{TblUsabilityStudyParts}.
+The questionnaires and the log are online forms. All responses, including the
+notes from each debrief, are recorded under a participant ID rather than a
+name.
+
+Participants are asked to add to the experience log whenever something works
+well, goes wrong, or confuses them, rather than at a set time. Each entry is
+then written while the details are fresh, since they are easily forgotten by
+the end of the study.
+
+The study ends with a debrief, an interview in which a team member asks the
+participant about everything they experienced. The interviewer reads the
+participant's log and questionnaire answers beforehand, so the interview can
+follow up on specific entries, such as why a screen was confusing or what the
+participant expected to happen instead. The debrief comes after the
+after-study questionnaire, so that the conversation cannot change the
+participant's answers or their score on the knowledge check.
+
+\subsubsection{Before-Study Questionnaire} \label{SecBeforeStudy}
+
+Participants complete this questionnaire on Day~1, after they agree to take
+part and before they install \progname{}. It has three parts: background,
+attitude to risk, and the knowledge check for G1. Answers are recorded under
+the participant ID, and the form asks for no name, contact details, or health
+measurements.
+
+\paragraph{Part A: Background.}
+
+{\renewcommand{\labelenumi}{A\arabic{enumi}.}
+\renewcommand{\theenumi}{A\arabic{enumi}}
+\begin{enumerate}
+  \item Are you 18 years old or older?
+    \begin{choices}
+      \item[$\circ$] Yes
+      \item[$\circ$] No
+    \end{choices}
+  \item Which kind of phone will you use during the study?
+    \begin{choices}
+      \item[$\circ$] Android
+      \item[$\circ$] iPhone
+    \end{choices}
+  \item Which statement best describes your experience with investing?
+    \begin{choices}
+      \item[$\circ$] I have never invested and know little about it
+      \item[$\circ$] I have never invested, but I know some of the basics
+      \item[$\circ$] I have invested a little, for example in stocks or a fund
+      \item[$\circ$] I invest regularly
+    \end{choices}
+  \item Have you used \progname{} before this study?
+    \begin{choices}
+      \item[$\circ$] Yes
+      \item[$\circ$] No
+    \end{choices}
+\end{enumerate}}
+
+A participant must be at least \texttt{MIN\_USER\_AGE} (18) years old (SRS,
+Appendix~C) and must not have used \progname{} before (A4). The team checks
+these when recruiting, and the form confirms them. The team also checks that
+the participant's phone runs Android \texttt{MIN\_ANDROID\_VERSION} (17) or iOS
+\texttt{MIN\_IOS\_VERSION} (27) or later (SRS, SC1). A2 records which kind of
+phone each result comes from.
+
+Most participants are beginners at investing, which means any answer to A3
+except ``I invest regularly''. One or two participants who invest regularly
+also take part, since their experience gives useful feedback. They do the same
+study, but their results are reported separately and do not count toward G1,
+G2, or NFR2.
+
+\paragraph{Part B: Attitude to risk.}
+
+How willing a participant is to take risks is likely to shape how they use
+their portfolio. People often describe themselves differently from how they
+act, so these questions describe everyday situations instead of asking about
+risk directly. They were written for this study, based on the kinds of
+questions in a published risk tolerance scale~\citep{GrableLytton1999}. The
+Usability Report compares these answers with what the participant shows and
+tells the interviewer in the debrief (I7).
+
+On the form, this part is titled ``Your money choices'', so that the title
+does not say what is being measured. Participants see this instruction before
+the questions:
+
+\begin{quote}
+There are no right or wrong answers. For each question, choose what you would
+most likely do.
+\end{quote}
+
+{\renewcommand{\labelenumi}{B\arabic{enumi}.}
+\renewcommand{\theenumi}{B\arabic{enumi}}
+\begin{enumerate}
+  \item Imagine you have saved \$1,000 that you will not need for five years.
+    You can keep it in a savings account, which pays a small amount of
+    guaranteed interest, or invest it in something such as stocks, whose value
+    can rise or fall. What would you do with it?
+    \begin{choices}
+      \item[$\circ$] Keep all of it in the savings account
+      \item[$\circ$] Keep most of it in the savings account and invest the rest
+      \item[$\circ$] Invest most of it and keep the rest in the savings account
+      \item[$\circ$] Invest all of it
+    \end{choices}
+  \item Imagine you invested \$1,000 in the stock market, and a month later it
+    is worth \$800. What would you most likely do?
+    \begin{choices}
+      \item[$\circ$] Sell all of it
+      \item[$\circ$] Sell some of it
+      \item[$\circ$] Keep all of it and wait
+      \item[$\circ$] Keep all of it and invest more
+    \end{choices}
+  \item You can put \$1,000 into one of these for a year. Which would you
+    choose?
+    \begin{choices}
+      \item[$\circ$] One that will be worth between \$1,000 and \$1,050
+      \item[$\circ$] One that will be worth between \$900 and \$1,200
+      \item[$\circ$] One that will be worth between \$600 and \$1,600
+    \end{choices}
+\end{enumerate}}
+
+\paragraph{Part C: Knowledge check.}
+
+Participants see this instruction before the questions:
+
+\begin{quote}
+This is not a test of you. Please answer without looking anything up, and
+choose ``I don't know'' rather than guessing. We will go through the answers
+with you at the end of the study.
+\end{quote}
+
+{\renewcommand{\labelenumi}{C\arabic{enumi}.}
+\renewcommand{\theenumi}{C\arabic{enumi}}
+\begin{enumerate}
+  \item What does it mean to own one share of a company's stock?
+    \begin{letteredchoices}
+      \item You own a small part of the company.
+      \item You have lent the company money, and it will pay you interest.
+      \item You can buy the company's products at a discount.
+    \end{letteredchoices}
+  \item What is a stock's market price?
+    \begin{letteredchoices}
+      \item The price the company set when it first sold its shares.
+      \item The price at which one share was last bought and sold.
+      \item The average price of the stock over the past year.
+    \end{letteredchoices}
+  \item You bought 3 shares of one stock at \$20 each and 2 shares of another
+    stock at \$50 each. The first stock is now priced at \$30 and the second at
+    \$40. What is your portfolio worth now?
+    \begin{letteredchoices}
+      \item \$70
+      \item \$160
+      \item \$170
+    \end{letteredchoices}
+  \item You bought one share for \$50, and it is now worth \$60. What is your
+    return?
+    \begin{letteredchoices}
+      \item 10\%
+      \item 20\%
+      \item 120\%
+    \end{letteredchoices}
+  \item Why might an investor spread their money across many different
+    investments?
+    \begin{letteredchoices}
+      \item So that they are sure not to lose any money.
+      \item So that if one investment drops, the total drops less.
+      \item So that they pay less tax on what their investments earn.
+    \end{letteredchoices}
+  \item The price of Stock A often rises or falls by 5\% in a day. The price of
+    Stock B rarely moves more than 1\% in a day. Which statement is true?
+    \begin{letteredchoices}
+      \item Stock A is more volatile, so its value is harder to predict in the
+        short term.
+      \item Stock A is more volatile, so it will earn more than Stock B over
+        time.
+      \item Stock B is more volatile, so its value is harder to predict in the
+        short term.
+    \end{letteredchoices}
+\end{enumerate}}
+
+The questions cover the investing concepts from SRS Section~6.4 that the core
+loop involves. The core loop teaches no fitness concepts, so none are asked.
+Each has one correct answer
+(Table~\ref{TblKnowledgeCheckKey}), and the form also offers ``I don't know''.
+The after-study questionnaire asks the same questions again. A correct answer
+scores 1, ``I don't know'' scores 0, and a wrong answer scores minus one half,
+so guessing does not raise a score on average. A participant improves if their
+score goes up by at least 1 point, and G1 is met if at least 70\% of beginners
+improve, apart from those left out in Part~F.
+
+\begin{table}[!ht]
+\caption{Knowledge check answers} \label{TblKnowledgeCheckKey}
+\small
+\begin{tabularx}{\textwidth}{lXl}
+\toprule
+\textbf{Question} & \textbf{Core concept} & \textbf{Answer}\\
+\midrule
+C1 & Stock and share & (a)\\
+C2 & Market price & (b)\\
+C3 & Portfolio value & (c)\\
+C4 & Return & (b)\\
+C5 & Diversification & (b)\\
+C6 & Risk and volatility & (a)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Experience Log} \label{SecExperienceLog}
+
+On Day~1, participants save a link to the log on their phone's home screen, so
+that adding an entry takes about a minute. Each entry is a short form with the
+questions below. The link fills in the participant's ID, and the form records
+the date and time on its own.
+
+{\renewcommand{\labelenumi}{L\arabic{enumi}.}
+\renewcommand{\theenumi}{L\arabic{enumi}}
+\begin{enumerate}
+  \item Which part of \progname{} were you using?
+    \begin{choices}
+      \item[$\circ$] Letting \progname{} read my steps
+      \item[$\circ$] My currency or rewards
+      \item[$\circ$] Buying shares
+      \item[$\circ$] My portfolio
+      \item[$\circ$] Something else, such as installing the app
+    \end{choices}
+  \item How did it go?
+    \begin{choices}
+      \item[$\circ$] It went well
+      \item[$\circ$] It worked, but it was hard or confusing
+      \item[$\circ$] It did not work
+    \end{choices}
+  \item What were you trying to do, and what happened? (Written answer)
+  \item Did you need help from outside the app?
+    \begin{choices}
+      \item[$\circ$] No
+      \item[$\circ$] Yes, I searched online
+      \item[$\circ$] Yes, I asked someone
+      \item[$\circ$] Yes, something else
+    \end{choices}
+\end{enumerate}}
+
+The first four choices in L1 match the core tasks D1 to D4, so the Usability
+Report can group entries by task. L4 shows where a participant needed help
+from outside the app.
+
+\subsubsection{After-Study Questionnaire} \label{SecAfterStudy}
+
+Participants complete this questionnaire the day after the last day of the
+study, just before the debrief. It has no written questions, since the debrief
+covers what worked and what did not. Its parts continue from the before-study
+questionnaire.
+
+\paragraph{Part D: Core tasks.}
+
+These four tasks, which follow the core loop in order, are the core tasks for
+this study. Participants are given them on Day~1 as things to try during the
+study. For each task, participants choose one of these answers:
+
+\begin{choices}
+  \item[$\circ$] Yes, without help from outside the app
+  \item[$\circ$] Yes, but I needed help from outside the app at least once
+  \item[$\circ$] No, I tried but could not
+  \item[$\circ$] No, I did not try
+\end{choices}
+
+{\renewcommand{\labelenumi}{D\arabic{enumi}.}
+\renewcommand{\theenumi}{D\arabic{enumi}}
+\begin{enumerate}
+  \item Let \progname{} read your steps.
+  \item See the currency you earned from your steps.
+  \item Buy shares of a stock.
+  \item Check how much your portfolio is worth.
+\end{enumerate}}
+
+A participant completes the core tasks if they choose the first answer for all
+four, and none of their log entries shows outside help with one of them. Help
+from the team with installing the app, or with a problem on the team's side
+such as the server being down, is not outside help. G2 and NFR2 are met if at
+least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%) of beginners complete the core
+tasks.
+
+\paragraph{Part E: Larger text.}
+
+On one weekday of the study, the team sends each participant the steps for
+their kind of phone to set its text size to the setting closest to
+\texttt{MAX\_TEXT\_SCALE} (200\%) of the default. It asks them to buy at least
+one share and check their portfolio that day.
+
+{\renewcommand{\labelenumi}{E\arabic{enumi}.}
+\renewcommand{\theenumi}{E\arabic{enumi}}
+\begin{enumerate}
+  \item On the day you used larger text, could you still read everything and
+    use every button in \progname{}?
+    \begin{choices}
+      \item[$\circ$] Yes
+      \item[$\circ$] Mostly, but some text or buttons were cut off or hidden
+      \item[$\circ$] No, I could not use some screens
+      \item[$\circ$] I did not use larger text
+    \end{choices}
+\end{enumerate}}
+
+NFR8 is met if at least one participant on each kind of phone used larger
+text, and no participant reports a problem on a screen used for a core task.
+
+\paragraph{Part F: Knowledge check again.}
+
+Participants answer C1 to C6 again, with the same instruction as before, and
+then one more question:
+
+{\renewcommand{\labelenumi}{F\arabic{enumi}.}
+\renewcommand{\theenumi}{F\arabic{enumi}}
+\begin{enumerate}
+  \item During the study, did you look up the answer to any of these questions,
+    or ask anyone about them?
+    \begin{choices}
+      \item[$\circ$] Yes
+      \item[$\circ$] No
+    \end{choices}
+\end{enumerate}}
+
+A participant who answers Yes, or who had full marks before the study, is
+left out of the G1 results.
+
+\subsubsection{Debrief Interview} \label{SecDebrief}
+
+The debrief takes about 30 minutes, in person or by video call. One team
+member asks the questions and a second takes notes. The interviewer asks open
+questions and does not explain how the app works until the end, so that the
+answers describe the participant's own experience.
+A question that starts with a condition in italics is asked only when the
+condition applies, and is skipped for anything the participant has already
+explained.
+
+{\renewcommand{\labelenumi}{I\arabic{enumi}.}
+\renewcommand{\theenumi}{I\arabic{enumi}}
+\begin{enumerate}
+  \item Walk me through how you used \progname{} during the study.
+  \item What worked well for you, and why?
+  \item What was the most confusing or frustrating moment? What did you expect
+    to happen instead?
+  \item \emph{For each log entry where L2 was not ``It went well'' or L4 was not
+    ``No'':} You wrote that \ldots{} Can you tell me more about that?
+  \item \emph{For each Part~D task not answered ``Yes, without help from
+    outside the app'':} What happened with this task?
+  \item \emph{If E1 was not ``Yes'' or ``I did not use larger text'':} Which
+    screens had the problem, and what happened on them?
+  \item Can you show me your portfolio? How did you decide what to do with
+    your currency, and what, if anything, did you do as prices moved?
+  \item What, if anything, did you learn from using \progname{}?
+  \item \emph{If A3 was ``I invest regularly'':} How does \progname{} compare
+    with how you invest now, and what do you think a beginner would find hard?
+  \item If you could change one thing about \progname{}, what would it be?
+\end{enumerate}}
+
+After I10, the interviewer goes through the knowledge check answers with the
+participant and answers their questions. The Usability Report groups the notes
+by step of the core loop, in the same way as the log entries.
+
+\clearpage
 
 \section{Appendix --- Generative AI Use Disclosure}
 
