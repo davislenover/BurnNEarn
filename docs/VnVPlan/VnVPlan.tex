@@ -457,10 +457,14 @@ Control: Automatic and Manual
 Initial State: The email addresses \texttt{young1@fitfolio.test} and
 \texttt{young2@fitfolio.test} are not used by any account.
 
-Input: Two sign-up requests with otherwise valid details: one for
-\texttt{young1@fitfolio.test} with the age confirmation set to false, and one
-for \texttt{young2@fitfolio.test} with the age confirmation left out. On a
-test device, the tester then fills in the sign-up screen for
+Input: Two sign-up requests to the backend, with otherwise valid details:
+\begin{itemize}
+  \item for \texttt{young1@fitfolio.test}, with the age confirmation set to
+    false;
+  \item for \texttt{young2@fitfolio.test}, with the age confirmation left out
+    of the request.
+\end{itemize}
+Then, on a test device, the tester fills in the sign-up screen for
 \texttt{young3@fitfolio.test} without confirming their age.
 
 Output: Both requests are refused, and signing in with either email address
@@ -469,11 +473,15 @@ fails because no account exists. On the device, no account is created for
 confirmation is required.
 
 Test Case Derivation: FR2 (Hazard Analysis, SEC-37) creates no account until
-the user confirms they are at least \texttt{MIN\_USER\_AGE} (18) years old. A
-request with the confirmation missing checks that the backend does not treat
-a missing value as confirmed. The backend is tested directly because a
-modified app could skip the check on the sign-up screen (Hazard Analysis,
-H43), and the device check confirms that the screen enforces it too.
+the user confirms they are at least \texttt{MIN\_USER\_AGE} (18) years old.
+Each case uses its own email address, so that an account existing afterwards
+shows which case failed. The two requests check the backend: a confirmation
+set to false must be refused, and so must a request with no confirmation at
+all, since a backend that only checked for false would treat a missing value
+as confirmed. The backend is tested directly because a modified app could
+skip the check on the sign-up screen (Hazard Analysis, H43). The device case
+checks that the sign-up screen enforces the confirmation too and tells the
+user why. It needs only one case, because the screen always sends a value.
 
 How test will be performed: A pytest test sends the two requests and then
 tries to sign in with each address. The tester then tries the sign-up screen
