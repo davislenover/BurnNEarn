@@ -137,6 +137,14 @@ Oct 19, 2026 & 1.0 & Zaid: 12 Likely Changes, 13 Unlikely Changes.\\
 Oct 27, 2026 & 1.1 & Davis Lenover: 6.6 Reminders and Settings, FR77
 revised because iOS does not tell apps which health data types they may
 read.\\
+Oct 30, 2026 & 1.2 & Davis Lenover: 1 Introduction, 2.4 User Characteristics,
+3 Stakeholder Requirements, 6.2, 6.3, 6.6 and 6.7 Functional Requirements, 7.2
+Data Dictionary, 7.3 Privacy and Data Retention: narrowed the intended users,
+defined milestones, placed the health notice before the health data consent
+(FR14), had the server refuse trades before the simulated market notice (FR34),
+started each user fresh on the day they acknowledge the health notice (SEC-20,
+FR27), allowed reminders to arrive the next time the app runs (FR75), and sold a
+removed asset's shares automatically (FR31, FR32).\\
 \bottomrule
 \end{tabularx}
 
@@ -277,9 +285,10 @@ investing habits because investing advice is confusing and learning by doing
 risks real money, while beginners at exercise lose motivation before they see
 results.
 
-\paragraph{Intended users.} Adults aged 18 or older, most of them students or
-people in their first jobs, with little or no investing experience and any
-level of fitness (Section~\ref{SecUserCharacteristics}).
+\paragraph{Intended users.} Adults aged 18 or older who walk, run, or use a
+wheelchair, most of them students or people in their first jobs, with little
+or no investing experience and any level of fitness
+(Section~\ref{SecUserCharacteristics}).
 
 \paragraph{Major functionality.} Within scope, \progname{}:
 \begin{itemize}
@@ -310,6 +319,9 @@ these benefits are stated as non-functional requirements.
         real-world security;
   \item give medical or training advice: it does not diagnose conditions,
         prescribe exercise programs, or set diet or weight goals;
+  \item promise support for every physical ability: it is designed for users
+        who walk, run, or use a wheelchair, and rewards only the supported
+        activity types;
   \item integrate directly with wearable devices (a stretch goal), since all
         activity is read through the phone's health platform;
   \item offer every listed security, or options, futures, short selling, or
@@ -449,7 +461,7 @@ its entry links to that definition.
   Diversification                                    & The extent to which a portfolio's value is spread across different assets, so that a fall in one asset has a limited effect on the whole.                               \\
   Exchange-traded fund\phantomsection\label{def:etf} & A fund that holds a collection of assets, such as the stocks of many companies, and is itself traded like a stock.                                                      \\
   Feedback                                           & An explanation, specific to the user's own portfolio or activity, of what happened and why; for example, why their portfolio's value fell on a given day.               \\
-  Fitness milestone                                  & A stated level of activity reached by the user, such as their first week with activity recorded every day.                                                              \\
+  Fitness milestone                                  & A streak length or total of virtual currency earned, listed in \texttt{MILESTONES}, that the user has reached (Section~\ref{SecFormal}).                                  \\
   Friend                                             & Another \progname{} user who has accepted a user's friend request.                                                                                                      \\
   Health platform                                    & The service built into a smartphone's operating system that stores health and activity data, such as Apple HealthKit on iOS and Google Health Connect on Android.       \\
   Holding                                            & The number of shares of one asset that a user owns.                                                                                                                     \\
@@ -827,6 +839,7 @@ starting their first job (Problem Statement and Goals, Section~1). The user of
   permissions, and use common mobile app controls.
   \item Carries an Android or iOS phone during everyday activity. No wearable
   device or fitness expertise is required.
+  \item Walks, runs, or uses a wheelchair.
   \item Reads English, and has the numeracy of Grade~9 mathematics: working
   with percentages, comparing values, and reading a simple line chart.
   \item Needs no prior knowledge of investing terms such as stock,
@@ -971,8 +984,8 @@ requirements that refine it.
           \emph{Source:} SH1, SH2. \emph{Evidence:} Both participants track activity with their phone (P01, P02). Tracking should be ``as touchless as possible'': an app that must be started and stopped by hand is easily left running for hours and gives wrong results (P01). Approximate step counts are acceptable to users (P01). \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_UsefulRewards}:] Rewards for activity shall have a visible use to the user beyond the activity count itself.\\
           \emph{Source:} SH1, SH2. \emph{Evidence:} A long step streak gives one participant nothing but pride (P01); rewards have not changed the other's habits, although a tangible reward might make them work out more (P02). \emph{Goal:} G5.
-    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level or physical ability shall be able to earn rewards, whatever kinds of activity they do.\\
-          \emph{Source:} SH1, SH6. \emph{Evidence:} Participants' activity goes well beyond walking: basketball, skating, and pickup hockey (P01); soccer, weightlifting, climbing stairs, and rock climbing (P02). The target users have any level of fitness (Problem Statement). \emph{Goal:} G5.
+    \item[SR\refstepcounter{srnum}\thesrnum\label{SR_AllAbilities}:] Users of any fitness level who walk, run, or use a wheelchair shall be able to earn rewards for the activity types \progname{} supports.\\
+          \emph{Source:} SH1, SH6. \emph{Evidence:} Participants' activity goes well beyond walking: basketball, skating, and pickup hockey (P01); soccer, weightlifting, climbing stairs, and rock climbing (P02). The target users have any level of fitness (Problem Statement). Both health platforms have data types for steps and wheelchair pushes~\citep{AppleHealthKit, GoogleHealthConnect}, which is what lets \progname{} reward these users' everyday movement. \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_OwnGoals}:] Users shall choose their own activity goals, or set none, and shall not be pressured to raise them.\\
           \emph{Source:} SH1. \emph{Evidence:} One participant has kept the same step goal for over a year, because a higher one takes too much time (P01); the other sets no goals and keeps only a mental check that they ``at least did something'' (P02). \emph{Goal:} G5.
     \item[SR\refstepcounter{srnum}\thesrnum\label{SR_SafeMotivation}:] Features that motivate activity shall not encourage users to exercise when it is unsafe, such as late at night, while injured, or beyond a healthy amount.\\
@@ -1843,8 +1856,23 @@ A supported activity type is one listed in
 reads the user's activity records from the health platform, shows the daily
 totals in their activity trends, and awards currency for them. Each activity
 record counts under one supported type only, so walks and runs count as steps,
-not as workout minutes. Section~\ref{SecFormal} defines the daily reward and
-the streak.
+not as workout minutes. Section~\ref{SecFormal} defines the daily reward, the
+streak, and milestones.
+
+\progname{} can reward only what the health platform holds, and what it holds
+depends on the user's devices and apps. Apple states that wheelchair pushes are
+recorded on Apple Watch in wheelchair mode~\citep{AppleHealthKit}, so a
+wheelchair user with only a phone may have no push counts. That user earns
+through workout records instead.
+
+\progname{} does not start or stop activity tracking. The health platform
+records activity whether or not \progname{} is open or even installed, so it
+may already hold activity when a user first opens \progname{}. Each user starts
+fresh on their first day, the calendar day they acknowledge the health notice
+(\rref{FR_ActHealthNotice}). Activity from that day counts, including activity
+from earlier that day. Activity from before it does not count toward the user's
+currency, activity trends, streak or milestones, however much the health
+platform holds.
 
 \noindent \begin{itemize}
 \freq{FR_ActTypes}
@@ -1862,12 +1890,14 @@ the streak.
   by the daily reward $R_d$ defined in Section~\ref{SecFormal}.}
   {\srref{SR_EarnFromActivity}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActHealthNotice}
-  {(HA SAF-12) Before the user first earns currency, the system shall display
-  a notice stating that \progname{} does not give medical advice and that
-  users should consult a health professional before starting a new exercise
-  program, and shall not award currency until the user acknowledges it.}
-  {A new test user is shown the notice before their first reward, and earns no
-  currency until they acknowledge it.}
+  {(HA SAF-12) Before the system first asks for the user's consent to read their
+  health data, it shall display a notice stating that \progname{} does not give
+  medical advice and that users should consult a health professional before
+  starting a new exercise program. It shall not read health data or award
+  currency until the user acknowledges the notice.}
+  {A new test user is shown the notice before they are asked for consent to read
+  their health data. Until they acknowledge it, no health data is read and they
+  earn no currency, even if a daily total reaches the server for them.}
   {\srref{SR_SafeMotivation}, \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActNoInteraction}
   {(HA SAF-13) The system shall award currency for recorded activity without
@@ -1952,9 +1982,10 @@ the streak.
   \ucref{UC_GoalsStreaks}, G3, G5}
 \freq{FR_ActMilestone}
   {The system shall show the user each milestone in \texttt{MILESTONES} when
-  they reach it.}
+  they reach it, as defined in Section~\ref{SecFormal}.}
   {A test user whose streak, or total currency earned, first reaches a value in
-  \texttt{MILESTONES} is shown that milestone once.}
+  \texttt{MILESTONES} is shown that milestone once. A streak that ends and later
+  reaches the same value does not show it again.}
   {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G5}
 \freq{FR_ActNoWeightReward}
   {(HA SAF-14) The system shall not base any reward, goal or milestone on the
@@ -1966,9 +1997,11 @@ the streak.
   \ucref{UC_EarnCurrency}, G5}
 \freq{FR_ActTrends}
   {The system shall show the user their daily totals for each supported
-  activity type over time.}
+  activity type over time, starting from their first day
+  (Section~\ref{SecFormal}).}
   {A test user with recorded activity on 14 days sees the total for each of
-  those days, for each supported activity type.}
+  those days, for each supported activity type. Activity from before their first
+  day is not shown.}
   {\srref{SR_SeeProgress}, \ucref{UC_GoalsStreaks}, G2, G5}
 \end{itemize}
 
@@ -1983,7 +2016,9 @@ hours and price age (\rref{FR_MktPriceAge}, \rref{FR_MktNoStaleTrade} and
 \rref{FR_MktQueueClosed}) apply only to the live market. Every asset is priced in
 \texttt{QUOTE\_CURRENCY}, and one unit of virtual currency buys one unit of
 \texttt{QUOTE\_CURRENCY} worth of an asset. Section~\ref{SecFormal} defines
-trades and portfolio value.
+trades and portfolio value. Once an asset is removed from the live market
+(\rref{FR_MktRemovedHoldings}), \progname{} stops obtaining prices for it.
+Market scenarios are not affected, because they replay stored prices.
 
 \noindent \begin{itemize}
 \freq{FR_MktAssetCount}
@@ -2007,15 +2042,20 @@ trades and portfolio value.
   between.}
   {\srref{SR_UpdateContent}, G4}
 \freq{FR_MktRemovedHoldings}
-  {The system shall let a user who holds shares of a removed asset continue to
-  see and sell those shares.}
-  {After an administrator removes a test asset that a test user holds, the
-  user still sees the holding and can sell it.}
+  {When an administrator removes an asset from the live market, the system shall
+  sell every user's shares of it at its most recent price, add the proceeds to
+  their balance, reject any queued trades for it, and tell each affected user
+  what was sold and at what price. This sale is not a trade request, so
+  \rref{FR_MktNoStaleTrade} and \rref{FR_MktQueueClosed} do not apply to it.}
+  {After an administrator removes a test asset that a test user holds, whether or
+  not its market is open, the user holds no shares of it, their balance has
+  increased by the number of shares multiplied by its most recent price, the sale
+  appears in their trade history, and they are told what was sold and at what
+  price. A queued trade for the asset is rejected, and the user is told.}
   {\srref{SR_RiskFree}, \srref{SR_UpdateContent}, G4}
 \freq{FR_MktRealPrices}
-  {The system shall price each asset in the live market, and each removed asset
-  a user still holds, at the most recent price it has obtained for that asset
-  from the market data provider.}
+  {The system shall price each asset in the live market at the most recent price
+  it has obtained for that asset from the market data provider.}
   {For a test asset in the live market, the price \progname{} shows and uses
   for trades equals the latest price \progname{} received from the market data
   provider for that asset.}
@@ -2037,8 +2077,9 @@ trades and portfolio value.
   advice. The system shall not complete the first trade until the user
   acknowledges the notice.}
   {A new test user who attempts their first trade is shown the notice and
-  cannot complete the trade until they acknowledge it. The notice contains all
-  three statements: the market is simulated, currency and holdings have no
+  cannot complete the trade until they acknowledge it, and a trade request that
+  reaches the server before then is refused. The notice contains all three
+  statements: the market is simulated, currency and holdings have no
   real-world value, and nothing in \progname{} is financial advice.}
   {\srref{SR_NotAdvice}, \ucref{UC_BuyAsset}, G4}
 \freq{FR_MktBuy}
@@ -2366,6 +2407,13 @@ Social & A friend shares an update with the user or sends them a friend request 
 \end{tabularx}
 \end{table}
 
+Reminders are created on the phone, and \progname{} cannot rely on running while
+it is closed: HealthKit may not allow reads while the phone is locked, and Health
+Connect allows background reads only if the user grants an extra
+permission~\citep{AppleHealthKit, GoogleHealthConnect}. A reminder that depends
+on new data can therefore arrive after its event, and \rref{FR_RemindSend} is
+written to allow this.
+
 The settings also cover the user's health data. The two health platforms
 report permissions differently. Health Connect on Android tells an app which
 data types it may read. Apple HealthKit does not tell an app whether the user
@@ -2396,11 +2444,12 @@ if none had been recorded~\citep{AppleHealthKit, GoogleHealthConnect}.
   type, and still receives reminders of the types left on.}
   {\srref{SR_SafeMotivation}, \ucref{UC_Reminders}, G2}
 \freq{FR_RemindSend}
-  {The system shall send a reminder of each type that is turned on when that
-  type's event in Table~\ref{TblReminderTypes} occurs.}
+  {The system shall send a reminder of each type that is turned on after that
+  type's event in Table~\ref{TblReminderTypes} occurs, the next time \progname{}
+  runs on the phone, whether in the background or because the user opened it.}
   {For each reminder type a test user has left on, causing the event in its
-  Sent when column produces one reminder of that type within the user's
-  reminder periods.}
+  Sent when column and then opening \progname{} produces one reminder of that
+  type within the user's reminder periods.}
   {\ucref{UC_Reminders}, G2, G5}
 \freq{FR_SetWithdrawConsent}
   {The system shall let the user withdraw consent for \progname{} to read their
@@ -2428,14 +2477,17 @@ if none had been recorded~\citep{AppleHealthKit, GoogleHealthConnect}.
 
 \subsection{Formal Definitions} \label{SecFormal}
 
-This subsection defines the daily reward, the streak, trades and portfolio
-value that the requirements in Sections 6.2 and 6.3 refer to. For a user on
+This subsection defines the daily reward, the streak, milestones, trades and
+portfolio value that the requirements in Sections 6.2 and 6.3 refer to. For a user on
 calendar day $d$ in their time zone:
 \begin{itemize}
 \item $T$ is the set of supported activity types
   (\texttt{SUPPORTED\_ACTIVITY\_\allowbreak TYPES}).
+\item The user's first day is the calendar day on which they acknowledge the
+  health notice (\rref{FR_ActHealthNotice}).
 \item $x_{t,d}$ is the user's total of activity type $t$ on day $d$, counting
-  only plausible records (\rref{FR_ActPlausible}).
+  only plausible records (\rref{FR_ActPlausible}). It is 0 for any day before
+  the user's first day, whatever the health platform holds.
 \item $u_t$ is the amount of activity type $t$ that earns one unit of virtual
   currency (\texttt{EARNING\_RATES}).
 \item $G_d$ is the set of the user's activity goals in effect on day $d$. A
@@ -2457,6 +2509,17 @@ q_d = \mathit{rest}_d \lor \bigl(G_d \neq \emptyset \land
 \end{equation}
 The streak at the end of day $d$ is $s_d = s_{d-1} + 1$ if $q_d$ is true,
 and $s_d = 0$ otherwise, with $s = 0$ before the user's first day.
+
+\paragraph{Milestones.} The values in \texttt{MILESTONES} are streak lengths and
+totals of currency earned. Let $E$ be the total of the daily rewards $R_d$
+awarded to the user so far. Spending currency does not reduce $E$, and neither
+currency from selling shares nor a market scenario's balance adds to it. The
+user reaches a streak milestone of $m$ days the first time $s_d \geq m$, and a
+currency milestone of $m$ the first time $E \geq m$. Each milestone is reached
+only once per user, so a streak that ends and later grows to the same length
+does not reach it again. Meeting a daily activity goal is not a milestone,
+although it does send a reminder of the Milestone type
+(Table~\ref{TblReminderTypes}).
 
 \paragraph{Trades.} Let $B$ be the user's balance, $h_a$ the number of shares
 of asset $a$ they hold, and $p_a$ the price at which a trade of $a$ executes.
@@ -2604,6 +2667,15 @@ Weight in kilograms.\\
 Whether the user consents to health-data access. Withdrawing
 consent stops further health-data reads.\\
 
+\texttt{health\_notice\_\allowbreak acknowledged\_at} & Timestamp &
+Time the user acknowledged the health notice. While this is absent, no health
+data is read and no currency is awarded. The calendar day of this time is the
+user's first day (Section~\ref{SecFormal}).\\
+
+\texttt{market\_notice\_\allowbreak acknowledged\_at} & Timestamp &
+Time the user acknowledged the simulated market notice. While this is absent,
+no trade is completed.\\
+
 \texttt{consent\_updated\_at} & Timestamp &
 Time health-data consent was last granted or withdrawn.\\
 
@@ -2621,6 +2693,10 @@ the following day.\\
 
 \texttt{rest\_days} & List &
 Calendar dates selected as rest days for streak calculations.\\
+
+\texttt{milestones\_reached} & List &
+Values in \texttt{MILESTONES} the user has reached, with the date each was
+reached. A milestone already in this list is not shown again.\\
 
 \texttt{learning\_progress} & List &
 Learning records containing the content identifier, completion
@@ -2945,10 +3021,12 @@ syncs, the user is rewarded for them once.
 
 \item[SEC-20 (Catch late activity).] On each sync, the system shall read the activity records of the last
 \texttt{SYNC\_LOOKBACK\_PERIOD} and reward any record that has not already
-been rewarded.
+been rewarded, unless it is from before the day the user acknowledged the health
+notice.
 
 \textit{Fit criterion:} A test record written to the health platform two days
-after the activity took place is rewarded on the next sync, once.
+after the activity took place is rewarded on the next sync, once. A test record
+from before the day the user acknowledged the health notice earns nothing.
 
 \item[SEC-21 (Activity unavailable).] When the system cannot read activity data, because permission has not been
 granted or the health platform does not respond, it shall tell the user that
