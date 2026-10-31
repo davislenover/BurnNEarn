@@ -49,6 +49,8 @@
 Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
 Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
   updates to 2.3.\\
+Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1,
+  FR3, FR52 and FR57.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -2529,21 +2531,24 @@ Requirements: FR57
 
 Control: Automatic
 
-Initial State: A new test user with no learning progress.
+Initial State: A new test user with no learning progress. Test knowledge checks
+on \textit{Diversification} and \textit{Stock}, each with 10 questions.
 
 Input: The user opens the explanation of \textit{Diversification}, completes
-the knowledge check on \textit{Diversification} with every answer correct,
-and completes the knowledge check on \textit{Stock} with every answer wrong.
+the knowledge check on \textit{Diversification} with 7 answers correct, and
+completes the knowledge check on \textit{Stock} with 6 answers correct.
 
 Output: The user's learning progress shows the \textit{Diversification}
 explanation as viewed and its knowledge check as passed. It does not show the
 \textit{Stock} knowledge check as passed.
 
 Test Case Derivation: The fit criterion of FR57 is that a viewed explanation
-and a passed knowledge check both appear in the user's progress. The SRS does
-not set a pass mark, so the test uses all answers correct and all answers
-wrong, which pass and fail under any reasonable pass mark. The failed check
-shows that progress records only passed checks.
+and a passed knowledge check both appear in the user's progress. A check is
+passed when at least \texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} (70\%) of
+its answers are correct (SRS Appendix C), so 7 of 10 is exactly at the mark and
+6 of 10 is just below it. Each check has 10 questions so that one can sit
+exactly at 70\%. The failed check shows that progress records only passed
+checks.
 
 How test will be performed: A pytest test sends each action through the API
 and reads the user's learning progress.

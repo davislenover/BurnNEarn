@@ -145,6 +145,10 @@ defined milestones, placed the health notice before the health data consent
 started each user fresh on the day they acknowledge the health notice (SEC-20,
 FR27), allowed reminders to arrive the next time the app runs (FR75), and sold a
 removed asset's shares automatically (FR31, FR32).\\
+Oct 31, 2026 & 1.3 & Davis Lenover: 6.1 Accounts and Profile, 6.4 Learning and
+Feedback, Appendix C: FR1 refuses an email address already in use, FR3 compares
+usernames without regard to case, FR52 gives no feedback when the previous value
+was 0, and FR57 sets a pass mark for knowledge checks.\\
 \bottomrule
 \end{tabularx}
 
@@ -2272,9 +2276,13 @@ streak\\
   incorrect, together with the explanation of its correct answer.}
   {\srref{SR_LearnFromDecisions}, G1}
 \freq{FR_LearnProgress}
-  {The system shall show the user their learning progress.}
+  {The system shall show the user their learning progress. A knowledge check is
+  passed when at least \texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} of its
+  answers are correct.}
   {After a test user views a concept explanation and passes a knowledge check,
-  both appear in their learning progress.}
+  both appear in their learning progress. A knowledge check with exactly
+  \texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} of its answers correct is
+  passed, and one with fewer is not.}
   {\srref{SR_SeeProgress}, G1, G2}
 \freq{FR_LearnUpdateContent}
   {The system shall let administrators add and edit concept explanations and
@@ -3695,6 +3703,7 @@ document and in the Hazard Analysis (HA).
   \rref{FR_MktNoStaleTrade}, HA SEC-2, SEC-3\\
 \texttt{FEEDBACK\_THRESHOLD} & 5\% & \rref{FR_LearnValueChange}, \rref{FR_RemindSend}\\
 \texttt{CONCENTRATION\_LIMIT} & 50\% & \rref{FR_LearnConcentration}\\
+\texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} & 70\% & \rref{FR_LearnProgress}\\
 \texttt{DEFAULT\_REMINDER\_PERIOD} & 9:00 to 20:00 in the user's time zone & \rref{FR_RemindInPeriods}, HA SAF-6\\
 \texttt{REST\_DAYS\_PER\_PERIOD} & 2 & \rref{FR_ActRestDay}, HA SAF-1\\
 \texttt{STREAK\_PERIOD} & calendar week (Monday to Sunday) in the user's time zone & \rref{FR_ActRestDay}, HA SAF-1\\
