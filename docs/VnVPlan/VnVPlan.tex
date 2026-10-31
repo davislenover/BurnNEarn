@@ -478,6 +478,306 @@ the symbolic constants in SRS Appendix C, such as
 If a constant changes, the expected outputs of the tests that use it change
 with it.
 
+\subsubsection{Accounts and Profile}
+
+These tests cover the accounts and profile requirements in SRS Section 6.1
+(FR1 to FR11). Automatic tests create their own test accounts through the
+backend's API, with email addresses in the reserved \texttt{.test} domain, so
+no message can reach a real person. Tests of password reset replace the email
+service with a test mailbox that records every message sent to it, so the
+test can read the reset link and check who it was sent to. Passwords in the
+inputs are at least \texttt{MIN\_PASSWORD\_LENGTH} (8) characters long, so
+that the password rule in the Hazard Analysis (SEC-38) does not reject them
+for a reason unrelated to the test.
+
+\begin{enumerate}
+
+\item{\textbf{test-acct-1: Creating an account and signing in}\\}
+
+Requirements: FR1, FR4
+
+Control: Automatic
+
+Initial State: No account uses the email address \texttt{sam@fitfolio.test}
+or the username \texttt{sam\_test}.
+
+Input: A sign-up request with the email address \texttt{sam@fitfolio.test},
+the username \texttt{sam\_test}, the password \texttt{Walk2026run}, and the age
+confirmed. Then two sign-in requests with that email address: one with the
+password \texttt{Walk2026run}, and one with \texttt{Walk2026ruN}.
+
+Output: The sign-up succeeds and an account with that email address exists.
+The first sign-in succeeds and returns a session. The second is refused and
+returns no session.
+
+Test Case Derivation: The fit criterion of FR1 is that a user who enters an
+unused email address and a valid password has an account and can sign in with
+them, which the first sign-in shows. FR4 signs in a user with the correct
+password and refuses a wrong one. The wrong password differs from the correct
+one only in the case of its last letter, so a comparison that ignored case
+would let it through.
+
+How test will be performed: A pytest test sends the three requests to the
+backend's API and checks each response.
+
+\item{\textbf{test-acct-2: No account without confirming age}\\}
+
+Requirements: FR2
+
+Control: Automatic and Manual
+
+Initial State: The email addresses \texttt{young1@fitfolio.test} and
+\texttt{young2@fitfolio.test} are not used by any account.
+
+Input: Two sign-up requests to the backend, with otherwise valid details:
+\begin{itemize}
+  \item for \texttt{young1@fitfolio.test}, with the age confirmation set to
+    false;
+  \item for \texttt{young2@fitfolio.test}, with the age confirmation left out
+    of the request.
+\end{itemize}
+Then, on a test device, the tester fills in the sign-up screen for
+\texttt{young3@fitfolio.test} without confirming their age.
+
+Output: Both requests are refused, and signing in with either email address
+fails because no account exists. On the device, no account is created for
+\texttt{young3@fitfolio.test}, and the screen shows that the age
+confirmation is required.
+
+Test Case Derivation: FR2 (Hazard Analysis, SEC-37) creates no account until
+the user confirms they are at least \texttt{MIN\_USER\_AGE} (18) years old.
+Each case uses its own email address, so that an account existing afterwards
+shows which case failed. The two requests check the backend: a confirmation
+set to false must be refused, and so must a request with no confirmation at
+all, since a backend that only checked for false would treat a missing value
+as confirmed. The backend is tested directly because a modified app could
+skip the check on the sign-up screen (Hazard Analysis, H43). The device case
+checks that the sign-up screen enforces the confirmation too and tells the
+user why. It needs only one case, because the screen always sends a value.
+
+How test will be performed: A pytest test sends the two requests and then
+tries to sign in with each address. The tester then tries the sign-up screen
+on a test device and records whether an account was created.
+
+\item{\textbf{test-acct-3: Unique usernames}\\}
+
+Requirements: FR3
+
+Control: Automatic
+
+Initial State: An account with the username \texttt{sam\_test} exists, as
+created in test-acct-1. No account uses the email address
+\texttt{jordan@fitfolio.test}.
+
+Input: A sign-up request for \texttt{jordan@fitfolio.test} with the username
+\texttt{sam\_test}, followed by a second request with the same details except
+the username \texttt{jordan\_test}.
+
+Output: The first request is refused with a message asking the user to choose
+a different username, and no account is created. The second request
+succeeds.
+
+Test Case Derivation: FR3 asks a user who chooses a username already in use
+to choose a different one. The second request shows that the refusal was
+caused by the username alone, since every other detail is the same.
+
+How test will be performed: A pytest test sends both requests and checks
+each response and which accounts exist afterwards.
+
+\item{\textbf{test-acct-4: Signing out}\\}
+
+Requirements: FR5
+
+Control: Manual
+
+Initial State: A test user with a balance of 250 and the username
+\texttt{sam\_test}, signed in on a test device.
+
+Input: The tester opens the home screen and notes the balance shown, signs
+out, closes \progname{} completely, and opens it again.
+
+Output: After reopening, \progname{} shows the sign-in screen. Neither the
+balance of 250 nor the username \texttt{sam\_test} appears on any screen
+reachable without signing in.
+
+Test Case Derivation: The fit criterion of FR5 is that after signing out,
+opening the app shows the sign-in screen and none of the user's data. Closing
+the app completely checks that the sign-out is kept on the phone and is not
+just a change of screen. The balance and username are known values, so the
+tester can check that neither is shown.
+
+How test will be performed: The tester follows the input steps on the test
+device and records each screen shown after reopening.
+
+\item{\textbf{test-acct-5: Resetting a forgotten password}\\}
+
+Requirements: FR6
+
+Control: Automatic
+
+Initial State: An account for \texttt{sam@fitfolio.test} with the password
+\texttt{Walk2026run}, and a second account for \texttt{jordan@fitfolio.test}.
+The email service is replaced by a test mailbox.
+
+Input: A password reset request for \texttt{sam@fitfolio.test}. The test opens
+the link in the email the mailbox receives and sets the new password
+\texttt{Swim2027lap}. It then signs in with each password.
+
+Output: The mailbox receives exactly one email, addressed to
+\texttt{sam@fitfolio.test} and containing a reset link. After the reset,
+signing in with \texttt{Walk2026run} is refused and signing in with
+\texttt{Swim2027lap} succeeds. The account for \texttt{jordan@fitfolio.test}
+receives no email and its password is unchanged.
+
+Test Case Derivation: FR6 (Hazard Analysis, SEC-40) sends the link to the
+account's own email address, and its fit criterion is that the user can then
+sign in only with the new password. Checking the old password catches a reset
+that adds a new password without removing the old one. The second account
+checks that a reset for one account does not reach or change another.
+
+How test will be performed: A pytest test sends the reset request, reads the
+email from the test mailbox, follows the link through the API, and sends the
+sign-in requests.
+
+\item{\textbf{test-acct-6: Editing the profile}\\}
+
+Requirements: FR7
+
+Control: Manual
+
+Initial State: A test user signed in on a test device, with a height of 170
+cm in their profile.
+
+Input: The tester changes the height to 175 cm and saves it, closes
+\progname{} completely, opens it again, and opens the profile.
+
+Output: The profile shows a height of 175 cm.
+
+Test Case Derivation: The fit criterion of FR7 is that the user sees the new
+value the next time they open their profile. Closing the app between saving
+and reopening checks that the change was stored, and not only kept on the
+screen.
+
+How test will be performed: The tester follows the input steps on the test
+device and records the height shown.
+
+\item{\textbf{test-acct-7: Using every feature without height or weight}\\}
+
+Requirements: FR8
+
+Control: Automatic
+
+Initial State: A test user with no height or weight in their profile, a
+balance of 0, the health notice and simulated market notice acknowledged, and
+one accepted friend. Test asset A is priced at 20.00, its market is open, and
+its price is within \texttt{QUOTE\_STALENESS\_LIMIT} (15 minutes).
+
+Input: A daily total of 5,000 steps for day $d$. The user then buys 1 share of
+A, opens the concept explanation of \textit{Stock}, completes the knowledge
+check on \textit{Stock} with every answer correct, and shares their streak
+with their friend.
+
+Output: The balance increases by 50, then decreases by 20.00 to 30.00 when the
+share is bought. The explanation opens, the knowledge check returns a result,
+and the shared streak appears in the friend's social feed. No request is
+refused for missing height or weight.
+
+Test Case Derivation: The fit criterion of FR8 names four features, earning,
+trading, learning and sharing, and the test uses each one with both values
+empty. 5,000 steps earn $\lfloor 5000 / 100 \rfloor = 50$ (SRS Section 6.7),
+and one share at 20.00 costs 20.00. A feature that wrongly required height or
+weight would refuse its request or fail to calculate a result.
+
+How test will be performed: A pytest test sends each request through the API
+and checks each response, the balance, and the friend's feed.
+
+\item{\textbf{test-acct-8: Downloading a copy of one's data}\\}
+
+Requirements: FR9
+
+Control: Automatic
+
+Initial State: A test user with the username \texttt{sam\_test}, an age of
+25, a height of 170 cm, and a weight of 68 kg. They have daily totals of 4,000
+steps on day $d-1$ and 6,000 steps on day $d$, one purchase of 2 shares of
+asset A at 15.00 each, a balance of 70.00, and one shared update of their
+streak. A second user, their friend \texttt{jordan\_test}, has their own
+activity, holdings and shared updates.
+
+Input: A request from \texttt{sam\_test} for a copy of their data.
+
+Output: The user receives a JavaScript Object Notation (JSON) file containing
+their username, age, height and weight, both daily totals, the balance of
+70.00, the holding of 2 shares of A, the purchase with its price of 15.00, and
+the shared update. It contains none of \texttt{jordan\_test}'s activity,
+holdings or shared updates.
+
+Test Case Derivation: The fit criterion of FR9 lists the profile, activity
+totals, balance, holdings, trades and shared updates, and each has a known
+value here so the file can be checked field by field. The balance is
+$100 - 2 \cdot 15.00 = 70.00$ for a user who earned 100 from 10,000 steps. The
+SRS sets JSON as the format for data that \progname{} exchanges (SRS Section
+1.2). The friend's data checks that the copy contains only the requester's
+data.
+
+How test will be performed: A pytest test sets up both users through the API,
+requests the copy, parses the file, and compares each field with the values
+above.
+
+\item{\textbf{test-acct-9: Confirming account deletion}\\}
+
+Requirements: FR10
+
+Control: Manual
+
+Initial State: A test user signed in on a test device.
+
+Input: The tester starts account deletion, reads the confirmation message, and
+chooses to cancel. The tester then signs out and signs in again.
+
+Output: Before anything is deleted, a message states that deleting the
+account cannot be undone. After cancelling, the user can sign in again and
+their data is unchanged.
+
+Test Case Derivation: The fit criterion of FR10 is that the warning is shown
+and the account still exists if the user cancels. Signing in again checks
+that cancelling did not disable the account or start its deletion.
+
+How test will be performed: The tester follows the input steps on the test
+device and records the message and the result of signing in.
+
+\item{\textbf{test-acct-10: Deleting an account}\\}
+
+Requirements: FR11
+
+Control: Automatic
+
+Initial State: Test users \texttt{sam\_test} and \texttt{jordan\_test} are
+friends. \texttt{sam\_test} has shared one update with \texttt{jordan\_test}
+and holds a valid session.
+
+Input: \texttt{sam\_test} requests account deletion and confirms it.
+
+Output: Signing in as \texttt{sam\_test} is refused. A request made with
+\texttt{sam\_test}'s earlier session is refused. \texttt{jordan\_test}'s
+social feed no longer contains \texttt{sam\_test}'s update, and
+\texttt{sam\_test} is no longer in their friend list.
+
+Test Case Derivation: The fit criterion of FR11 is that the user can no
+longer sign in and that none of their data is shown to them or to their
+friends. The earlier session checks that deletion also ends existing sessions,
+since otherwise data would still be shown to the user. The friend's feed and
+friend list check what friends can see. Removal from the server and its
+backups within \texttt{DATA\_DELETION\_PERIOD} (30 days) is a Hazard Analysis
+requirement (SEC-18) in SRS Section 7.3 and is verified with the
+nonfunctional requirements.
+
+How test will be performed: A pytest test sends the deletion and
+confirmation through the API, then tries to sign in, sends a request with the
+old session, and reads \texttt{jordan\_test}'s feed and friend list.
+
+\end{enumerate}
+
 \subsubsection{Activity and Rewards}
 
 These tests cover the activity and rewards requirements in SRS Section 6.2
@@ -2030,6 +2330,519 @@ test provider.
 
 \end{enumerate}
 
+\subsubsection{Learning and Feedback}
+
+These tests cover the learning and feedback requirements in SRS Section 6.4
+(FR50 to FR60). The core concepts are the 20 concepts in SRS Table 6.4: ten
+investing concepts, two Canadian account types, and eight fitness concepts,
+one for each of the five supported activity types plus active minutes, rest
+day and streak. Tests of feedback and knowledge check results use test
+portfolios and a test knowledge check whose values are known, so the expected
+feedback can be calculated by hand. Prices are sent to the backend directly,
+as in the Simulated Market and Portfolio tests, and every test asset's market
+is open with a price within \texttt{QUOTE\_STALENESS\_LIMIT} (15 minutes).
+
+\begin{enumerate}
+
+\item{\textbf{test-learn-1: Content for every core concept}\\}
+
+Requirements: FR50, FR55
+
+Control: Automatic and Manual
+
+Initial State: The release build of \progname{} on a test device, with its
+published educational content, and a test user signed in.
+
+Input: A list of the 20 core concepts in SRS Table 6.4. For each concept, the
+tester opens its concept explanation from the learning section and starts its
+knowledge check.
+
+Output: For every one of the 20 concepts, an explanation opens and a
+knowledge check starts. A pytest test also finds a published explanation and
+a published knowledge check for every concept in the list.
+
+Test Case Derivation: The fit criteria of FR50 and FR55 require an explanation
+and a knowledge check for every core concept, so the test checks the full
+list rather than a sample. The automatic check catches a concept with no
+published content. The manual check catches content that is published but
+cannot be reached in the app.
+
+How test will be performed: A pytest test reads the published content through
+the API and compares it with the list. The tester then works through the list
+on the device, ticking off each concept and recording any that fail.
+
+\item{\textbf{test-learn-2: Explanations where concepts appear}\\}
+
+Requirements: FR51
+
+Control: Manual
+
+Initial State: A test user signed in on a test device, holding shares of two
+test assets, with a streak of at least 1 and at least one completed trade.
+
+Input: The tester opens every screen in \progname{}'s navigation. On each
+screen, for every core concept shown, the tester opens its explanation and
+then closes it. On the purchase screen, the tester first enters a quantity of
+3.
+
+Output: Every core concept shown on a screen opens its explanation without
+leaving that screen. After the explanation is closed, the same screen is shown
+with its state unchanged; on the purchase screen, the quantity is still 3.
+
+Test Case Derivation: The fit criterion of FR51 covers every screen on which a
+core concept appears. The user holds shares, has a streak and has traded so
+that the portfolio, activity and trade feedback screens show their concepts,
+such as portfolio value, return and streak. The quantity on the purchase
+screen detects an explanation that leaves the screen, since returning to a
+new copy of the screen would clear it. The screens come from the app's
+navigation, as in test-mkt-20.
+
+How test will be performed: The tester lists the screens in the app's
+navigation, records each core concept shown on each one, opens each
+explanation, and records any that cannot be opened in place.
+
+\item{\textbf{test-learn-3: Feedback on a change in portfolio value}\\}
+
+Requirements: FR52, FR60
+
+Control: Automatic
+
+Initial State: Three test users, each holding 10 shares of asset A and 10 of
+asset B. Each last viewed their portfolio when A and B were both priced at
+50.00, a portfolio value of 1,000.00.
+
+Input: Before each user views their portfolio again, the prices change to:
+user 1, A 56.00 and B 49.00; user 2, A 57.00 and B 49.00; user 3, A 50.00 and
+B 43.00. Each user then views their portfolio.
+
+Output: User 1 is shown no feedback on the change. User 2 is shown feedback
+that names A as the holding that changed most, with A's price change from
+50.00 to 57.00 and B's from 50.00 to 49.00. User 3 is shown feedback that
+names B as the holding that changed most, with B's price change from 50.00 to
+43.00.
+
+Test Case Derivation: \texttt{FEEDBACK\_THRESHOLD} is 5\%, and FR52 gives
+feedback only when the value has changed by more than it. User 1's value is
+$10 \cdot 56 + 10 \cdot 49 = 1050$, a change of exactly 5\%, so no feedback
+is shown. User 2's is $570 + 490 = 1060$, a change of 6\%, and A changed by
+70.00 against B's 10.00. User 3's is $500 + 430 = 930$, a change of $-7\%$, so
+a fall also produces feedback, and B changed by 70.00 against A's 0. Taking
+the largest change by its size rather than its sign makes B the answer for
+user 3; a calculation that took the largest increase would name A. FR60
+(Hazard Analysis, SAF-17) bases feedback on the user's own holdings and price
+changes and shows them, so the prices in the feedback must match the test
+prices.
+
+How test will be performed: A pytest test sets each user's holdings, records
+the view at the starting prices, sends the new prices to the backend, and
+reads each user's portfolio and feedback through the API.
+
+\item{\textbf{test-learn-4: Effect of a trade on each holding's share}\\}
+
+Requirements: FR53
+
+Control: Automatic
+
+Initial State: A test user with a balance of 1,000.00, holding 10 shares of
+asset A and 10 of asset B, priced at 40.00 and 60.00. The prices do not change
+during the test.
+
+Input: The user buys 5 shares of A. The user then sells all 15 shares of A.
+
+Output: After the purchase, the feedback shows A going from 40\% to 50\% of
+the portfolio value and B from 60\% to 50\%. After the sale, it shows A going
+from 50\% to 0\% and B from 50\% to 100\%.
+
+Test Case Derivation: FR53 shows each holding's share of the portfolio value
+before and after each trade. Before the purchase, A is $400 / 1000 = 40\%$ and
+B is $600 / 1000 = 60\%$. After it, A is $600 / 1200 = 50\%$ and B is
+$600 / 1200 = 50\%$. After the sale, A is worth 0 and B is the whole
+portfolio of 600. The prices give whole percentages, so the expected values
+need no rounding, and the sale checks a holding that drops to zero.
+
+How test will be performed: A pytest test sends each trade through the API
+and checks the before and after shares in each response.
+
+\item{\textbf{test-learn-5: Explaining diversification}\\}
+
+Requirements: FR54
+
+Control: Automatic
+
+Initial State: A test user with a balance of 500.00, holding 5 shares of
+asset A and 5 of asset B, both priced at 100.00.
+
+Input: The user views their portfolio. The user then buys 1 share of B and
+views their portfolio again.
+
+Output: The first view shows no explanation of diversification. The second
+view shows one, and its text contains none of the symbols or names of the
+assets on the tradable asset list.
+
+Test Case Derivation: \texttt{CONCENTRATION\_LIMIT} is 50\%, and FR54 explains
+diversification only when one holding is more than it. Before the purchase,
+each holding is exactly $500 / 1000 = 50\%$, so no explanation is shown.
+After it, B is $600 / 1100 \approx 54.5\%$, which is above the limit. The fit
+criterion also requires that the explanation names no asset to buy or sell
+(Hazard Analysis, SAF-9), and checking the text against the whole asset list
+covers every asset it could name.
+
+How test will be performed: A pytest test sets up the portfolio, reads the
+portfolio view before and after the purchase, and searches the explanation's
+text for each symbol and name on the asset list.
+
+\item{\textbf{test-learn-6: Results of a knowledge check}\\}
+
+Requirements: FR56
+
+Control: Automatic and Manual
+
+Initial State: A published test knowledge check with three questions, whose
+correct answers are b, a and c, and whose explanation of question 2's answer
+is known. A test user signed in.
+
+Input: The user answers b, c and c.
+
+Output: Questions 1 and 3 are marked correct. Question 2 is marked incorrect
+and shown with the explanation of its correct answer, a.
+
+Test Case Derivation: FR56 marks which answers were correct and explains the
+correct answer to each question answered wrongly. The answers get the first
+and last questions right, so the test also catches results that are matched
+to the wrong question. The explanation is known, so the test can check that
+the right one is shown.
+
+How test will be performed: A pytest test submits the answers through the API
+and checks the result. The tester then completes the same check on a test
+device with the same answers and records what is shown.
+
+\item{\textbf{test-learn-7: Learning progress}\\}
+
+Requirements: FR57
+
+Control: Automatic
+
+Initial State: A new test user with no learning progress.
+
+Input: The user opens the explanation of \textit{Diversification}, completes
+the knowledge check on \textit{Diversification} with every answer correct,
+and completes the knowledge check on \textit{Stock} with every answer wrong.
+
+Output: The user's learning progress shows the \textit{Diversification}
+explanation as viewed and its knowledge check as passed. It does not show the
+\textit{Stock} knowledge check as passed.
+
+Test Case Derivation: The fit criterion of FR57 is that a viewed explanation
+and a passed knowledge check both appear in the user's progress. The SRS does
+not set a pass mark, so the test uses all answers correct and all answers
+wrong, which pass and fail under any reasonable pass mark. The failed check
+shows that progress records only passed checks.
+
+How test will be performed: A pytest test sends each action through the API
+and reads the user's learning progress.
+
+\item{\textbf{test-learn-8: Updating content without an app update}\\}
+
+Requirements: FR58
+
+Control: Manual
+
+Initial State: A test device with a release build of \progname{} installed,
+and automatic app updates turned off.
+
+Input: An administrator appends the sentence ``Test edit for V\&V.'' to the
+explanation of \textit{Stock} and publishes a new knowledge check titled
+``V\&V test check''. The tester then opens the \textit{Stock} explanation and
+the list of knowledge checks on the test device.
+
+Output: The explanation of \textit{Stock} ends with the added sentence, and
+the new knowledge check is in the list. The app's version number is the same
+as before.
+
+Test Case Derivation: The fit criterion of FR58 is that an edited explanation
+is shown on a phone whose app has not been updated. FR58 also covers adding
+content, so the test adds a knowledge check as well. Turning off automatic
+updates and checking the version number shows that no app update was
+involved.
+
+How test will be performed: The tester records the app's version number,
+makes the changes as an administrator, opens the content on the device, and
+records what is shown and the version number again. The test content is then
+removed.
+
+\item{\textbf{test-learn-9: Sources, review dates and second reviewers}\\}
+
+Requirements: FR59
+
+Control: Automatic
+
+Initial State: The published educational content and its content log.
+
+Input: Every published concept explanation and knowledge check.
+
+Output: Every explanation has a source and a review date that is not after
+today. Every explanation and every knowledge check answer key has a reviewer
+recorded in the content log who is not its author.
+
+Test Case Derivation: FR59 (Hazard Analysis, SAF-16) shows each explanation
+with its source and review date, and requires a second team member to review
+each explanation and answer key before it is published. A reviewer who is the
+author would not be a second team member, and a review date in the future
+could not be real.
+
+How test will be performed: A pytest test reads all published content and the
+content log, and lists every item that fails a check. It runs on every pull
+request that changes educational content, so content cannot be published
+without a second reviewer.
+
+\end{enumerate}
+
+\subsubsection{Social Feed}
+
+These tests cover the social feed requirements in SRS Section 6.5 (FR61 to
+FR71). They use four test users, \texttt{alex\_test}, \texttt{bea\_test},
+\texttt{cal\_test} and \texttt{dev\_test}, referred to as A, B, C and D. Unless
+a test says otherwise, A is friends with B and C and not with D. Automatic
+tests act as each user through the API with that user's own session, so every
+check is made from the point of view of the user who would see the result.
+The times at which updates are shared are set by the backend's test clock.
+
+\begin{enumerate}
+
+\item{\textbf{test-social-1: Sending a friend request}\\}
+
+Requirements: FR61
+
+Control: Automatic
+
+Initial State: A and D are not friends and have no request between them.
+
+Input: A sends a friend request to the username \texttt{dev\_test}.
+
+Output: D's list of received requests contains one pending request from A.
+
+Test Case Derivation: The fit criterion of FR61 is that entering another
+user's username sends them a request that they can see. The check is made
+from D's side, which is where the request must appear.
+
+How test will be performed: A pytest test sends the request as A and reads
+D's received requests as D.
+
+\item{\textbf{test-social-2: Friends only after acceptance}\\}
+
+Requirements: FR62, FR63
+
+Control: Automatic
+
+Initial State: A has no request with C or D. C and D have each shared an
+update with all their friends.
+
+Input: A sends a request to D. A then tries to accept that request as A. D
+declines it. A sends a request to C, and C accepts it.
+
+Output: While A's request to D is pending, A and D are not friends and A sees
+none of D's updates. A's attempt to accept their own request is refused, and
+the request stays pending. After D declines, A and D are still not friends,
+and the request is no longer in D's list of received requests. After C
+accepts, A and C are in each other's friend lists.
+
+Test Case Derivation: FR62 makes two users friends only after the user who
+received the request accepts it, so the sender accepting their own request
+must not count. FR63 lets the recipient decline, after which the two are not
+friends and the decliner no longer sees the request. The accepted request to
+C shows that acceptance does create the friendship, so the refusals are not
+caused by friendships never forming.
+
+How test will be performed: A pytest test sends each action as the user named
+in the input and reads the friend lists, received requests and feeds after
+each step.
+
+\item{\textbf{test-social-3: Removing a friend}\\}
+
+Requirements: FR64
+
+Control: Automatic
+
+Initial State: A and B are friends. A has shared update $U_1$ with B, and B
+has shared update $U_2$ with A.
+
+Input: A removes B as a friend.
+
+Output: $U_1$ is no longer in B's feed, and $U_2$ is no longer in A's feed.
+Neither user is in the other's friend list.
+
+Test Case Derivation: The fit criterion of FR64 is that after the removal,
+neither user sees the other's shared updates. Each user has shared one
+update, so the test checks both directions; removing only the remover's view
+would leave $U_1$ in B's feed.
+
+How test will be performed: A pytest test reads both feeds before and after
+the removal.
+
+\item{\textbf{test-social-4: Kinds of update that can be shared}\\}
+
+Requirements: FR65, FR68
+
+Control: Automatic and Manual
+
+Initial State: A has 8,000 steps today, a streak of 12, has reached the 7-day
+streak milestone, and has passed the knowledge check on
+\textit{Diversification}. A's profile has an age of 25, a height of 170 cm
+and a weight of 68 kg, and A has a balance of 450 and a step record of 4,200
+steps from 9:00 to 10:00 today.
+
+Input: A shares with B one update of each kind in SRS Table 6.5: their step
+total for today, their streak, the 7-day streak milestone, and the
+\textit{Diversification} knowledge check. A then sends requests to share their
+balance, their portfolio value, their weight, and the 4,200-step record. On a
+test device, the tester opens A's share screen.
+
+Output: B's feed contains the four updates, showing 8,000 steps, a streak of
+12, the 7-day streak milestone and the \textit{Diversification} knowledge
+check. None of them contains A's age, height or weight, or any time of day.
+The four other requests are refused and add nothing to B's feed. The share
+screen offers only the four kinds of update.
+
+Test Case Derivation: The fit criterion of FR65 is that the user can share one
+update of each kind in SRS Table 6.5 and nothing else, so the test shares
+each kind and tries four things outside the table. FR68 (Hazard Analysis,
+SEC-35) excludes body measurements and individual activity records, which the
+weight and the 4,200-step record test. The Hazard Analysis also excludes the
+exact time of an activity (SEC-14), which is why no time of day may appear.
+The device check covers the app, since the requests test only the backend.
+
+How test will be performed: A pytest test sends each share request as A and
+reads B's feed as B. The tester then records the options on the share screen.
+
+\item{\textbf{test-social-5: Choosing who sees an update}\\}
+
+Requirements: FR66
+
+Control: Automatic
+
+Initial State: A is friends with B, C and D.
+
+Input: A shares update $U_1$ with B only, and update $U_2$ with B and C. C
+then requests $U_1$ by its identifier.
+
+Output: B's feed contains $U_1$ and $U_2$. C's feed contains $U_2$ only. D's
+feed contains neither. C's request for $U_1$ is refused.
+
+Test Case Derivation: The fit criterion of FR66 is that an update shared with
+selected friends appears in their feeds and no other friend's. D is a friend
+who was never selected, which checks that sharing with some friends does not
+share with all. C's direct request checks that an unselected friend cannot
+get the update another way (Hazard Analysis, SEC-15).
+
+How test will be performed: A pytest test shares both updates as A, reads each
+feed as its owner, and sends C's request as C.
+
+\item{\textbf{test-social-6: Preview before sharing}\\}
+
+Requirements: FR67
+
+Control: Manual
+
+Initial State: Two test devices, one signed in as A and one as B, who are
+friends. A has activity, a streak, a milestone and a passed knowledge check,
+as in test-social-4.
+
+Input: On A's device, the tester starts sharing each of the four kinds of
+update with B, takes a screenshot of the preview, and confirms. For a fifth
+update, the tester cancels at the preview.
+
+Output: A preview is shown before every update is shared. Each update in B's
+feed shows the same values and text as its preview. The cancelled update does
+not appear in B's feed.
+
+Test Case Derivation: The fit criterion of FR67 is that for every update the
+preview matches what the selected friends see, so each of the four kinds is
+checked on B's own device. Cancelling at the preview checks that the preview
+comes before sharing, since an update shared before its preview would already
+be in B's feed.
+
+How test will be performed: The tester compares each screenshot with the
+matching update on B's device and records any difference.
+
+\item{\textbf{test-social-7: Contents and order of the feed}\\}
+
+Requirements: FR69
+
+Control: Automatic
+
+Initial State: B is friends with A and C and not with D. No updates have been
+shared.
+
+Input: A shares $U_1$ with B at 10:00. C shares $U_2$ with B at 10:05. A shares
+$U_3$ with C only at 10:10. D shares $U_4$ with all their friends at 10:15. B
+then reads their feed.
+
+Output: B's feed contains exactly $U_2$ followed by $U_1$.
+
+Test Case Derivation: FR69 shows every update shared with the user by a
+friend, and no others, newest first. $U_1$ and $U_2$ are shared with B by
+friends, so both appear, with $U_2$ first because it is newer. $U_3$ is from a
+friend but not shared with B, and $U_4$ is from a user who is not B's friend,
+so neither appears. Each update is shared at a different time, so only one
+order is correct.
+
+How test will be performed: A pytest test sets the backend's clock to each
+time, shares each update as its author, and reads B's feed as B.
+
+\item{\textbf{test-social-8: Deleting a shared update}\\}
+
+Requirements: FR70
+
+Control: Automatic
+
+Initial State: A has shared update $U$ with B and C.
+
+Input: A deletes $U$. B then requests $U$ by its identifier.
+
+Output: $U$ is no longer in B's or C's feed, and B's request for $U$ is
+refused.
+
+Test Case Derivation: The fit criterion of FR70 is that a deleted update no
+longer appears in any friend's feed, so both friends it was shared with are
+checked. The direct request checks that the update was removed and not only
+hidden from feeds.
+
+How test will be performed: A pytest test deletes $U$ as A, reads B's and
+C's feeds, and sends B's request.
+
+\item{\textbf{test-social-9: No rankings between users}\\}
+
+Requirements: FR71
+
+Control: Manual
+
+Initial State: Test user A is friends with B, C and D, signed in on a test
+device. Their totals today are A 20,000 steps, B 12,000, C 1,000 and D 5,000,
+and their balances follow the same order. C has shared an update with A at
+10:00, B at 10:05 and D at 10:10.
+
+Input: The tester opens every screen in \progname{}'s navigation, including
+the friend list and the social feed.
+
+Output: No screen orders users by activity, currency or portfolio
+performance, or shows a user's position relative to others, such as ``1st''
+or ``top''. No list of A's friends is in the order B, D, C or C, D, B. The
+feed lists D's, B's and C's updates in that order.
+
+Test Case Derivation: The fit criterion of FR71 (Hazard Analysis, SAF-11)
+covers every screen. The test data is chosen so that an ordering by activity
+or balance can be told apart from every order that is allowed. Sorted by
+activity, A's friends are B, D, C (or C, D, B from lowest), which differs from
+their alphabetical order, B, C, D. The feed must be newest first (FR69), which
+gives D, B, C, so a feed sorted by activity would also stand out. The screens
+come from the app's navigation, as in test-mkt-20.
+
+How test will be performed: The tester opens each screen, records the order
+in which users appear on any screen that lists more than one, and records any
+ranking, position or ``top'' label.
+
+\end{enumerate}
+
 \subsubsection{Reminders and Settings}
 
 These tests cover the reminders and settings requirements in SRS Section 6.6
@@ -2421,56 +3234,138 @@ needs to be well-documented, with meaningful names for all of the tests.}
 
 \subsection{Tests for Functional Requirements}
 
-\wss{Most of the verification will be through automated unit testing.  If
-  appropriate specific modules can be verified by a non-testing based
-  technique.  That can also be documented in this section.}
+% \wss{Most of the verification will be through automated unit testing.  If
+%   appropriate specific modules can be verified by a non-testing based
+%   technique.  That can also be documented in this section.}
 
-\subsubsection{Module 1}
+% \subsubsection{Module 1}
 
-\wss{Include a blurb here to explain why the subsections below cover the module.
-  References to the MIS would be good.  You will want tests from a black box
-  perspective and from a white box perspective.  Explain to the reader how the
-  tests were selected.}
+% \wss{Include a blurb here to explain why the subsections below cover the module.
+%   References to the MIS would be good.  You will want tests from a black box
+%   perspective and from a white box perspective.  Explain to the reader how the
+%   tests were selected.}
+
+% \begin{enumerate}
+
+% \item{test-id1\\}
+
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
+					
+% Initial State: 
+					
+% Input: 
+					
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed: 
+					
+% \item{test-id2\\}
+
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
+					
+% Initial State: 
+					
+% Input: 
+					
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed: 
+
+% \item{...\\}
+    
+% \end{enumerate}
+
+% \subsubsection{Module 2}
+
+% ...
+
+The detailed design (Module Interface Specification, MIS) has not been
+written yet, so the unit tests below are organized by the three areas of
+SRS Section 6 rather than by module. Once the MIS is complete, each area will
+be mapped to its modules, and each access program of those modules will get
+at least one test of its normal behaviour and one for each boundary or error
+case in its specification. The cases listed here are the ones already known
+from the SRS: boundaries of the symbolic constants, and rules whose failure
+the system tests above would detect only indirectly. Backend units are tested
+with pytest in \texttt{test/backend}, and app units with Jest, on every pull
+request.
+
+\subsubsection{Accounts and Profile}
+
+These tests check the account rules on the backend, below the API, so that a
+failure points to the rule that caused it rather than to the request.
 
 \begin{enumerate}
-
-\item{test-id1\\}
-
-Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-  be automatic}
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
-
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-How test will be performed: 
-					
-\item{test-id2\\}
-
-Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-  be automatic}
-					
-Initial State: 
-					
-Input: 
-					
-Output: \wss{The expected result for the given inputs}
-
-Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-How test will be performed: 
-
-\item{...\\}
-    
+  \item \textbf{ut-acct-1: Password length.} A password of 7 characters is
+    refused and one of 8 is accepted, testing \texttt{MIN\_PASSWORD\_LENGTH}
+    (8) on both sides (Hazard Analysis, SEC-38).
+  \item \textbf{ut-acct-2: Age confirmation.} Sign-up details with the age
+    confirmation true are accepted. False and missing are both refused (FR2).
+  \item \textbf{ut-acct-3: Username in use.} Checking \texttt{sam\_test} when
+    an account already uses it reports it as taken, and checking
+    \texttt{jordan\_test} reports it as free (FR3).
+  \item \textbf{ut-acct-4: Stored passwords.} After sign-up with the password
+    \texttt{Walk2026run}, the stored value is not equal to the password,
+    checking the stored value against the password succeeds, and checking it
+    against \texttt{Walk2026ruN} fails (FR4).
+  \item \textbf{ut-acct-5: Reset links.} A reset link works once for the
+    account it was issued to. Using it a second time, or for another account,
+    is refused (FR6).
 \end{enumerate}
 
-\subsubsection{Module 2}
+\subsubsection{Learning and Feedback}
 
-...
+The feedback rules are calculations on a portfolio, so they are tested as
+functions with portfolios given directly, with no database or API. Each test
+has a hand-calculated expected value.
+
+\begin{enumerate}
+  \item \textbf{ut-learn-1: Feedback threshold.} With a value of 1,000.00 at
+    the last view, a new value of 1,050.00 (a change of exactly
+    \texttt{FEEDBACK\_THRESHOLD}, 5\%) gives no feedback, and 1,050.01 and
+    949.99 both give feedback (FR52).
+  \item \textbf{ut-learn-2: Largest change.} For changes of $+70$ in A and
+    $-10$ in B, A is named. For $0$ in A and $-70$ in B, B is named (FR52).
+  \item \textbf{ut-learn-3: Shares of the portfolio.} For holdings worth
+    100.00, 100.00 and 100.00, each share is one third, and the shares add up
+    to 100\% within \texttt{VALUE\_TOLERANCE} (0.01). For a single holding, its
+    share is 100\% (FR53).
+  \item \textbf{ut-learn-4: Concentration limit.} Holdings worth 500.00 and
+    500.00 (exactly \texttt{CONCENTRATION\_LIMIT}, 50\%) give no explanation,
+    and 501.00 and 499.00 give one (FR54).
+  \item \textbf{ut-learn-5: Grading.} For a check with answers b, a and c, the
+    answers b, c and c give questions 1 and 3 correct and question 2
+    incorrect. All correct and all wrong are also tested (FR56).
+\end{enumerate}
+
+\subsubsection{Social Feed}
+
+The visibility rule decides every check in the social feed system tests, so
+it is tested on its own for every combination of its inputs.
+
+\begin{enumerate}
+  \item \textbf{ut-social-1: Visibility.} An update is visible to a viewer
+    exactly when the viewer is its author, or is both a selected viewer and
+    currently a friend of the author. The test checks all four combinations of
+    selected or not and friend or not, and the author (FR64, FR66; Hazard
+    Analysis, SEC-13).
+  \item \textbf{ut-social-2: Friend requests.} A pending request becomes
+    accepted only when its recipient accepts it, and declined when its
+    recipient declines it. Accepting by the sender, and accepting a declined
+    request, are refused (FR62, FR63).
+  \item \textbf{ut-social-3: Building an update.} Each of the four kinds in
+    SRS Table 6.5 builds an update, and any other kind is refused. No built
+    update contains an age, height, weight, individual record, location or
+    time of day (FR65, FR68; Hazard Analysis, SEC-14).
+  \item \textbf{ut-social-4: Feed order.} Updates shared at 10:00, 10:05 and
+    10:10 are returned newest first, whatever order they are given in (FR69).
+\end{enumerate}
 
 \subsection{Tests for Nonfunctional Requirements}
 
