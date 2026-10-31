@@ -321,6 +321,11 @@ The team will check FitFolio's implementation through testing, code review, and 
 \noindent
 \textbf{Testing:} The team will run the system tests in Section 4 and implement the unit tests described in Section 5 as features are developed. System tests will check the application against its functional and nonfunctional requirements. Unit tests will check individual parts of the code, while integration tests will check how components work together, including backend operations that use the database. The preliminary unit tests in Section 5 will be extended and mapped to modules once the Module Interface Specification is complete. 
 
+\medskip
+\noindent
+For each feature, the author will add or update relevant tests and explain their purpose in the pull request. Tests will cover normal behaviour, 
+boundary values, and invalid inputs where applicable. Following the priorities in Section 2.2, testing will pay particular attention to reward and portfolio calculations, repeated activity records, interrupted or repeated trades, and access to private user data. Expected numerical results will be calculated independently from the SRS rules and symbolic parameters. When fixing a defect, the author will add a test where practical to detect the same problem if it occurs again.
+
 \bigskip
 \noindent
 
