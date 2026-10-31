@@ -1712,7 +1712,7 @@ After the user sets a new password through the link, both existing sessions have
 account and progress. Sending the reset link to the account's email address provides that recovery route (SRS Section~6.1, FR\_AcctResetPassword).
 
 Changing the password alone does not end access through an existing session on a lost or shared phone. Ending all existing sessions after a successful reset removes that access and requires a new sign-in. Waiting until the reset is completed prevents someone from ending the user's sessions merely by requesting a reset link.}
-{FMEA \hazref{H38}, L5 (data loss, integrity and availability).}
+{FMEA \hazref{H37}, \hazref{H38}, L3 (privacy loss), L4 (security loss), L5 (data loss, integrity and availability).}
 {SRS Section~6.1, FR\_AcctResetPassword.}
 {Capstone.}
 
