@@ -145,6 +145,10 @@ defined milestones, placed the health notice before the health data consent
 started each user fresh on the day they acknowledge the health notice (SEC-20,
 FR27), allowed reminders to arrive the next time the app runs (FR75), and sold a
 removed asset's shares automatically (FR31, FR32).\\
+Oct 31, 2026 & 1.3 & Davis Lenover: 6.1 Accounts and Profile, 6.4 Learning and
+Feedback, Appendix C: FR1 refuses an email address already in use, FR3 compares
+usernames without regard to case, FR52 gives no feedback when the previous value
+was 0, and FR57 sets a pass mark for knowledge checks.\\
 \bottomrule
 \end{tabularx}
 
@@ -1785,9 +1789,12 @@ requirement.
 \noindent \begin{itemize}
 \freq{FR_AcctCreate}
   {The system shall let a new user create an account with an email address and
-  a password.}
+  a password, and shall refuse an email address that another account already
+  uses.}
   {A test user who enters an unused email address and a valid password has an
-  account, and can sign in with them.}
+  account, and can sign in with them. A test user who tries to sign up with an
+  email address that another account already uses is refused, and no account is
+  created.}
   {\srref{SR_EasyStart}, G2}
 \freq{FR_AcctAgeConfirm}
   {(HA SEC-37) The system shall not create an account until the user confirms
@@ -1797,9 +1804,10 @@ requirement.
   {\srref{SR_ProtectData}, G3, Hazard Analysis CA2}
 \freq{FR_AcctUsername}
   {The system shall require each user to choose a username that no other user
-  has.}
+  has. Usernames are stored as entered and compared without regard to case.}
   {A test user who tries to sign up with a username that another account
-  already uses is asked to choose a different one.}
+  already uses, or one that differs from it only in case, is asked to choose a
+  different one.}
   {\srref{SR_ShareProgress}, G3}
 \freq{FR_AcctSignIn}
   {The system shall let a user sign in with their email address and password.}
@@ -2233,9 +2241,10 @@ streak\\
   {When the user's portfolio value has changed by more than
   \texttt{FEEDBACK\_THRESHOLD} since they last viewed their portfolio,
   the system shall show feedback naming the holdings that contributed most to
-  the change.}
+  the change. No such feedback is shown when the value at their last view was 0.}
   {For a test portfolio whose value has changed by more than the threshold,
-  the feedback names the holding whose value changed most.}
+  the feedback names the holding whose value changed most. A test portfolio whose
+  value was 0 at the last view shows no such feedback.}
   {\srref{SR_LearnFromDecisions}, G1}
 \freq{FR_LearnTradeEffect}
   {After each trade, the system shall show the user how the trade changed the
@@ -2267,9 +2276,13 @@ streak\\
   incorrect, together with the explanation of its correct answer.}
   {\srref{SR_LearnFromDecisions}, G1}
 \freq{FR_LearnProgress}
-  {The system shall show the user their learning progress.}
+  {The system shall show the user their learning progress. A knowledge check is
+  passed when at least \texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} of its
+  answers are correct.}
   {After a test user views a concept explanation and passes a knowledge check,
-  both appear in their learning progress.}
+  both appear in their learning progress. A knowledge check with exactly
+  \texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} of its answers correct is
+  passed, and one with fewer is not.}
   {\srref{SR_SeeProgress}, G1, G2}
 \freq{FR_LearnUpdateContent}
   {The system shall let administrators add and edit concept explanations and
@@ -3690,6 +3703,7 @@ document and in the Hazard Analysis (HA).
   \rref{FR_MktNoStaleTrade}, HA SEC-2, SEC-3\\
 \texttt{FEEDBACK\_THRESHOLD} & 5\% & \rref{FR_LearnValueChange}, \rref{FR_RemindSend}\\
 \texttt{CONCENTRATION\_LIMIT} & 50\% & \rref{FR_LearnConcentration}\\
+\texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} & 70\% & \rref{FR_LearnProgress}\\
 \texttt{DEFAULT\_REMINDER\_PERIOD} & 9:00 to 20:00 in the user's time zone & \rref{FR_RemindInPeriods}, HA SAF-6\\
 \texttt{REST\_DAYS\_PER\_PERIOD} & 2 & \rref{FR_ActRestDay}, HA SAF-1\\
 \texttt{STREAK\_PERIOD} & calendar week (Monday to Sunday) in the user's time zone & \rref{FR_ActRestDay}, HA SAF-1\\

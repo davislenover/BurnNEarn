@@ -49,6 +49,8 @@
 Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
 Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
   updates to 2.3.\\
+Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1,
+  FR3, FR52 and FR57.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -559,30 +561,37 @@ How test will be performed: A pytest test sends the two requests and then
 tries to sign in with each address. The tester then tries the sign-up screen
 on a test device and records whether an account was created.
 
-\item{\textbf{test-acct-3: Unique usernames}\\}
+\item{\textbf{test-acct-3: Unique usernames and email addresses}\\}
 
-Requirements: FR3
+Requirements: FR1, FR3
 
 Control: Automatic
 
-Initial State: An account with the username \texttt{sam\_test} exists, as
-created in test-acct-1. No account uses the email address
-\texttt{jordan@fitfolio.test}.
+Initial State: An account with the email address \texttt{sam@fitfolio.test} and
+the username \texttt{sam\_test} exists, as created in test-acct-1. No account
+uses the email address \texttt{jordan@fitfolio.test}.
 
-Input: A sign-up request for \texttt{jordan@fitfolio.test} with the username
-\texttt{sam\_test}, followed by a second request with the same details except
-the username \texttt{jordan\_test}.
+Input: Four sign-up requests: for \texttt{jordan@fitfolio.test} with the
+username \texttt{sam\_test}; for \texttt{jordan@fitfolio.test} with the username
+\texttt{Sam\_Test}; for \texttt{sam@fitfolio.test} with the username
+\texttt{Jordan\_Test}; and for \texttt{jordan@fitfolio.test} with the username
+\texttt{Jordan\_Test}.
 
-Output: The first request is refused with a message asking the user to choose
-a different username, and no account is created. The second request
-succeeds.
+Output: The first two requests are refused with a message asking the user to
+choose a different username. The third is refused because the email address is
+already in use. None of these creates an account. The fourth request succeeds,
+and the account's username is stored as \texttt{Jordan\_Test}.
 
-Test Case Derivation: FR3 asks a user who chooses a username already in use
-to choose a different one. The second request shows that the refusal was
-caused by the username alone, since every other detail is the same.
+Test Case Derivation: FR3 asks a user who chooses a username already in use to
+choose a different one, and compares usernames without regard to case, so
+\texttt{Sam\_Test} is also in use. This stops a look-alike username from being
+used to impersonate someone. FR3 stores usernames as entered, so the capitals
+in \texttt{Jordan\_Test} are kept. FR1 refuses an email address already in use.
+The last request combines details from the earlier ones, so it shows that each
+refusal was caused by the one detail already in use.
 
-How test will be performed: A pytest test sends both requests and checks
-each response and which accounts exist afterwards.
+How test will be performed: A pytest test sends the four requests and checks
+each response, which accounts exist afterwards, and the stored username.
 
 \item{\textbf{test-acct-4: Signing out}\\}
 
@@ -2522,21 +2531,24 @@ Requirements: FR57
 
 Control: Automatic
 
-Initial State: A new test user with no learning progress.
+Initial State: A new test user with no learning progress. Test knowledge checks
+on \textit{Diversification} and \textit{Stock}, each with 10 questions.
 
 Input: The user opens the explanation of \textit{Diversification}, completes
-the knowledge check on \textit{Diversification} with every answer correct,
-and completes the knowledge check on \textit{Stock} with every answer wrong.
+the knowledge check on \textit{Diversification} with 7 answers correct, and
+completes the knowledge check on \textit{Stock} with 6 answers correct.
 
 Output: The user's learning progress shows the \textit{Diversification}
 explanation as viewed and its knowledge check as passed. It does not show the
 \textit{Stock} knowledge check as passed.
 
 Test Case Derivation: The fit criterion of FR57 is that a viewed explanation
-and a passed knowledge check both appear in the user's progress. The SRS does
-not set a pass mark, so the test uses all answers correct and all answers
-wrong, which pass and fail under any reasonable pass mark. The failed check
-shows that progress records only passed checks.
+and a passed knowledge check both appear in the user's progress. A check is
+passed when at least \texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} (70\%) of
+its answers are correct (SRS Appendix C), so 7 of 10 is exactly at the mark and
+6 of 10 is just below it. Each check has 10 questions so that one can sit
+exactly at 70\%. The failed check shows that progress records only passed
+checks.
 
 How test will be performed: A pytest test sends each action through the API
 and reads the user's learning progress.
@@ -3308,8 +3320,9 @@ failure points to the rule that caused it rather than to the request.
   \item \textbf{ut-acct-2: Age confirmation.} Sign-up details with the age
     confirmation true are accepted. False and missing are both refused (FR2).
   \item \textbf{ut-acct-3: Username in use.} Checking \texttt{sam\_test} when
-    an account already uses it reports it as taken, and checking
-    \texttt{jordan\_test} reports it as free (FR3).
+    an account already uses it reports it as taken, as does checking
+    \texttt{SAM\_TEST}, and checking \texttt{jordan\_test} reports it as free
+    (FR3).
   \item \textbf{ut-acct-4: Stored passwords.} After sign-up with the password
     \texttt{Walk2026run}, the stored value is not equal to the password,
     checking the stored value against the password succeeds, and checking it
@@ -3329,7 +3342,9 @@ has a hand-calculated expected value.
   \item \textbf{ut-learn-1: Feedback threshold.} With a value of 1,000.00 at
     the last view, a new value of 1,050.00 (a change of exactly
     \texttt{FEEDBACK\_THRESHOLD}, 5\%) gives no feedback, and 1,050.01 and
-    949.99 both give feedback (FR52).
+    949.99 both give feedback. With a value of 0 at the last view, where a
+    percentage change would divide by zero, a new value of 1,000.00 gives no
+    feedback (FR52).
   \item \textbf{ut-learn-2: Largest change.} For changes of $+70$ in A and
     $-10$ in B, A is named. For $0$ in A and $-70$ in B, B is named (FR52).
   \item \textbf{ut-learn-3: Shares of the portfolio.} For holdings worth
