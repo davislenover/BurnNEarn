@@ -1700,7 +1700,11 @@ password~\cite{OWASPMASVS}.}
 {The system shall let a user who has forgotten their password set a new one
 through a link sent to their account's email address.
 
-When a user successfully resets their password, the system shall end all existing sessions for that account on the server before reporting success.}
+When a user successfully resets their password, the system shall end all existing sessions for that account on the server before reporting success. The server shall reject further requests using those sessions, and the sessions shall not be renewed. The user must sign in again with the new password to regain access.
+
+Requesting a reset link without completing the password reset shall not
+end existing sessions. Resetting one account's password shall leave
+other accounts' sessions unchanged.}
 {A test user who requests a reset receives a link at their email address, and
 after setting a new password can sign in only with the new one.}
 {A user who cannot sign in loses access to all their progress and may abandon
