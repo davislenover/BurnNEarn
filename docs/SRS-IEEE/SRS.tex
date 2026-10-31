@@ -1800,9 +1800,10 @@ requirement.
   {\srref{SR_ProtectData}, G3, Hazard Analysis CA2}
 \freq{FR_AcctUsername}
   {The system shall require each user to choose a username that no other user
-  has.}
+  has. Usernames are stored as entered and compared without regard to case.}
   {A test user who tries to sign up with a username that another account
-  already uses is asked to choose a different one.}
+  already uses, or one that differs from it only in case, is asked to choose a
+  different one.}
   {\srref{SR_ShareProgress}, G3}
 \freq{FR_AcctSignIn}
   {The system shall let a user sign in with their email address and password.}

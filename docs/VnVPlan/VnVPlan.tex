@@ -569,22 +569,27 @@ Initial State: An account with the email address \texttt{sam@fitfolio.test} and
 the username \texttt{sam\_test} exists, as created in test-acct-1. No account
 uses the email address \texttt{jordan@fitfolio.test}.
 
-Input: Three sign-up requests: for \texttt{jordan@fitfolio.test} with the
-username \texttt{sam\_test}; for \texttt{sam@fitfolio.test} with the username
-\texttt{jordan\_test}; and for \texttt{jordan@fitfolio.test} with the username
-\texttt{jordan\_test}.
+Input: Four sign-up requests: for \texttt{jordan@fitfolio.test} with the
+username \texttt{sam\_test}; for \texttt{jordan@fitfolio.test} with the username
+\texttt{Sam\_Test}; for \texttt{sam@fitfolio.test} with the username
+\texttt{Jordan\_Test}; and for \texttt{jordan@fitfolio.test} with the username
+\texttt{Jordan\_Test}.
 
-Output: The first request is refused with a message asking the user to choose
-a different username. The second is refused because the email address is
-already in use. Neither creates an account. The third request succeeds.
+Output: The first two requests are refused with a message asking the user to
+choose a different username. The third is refused because the email address is
+already in use. None of these creates an account. The fourth request succeeds,
+and the account's username is stored as \texttt{Jordan\_Test}.
 
 Test Case Derivation: FR3 asks a user who chooses a username already in use to
-choose a different one, and FR1 refuses an email address already in use. The
-last request combines details from the first two, so it shows that each refusal
-was caused by the one detail already in use.
+choose a different one, and compares usernames without regard to case, so
+\texttt{Sam\_Test} is also in use. This stops a look-alike username from being
+used to impersonate someone. FR3 stores usernames as entered, so the capitals
+in \texttt{Jordan\_Test} are kept. FR1 refuses an email address already in use.
+The last request combines details from the earlier ones, so it shows that each
+refusal was caused by the one detail already in use.
 
-How test will be performed: A pytest test sends the three requests and checks
-each response and which accounts exist afterwards.
+How test will be performed: A pytest test sends the four requests and checks
+each response, which accounts exist afterwards, and the stored username.
 
 \item{\textbf{test-acct-4: Signing out}\\}
 
@@ -3310,8 +3315,9 @@ failure points to the rule that caused it rather than to the request.
   \item \textbf{ut-acct-2: Age confirmation.} Sign-up details with the age
     confirmation true are accepted. False and missing are both refused (FR2).
   \item \textbf{ut-acct-3: Username in use.} Checking \texttt{sam\_test} when
-    an account already uses it reports it as taken, and checking
-    \texttt{jordan\_test} reports it as free (FR3).
+    an account already uses it reports it as taken, as does checking
+    \texttt{SAM\_TEST}, and checking \texttt{jordan\_test} reports it as free
+    (FR3).
   \item \textbf{ut-acct-4: Stored passwords.} After sign-up with the password
     \texttt{Walk2026run}, the stored value is not equal to the password,
     checking the stored value against the password succeeds, and checking it
