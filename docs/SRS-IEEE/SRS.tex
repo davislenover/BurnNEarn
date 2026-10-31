@@ -2237,9 +2237,10 @@ streak\\
   {When the user's portfolio value has changed by more than
   \texttt{FEEDBACK\_THRESHOLD} since they last viewed their portfolio,
   the system shall show feedback naming the holdings that contributed most to
-  the change.}
+  the change. No such feedback is shown when the value at their last view was 0.}
   {For a test portfolio whose value has changed by more than the threshold,
-  the feedback names the holding whose value changed most.}
+  the feedback names the holding whose value changed most. A test portfolio whose
+  value was 0 at the last view shows no such feedback.}
   {\srref{SR_LearnFromDecisions}, G1}
 \freq{FR_LearnTradeEffect}
   {After each trade, the system shall show the user how the trade changed the

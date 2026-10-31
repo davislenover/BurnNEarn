@@ -3337,7 +3337,9 @@ has a hand-calculated expected value.
   \item \textbf{ut-learn-1: Feedback threshold.} With a value of 1,000.00 at
     the last view, a new value of 1,050.00 (a change of exactly
     \texttt{FEEDBACK\_THRESHOLD}, 5\%) gives no feedback, and 1,050.01 and
-    949.99 both give feedback (FR52).
+    949.99 both give feedback. With a value of 0 at the last view, where a
+    percentage change would divide by zero, a new value of 1,000.00 gives no
+    feedback (FR52).
   \item \textbf{ut-learn-2: Largest change.} For changes of $+70$ in A and
     $-10$ in B, A is named. For $0$ in A and $-70$ in B, B is named (FR52).
   \item \textbf{ut-learn-3: Shares of the portfolio.} For holdings worth
