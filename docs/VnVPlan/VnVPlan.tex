@@ -327,12 +327,21 @@ For each feature, the author will add or update relevant tests and explain their
 
 \bigskip
 \noindent
+\textbf{Code Review:} Before merging a change, at least one team member other than the author will inspect the code and its tests. The reviewer will normally work in a related area. Changes affecting the whole team will be submitted for team review, following the Development Plan.
 
-Code Review: 
-
-
-Automated Checks and records:
-
+\medskip
+\noindent
+Reviewers will use the \href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/Checklists/Code-Checklist.pdf}{Source Code Checklist} and the Development Plan's Coding Standard to check that:
+\begin{itemize}
+  \item The changed behaviour matches the relevant requirements and,
+        once available, the module interfaces.
+  \item Calculations, input checks, error handling, and access
+        restrictions handle the cases affected by the change.
+  \item Tests cover the changed behaviour and relevant failure cases,
+        with expected results justified by the specification.
+  \item Names, comments, code structure, and constants make the code
+        understandable and consistent with the coding standard.
+\end{itemize}
 
 
 \subsection{Automated Testing and Verification Tools}
