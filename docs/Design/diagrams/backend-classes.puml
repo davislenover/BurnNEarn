@@ -1,327 +1,109 @@
 @startuml backend-classes
-' FitFolio backend classes for the proof of concept.
+' FitFolio backend classes for the proof of concept. Only real classes are
+' drawn. Modules of plain functions are on the package diagram and in the issues.
 ' Render with: plantuml -tpng backend-classes.puml
-'
-' Most of the backend is Python modules of plain functions rather than
-' classes. Those are drawn as classes with the stereotype <<module>>.
 
 !$BUILT = "#DDF3E4;line:3B8A5A"
-!$PLANNED = "#FFFFFF;line:999999;line.dashed"
+!$PLANNED = "#FFFFFF;line:555555;line.dashed"
 
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
-skinparam nodesep 60
-skinparam ranksep 60
+skinparam nodesep 30
+skinparam ranksep 40
 skinparam ArrowColor #555555
-skinparam ArrowFontSize 11
+skinparam ArrowFontSize 12
 hide empty members
 hide circle
-left to right direction
 set separator none
 
-title FitFolio backend: classes, modules and tables
+title FitFolio backend: classes and tables
+caption Main columns only. A line between tables is a foreign key.\nGreen: built. Dashed box: planned.
 
-class "app.main" as main_mod <<module>> $BUILT {
-  app: FastAPI
-  handle_domain_error(_: Request, error: DomainError): JSONResponse
-  .. planned ..
-  lifespan: starts the poller loop
-}
-
-package "app.api" {
-  class "Routes" as routes <<routes>> $BUILT {
-    GET /v1/health
-    .. planned ..
-    GET /v1/me/balance
-    PUT /v1/me/activity/daily-totals
-    GET /v1/assets
-    GET /v1/market/usage
-    POST /v1/me/trades
-    GET /v1/me/portfolio
-    .. tables read directly ..
-    Asset (GET /v1/assets)
-    ProviderRequest (GET /v1/market/usage)
+package "app.models (tables)" {
+  class User $PLANNED {
+    time_zone
   }
-  class "deps" as deps <<module>> $PLANNED {
-    get_current_user(): User
-    get_current_portfolio(): Portfolio
-    {method} tables: User, Portfolio
+  class Portfolio $PLANNED {
+    cash_balance
+    scenario_id: empty if live
   }
-  class "Money" as money <<type>> $BUILT {
-    Decimal, sent as text
-    with 4 decimals
+  class ActivityDailyTotal $PLANNED {
+    activity_date
+    activity_type
+    step_count
+    counted
   }
-}
-
-package "app.activity" {
-  class "activity.service" as activity_service <<module>> $PLANNED {
-    sync_daily_totals(session, user, portfolio, request, now)
-    {method} tables: ActivityDailyTotal, BalanceChange (sums what was paid)
+  class BalanceChange $PLANNED {
+    amount
+    reason
+    activity_date
   }
-  class "activity.rewards" as rewards <<module>> $PLANNED {
-    daily_reward(step_count)
-    top_up(reward, already_paid)
-    allowed_dates(today)
+  class Trade $PLANNED {
+    request_id
+    quantity
+    unit_price
+    currency_amount
+    status
   }
-}
-
-package "app.trading" {
-  class "trading.service" as trading_service <<module>> $PLANNED {
-    buy(session, portfolio_id, request, now)
-    {method} tables: Trade, Holding, Asset (finds by symbol)
+  class Holding $PLANNED {
+    quantity
   }
-  class "trading.valuation" as valuation <<module>> $PLANNED {
-    portfolio_value(session, portfolio_id, now)
-    {method} tables: Holding, Asset (symbol of each holding)
+  class Asset $BUILT {
+    symbol
+    name
+    asset_type
+    is_tradable
   }
-}
-
-package "app.wallet" {
-  class "wallet.service" as wallet_service <<module>> $PLANNED {
-    change_balance(session, portfolio_id, amount, reason, activity_date=None): BalanceChange
-    get_balance(session, portfolio_id)
-    {method} tables: Portfolio, BalanceChange
+  class Price $BUILT {
+    price
+    quoted_at
+    obtained_at
   }
-  enum BalanceChangeReason $PLANNED {
-    activity_reward
-    trade_purchase
+  class ProviderRequest $PLANNED {
+    symbol
+    time of the call
+    whether it worked
   }
 }
 
 package "app.market" {
-  class "market.poller" as poller <<module>> $PLANNED {
-    poll_once(session, provider, now)
-    {method} a loop: poll_once every 60 seconds
-    {method} tables: Asset, Price, ProviderRequest
-  }
-  class "market.prices" as prices <<module>> $PLANNED {
-    get_current_price(session, asset_id, now): price with its two times and delayed
-    {method} tables: Price
-  }
-  class "market.calendar" as calendar <<module>> $PLANNED {
-    is_market_open(now): bool
-  }
   interface MarketDataProvider <<Protocol>> $BUILT {
-    get_quote(symbol: str): Quote
+    get_quote(symbol): Quote
   }
-  class FinnhubProvider $BUILT {
-    __init__(api_key: SecretStr, client: Client | None = None)
-    get_quote(symbol: str): Quote
-    close(): None
-  }
-  class FakeProvider $PLANNED {
-    get_quote(symbol: str): Quote
-  }
-  class Quote <<dataclass>> $BUILT {
-    symbol: str
-    price: Decimal
-    quoted_at: datetime
-  }
-  class MarketDataError $BUILT
-  class RateLimitedError $BUILT
-  class UnknownSymbolError $BUILT
-}
-
-package "app.scripts" {
-  class "scripts.seed_demo" as seed_demo <<module>> $PLANNED {
-    creates the demo user and portfolio
-    reset: deletes and recreates the portfolio
-    tables: User, Portfolio
-  }
-}
-
-package "app.models (database tables)" {
-  enum AssetType $BUILT {
-    stock
-    etf
-  }
-  class Asset <<table>> $BUILT {
-    asset_id: UUID {PK}
-    symbol: str {unique}
-    name: str
-    asset_type: str
-    price_currency: str
-    is_tradable: bool
-    created_at: datetime
-  }
-  class Price <<table>> $BUILT {
-    price_id: int {PK}
-    asset_id: UUID {FK}
-    price: Decimal
-    price_currency: str
-    quoted_at: datetime
-    obtained_at: datetime
-    .. one row per asset_id and quoted_at ..
-  }
-  class ProviderRequest <<table>> $PLANNED {
-    time of the call
+  class FinnhubProvider $BUILT
+  class FakeProvider $PLANNED
+  class Quote $BUILT {
     symbol
-    whether it worked
+    price
+    quoted_at
   }
-  class User <<table>> $PLANNED {
-    user_id {PK}
-    time_zone: str
-    created_at: datetime
-  }
-  class Portfolio <<table>> $PLANNED {
-    portfolio_id {PK}
-    user_id {FK}
-    cash_balance: Decimal
-    scenario_id
-    created_at: datetime
-  }
-  class BalanceChange <<table>> $PLANNED {
-    balance_change_id {PK}
-    portfolio_id {FK}
-    amount: Decimal
-    reason: str
-    activity_date: date | None
-    created_at: datetime
-  }
-  class ActivityDailyTotal <<table>> $PLANNED {
-    user_id {FK}
-    activity_date: date
-    activity_type: ActivityType
-    step_count: int
-    counted: bool
-    updated_at: datetime
-    .. one row per user, date and type ..
-  }
-  class Trade <<table>> $PLANNED {
-    trade_id {PK}
-    request_id
-    portfolio_id {FK}
-    asset_id {FK}
-    trade_type: str
-    quantity: int
-    unit_price: Decimal
-    currency_amount: Decimal
-    status: str
-    balance_change_id {FK}
-    created_at: datetime
-    .. request_id once per portfolio ..
-  }
-  class Holding <<table>> $PLANNED {
-    portfolio_id {FK}
-    asset_id {FK}
-    quantity: int
-    .. one row per portfolio and asset ..
-  }
-}
-
-package "Requests the app refuses (each error lives in the package shown)" {
-  class "InsufficientFundsError\n(app.wallet)" as InsufficientFundsError $PLANNED
-  class "MarketClosedError\n(app.trading)" as MarketClosedError $PLANNED
-  class "PriceOutOfDateError\n(app.trading)" as PriceOutOfDateError $PLANNED
-  class "PriceChangedError\n(app.trading)" as PriceChangedError $PLANNED {
-    sends back the new price
-  }
-  class "ActivityDateOutOfRangeError\n(app.activity)" as ActivityDateOutOfRangeError $PLANNED
-  class "NotAuthenticatedError\n(app.api)" as NotAuthenticatedError $PLANNED
 }
 
 package "app.core" {
-  class Base <<SQLAlchemy>> $BUILT
-  class Settings $BUILT {
-    database_url: str
-    finnhub_api_key: SecretStr | None
-    .. planned ..
-    market_provider
-    market_poller_enabled
-    market_always_open
-    demo_user_enabled
-  }
-  class "db" as db <<module>> $BUILT {
-    engine
-    SessionLocal
-    get_db(): Iterator[Session]
-  }
-  class "constants" as constants <<module>> $BUILT {
-    MAX_DAILY_CURRENCY
-    MAX_DAILY_STEPS
-    QUOTE_CURRENCY
-    QUOTE_STALENESS_LIMIT
-    and the other SRS limits
-  }
-  enum ActivityType $BUILT {
-    steps
-    wheelchair_pushes
-    cycling
-    swimming
-    other_workout
-  }
   class DomainError $BUILT {
-    code: str
-    message: str
-    status: int
-    __init__(message: str | None = None)
+    code
+    message
+    status
+    .. one subclass per refusal ..
   }
 }
 
-' Routes call the services.
-routes ..> deps
-routes ..> activity_service
-routes ..> trading_service
-routes ..> valuation
-routes ..> wallet_service : get_balance()
-routes ..> prices
-routes ..> calendar
-routes ..> money : planned routes\nsend amounts as
-main_mod ..> routes : adds the routes
-main_mod ..> poller : starts the loop
-db ..> Settings : get_settings()
-
-' Services call each other.
-activity_service ..> rewards
-activity_service ..> wallet_service : change_balance()
-trading_service ..> wallet_service : change_balance()
-trading_service ..> prices
-trading_service ..> calendar
-valuation ..> wallet_service : get_balance()
-valuation ..> prices
-prices ..> calendar
-poller ..> calendar : only while open
-
-' The provider.
-poller ..> MarketDataProvider
 FinnhubProvider ..|> MarketDataProvider
 FakeProvider ..|> MarketDataProvider
-MarketDataProvider ..> Quote : returns
-MarketDataProvider ..> MarketDataError : raises
-RateLimitedError --|> MarketDataError
-UnknownSymbolError --|> MarketDataError
+MarketDataProvider --> Quote : returns
 
-wallet_service ..> BalanceChangeReason
+User -- "*" Portfolio
+User -- "*" ActivityDailyTotal
+Portfolio -- "*" BalanceChange
+Portfolio -- "*" Trade
+Portfolio -- "*" Holding
+Trade -left-> BalanceChange : paid by
+Trade "*" -- Asset
+Holding "*" -- Asset
+Asset -- "*" Price
 
-' The tables.
-User "1" -- "1..*" Portfolio : one live (scenario_id empty)
-User "1" -- "0..*" ActivityDailyTotal
-Portfolio "1" *-- "0..*" BalanceChange
-Portfolio "1" *-- "0..*" Trade
-Portfolio "1" *-- "0..*" Holding
-Trade "0..1" -- "1" BalanceChange : paid by >
-Asset "1" -- "0..*" Price
-Asset "1" -- "0..*" Trade
-Asset "1" -- "0..*" Holding
-Asset .. ProviderRequest : by symbol
-Asset .. AssetType : values of asset_type
-ActivityDailyTotal ..> ActivityType
-
-' Errors the app raises on purpose.
-InsufficientFundsError --|> DomainError
-MarketClosedError --|> DomainError
-PriceOutOfDateError --|> DomainError
-PriceChangedError --|> DomainError
-ActivityDateOutOfRangeError --|> DomainError
-NotAuthenticatedError --|> DomainError
-
-legend right
-  |<#DDF3E4> Built |
-  |<#FFFFFF> Planned (dashed) |
-  Every <<table>> class extends Base.
-  Request and response shapes are left out.
-  Arrows to db, Settings and constants are left out: most modules use them.
-endlegend
+' Only sets the layout: app.core sits under app.market.
+Quote -[hidden]down-> DomainError
 @enduml

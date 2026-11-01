@@ -2,91 +2,46 @@
 ' FitFolio backend packages for the proof of concept.
 ' Render with: plantuml -tpng backend-packages.puml
 
-!$PLANNED = "#FFFFFF;line:999999;line.dashed"
-!$MIXED = "#F4FBF6;line:3B8A5A"
+!$SOME = "#DDF3E4;line:3B8A5A"
+!$NONE = "#FFFFFF;line:555555;line.dashed"
 
 skinparam shadowing false
 skinparam defaultFontName Helvetica
-skinparam packageStyle folder
-skinparam nodesep 60
-skinparam ranksep 80
+skinparam nodesep 25
+skinparam ranksep 45
 skinparam ArrowColor #555555
 skinparam ArrowFontSize 12
-skinparam rectangleBorderColor transparent
-skinparam rectangleBackgroundColor transparent
 
-title FitFolio backend: packages and what each one depends on
+title FitFolio backend: packages
+caption Arrows mean "uses" and show the planned design.\nGreen: some code exists. Dashed: nothing built yet.
 
-rectangle "**main.py**\n**Planned:** lifespan (starts the poller)" as main $MIXED
+rectangle "**app.main**" as main $SOME
+folder "**app.api**\nroutes" as api $SOME
 
-package "app.api" as api $MIXED {
-  rectangle "**Built:** health.py, common.py\n**Planned:** deps.py, balance.py, activity.py,\nassets.py, market.py, trades.py, portfolio.py" as api_files
+rectangle "Services: the rules, one package per feature" as services #FAFAFA;line:BBBBBB {
+  folder "**app.activity**\nsteps into rewards" as activity $NONE
+  folder "**app.trading**\nbuying, portfolio value" as trading $NONE
+  folder "**app.wallet**\nthe only code that\nchanges a balance" as wallet $NONE
+  folder "**app.market**\nprices, market hours" as market $SOME
 }
 
-package "app.activity" as activity $PLANNED {
-  rectangle "**Planned:** service.py,\nrewards.py, schemas.py" as activity_files
-}
+folder "**app.scripts**\ndemo data" as scripts $NONE
+folder "**app.models**\ntables" as models $SOME
+folder "**migrations**\nchanges to the tables" as migrations $SOME
+folder "**app.core**\nsettings, database session, constants, DomainError\nused by every package" as core $SOME
 
-package "app.trading" as trading $PLANNED {
-  rectangle "**Planned:** service.py,\nvaluation.py" as trading_files
-}
+main --> api
+main --> market : starts the poller
+api --> services
+api --> models
+activity --> wallet
+trading --> wallet
+trading --> market
+services --> models
+scripts --> models
+migrations --> models
 
-package "app.wallet" as wallet $PLANNED {
-  rectangle "**Planned:** service.py" as wallet_files
-}
-
-package "app.market" as market $MIXED {
-  rectangle "**Built:** provider.py, finnhub.py\n**Planned:** fake.py, calendar.py,\npoller.py, prices.py" as market_files
-}
-
-package "app.scripts" as scripts $PLANNED {
-  rectangle "**Planned:** seed_demo.py" as scripts_files
-}
-
-package "migrations" as migrations $MIXED {
-  rectangle "**Built:** env.py, versions/0001 to 0003\n**Planned:** a new migration for\neach group of planned tables" as migrations_files
-}
-
-package "app.models" as models $MIXED {
-  rectangle "**Built:** asset.py, price.py\n**Planned:** provider_request.py, user.py, portfolio.py, balance_change.py,\nactivity_daily_total.py, trade.py, holding.py" as models_files
-}
-
-package "app.core" as core $MIXED {
-  rectangle "**Built:** settings.py, db.py,\nconstants.py, errors.py\n**Planned:** 4 new settings\nin settings.py" as core_files
-}
-
-main ..> api : adds the routes
-main ..> market : starts the poller
-
-api ..> activity : sync_daily_totals()
-api ..> trading : buy(), portfolio_value()
-api ..> wallet : get_balance()
-api ..> market : get_current_price(),\nis_market_open()
-api ..> models : finds the user and portfolio,\nlists assets, counts provider calls
-
-activity ..> wallet : change_balance()
-activity ..> models
-trading ..> wallet : change_balance(),\nget_balance()
-trading ..> market : get_current_price(),\nis_market_open()
-trading ..> models
-wallet ..> models
-market ..> models
-scripts ..> models
-migrations ..> models : reads the tables
-
-models -[hidden]down-> core
-
-note right of core
-  Every package uses app.core,
-  so those arrows are left out.
-  test/backend tests all of these.
-end note
-
-legend right
-  |<#F4FBF6> Partly built (solid border) |
-  |<#FFFFFF> Planned (dashed border) |
-  Only main to app.api and migrations to
-  app.models exist today. Every other
-  arrow is planned.
-endlegend
+' Only sets the layout: app.core sits at the bottom.
+models -[hidden]-> core
+wallet -[hidden]-> core
 @enduml
