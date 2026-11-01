@@ -44,6 +44,8 @@ jobs:
   test:
     name: Test (pytest + PostgreSQL)
     runs-on: ubuntu-latest
+    # A stuck test would otherwise hold the job for GitHub's limit of 6 hours.
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:18
