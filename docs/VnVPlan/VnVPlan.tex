@@ -51,6 +51,7 @@ Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
   updates to 2.3.\\
 Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1,
   FR3, FR52 and FR57.\\
+Nov 1, 2026 & Zaid Alsaadi & Section 3.5: Implementation Verification.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -317,16 +318,42 @@ verified.  Techniques for this include review and mutation testing.}
 
 \subsection{Implementation Verification}
 
-\wss{You should at least point to the tests listed in this document and the unit
-  testing plan.}
+The team will check FitFolio's implementation through testing, code review, and automated checks. These activities will verify that the code meets the \href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/SRS-IEEE/SRS.pdf}{Software Requirements Specification (SRS)}, including the safety and security requirements from the \href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}. The review and merge process will follow the \href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/DevelopmentPlan/DevelopmentPlan.pdf}{Development Plan's Workflow Plan and Definition of Done}.
 
-\wss{In this section you would also give any details of any plans for static
-  verification of the implementation.  Potential techniques include code
-  walkthroughs, code inspection, static analyzers, etc.}
+\bigskip
+\noindent
+\textbf{Testing:} The team will run the system tests in Section 4 and implement the unit tests described in Section 5 as features are developed. System tests will check the application against its functional and nonfunctional requirements. Unit tests will check individual parts of the code, while integration tests will check how components work together, including backend operations that use the database. The preliminary unit tests in Section 5 will be extended and mapped to modules once the Module Interface Specification is complete. 
 
-\wss{The final class presentation in CAS 741 could be used as a code
-walkthrough.  There is also a possibility of using the final presentation (in
-CAS741) for a partial usability survey.}
+\medskip
+\noindent
+For each feature, the author will add or update relevant tests and explain their purpose in the pull request. Tests will cover normal behaviour, boundary values, and invalid inputs where applicable. Following the priorities in Section 2.2, testing will pay particular attention to reward and portfolio calculations, repeated activity records, interrupted or repeated trades, and access to private user data. Expected numerical results will be derived from the SRS rules and symbolic parameters, independently of the implementation being tested. When fixing a defect, the author will add a test where practical to detect the same problem if it occurs again.
+
+\bigskip
+\noindent
+\textbf{Code Review:} Before merging a change, at least one team member other than the main author will inspect the code and its tests. If all team members contributed to the feature, everyone must approve it. The reviewer will normally work in a related area. Changes affecting the whole team will be submitted for team review, following the Development Plan.
+
+\medskip
+\noindent
+Reviewers will use the \href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/Checklists/Code-Checklist.pdf}{Source Code Checklist} and the Development Plan's Coding Standard to check that:
+\begin{itemize}
+  \item The changed behaviour matches the relevant requirements and, once available, the module interfaces.
+  \item Calculations, input checks, error handling, and access restrictions handle the cases affected by the change.
+  \item Tests cover the changed behaviour and relevant failure cases, with expected results justified by the specification.
+  \item Names, comments, code structure, and constants make the code understandable and consistent with the coding standard.
+\end{itemize}
+
+\noindent
+Reviewers will leave findings on the pull request. The author will address them, and the reviewer will check the revisions before approving. Defects found outside a pull request will be recorded as GitHub issues and linked to their fixes.
+
+\bigskip
+\noindent
+\textbf{Automated Checks and Records:} Section 3.6 describes the tools used to support verification. Ruff lints and formats the backend's Python code, and gitleaks scans the repository for secrets. The frontend's TypeScript code will be linted with ESLint and formatted with Prettier. Backend tests run with pytest, and frontend unit tests will use Jest. Reviewers can use coverage reports to check that a pull request tests the code it adds. No minimum coverage is enforced at this stage.
+
+\medskip
+\noindent
+Changes must receive the approvals required by the Development Plan and pass all CI checks before merging. Pull request discussions, test output, and linked issues will record the checks performed and problems found. For manual system tests, the tester will record the test identifier, platform, observed result, and any defect found. Results and unresolved limitations will be summarized in the VnV Report.
+
+
 
 \subsection{Automated Testing and Verification Tools}
 
@@ -3929,6 +3956,10 @@ answers for FR57, and I raised each gap as an issue so the SRS gets fixed
 instead of the test hiding it. This showed me that a requirement with a fit
 criterion can still be impossible to test, and that writing the test is a
 good way to find out.\\
+
+\bigskip
+\noindent
+\textbf{Zaid:} My main difficulty was understanding what belonged in Implementation Verification and how it differed from the Development Plan and Section 3.6. These sections discuss similar topics, so I was unsure how much detail to include without repeating information. The distinction became clearer when I focused on how the team would check the code, while leaving the workflow details in the Development Plan and the tool descriptions in Section 3.6. This helped me explain what reviewers would check, how tests would check the requirements, and how problems would be recorded. I also found that small wording choices could make the plan unclear. For example, saying that expected results would be calculated “independently from the SRS rules” could suggest that the rules should not be used. The intended meaning was to use the SRS to calculate the expected answer independently of the code being tested. Revising that sentence helped me understand why a testing plan needs precise wording. Next time, I will identify the related sections before drafting and check that each statement clearly explains what the team will do.
 
 \subsubsection*{3. What knowledge and skills will the team collectively need to
 acquire to successfully complete the verification and validation of your
