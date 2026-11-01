@@ -308,12 +308,26 @@ The SRS will be verified through a structured peer review, traceability checks, 
 \paragraph{Recording results.} Reviewers will leave comments on the pull request with the requirement or section ID and the problem found. The author of the request will either correct the text or explain the desicion in the thread. The review is complete when the comments are addressed, the document builds in CI, and a teammate approves the changes. Any requirement changed later will have its use cases and V\&V tests checked again.
 \subsection{Design Verification}
 
-\wss{Plans for design verification}
+The Module Guide and Module Interface Specification will be verified when their drafts are ready as they have been completed at this time. This section describes and highlights the review process rather than claiming that the design has already been checked.
 
-\wss{The review will include reviews by your classmates}
 
-\wss{Create a checklists?}
 
+Each design document will receive a pull request review from a teammate who didn't write the affected part, as well as the classmate review required for the deliverable. Reviewers will compare the design with the SRS and HA, using the following checks:
+
+
+\being{itemize}
+
+\item Every major functional requirement will have a corresponding responsible module, and the module interfaces will provide the inputs and outputs it needs.
+
+\item Responsibilities are clearly seperated. Health data collection, rewards, market prices, trading, scenarios, accounts, and social sharing don't depend on any undocumented shared state (Single Responsibility).
+
+\item the design protects the main HA controls. Scenario trades are not able to alter the live portfolio. Interrupted or repeated trades cannot leave any partial or duplicate transaction. Private updates can be retrieved only by their selected friends.
+
+\item Each module's interface should clearly define and state what happens for any missing, invalid, delayed, or unexpected data, including unavailable health records and stale market prices.
+
+\item Modules can be tested independently with known inputs, and any likely changes such as replacing the market data provider do not require unrelated modules to change.
+
+The team will also walk through a core path from a health record to a currency reward and a simulated purchase, checking which module owns each attribute such as a calculation or stored value. Reviewers will record issues against the MG or MIS section in GitHub and repeat the affected checks after revisions. Once the MIS is approved, its module interfaces will then be used to complete Section 5's unit tests and module traceability.
 \subsection{Verification and Validation Plan Verification}
 
 \wss{The verification and validation plan is an artifact that should also be
