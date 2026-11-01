@@ -3255,6 +3255,34 @@ difficulties they encounter.
 
 \end{enumerate}
 
+\subsubsection{Portability}
+
+\paragraph{Core Features on Android and iOS}
+
+\begin{enumerate}
+
+\item{test-nfr-portability-1\\}
+
+Type: Nonfunctional, Dynamic, Manual and Automatic.
+
+Initial State: FitFolio is installed on an Android phone and iPhone.
+Both use the same test backend and accounts with equivalent data.
+
+Input/Condition: Run the core tests from Section 4.1 on both phones.
+These include account creation, sign-in, activity rewards, trading,
+portfolio viewing, learning, and sharing.
+
+Output/Result: All core tests pass on both Android and iOS, meeting NFR4.
+
+How test will be performed: The team will run the same tests on both
+phones, starting with equivalent data. We will record the phone models,
+operating system versions, and each test's result in a table. The test
+passes if all core features work as expected on both phones.
+
+\end{enumerate}
+
+
+
 \subsection{Traceability Between Test Cases and Requirements}
 
 \wss{Provide a table that shows which test cases are supporting which
