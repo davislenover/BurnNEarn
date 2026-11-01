@@ -133,7 +133,7 @@ Oct 19, 2026 & 1.0 & Angad: 5 Use Cases, 7.3 Privacy and Data Retention,
 11 Rationale.\\
 Oct 19, 2026 & 1.0 & Preston Grewal: 7.1 Major Data Entities, 7.2 Data
 Dictionary, Appendix D.\\
-Oct 19, 2026 & 1.0 & Zaid: 12 Likely Changes, 13 Unlikely Changes.\\
+Oct 19, 2026 & 1.0 & Zaid Alsaadi: 12 Likely Changes, 13 Unlikely Changes.\\
 Oct 27, 2026 & 1.1 & Davis Lenover: 6.6 Reminders and Settings, FR77
 revised because iOS does not tell apps which health data types they may
 read.\\
@@ -145,6 +145,9 @@ defined milestones, placed the health notice before the health data consent
 started each user fresh on the day they acknowledge the health notice (SEC-20,
 FR27), allowed reminders to arrive the next time the app runs (FR75), and sold a
 removed asset's shares automatically (FR31, FR32).\\
+Nov 1, 2026 & 1.3 & Zaid Alsaadi: Updated FR5, FR6, SEC-17, and the
+account management use case to cover all-device sign-out, session
+expiry, and ending existing sessions after a successful password reset.\\
 \bottomrule
 \end{tabularx}
 
@@ -1558,7 +1561,8 @@ User
 \begin{itemize}
 \item If the account information is invalid, the system asks the user to correct it.
 \item If the user forgets their password, they can request a password reset.
-\item The user can edit their profile, download their data, or sign out.
+\item The user can edit their profile, download their data, or sign out
+of the current session or all devices.
 \end{itemize}
 
 \textbf{Postconditions}
@@ -1807,15 +1811,54 @@ requirement.
   in; one who enters a wrong password is not.}
   {\srref{SR_ProtectData}, G2}
 \freq{FR_AcctSignOut}
-  {The system shall let a signed-in user sign out.}
-  {After a test user signs out, opening the app shows the sign-in screen and
-  none of their data.}
+  {(HA SEC-17) The system shall let a signed-in user sign out of the current
+  session or select ``Sign out of all devices.'' Signing out of the current
+  session shall end only that session and leave the account's other valid
+  sessions unchanged. Selecting ``Sign out of all devices'' shall end all
+  existing sessions for that account, including the session used to request
+  it. The system shall end the affected sessions on the server before
+  reporting success. Further requests using those sessions shall be rejected,
+  and the sessions shall not be renewed without the user signing in again.
+  Sessions belonging to other accounts shall remain unchanged.}
+  {When a test account is signed in on two devices, signing out on one
+  device causes further requests using that session to be rejected.
+  The other device's session remains valid. Opening the app on the
+  signed-out device shows the sign-in screen and none of the user's data.
+  Attempts to renew the ended session fail.
+
+  Selecting ``Sign out of all devices'' ends both sessions before success
+  is reported, even if the second device was actively being used.
+  Further requests using either session are rejected, and attempts to
+  renew either session fail. Opening the app on either device shows
+  the sign-in screen and none of the user's data.
+
+  After either action, signing in again with the correct email address
+  and password succeeds. Neither action affects another test account's
+  sessions.}
   {\srref{SR_ProtectData}, G3}
 \freq{FR_AcctResetPassword}
   {(HA SEC-40) The system shall let a user who has forgotten their password
-  set a new one through a link sent to their account's email address.}
-  {A test user who requests a reset receives a link at their email address,
-  and after setting a new password can sign in only with the new one.}
+  set a new one through a link sent to their account's email address.
+
+  When a user successfully resets their password, the system shall end
+  all existing sessions for that account on the server before reporting
+  success. The server shall reject further requests using those sessions,
+  and the sessions shall not be renewed. The user must sign in again
+  with the new password to regain access.
+
+  Requesting a reset link without completing the password reset shall not
+  end existing sessions. Resetting one account's password shall leave
+  other accounts' sessions unchanged.}
+  {When a test account is signed in on two devices, requesting a password
+  reset sends a link to the account's email address and leaves both
+  sessions valid.
+
+  After the user sets a new password through the link, both existing
+  sessions have ended before success is reported, even if one device was
+  actively being used. Further requests using either session are rejected,
+  and attempts to renew either session fail. Signing in with the old
+  password fails, while signing in with the new password succeeds.
+  Another test account's sessions remain valid.}
   {\srref{SR_ControlOwnData}, G2}
 \freq{FR_AcctEditProfile}
   {The system shall let the user view and edit their profile details.}
@@ -2991,13 +3034,43 @@ server, and when stored on the server, including in backups.
 and the server, the data stored on the server, and its backups shows no
 readable user data.
 
-\item[SEC-17 (Session expiry).] The system shall end a session when the user signs out of it or when it has
-not been used for \texttt{SESSION\_TIMEOUT}, after which the user must sign in
-again.
+\item[SEC-17 (Session expiry and sign-out).]
+The system shall end a session on the server when the user signs out of
+that session or when it has been unused for \texttt{SESSION\_TIMEOUT}.
+A session is unused when the user has not opened or interacted with the
+app during that period. Only user activity shall reset the inactivity
+timer. Automatic background syncing and token renewal shall not reset
+it. Signing out of one session shall leave the account's other valid
+sessions unchanged.
 
-\textit{Fit criterion:} A test session is rejected after the user signs out of
-it, and after it is left unused for longer than \texttt{SESSION\_TIMEOUT}. In
-both cases the user must sign in again to continue.
+The system shall let a signed-in user select ``Sign out of all devices.''
+This action shall end all existing sessions for that account, including
+the session used to request it. Sessions belonging to other accounts
+shall remain unchanged.
+
+For either sign-out action, the system shall end the affected sessions
+before reporting success. Once a session ends, the server shall reject
+further requests using that session. The system shall not allow the
+session to be renewed without the user signing in again.
+
+\textit{Fit criterion:} When a test account is signed in on two devices,
+signing out on one device causes further requests using that session
+to be rejected. The other device's session remains valid.
+
+Opening or interacting with the app before the timeout resets the
+inactivity timer. A session with no user activity for
+\texttt{SESSION\_TIMEOUT} is rejected when next used, even if automatic
+background syncing continued during that period. Further background
+sync requests using the expired session are also rejected.
+
+Selecting ``Sign out of all devices'' ends both sessions before success
+is reported, even if the second device was actively being used.
+Further requests using either session are rejected.
+
+Attempts to renew a session after sign-out or expiry fail. The user can
+regain access by signing in again with the correct email address and
+password. Neither sign-out action affects sessions belonging to another
+test account.
 
 \item[SEC-18 (In-app account deletion).] The system shall let the user delete their account from within the app, and
 shall delete all data it stores about them, as listed in the SRS data
