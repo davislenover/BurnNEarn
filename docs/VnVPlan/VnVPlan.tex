@@ -323,11 +323,11 @@ The team will check FitFolio's implementation through testing, code review, and 
 
 \medskip
 \noindent
-For each feature, the author will add or update relevant tests and explain their purpose in the pull request. Tests will cover normal behaviour, boundary values, and invalid inputs where applicable. Following the priorities in Section 2.2, testing will pay particular attention to reward and portfolio calculations, repeated activity records, interrupted or repeated trades, and access to private user data. Expected numerical results will be calculated independently from the SRS rules and symbolic parameters. When fixing a defect, the author will add a test where practical to detect the same problem if it occurs again.
+For each feature, the author will add or update relevant tests and explain their purpose in the pull request. Tests will cover normal behaviour, boundary values, and invalid inputs where applicable. Following the priorities in Section 2.2, testing will pay particular attention to reward and portfolio calculations, repeated activity records, interrupted or repeated trades, and access to private user data. Expected numerical results will be derived from the SRS rules and symbolic parameters, independently of the implementation being tested. When fixing a defect, the author will add a test where practical to detect the same problem if it occurs again.
 
 \bigskip
 \noindent
-\textbf{Code Review:} Before merging a change, at least one team member other than the author will inspect the code and its tests. The reviewer will normally work in a related area. Changes affecting the whole team will be submitted for team review, following the Development Plan.
+\textbf{Code Review:} Before merging a change, at least one team member other than the main author will inspect the code and its tests. If all team members contributed to the feature, everyone must approve it. The reviewer will normally work in a related area. Changes affecting the whole team will be submitted for team review, following the Development Plan.
 
 \medskip
 \noindent
@@ -345,6 +345,16 @@ Reviewers will use the \href{https://github.com/davislenover/BurnNEarn/blob/main
 
 \noindent
 Reviewers will leave findings on the pull request. The author will address them, and the reviewer will check the revisions before approving. Defects found outside a pull request will be recorded as GitHub issues and linked to their fixes.
+
+\bigskip
+\noindent
+\textbf{Automated Checks and Records:} Section 3.6 describes the tools used to support verification. Ruff lints and formats the backend's Python code, and gitleaks scans the repository for secrets. The frontend's TypeScript code will be linted with ESLint and formatted with Prettier. Backend tests run with pytest, and frontend unit tests will use Jest. Reviewers can use coverage reports to check that a pull request tests the code it adds. No minimum coverage is enforced at this stage.
+
+\medskip
+\noindent
+Changes must receive the approvals required by the Development Plan and pass all CI checks before merging. Pull request discussions, test output, and linked issues will record the checks performed and problems found. For manual system tests, the tester will record the test identifier, platform, observed result, and any defect found. Results and unresolved limitations will be summarized in the VnV Report.
+
+
 
 \subsection{Automated Testing and Verification Tools}
 
