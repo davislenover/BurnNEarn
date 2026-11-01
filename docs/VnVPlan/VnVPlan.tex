@@ -3395,6 +3395,32 @@ checks must pass to meet NFR7.
 
 \end{enumerate}
 
+\subsubsection{Accessibility}
+
+\paragraph{Core Task Completion at 200\% Text Size}
+
+\begin{enumerate}
+
+\item{test-nfr-accessibility-1\\}
+
+Type: Nonfunctional, Dynamic, Manual.
+
+Initial State: FitFolio installed on an Android phone and iPhone.
+Set both phones to have their \texttt{MAX\_TEXT\_SCALE} to 200\%.
+
+Input/Condition: Create an account, track an activity, buy an asset,
+and share a progress update.
+
+Output/Result: Text remains readable, buttons are not cut off or hidden,
+and all tasks can be completed. Scrolling is allowed if everything
+can still be reached.
+
+How test will be performed: A team member will go through the core
+components of the application: create an account, track an activity,
+buy an asset, and share a progress update. All tasks must remain usable
+at 200\% text size on both phones to meet NFR8.
+
+\end{enumerate}
 
 \subsection{Traceability Between Test Cases and Requirements}
 
