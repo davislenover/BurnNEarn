@@ -3356,6 +3356,45 @@ to meet NFR6.
 
 \end{enumerate}
 
+\subsubsection{Security}
+
+\paragraph{Rejection of Unauthorized Private-Data Requests}
+
+\begin{enumerate}
+
+\item{test-nfr-security-1\\}
+
+Type: Nonfunctional, Dynamic, Manual and Automatic.
+
+Initial State: Two different test accounts, A and B, both are friends
+with each other on the app. A shared an update to account B.
+
+Input/Condition:
+
+\begin{itemize}
+    \item Sign out of A and try to return to its personal activity screen.
+    \item Sign in as B and check that A's personal activity data is
+    not visible.
+    \item Remove B as a friend and check that B can no longer view
+    A's shared update.
+    \item Close and reopen the app after signing out and check that
+    personal activity data remains hidden.
+    \item Send server requests for A's activity data without login
+    credentials, with A's signed-out credentials, and with B's credentials.
+    \item After B is removed as a friend, send a server request using
+    B's credentials to access A's shared update.
+\end{itemize}
+
+Output/Result: Users can only access information they are allowed to see.
+
+How test will be performed: A team member will attempt the steps above
+within the application and record the results. We will also have
+automated tests that will send the above requests directly to the server.
+Every attempt to view unauthorized data must fail. All app and server
+checks must pass to meet NFR7.
+
+\end{enumerate}
+
 
 \subsection{Traceability Between Test Cases and Requirements}
 
