@@ -3281,6 +3281,34 @@ passes if all core features work as expected on both phones.
 
 \end{enumerate}
 
+\subsubsection{Performance}
+
+\paragraph{Response Time for Previously Loaded Summaries and Feed}
+
+\begin{enumerate}
+
+\item{test-nfr-performance-1\\}
+
+Type: Nonfunctional, Dynamic, Automatic.
+
+Initial State: A signed-in test account which contains activity
+summaries, portfolio holdings, and shared social updates. The application
+is running on a device with a stable network connection.
+
+Input/Condition: Thirty requests to get activity summary, portfolio
+summary, and social feed data.
+
+Output/Result: At least 95\% of the 30 requests complete within
+\texttt{MAX\_RESPONSE\_TIME}, which is 3 seconds. This requires at least
+29 successful trials out of 30.
+
+How test will be performed: The test will measure how long each request
+takes to display its information after the user requests it. We will
+record each time and count failures or timeouts as unsuccessful attempts.
+The test passes if at least 29 of 30 attempts finish within 3 seconds
+of each request.
+
+\end{enumerate}
 
 
 \subsection{Traceability Between Test Cases and Requirements}
