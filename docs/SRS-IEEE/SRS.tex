@@ -1807,9 +1807,30 @@ requirement.
   in; one who enters a wrong password is not.}
   {\srref{SR_ProtectData}, G2}
 \freq{FR_AcctSignOut}
-  {The system shall let a signed-in user sign out.}
-  {After a test user signs out, opening the app shows the sign-in screen and
-  none of their data.}
+  {(HA SEC-17) The system shall let a signed-in user sign out of the current
+  session or select ``Sign out of all devices.'' Signing out of the current
+  session shall end only that session and leave the account's other valid
+  sessions unchanged. Selecting ``Sign out of all devices'' shall end all
+  existing sessions for that account, including the session used to request
+  it. The system shall end the affected sessions on the server before
+  reporting success. Further requests using those sessions shall be rejected,
+  and the sessions shall not be renewed without the user signing in again.
+  Sessions belonging to other accounts shall remain unchanged.}
+  {When a test account is signed in on two devices, signing out on one
+  device causes further requests using that session to be rejected.
+  The other device's session remains valid. Opening the app on the
+  signed-out device shows the sign-in screen and none of the user's data.
+  Attempts to renew the ended session fail.
+
+  Selecting ``Sign out of all devices'' ends both sessions before success
+  is reported, even if the second device was actively being used.
+  Further requests using either session are rejected, and attempts to
+  renew either session fail. Opening the app on either device shows
+  the sign-in screen and none of the user's data.
+
+  After either action, signing in again with the correct email address
+  and password succeeds. Neither action affects another test account's
+  sessions.}
   {\srref{SR_ProtectData}, G3}
 \freq{FR_AcctResetPassword}
   {(HA SEC-40) The system shall let a user who has forgotten their password
