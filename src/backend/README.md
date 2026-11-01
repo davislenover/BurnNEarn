@@ -27,12 +27,14 @@ from the route, to the service, to the tables.
 
 | Layer | Where | Its job | It never |
 |---|---|---|---|
-| Route | `app/api/` | Reads the request, calls a service, commits once, returns JSON | Holds business rules |
-| Service | `app/<feature>/` | Holds all the rules, and takes a database session | Commits, or deals with HTTP |
+| Route | `app/api/` | Reads the request, calls a service, saves the changes once, returns JSON | Holds business rules |
+| Service | `app/<feature>/` | Holds all the rules, and takes a database session | Saves changes, or deals with HTTP |
 | Table | `app/models/`, `migrations/` | Describes the data and guards it, for example no negative prices | Holds logic |
 
-Because services never commit, one route can call two services and save both
-results together, or neither.
+A service makes its changes but doesn't save them for good. Only the route does
+that, by calling `db.commit()`. This way, one route can call two services and
+save both results together, or neither. For example, a buy lowers the balance
+and adds the shares, and it can never do just one of those.
 
 ## First-time setup
 
