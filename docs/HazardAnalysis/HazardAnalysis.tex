@@ -1625,27 +1625,20 @@ kept secure (P02).}
 {Capstone.}
 
 \hazreq{SEC-17}{Session expiry and sign-out}
-{The system shall end a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. Signing out of one session shall leave the account's other valid sessions unchanged.
+{The system shall end a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. A session is unused when the user has not opened or interacted with the app during that period. Only user activity shall reset the inactivity timer. Automatic background syncing and token renewal shall not reset it. Signing out of one session shall leave the account's other valid sessions unchanged.
 
 The system shall let a signed-in user select “Sign out of all devices.” This action shall end all existing sessions for that account, including the session used to request it. Sessions belonging to other accounts shall remain unchanged.
 
 For either sign-out action, the system shall end the affected sessions before reporting success. Once a session ends, the server shall reject further requests using that session. The system shall not allow the session to be renewed without the user signing in again.}
-{When a test account is signed in on two devices, signing out on one device causes further requests using that session to be rejected. The other device's session remains valid. A session left unused for \texttt{SESSION\_TIMEOUT} is rejected when next used.
+{When a test account is signed in on two devices, signing out on one device causes further requests using that session to be rejected. The other device's session remains valid.
 
-Selecting ``Sign out of all devices'' ends both sessions before success
-is reported, even if the second device was actively being used. Further
-requests using either session are rejected.
+Opening or interacting with the app before the timeout resets the inactivity timer. A session with no user activity for \texttt{SESSION\_TIMEOUT} is rejected when next used, even if automatic background syncing continued during that period. Further background sync requests using the expired session are also rejected.
 
-Attempts to renew a session after sign-out or expiry fail. The user can
-regain access by signing in again with the correct email address and
-password. Neither sign-out action affects sessions belonging to another
-test account.}
-{A lost or shared phone can give another person access to the user's
-health and portfolio data while its session remains valid. An inactivity
-timeout does not end that access if the person keeps using the session.
-Signing out of all devices lets the account owner end existing sessions
-from another device. Ending sessions on the server also prevents copied
-session tokens from being reused (SRS Section~6.1, FR\_AcctSignOut).}
+Selecting ``Sign out of all devices'' ends both sessions before success is reported, even if the second device was actively being used. Further requests using either session are rejected.
+
+Attempts to renew a session after sign-out or expiry fail. The user can regain access by signing in again with the correct email address and password. Neither sign-out action affects sessions belonging to another test account.}
+{A lost or shared phone can give another person access to the user's health and portfolio data while its session remains valid. An inactivity timeout does not end that access if the person keeps using the session. Signing out of all devices lets the account owner end existing sessions
+from another device. Ending sessions on the server also prevents copied session tokens from being reused (SRS Section~6.1, FR\_AcctSignOut).}
 {FMEA \hazref{H37}, L3 (privacy loss), L4 (security loss).}
 {SRS Section~7.3, SEC-17.}
 {Capstone.}
