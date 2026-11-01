@@ -17,8 +17,12 @@ if config.config_file_name is not None:
     # Leave the app's own logging on when tests run migrations in-process.
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-# Use the same database URL as the app.
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+# Use the same database URL as the app. Alembic treats % as special in its
+# settings, and a password with characters like @ is written with % in a URL,
+# so each % is doubled to keep it as it is.
+config.set_main_option(
+    "sqlalchemy.url", get_settings().database_url.replace("%", "%%")
+)
 
 # Table models register on Base.metadata, which autogenerate compares
 # against the database. New model modules are imported in
