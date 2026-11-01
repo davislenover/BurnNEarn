@@ -1630,7 +1630,7 @@ kept secure (P02).}
 \hazreq{SEC-17}{Session expiry and sign-out}
 {The system shall end a session on the server when the user signs out of that session or when it has been unused for \texttt{SESSION\_TIMEOUT}. A session is unused when the user has not opened or interacted with the app during that period. Only user activity shall reset the inactivity timer. Automatic background syncing and token renewal shall not reset it. Signing out of one session shall leave the account's other valid sessions unchanged.
 
-The system shall let a signed-in user select “Sign out of all devices.” This action shall end all existing sessions for that account, including the session used to request it. Sessions belonging to other accounts shall remain unchanged.
+The system shall let a signed-in user select ``Sign out of all devices.'' This action shall end all existing sessions for that account, including the session used to request it. Sessions belonging to other accounts shall remain unchanged.
 
 For either sign-out action, the system shall end the affected sessions before reporting success. Once a session ends, the server shall reject further requests using that session. The system shall not allow the session to be renewed without the user signing in again.}
 {When a test account is signed in on two devices, signing out on one device causes further requests using that session to be rejected. The other device's session remains valid.
