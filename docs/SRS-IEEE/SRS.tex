@@ -3030,13 +3030,43 @@ server, and when stored on the server, including in backups.
 and the server, the data stored on the server, and its backups shows no
 readable user data.
 
-\item[SEC-17 (Session expiry).] The system shall end a session when the user signs out of it or when it has
-not been used for \texttt{SESSION\_TIMEOUT}, after which the user must sign in
-again.
+\item[SEC-17 (Session expiry and sign-out).]
+The system shall end a session on the server when the user signs out of
+that session or when it has been unused for \texttt{SESSION\_TIMEOUT}.
+A session is unused when the user has not opened or interacted with the
+app during that period. Only user activity shall reset the inactivity
+timer. Automatic background syncing and token renewal shall not reset
+it. Signing out of one session shall leave the account's other valid
+sessions unchanged.
 
-\textit{Fit criterion:} A test session is rejected after the user signs out of
-it, and after it is left unused for longer than \texttt{SESSION\_TIMEOUT}. In
-both cases the user must sign in again to continue.
+The system shall let a signed-in user select ``Sign out of all devices.''
+This action shall end all existing sessions for that account, including
+the session used to request it. Sessions belonging to other accounts
+shall remain unchanged.
+
+For either sign-out action, the system shall end the affected sessions
+before reporting success. Once a session ends, the server shall reject
+further requests using that session. The system shall not allow the
+session to be renewed without the user signing in again.
+
+\textit{Fit criterion:} When a test account is signed in on two devices,
+signing out on one device causes further requests using that session
+to be rejected. The other device's session remains valid.
+
+Opening or interacting with the app before the timeout resets the
+inactivity timer. A session with no user activity for
+\texttt{SESSION\_TIMEOUT} is rejected when next used, even if automatic
+background syncing continued during that period. Further background
+sync requests using the expired session are also rejected.
+
+Selecting ``Sign out of all devices'' ends both sessions before success
+is reported, even if the second device was actively being used.
+Further requests using either session are rejected.
+
+Attempts to renew a session after sign-out or expiry fail. The user can
+regain access by signing in again with the correct email address and
+password. Neither sign-out action affects sessions belonging to another
+test account.
 
 \item[SEC-18 (In-app account deletion).] The system shall let the user delete their account from within the app, and
 shall delete all data it stores about them, as listed in the SRS data
