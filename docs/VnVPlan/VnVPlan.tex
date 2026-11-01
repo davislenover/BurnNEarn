@@ -330,12 +330,19 @@ Each design document will receive a pull request review from a teammate who didn
 The team will also walk through a core path from a health record to a currency reward and a simulated purchase, checking which module owns each attribute such as a calculation or stored value. Reviewers will record issues against the MG or MIS section in GitHub and repeat the affected checks after revisions. Once the MIS is approved, its module interfaces will then be used to complete Section 5's unit tests and module traceability.
 \subsection{Verification and Validation Plan Verification}
 
-\wss{The verification and validation plan is an artifact that should also be
-verified.  Techniques for this include review and mutation testing.}
+This V\&V Plan will be checked by teammates and classmates to ensure that its tests can actually show whether \progname{} meets the SRS. A revieiwer who didn't write the relevant tests will inspect each feature area before its pull request is approved. The inspection will use the following checklist:
 
-\wss{The review will include reviews by your classmates}
+\begin{itemize}
+  \item Every functional requirement has atleast one test, and every non functional requirement has a stated measurement or inspection method. The traceability table in Section 4.3 must contain no missing or non existent requirement IDs.
+  \item Each dynamic test gives a reproducible initial state, input, expected output, test case derivation, and method of execution. Expected values agree with the SRS criteria and Appendix C constants. 
+  \item Tests cover relevant boundaries and failure cases also normal cases, especially with the daily reward cap, price age, trade retires, consent withdrawals, and access to shared updates.
+  \item Automatic tests have controlled clocks and external data where needed. Manual tests identify the deviced needed, setup, and an observable pass or fail result. The plan is feasible with the team's time and tools.
+  \item Tests of the HA controls are present, and user validation measures G1, G2, and accessibility without relying only on the team's judgement.
+\end{itemize}
 
-\wss{Create a checklists?}
+For tests with calculated outputs, another team member will check a sample by hand. As an additional check on the review itself, we will intentionally change one expected result or boundary in a copy of a test and confirm that the reviewer will catch the inconsistency. The altered version won't be merged. 
+
+A problem found during review will be recorded in the relevant pull request or a linked GitHub issue and checked again after it has been fixed. Sections 4.2 and 4.3 must be filled in before the initial system test plan is considered complete. The module level details in Section 5 will be revisited after the MIS is written.
 
 \subsection{Implementation Verification}
 
