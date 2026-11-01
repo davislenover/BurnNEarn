@@ -3311,6 +3311,32 @@ of each request.
 \end{enumerate}
 
 
+\subsubsection{Reliability}
+
+\paragraph{Trade Integrity During Interruptions and Retries}
+
+\begin{enumerate}
+
+\item{test-nfr-reliability-1\\}
+
+Type: Nonfunctional, Dynamic, Automatic.
+
+Initial State: A test account has enough of a balance to test purchases
+and sales of stocks.
+
+Input/Condition: Perform tests that cover the following interactions:
+
+\begin{itemize}
+    \item Interrupt a trade before its changes are saved.
+    \item Complete a trade but prevent its confirmation from reaching
+    the app, then retry the same request.
+    \item Send an already completed trade request again.
+    \item Send the same trade request multiple times at once.
+\end{itemize}
+
+\end{enumerate}
+
+
 \subsection{Traceability Between Test Cases and Requirements}
 
 \wss{Provide a table that shows which test cases are supporting which
