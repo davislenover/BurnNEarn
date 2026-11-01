@@ -3334,6 +3334,26 @@ Input/Condition: Perform tests that cover the following interactions:
     \item Send the same trade request multiple times at once.
 \end{itemize}
 
+Output/Result:
+
+\begin{itemize}
+    \item Interrupt a trade before its changes are saved --- no effect
+    on holdings or balances.
+    \item Complete a trade but prevent its confirmation from reaching
+    the app, then retry the same request --- holdings and balances
+    update only once.
+    \item Send an already completed trade request again --- no
+    additional changes to holdings or balances.
+    \item Send the same trade request multiple times at once --- only
+    one trade is recorded, and holdings and balances update only once.
+\end{itemize}
+
+How test will be performed: Before running each test, reset the account
+to its original state, then interrupt or repeat the trade request.
+After the requests are processed, we will check the balance, holdings,
+and trade history against the expected results. All tests must pass
+to meet NFR6.
+
 \end{enumerate}
 
 
