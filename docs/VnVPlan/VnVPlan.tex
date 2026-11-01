@@ -293,15 +293,15 @@ The SRS will be verified through a structured peer review, traceability checks, 
 
 \begin{itemize}
 
-\item Does each requirement describe one observable behaviour or measurable quality, with a fit criterion that can be tested?
+  \item Does each requirement describe one observable behaviour or measurable quality, with a fit criterion that can be tested?
 
-\item are the terms, requirement IDs, formulas, and symbolic constants consistent across the SRS, problem statement, and Hazard Analysis?
+  \item are the terms, requirement IDs, formulas, and symbolic constants consistent across the SRS, problem statement, and Hazard Analysis?
 
-\item Do the use cases cover the main normal and alternative flows, including denied permissions, invalid activities, and failed or repeated trades?
+  \item Do the use cases cover the main normal and alternative flows, including denied permissions, invalid activities, and failed or repeated trades?
 
-\item Can every functional requirement be traced to a stakegolder need or project goal, and do the traceability matrices use existing IDs?
+  \item Can every functional requirement be traced to a stakegolder need or project goal, and do the traceability matrices use existing IDs?
 
-\item Do the privacy, safety, and security requirements agree with the HA, especially for consent, sharing, and simulated trading?
+  \item Do the privacy, safety, and security requirements agree with the HA, especially for consent, sharing, and simulated trading?
 
 \end{itemize}
 
@@ -315,17 +315,17 @@ The Module Guide and Module Interface Specification will be verified when their 
 Each design document will receive a pull request review from a teammate who didn't write the affected part, as well as the classmate review required for the deliverable. Reviewers will compare the design with the SRS and HA, using the following checks:
 
 
-\being{itemize}
+\begin{itemize}
 
-\item Every major functional requirement will have a corresponding responsible module, and the module interfaces will provide the inputs and outputs it needs.
+  \item Every major functional requirement will have a corresponding responsible module, and the module interfaces will provide the inputs and outputs it needs.
 
-\item Responsibilities are clearly seperated. Health data collection, rewards, market prices, trading, scenarios, accounts, and social sharing don't depend on any undocumented shared state (Single Responsibility).
+  \item Responsibilities are clearly seperated. Health data collection, rewards, market prices, trading, scenarios, accounts, and social sharing don't depend on any undocumented shared state (Single Responsibility).
 
-\item the design protects the main HA controls. Scenario trades are not able to alter the live portfolio. Interrupted or repeated trades cannot leave any partial or duplicate transaction. Private updates can be retrieved only by their selected friends.
+  \item the design protects the main HA controls. Scenario trades are not able to alter the live portfolio. Interrupted or repeated trades cannot leave any partial or duplicate transaction. Private updates can be retrieved only by their selected friends.
 
-\item Each module's interface should clearly define and state what happens for any missing, invalid, delayed, or unexpected data, including unavailable health records and stale market prices.
+  \item Each module's interface should clearly define and state what happens for any missing, invalid, delayed, or unexpected data, including unavailable health records and stale market prices.
 
-\item Modules can be tested independently with known inputs, and any likely changes such as replacing the market data provider do not require unrelated modules to change.
+  \item Modules can be tested independently with known inputs, and any likely changes such as replacing the market data provider do not require unrelated modules to change.
 \end{itemize}
 The team will also walk through a core path from a health record to a currency reward and a simulated purchase, checking which module owns each attribute such as a calculation or stored value. Reviewers will record issues against the MG or MIS section in GitHub and repeat the affected checks after revisions. Once the MIS is approved, its module interfaces will then be used to complete Section 5's unit tests and module traceability.
 \subsection{Verification and Validation Plan Verification}
