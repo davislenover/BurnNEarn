@@ -3176,41 +3176,50 @@ permissions in the Health settings.
 This section lists tests for the eight nonfunctional requirements from the SRS. The tests evaluate the following nonfunctional requirements accuracy, usability, maintainability, portability, performance, reliability, security, and accessibility. Each test description covers type, initial state, input, output and how the test is performed. 
 
 
-\subsubsection{Area of Testing1}
+\subsubsection{Accuracy}
 		
-\paragraph{Title for Test}
+\paragraph{Currency Balance and Portfolio Value Accuracy}
 
 \begin{enumerate}
 
-\item{test-id1\\}
+\item{test-nfr-accuracy-1\\}
 
-Type: Functional, Dynamic, Manual, Static etc.
+Type: Nonfunctional, Dynamic, Automatic
 					
-Initial State: 
+Initial State:  An account with a static balance and stock holdings.
 					
-Input/Condition: 
-					
-Output/Result: 
-					
-How test will be performed: 
-					
-\item{test-id2\\}
+Input/Condition: Reuse the following cases from the
+matching functional tests in Section 4.1:
 
-Type: Functional, Dynamic, Manual, Static etc.
+\begin{itemize}
+    \item Rewards (FR13):
+    \item Purchase (FR35):
+    \item Sale (FR36):
+    \item Portfolio value (FR42):
+    \item Empty portfolio (FR42):
+\end{itemize}
+
+Output/Result: The result of this test should be that every displayed balance and portfolio value differs from its independently calculated expected value by no more than VALUE\_TOLERANCE, which is \$0.01. Also, we include the absolute and relative errors for each result.					
+
+How test will be performed: The test will reuse the functional test inputs listed above. We will calculate
+the expected results separately using the rules in SRS Section 6.7 and compare
+them with the values displayed by the app. We will then calculate two errors:
+
+\begin{itemize}
+    \item \textbf{Absolute error}
+    \(= |\mathrm{Actual\ value} - \mathrm{Expected\ value}|\)
+
+    \item \textbf{Relative error (\%)}
+    \(= (\mathrm{Absolute\ error} \div |\mathrm{Expected\ value}|) \times 100\)
+\end{itemize}
+
+If the expected value is zero, relative error will be recorded as N/A.
+The test passes if the absolute error for every result is no more than \$0.01.
 					
-Initial State: 
-					
-Input: 
-					
-Output: 
-					
-How test will be performed: 
+
 
 \end{enumerate}
 
-\subsubsection{Area of Testing2}
-
-...
 
 \subsection{Traceability Between Test Cases and Requirements}
 
