@@ -49,6 +49,7 @@
 Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
 Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
   updates to 2.3.\\
+Nov 1, 2026 & Zaid Alsaadi & Section 3.5: Implementation Verification.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -3940,6 +3941,10 @@ answers for FR57, and I raised each gap as an issue so the SRS gets fixed
 instead of the test hiding it. This showed me that a requirement with a fit
 criterion can still be impossible to test, and that writing the test is a
 good way to find out.\\
+
+\bigskip
+\noindent
+\textbf{Zaid:} My main difficulty was understanding what belonged in Implementation Verification and how it differed from the Development Plan and Section 3.6. These sections discuss similar topics, so I was unsure how much detail to include without repeating information. The distinction became clearer when I focused on how the team would check the code, while leaving the workflow details in the Development Plan and the tool descriptions in Section 3.6. This helped me explain what reviewers would check, how tests would check the requirements, and how problems would be recorded. I also found that small wording choices could make the plan unclear. For example, saying that expected results would be calculated “independently from the SRS rules” could suggest that the rules should not be used. The intended meaning was to use the SRS to calculate the expected answer independently of the code being tested. Revising that sentence helped me understand why a testing plan needs precise wording. Next time, I will identify the related sections before drafting and check that each statement clearly explains what the team will do.
 
 \subsubsection*{3. What knowledge and skills will the team collectively need to
 acquire to successfully complete the verification and validation of your
