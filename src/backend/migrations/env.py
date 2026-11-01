@@ -14,7 +14,8 @@ config = context.config
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Leave the app's own logging on when tests run migrations in-process.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # Use the same database URL as the app.
 config.set_main_option("sqlalchemy.url", get_settings().database_url)
