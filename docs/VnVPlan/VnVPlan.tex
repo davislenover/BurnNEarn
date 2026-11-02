@@ -86,19 +86,111 @@ in.}
 
 \section{Symbols, Abbreviations, and Acronyms}
 
+This section lists the abbreviations, identifier prefixes, and symbols used in
+this document. Terms such as activity record, holding, and streak are defined
+in the SRS's table of definitions and acronyms \citep{SRS}, and symbolic
+constants such as \texttt{MAX\_DAILY\_CURRENCY} are given with their values in
+SRS Appendix~C and Section~6.1.
+
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l} 
-  \toprule		
-  \textbf{symbol} & \textbf{description}\\
-  \midrule 
-  T & Test\\
+
+\bigskip
+\noindent\begin{minipage}{\textwidth}
+\subsection*{Abbreviations and Acronyms}
+
+\smallskip
+\begin{tabularx}{\textwidth}{l X}
+  \toprule
+  \textbf{Abbreviation} & \textbf{Meaning}\\
+  \midrule
+  AI & Artificial Intelligence\\
+  API & Application Programming Interface\\
+  CD & Custom Document\\
+  CI & Continuous Integration\\
+  ETF & Exchange-Traded Fund\\
+  HA & Hazard Analysis\\
+  ID & Identifier\\
+  JSON & JavaScript Object Notation\\
+  MG & Module Guide\\
+  MIS & Module Interface Specification\\
+  PEP & Python Enhancement Proposal\\
+  SRS & Software Requirements Specification\\
+  US & United States\\
+  USD & United States dollar\\
+  UTC & Coordinated Universal Time\\
+  V\&V, VnV & Verification and Validation\\
   \bottomrule
-\end{tabular}\\
+\end{tabularx}
+\end{minipage}
 
-\wss{symbols, abbreviations, or acronyms --- you can simply reference the SRS
-  \citep{SRS} tables, if appropriate}
+\bigskip
+\noindent\begin{minipage}{\textwidth}
+\subsection*{Identifier Prefixes}
 
-\wss{Remove this section if it isn't needed}
+An identifier is a prefix followed by a number, such as FR12 or test-act-5.
+
+\smallskip
+\begin{tabularx}{\textwidth}{l X}
+  \toprule
+  \textbf{Prefix} & \textbf{Meaning}\\
+  \midrule
+  CA & Critical assumption in the Hazard Analysis\\
+  FR & Functional requirement in SRS Section 6\\
+  G & Project goal in SRS Section 2.2\\
+  H & Hazard in the Hazard Analysis\\
+  NFR & Non-functional requirement in SRS Section 8\\
+  P & Interview participant, as in P01 (Section 2.3)\\
+  SAF & Safety requirement in the Hazard Analysis\\
+  SC & System constraint in SRS Section 2.5\\
+  SEC & Security requirement in the Hazard Analysis\\
+  test- & System test, as in test-act-5 (Sections 4.1 and 4.2)\\
+  ut- & Unit test, as in ut-acct-3 (Section 5.2)\\
+  A to F, I, L & Usability survey question (Section 6.2): A to F for the parts
+    of the questionnaires, L for the experience log, and I for the debrief
+    interview\\
+  \bottomrule
+\end{tabularx}
+\end{minipage}
+
+\medskip
+\noindent The middle part of a test identifier names its area: \texttt{acct}
+(Accounts and Profile), \texttt{act} (Activity and Rewards), \texttt{mkt}
+(Simulated Market and Portfolio), \texttt{learn} (Learning and Feedback),
+\texttt{social} (Social Feed), \texttt{remind} (Reminders and Settings), and
+\texttt{nfr} (Non-functional Requirements, Section 4.2). In an \texttt{nfr}
+identifier, the next part names the quality tested, as in test-nfr-accuracy-1.
+
+\bigskip
+\noindent\begin{minipage}{\textwidth}
+\subsection*{Symbols}
+
+These follow the formal definitions in SRS Section~6.7.
+
+\smallskip
+\begin{tabularx}{\textwidth}{l X}
+  \toprule
+  \textbf{Symbol} & \textbf{Meaning}\\
+  \midrule
+  $d$ & A calendar day in the user's time zone. $d+1$ is the next day\\
+  $t$ & A supported activity type\\
+  $x_{t,d}$ & The user's total of activity type $t$ on day $d$\\
+  $u_t$ & The amount of activity type $t$ that earns one unit of virtual
+    currency\\
+  $R_d$ & The virtual currency awarded for day $d$\\
+  $(t, g)$ & An activity goal of $g$ for activity type $t$\\
+  $a$ & An asset\\
+  $h_a$ & The number of shares of asset $a$ that the user holds\\
+  $p_a$ & The price of asset $a$\\
+  $n$ & The number of shares in a trade\\
+  $B$ & The user's balance\\
+  $V$ & The user's portfolio value\\
+  \bottomrule
+\end{tabularx}
+\end{minipage}
+
+\medskip
+\noindent Symbols used in only one test, such as $p$ for the time a price was
+obtained in test-mkt-6, are defined in that test.
 
 \newpage
 
