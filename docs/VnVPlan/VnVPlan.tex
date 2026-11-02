@@ -263,17 +263,17 @@ application, they take place after the Rev~0 demonstration.
 
 \subsection{Relevant Documentation}
 
-\wss{Reference relevant documentation.  This will definitely include your SRS
-  and your other project documents (design documents, like MG, MIS, etc).  You
-  can include these even before they are written, since by the time the project
-  is done, they will be written.  You can create BibTeX entries for your
-  documents and within those entries include a hyperlink to the documents.}
+The documents below provide the requirements, design decisions, and stakeholder expectations that this V\&V plan checks. They also identify the work that must be revisited as the project moves from requirements to implementation.
 
-\citet{SRS}
+\paragraph{Problem Statements and Goals.} This document defines the problem that \progname{} addresses, its intended users, its five goals (G1 to G5) and what is outside of the project's scope. It provides the success targets used to validate learning, independent task completion, privacy, investing practice, and activity rewards. These targets guide the study in Section~\ref{SecSoftwareValidation} and the system tests in Section~\ref{SecSystemTests}.
 
-\wss{Don't just list the other documents.  You should explain why they are relevant and 
-how they relate to your VnV efforts.}
+\paragraph{Development Plan.} The Development Plan identifies the team's technology choices, responsibilites, schedule, pull request review process, and continuous integration checks. Its proof of concept plan identifies health data integration and market place retrieval as the two man implementation risks. This V\&V Plan tests those integrations through the application behaviour and uses the Development Plan's workflow to record failures and review changes. The automated tools are described in Section 3.6.
 
+\paragraph{Software Requirements Specification (SRS).} The SRS defines the functional requirements, their corresponding critera, the non functional requirements, and the symbolic constants used to calculate the expected results. Section 4 derives its system test from those requirements. Section 4.3 will map the tests back to them. The SRS also provides the use cases and the descriptions of user data needed to review the system's privacy and security behaviour.
+
+\paragraph{Hazard Analysis (HA).} The HA identifies failures that could harm the user, including inaccurate activity rewards, incorrect or duplicated trades, exposure of health data, and misleading financial content. Its safety and security requirements are restated in the SRS. This plan checks those controls through normal, boundary, and failure cases, not just successful user actions.
+
+\paragraph{Custom documents and V\&V Report.} The Design Thinking Report provides the exploratory interview findings used to define user needs. The planned Usability Report will present the result of the study defined in Section~\ref{SecSoftwareValidation} and Appendix~\ref{SecUsabilitySurvey}. The eventual V\&V report will record test results, failures, changes to this plan, and work left incomplete. These reports are evidence of whether the system will actually meet the aforementioned expectations.
 \section{Plan}
 
 \wss{Introduce this section.  You can provide a roadmap of the sections to
