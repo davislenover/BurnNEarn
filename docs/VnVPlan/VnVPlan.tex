@@ -3359,18 +3359,19 @@ passes if all core features work as expected on both phones.
 
 \item{test-nfr-performance-1\\}
 
-Type: Nonfunctional, Dynamic, Automatic.
+Type: Nonfunctional, Dynamic.
 
 Initial State: A signed-in test account which contains activity
 summaries, portfolio holdings, and shared social updates. The application
 is running on a device with a stable network connection.
 
-Input/Condition: Thirty requests to get activity summary, portfolio
-summary, and social feed data.
+Input/Condition: Perform \texttt{RESPONSE\_TRIALS} (30) trials:
+10 for activity summaries, 10 for portfolio summaries, and 10
+for the social feed.
 
-Output/Result: At least 95\% of the 30 requests complete within
-\texttt{MAX\_RESPONSE\_TIME}, which is 3 seconds. This requires at least
-29 successful trials out of 30.
+Output/Result: At least \texttt{MIN\_RESPONSE\_RATE} (95\%)
+of the trials complete within \texttt{MAX\_RESPONSE\_TIME}
+(3 seconds). This requires at least 29 successful trials out of 30.
 
 How test will be performed: The test will measure how long each request
 takes to display its information after the user requests it. We will
