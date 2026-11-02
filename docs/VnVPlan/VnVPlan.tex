@@ -3360,28 +3360,52 @@ Type: Nonfunctional, Dynamic, Automatic.
 Initial State: A test account has enough of a balance to test purchases
 and sales of stocks.
 
-Input/Condition: Perform tests that cover the following interactions:
+Input/Condition: Perform \texttt{RELIABILITY\_TRIALS} (20) trials
+by running each of the following five cases four times:
 
 \begin{itemize}
-    \item Interrupt a trade before its changes are saved.
-    \item Complete a trade but prevent its confirmation from reaching
-    the app, then retry the same request.
-    \item Send an already completed trade request again.
-    \item Send the same trade request multiple times at once.
+    \item Interrupt a purchase between updating the balance and
+    updating the holdings, using test-mkt-12's method.
+
+    \item Interrupt a sale between updating the balance and
+    updating the holdings, using test-mkt-12's method.
+
+    \item Complete a purchase of one share, prevent its confirmation
+    from reaching the app, and retry the same request. Send the
+    request again after completion, using test-mkt-13's method.
+
+    \item Complete a sale of one share, prevent its confirmation
+    from reaching the app, and retry the same request. Send the
+    request again after completion.
+
+    \item Send identical one-share trade requests at the same time,
+    using test-mkt-13's method. Use purchases for two trials and
+    sales for two trials.
 \end{itemize}
+
 
 Output/Result:
 
 \begin{itemize}
-    \item Interrupt a trade before its changes are saved --- no effect
-    on holdings or balances.
-    \item Complete a trade but prevent its confirmation from reaching
-    the app, then retry the same request --- holdings and balances
-    update only once.
-    \item Send an already completed trade request again --- no
-    additional changes to holdings or balances.
-    \item Send the same trade request multiple times at once --- only
-    one trade is recorded, and holdings and balances update only once.
+    \item Interrupted purchase - no effect on holdings or balances,
+    and no completed trade is added to the history.
+
+    \item Interrupted sale - no effect on holdings or balances,
+    and no completed trade is added to the history.
+
+    \item Repeated purchase - holdings increase by one share,
+    the balance decreases by the price of one share, and exactly
+    one purchase is recorded in the trade history. Further copies
+    of the same request cause no additional changes.
+
+    \item Repeated sale - holdings decrease by one share,
+    the balance increases by the price of one share, and exactly
+    one sale is recorded in the trade history. Further copies
+    of the same request cause no additional changes.
+
+    \item Concurrent requests - only one trade is recorded in
+    the history, and holdings and balances update only once
+    for the purchase or sale.
 \end{itemize}
 
 How test will be performed: Before running each test, reset the account
