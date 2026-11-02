@@ -14,6 +14,17 @@ permissions:
   pages: write
   id-token: write
 
+# One run at a time per branch. Two docs merges 30 seconds apart once built at
+# the same time: the first pushed PDFs made from the older source, and the
+# second could not push at all, because both had changed the same PDF.
+# A waiting run may be replaced by a newer one. That is safe, because each run
+# builds everything changed since the committed PDFs were made (see "Get
+# changed LaTeX files"). Pull request runs never push, so a newer one simply
+# cancels the older.
+concurrency:
+  group: latex-pages-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,6 +33,10 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          # The branch as it is now, not the commit that started the run. A run
+          # that waited behind another must start from that run's PDF commit,
+          # or both would change the same PDF and this run could not push.
+          ref: ${{ github.ref }}
       - name: Restore PDF cache
         uses: actions/cache@v5
         with:
@@ -41,8 +56,16 @@ jobs:
       - name: Get changed LaTeX files
         id: latex-files
         run: |
-          BASE=${{ github.event.before }}
+          # Start from the source the committed PDFs were made from, which the
+          # bot's PDF commit records in a Built-from line. Starting from the
+          # previous push instead would lose a run's changes for good if that
+          # run failed or was replaced by a newer one.
+          BASE=$(git log -1 --grep='^Built-from: ' --format=%B HEAD | sed -n 's/^Built-from: //p' | head -1)
+          if [ -z "$BASE" ] || ! git merge-base --is-ancestor "$BASE" HEAD; then
+            BASE=${{ github.event.before }}
+          fi
           [ -z "$BASE" ] && BASE=HEAD^
+          echo "Looking for changes since $BASE"
 
           # Every file under docs/ and refs/ is a candidate, not just .tex and
           # .md: a change to a shared \input, a figure or the bibliography has
@@ -53,8 +76,8 @@ jobs:
                  ':(glob).github/workflows/latex-pages.yml'
                  ':(glob).github/scripts/**')
 
-          CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BASE" "${{ github.sha }}" -- "${SCOPE[@]}" | xargs)
-          DELETED_FILES=$(git diff --name-only --diff-filter=D "$BASE" "${{ github.sha }}" -- "${SCOPE[@]}" | xargs)
+          CHANGED_FILES=$(git diff --name-only --diff-filter=d "$BASE" HEAD -- "${SCOPE[@]}" | xargs)
+          DELETED_FILES=$(git diff --name-only --diff-filter=D "$BASE" HEAD -- "${SCOPE[@]}" | xargs)
 
           echo "Changed files: $CHANGED_FILES"
           echo "Deleted files: $DELETED_FILES"
@@ -181,8 +204,13 @@ jobs:
           if git diff --cached --quiet; then
             echo "No PDF changes to commit"
           else
-            git commit -m "Update generated PDFs for review"
-            # Another docs push may have landed while we were compiling.
+            # Record which source these PDFs were made from, so the next run
+            # knows where to start looking for changes.
+            git commit -m "Update generated PDFs for review" \
+                       -m "Built-from: $(git rev-parse HEAD)"
+            # Another push may have landed while we were compiling. Its own run
+            # waits for this one, so it only adds source changes and the
+            # rebase below cannot conflict over a PDF.
             for attempt in 1 2 3; do
               if git push origin HEAD:main; then
                 echo "Pushed PDFs on attempt $attempt"
