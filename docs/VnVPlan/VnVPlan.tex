@@ -90,7 +90,7 @@ This section lists the abbreviations, identifier prefixes, and symbols used in
 this document. Terms such as activity record, holding, and streak are defined
 in the SRS's table of definitions and acronyms \citep{SRS}, and symbolic
 constants such as \texttt{MAX\_DAILY\_CURRENCY} are given with their values in
-SRS Appendix~C.
+SRS Appendix~C and Section~6.1.
 
 \renewcommand{\arraystretch}{1.2}
 
@@ -143,7 +143,7 @@ An identifier is a prefix followed by a number, such as FR12 or test-act-5.
   SAF & Safety requirement in the Hazard Analysis\\
   SC & System constraint in SRS Section 2.5\\
   SEC & Security requirement in the Hazard Analysis\\
-  test- & System test, as in test-act-5 (Section 4.1)\\
+  test- & System test, as in test-act-5 (Sections 4.1 and 4.2)\\
   ut- & Unit test, as in ut-acct-3 (Section 5.2)\\
   A to F, I, L & Usability survey question (Section 6.2): A to F for the parts
     of the questionnaires, L for the experience log, and I for the debrief
@@ -156,7 +156,9 @@ An identifier is a prefix followed by a number, such as FR12 or test-act-5.
 \noindent The middle part of a test identifier names its area: \texttt{acct}
 (Accounts and Profile), \texttt{act} (Activity and Rewards), \texttt{mkt}
 (Simulated Market and Portfolio), \texttt{learn} (Learning and Feedback),
-\texttt{social} (Social Feed), and \texttt{remind} (Reminders and Settings).
+\texttt{social} (Social Feed), \texttt{remind} (Reminders and Settings), and
+\texttt{nfr} (Non-functional Requirements, Section 4.2). In an \texttt{nfr}
+identifier, the next part names the quality tested, as in test-nfr-accuracy-1.
 
 \bigskip
 \noindent\begin{minipage}{\textwidth}
