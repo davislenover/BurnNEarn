@@ -3299,14 +3299,48 @@ are successful.
 
 \item{test-nfr-portability-1\\}
 
-Type: Nonfunctional, Dynamic, Manual and Automatic.
+Type: Nonfunctional, Dynamic, and Manual.
 
 Initial State: FitFolio is installed on an Android phone and iPhone.
-Both use the same test backend and accounts with equivalent data.
+Both use the same test backend, accounts with equivalent data, and run either \texttt{MIN\_ANDROID\_VERSION} or later for Andriod or \texttt{MIN\_IOS\_VERSION} or later for iPhone .
 
-Input/Condition: Run the core tests from Section 4.1 on both phones.
-These include account creation, sign-in, activity rewards, trading,
-portfolio viewing, learning, and sharing.
+Input/Condition: Run the following core tests on both phones: 
+
+\begin{itemize}
+    \item Create an account through the app using an unused email
+    address and username, confirm the age requirement, then sign
+    out and sign in again.
+
+    \item Perform test-act-9 to check the health notice and grant
+    access to health data.
+
+    \item Complete D1 and D2 from Section 6.2: allow FitFolio to
+    read steps and view the currency earned from recorded steps.
+
+    \item Perform test-mkt-8 to check the simulated market notice
+    and complete a purchase, covering D3.
+
+    \item Using test-mkt-10's starting conditions, sell one share
+    through the app, then sell two more. Check that the balance
+    and remaining shares match its expected results.
+
+    \item Using test-mkt-19's starting conditions and price update,
+    open the portfolio screen and check that it shows 213.13,
+    covering D4.
+
+    \item Perform the phone steps in test-learn-1 and test-learn-6
+    to open learning content, complete a knowledge check, and
+    view the results.
+
+    \item Perform test-social-6 to preview and share updates,
+    then check what the friend receives.
+
+    \item Perform test-remind-1 to save reminder periods and check
+    that they remain saved after reopening the app.
+
+    \item Perform test-acct-4 to check signing out.
+\end{itemize}
+
 
 Output/Result: All core tests pass on both Android and iOS, meeting NFR4.
 
