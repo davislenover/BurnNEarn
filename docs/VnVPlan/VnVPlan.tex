@@ -277,10 +277,52 @@ The documents below provide the requirements, design decisions, and stakeholder 
 \paragraph{Custom documents and V\&V Report.} The Design Thinking Report provides the exploratory interview findings used to define user needs. The planned Usability Report will present the result of the study defined in Section~\ref{SecSoftwareValidation} and Appendix~\ref{SecUsabilitySurvey}. The eventual V\&V report will record test results, failures, changes to this plan, and work left incomplete. These reports are evidence of whether the system will actually meet the aforementioned expectations.
 \section{Plan}
 
-\wss{Introduce this section.  You can provide a roadmap of the sections to
-  come.}
+This section describes how the team will verify and validlate FitFolio. It explains how responsibilities will be shared and how these activities will help check that the app works correctly and meets user needs.
 
 \subsection{Verification and Validation Team}
+
+
+The following is a high-level breakdown to what each member will be
+responsible for, but ultimately the entire team shares responsibility
+for verification and validation.
+
+\begin{center}
+\begin{tabular}{p{0.25\textwidth} p{0.65\textwidth}}
+\hline
+\textbf{Team Member} & \textbf{Responsibilities} \\
+\hline
+
+Davis Lenover &
+Check activity rewards, trading, portfolio calculations, reminders, and settings. Maintain automated testing tools and review test results. \\[6pt]
+
+Preston Grewal &
+Check accuracy, response times, reliability, security, accessibility,
+and operation on Android and iOS. \\[6pt]
+
+Angad Chhabra &
+Review the requirements, design, and testing plan for errors or
+missing information. Help organize user testing and review feedback. \\[6pt]
+
+Farid Bastoros &
+Check account management, learning features, and social sharing
+to confirm they work as expected. \\[6pt]
+
+Zaid Alsaadi &
+Review the implementation for coding errors and check that fixes
+resolve reported problems.  \\[6pt]
+
+
+Chris Schankula & Provide feadback on the SRS document. 
+
+\\
+
+\hline
+\end{tabular}
+\end{center}
+
+Our main validation activity will be giving FitFolio to users to test
+ its features in the real world. This will be a responsibility
+for all team members.
 
 
 \subsection{SRS Verification}
@@ -3223,67 +3265,522 @@ permissions in the Health settings.
 
 \subsection{Tests for Nonfunctional Requirements}
 
-\wss{The nonfunctional requirements for accuracy will likely just reference the
-  appropriate functional tests from above.  The test cases should mention
-  reporting the relative error for these tests.  Not all projects will
-  necessarily have nonfunctional requirements related to accuracy.}
+This section lists tests for the seven nonfunctional requirements from the SRS. The tests evaluate the following nonfunctional requirements accuracy, usability, portability, performance, reliability, security, and accessibility. Each test description covers type, initial state, input, output and how the test is performed. 
 
-\wss{For some nonfunctional tests, you won't be setting a target threshold for
-passing the test, but rather describing the experiment you will do to measure
-the quality for different inputs.  For instance, you could measure speed versus
-the problem size.  The output of the test isn't pass/fail, but rather a summary
-table or graph.}
 
-\wss{Tests related to usability could include conducting a usability test and
-  survey.  The survey will be in the Appendix.}
-
-\wss{Static tests, review, inspections, and walkthroughs, will not follow the
-format for the tests given below.}
-
-\wss{If you introduce static tests in your plan, you need to provide details.
-How will they be done?  In cases like code (or document) walkthroughs, who will
-be involved? Be specific.}
-
-\subsubsection{Area of Testing1}
+\subsubsection{Accuracy}
 		
-\paragraph{Title for Test}
+\paragraph{Currency Balance and Portfolio Value Accuracy}
 
 \begin{enumerate}
 
-\item{test-id1\\}
+\item{test-nfr-accuracy-1\\}
 
-Type: Functional, Dynamic, Manual, Static etc.
-					
-Initial State: 
-					
-Input/Condition: 
-					
-Output/Result: 
-					
-How test will be performed: 
-					
-\item{test-id2\\}
+Requirements: NFR1.
 
-Type: Functional, Dynamic, Manual, Static etc.
+Type: Nonfunctional, Dynamic, Automatic
 					
-Initial State: 
+Initial State:  An account with a static balance and stock holdings.
 					
-Input: 
+Input/Condition: Follow the tests in Section 4.1:
+
+\begin{itemize}
+    \item Rewards (FR13): test-act-1.
+    \item Purchase (FR35): test-mkt-9.
+    \item Sale (FR36): test-mkt-10.
+    \item Portfolio value (FR42): test-mkt-19.
+    \item Each holding's percentage before and after a trade (FR53):
+    test-learn-4.
+    \item Balances involving cents when trading at updated prices (FR32):
+    test-mkt-5.
+\end{itemize}
+
+Output/Result: The result of this test should be that every displayed balance and portfolio value differs from its independently calculated expected value by no more than  \texttt{VALUE\_TOLERANCE}. Also, we include the absolute and relative errors for each result.					
+
+Test Case Derivation: NFR1 requires displayed balances and portfolio
+values to be within \texttt{VALUE\_TOLERANCE}  of independently
+calculated expected values.
+
+How test will be performed: The test will reuse the functional test inputs listed above. We will calculate
+the expected results separately using the rules in SRS Section 6.7 and compare
+them with the values displayed by the app. We will then calculate two errors:
+
+\begin{itemize}
+    \item \textbf{Absolute error}
+    \(= |\mathrm{Actual\ value} - \mathrm{Expected\ value}|\)
+
+    \item \textbf{Relative error (\%)}
+    \(= (\mathrm{Absolute\ error} \div |\mathrm{Expected\ value}|) \times 100\)
+\end{itemize}
+
+If the expected value is zero, relative error will be recorded as N/A.
+The test passes if the absolute error for every result is no more than  \texttt{VALUE\_TOLERANCE}.
 					
-Output: 
-					
-How test will be performed: 
+
 
 \end{enumerate}
 
-\subsubsection{Area of Testing2}
+\subsubsection{Usability}
 
-...
+\paragraph{Independent Completion of Core Tasks}
+
+\begin{enumerate}
+
+\item{test-nfr-usability-1\\}
+
+Requirements: NFR2.
+
+Type: Nonfunctional, Dynamic, Manual.
+
+Initial State: We will recruit participant according to Section 3.7
+and meet the intended user characteristics in SRS Section 2.4.
+To do a live test with the application.
+
+Input/Condition: The participants will follow the study in Section 6.2.
+Which has them use FitFolio for 4-7 days, and attemp the four tasks
+in part D.
+
+Output/Result: At least \texttt{MIN\_TASK\_SUCCESS\_RATE} 
+of beginners complete all four tasks without outside assistance.
+
+Test Case Derivation: NFR2 requires at least
+\texttt{MIN\_TASK\_SUCCESS\_RATE} of beginners to complete
+D1 to D4 independently,
+
+How test will be performed: We will recruit participants according
+to Section 3.7 and follow Section 6.2's study procedure. Participants
+will record their experiences in the log and complete the questionnaires
+and debrief. A beginner counts as successful if they answer
+"Yes, without help from outside the app" for all four Part D tasks.
+The non-functional requirement is met if \texttt{MIN\_TASK\_SUCCESS\_RATE} of the beginners
+are successful.
+
+\end{enumerate}
+
+\subsubsection{Portability}
+
+\paragraph{Core Features on Android and iOS}
+
+\begin{enumerate}
+
+\item{test-nfr-portability-1\\}
+
+Requirements: NFR4.
+
+Type: Nonfunctional, Dynamic, Manual.
+
+Initial State: FitFolio is installed on an Android phone and iPhone.
+Both use the same test backend, accounts with equivalent data, and run either \texttt{MIN\_ANDROID\_VERSION} or later for Andriod or \texttt{MIN\_IOS\_VERSION} or later for iPhone .
+
+Input/Condition: Run the following core tests on both phones: 
+
+\begin{itemize}
+    \item Create an account through the app using an unused email
+    address and username, confirm the age requirement, then sign
+    out and sign in again.
+
+    \item Perform test-act-9 to check the health notice and grant
+    access to health data.
+
+    \item Complete D1 and D2 from Section 6.2: allow FitFolio to
+    read steps and view the currency earned from recorded steps.
+
+    \item Perform test-mkt-8 to check the simulated market notice
+    and complete a purchase, covering D3.
+
+    \item Using test-mkt-10's starting conditions, sell one share
+    through the app, then sell two more. Check that the balance
+    and remaining shares match its expected results.
+
+    \item Using test-mkt-19's starting conditions and price update,
+    open the portfolio screen and check that it shows 213.13,
+    covering D4.
+
+    \item Perform the phone steps in test-learn-1 and test-learn-6
+    to open learning content, complete a knowledge check, and
+    view the results.
+
+    \item Perform test-social-6 to preview and share updates,
+    then check what the friend receives.
+
+    \item Perform test-remind-1 to save reminder periods and check
+    that they remain saved after reopening the app.
+
+    \item Perform test-acct-4 to check signing out.
+\end{itemize}
+
+
+Output/Result: All core tests pass on both Android and iOS, meeting NFR4.
+
+Test Case Derivation: NFR4 requires the listed 
+tasks to produce the expected results on both supported Android
+and iOS devices.
+
+How test will be performed: The team will run the same tests on both
+phones, starting with equivalent data. We will record the phone models,
+operating system versions, and each test's result in a table. The test
+passes if all core features work as expected on both phones.
+
+\end{enumerate}
+
+\subsubsection{Performance}
+
+\paragraph{Response Time for Previously Loaded Summaries and Feed}
+
+\begin{enumerate}
+
+\item{test-nfr-performance-1\\}
+
+Requirements: NFR5.
+
+Type: Nonfunctional, Dynamic.
+
+Initial State: A signed-in test account which contains activity
+summaries, portfolio holdings, and shared social updates. The application
+is running on a device with a stable network connection.
+
+Input/Condition: Perform \texttt{RESPONSE\_TRIALS}  trials:
+10 for activity summaries, 10 for portfolio summaries, and 10
+for the social feed.
+
+Output/Result: At least \texttt{MIN\_RESPONSE\_RATE} 
+of the trials complete within \texttt{MAX\_RESPONSE\_TIME}. This requires at least 29 successful trials out of 30.
+
+Test Case Derivation: NFR5 requires at least
+\texttt{MIN\_RESPONSE\_RATE} of \texttt{RESPONSE\_TRIALS}
+the trials to finish within \texttt{MAX\_RESPONSE\_TIME}.
+
+
+How test will be performed: The test will measure how long each request
+takes to display its information after the user requests it. We will
+record each time and count failures or timeouts as unsuccessful attempts.
+The test passes if at least 29 of 30 attempts finish within 3 seconds
+of each request.
+
+\end{enumerate}
+
+
+\subsubsection{Reliability}
+
+\paragraph{Trade Integrity During Interruptions and Retries}
+
+\begin{enumerate}
+
+\item{test-nfr-reliability-1\\}
+
+Requirements: NFR6.
+
+Type: Nonfunctional, Dynamic, Automatic.
+
+Initial State: A test account has enough of a balance to test purchases
+and sales of stocks.
+
+Input/Condition: Perform \texttt{RELIABILITY\_TRIALS}  trials
+by running each of the following five cases four times:
+
+\begin{itemize}
+    \item Interrupt a purchase between updating the balance and
+    updating the holdings, using test-mkt-12's method.
+
+    \item Interrupt a sale between updating the balance and
+    updating the holdings, using test-mkt-12's method.
+
+    \item Complete a purchase of one share, prevent its confirmation
+    from reaching the app, and retry the same request. Send the
+    request again after completion, using test-mkt-13's method.
+
+    \item Complete a sale of one share, prevent its confirmation
+    from reaching the app, and retry the same request. Send the
+    request again after completion.
+
+    \item Send identical one-share trade requests at the same time,
+    using test-mkt-13's method. Use purchases for two trials and
+    sales for two trials.
+\end{itemize}
+
+
+Output/Result:
+
+\begin{itemize}
+    \item Interrupted purchase - no effect on holdings or balances,
+    and no completed trade is added to the history.
+
+    \item Interrupted sale - no effect on holdings or balances,
+    and no completed trade is added to the history.
+
+    \item Repeated purchase - holdings increase by one share,
+    the balance decreases by the price of one share, and exactly
+    one purchase is recorded in the trade history. Further copies
+    of the same request cause no additional changes.
+
+    \item Repeated sale - holdings decrease by one share,
+    the balance increases by the price of one share, and exactly
+    one sale is recorded in the trade history. Further copies
+    of the same request cause no additional changes.
+
+    \item Concurrent requests - only one trade is recorded in
+    the history, and holdings and balances update only once
+    for the purchase or sale.
+\end{itemize}
+
+Test Case Derivation: NFR6 requires no incomplete or duplicate trades
+across \texttt{RELIABILITY\_TRIALS}  trials.
+
+How test will be performed: Before running each test, reset the account
+to its original state, then interrupt or repeat the trade request.
+After the requests are processed, we will check the balance, holdings,
+and trade history against the expected results. All tests must pass
+to meet NFR6.
+
+\end{enumerate}
+
+\subsubsection{Security}
+
+\paragraph{Rejection of Unauthorized Private-Data Requests}
+
+\begin{enumerate}
+
+\item{test-nfr-security-1\\}
+
+Requirements: NFR7.
+
+Type: Nonfunctional, Dynamic, Manual.
+
+Initial State: Two different test accounts, A and B, both are friends
+with each other on the app. A shared an update to account B.
+
+Input/Condition:
+
+\begin{itemize}
+    \item Sign out of A and try to return to its personal activity screen.
+    \item Sign in as B and check that A's personal activity data is
+    not visible.
+    \item Remove B as a friend and check that B can no longer view
+    A's shared update.
+    \item Close and reopen the app after signing out and check that
+    personal activity data remains hidden.
+    \item Send server requests for A's activity data without login
+    credentials, with A's signed-out credentials, and with B's credentials.
+    \item After B is removed as a friend, send a server request using
+    B's credentials to access A's shared update.
+\end{itemize}
+
+Output/Result: Users can only access information they are allowed to see.
+
+Test Case Derivation: NFR7 requires all tested requests without valid
+authentication or authorization to be rejected without exposing
+private data.
+
+How test will be performed: A team member will attempt the steps above
+within the application and record the results. We will also have
+automated tests that will send the above requests directly to the server.
+Every attempt to view unauthorized data must fail. All app and server
+checks must pass to meet NFR7.
+
+\end{enumerate}
+
+\subsubsection{Accessibility}
+
+\paragraph{Core Task Completion at 200\% Text Size}
+
+\begin{enumerate}
+
+\item{test-nfr-accessibility-1\\}
+
+Requirements: NFR8.
+
+Type: Nonfunctional, Dynamic, Manual.
+
+Initial State: FitFolio installed on an Android phone and iPhone.
+Set both phones to have their \texttt{MAX\_TEXT\_SCALE} to 200\%.
+
+Input/Condition: Create an account, track an activity, buy an asset,
+and share a progress update.
+
+Output/Result: Text remains readable, buttons are not cut off or hidden,
+and all tasks can be completed. 
+
+Test Case Derivation: NFR8 requires information to be readable and core task to be doable at \texttt{MAX\_TEXT\_SCALE}.
+
+How test will be performed: A team member will go through the core
+components of the application: create an account, track an activity,
+buy an asset, and share a progress update. All tasks must remain usable
+at 200\% text size on both phones and participants in Section 6.2 Part E report no accessibility problems with the core-task screens to meet NFR8.
+
+\end{enumerate}
 
 \subsection{Traceability Between Test Cases and Requirements}
 
-\wss{Provide a table that shows which test cases are supporting which
-  requirements.}
+
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Accounts and Profile} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-acct-1 & FR1, FR4 \\
+test-acct-2 & FR2 \\
+test-acct-3 & FR3 \\
+test-acct-4 & FR5 \\
+test-acct-5 & FR6 \\
+test-acct-6 & FR7 \\
+test-acct-7 & FR8 \\
+test-acct-8 & FR9 \\
+test-acct-9 & FR10 \\
+test-acct-10 & FR11 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Activity and Rewards} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-act-1 & FR12, FR13 \\
+test-act-2 & FR18 \\
+test-act-3 & FR18 \\
+test-act-4 & FR16 \\
+test-act-5 & FR17 \\
+test-act-6 & FR17 \\
+test-act-7 & FR17 \\
+test-act-8 & FR14 \\
+test-act-9 & FR14 \\
+test-act-10 & FR15 \\
+test-act-11 & FR26 \\
+test-act-12 & FR19 \\
+test-act-13 & FR20 \\
+test-act-14 & FR21 \\
+test-act-15 & FR22, FR23 \\
+test-act-16 & FR22 \\
+test-act-17 & FR22 \\
+test-act-18 & FR23 \\
+test-act-19 & FR24 \\
+test-act-20 & FR25 \\
+test-act-21 & FR25 \\
+test-act-22 & FR27 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Simulated Market and Portfolio} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-mkt-1 & FR28 \\
+test-mkt-2 & FR29 \\
+test-mkt-3 & FR30, FR31 \\
+test-mkt-4 & FR30, FR31 \\
+test-mkt-5 & FR32 \\
+test-mkt-6 & FR33 \\
+test-mkt-7 & FR34 \\
+test-mkt-8 & FR34 \\
+test-mkt-9 & FR35 \\
+test-mkt-10 & FR36 \\
+test-mkt-11 & FR37 \\
+test-mkt-12 & FR37 \\
+test-mkt-13 & FR38 \\
+test-mkt-14 & FR39 \\
+test-mkt-15 & FR40 \\
+test-mkt-16 & FR40 \\
+test-mkt-17 & FR40 \\
+test-mkt-18 & FR41 \\
+test-mkt-19 & FR42 \\
+test-mkt-20 & FR43 \\
+test-mkt-21 & FR44 \\
+test-mkt-22 & FR49 \\
+test-mkt-23 & FR45 \\
+test-mkt-24 & FR46 \\
+test-mkt-25 & FR47 \\
+test-mkt-26 & FR48 \\
+test-mkt-27 & FR31 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Learning and Feedback} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-learn-1 & FR50, FR55 \\
+test-learn-2 & FR51 \\
+test-learn-3 & FR52, FR60 \\
+test-learn-4 & FR53 \\
+test-learn-5 & FR54 \\
+test-learn-6 & FR56 \\
+test-learn-7 & FR57 \\
+test-learn-8 & FR58 \\
+test-learn-9 & FR59 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Social Feed} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-social-1 & FR61 \\
+test-social-2 & FR62, FR63 \\
+test-social-3 & FR64 \\
+test-social-4 & FR65, FR68 \\
+test-social-5 & FR66 \\
+test-social-6 & FR67 \\
+test-social-7 & FR69 \\
+test-social-8 & FR70 \\
+test-social-9 & FR71 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Reminders and Settings} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-remind-1 & FR72 \\
+test-remind-2 & FR73 \\
+test-remind-3 & FR74 \\
+test-remind-4 & FR75 \\
+test-remind-5 & FR75 \\
+test-remind-6 & FR75 \\
+test-remind-7 & FR76 \\
+test-remind-8 & FR77 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.60\textwidth} p{0.25\textwidth}}
+\hline
+\multicolumn{2}{l}{Nonfunctional Requirements} \\
+\hline
+Test Case & SRS Requirements \\
+\hline
+test-nfr-accuracy-1 & NFR1 \\
+test-nfr-usability-1 & NFR2 \\
+test-nfr-portability-1 & NFR4 \\
+test-nfr-performance-1 & NFR5 \\
+test-nfr-reliability-1 & NFR6 \\
+test-nfr-security-1 & NFR7 \\
+test-nfr-accessibility-1 & NFR8 \\
+\hline
+\end{tabular}
+\end{center}
 
 \section{Unit Test Description}
 
@@ -3507,8 +4004,82 @@ This is where you can place additional information.
 
 \subsection{Symbolic Parameters}
 
-The definition of the test cases will call for SYMBOLIC\_CONSTANTS.
-Their values are defined in this section for easy maintenance.
+
+\begin{center}
+\begin{tabular}{p{0.48\textwidth} p{0.42\textwidth}}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+
+\texttt{MIN\_USER\_AGE} & 18 years \\[6pt]
+
+\texttt{MIN\_PASSWORD\_LENGTH} & 8 characters \\[6pt]
+
+\texttt{MIN\_ANDROID\_VERSION} & Android 17 \\[6pt]
+
+\texttt{MIN\_IOS\_VERSION} & iOS 27 \\[6pt]
+
+\texttt{EARNING\_RATES} &
+1 currency unit per 100 steps; 1 per 100 wheelchair pushes;
+1 per minute of cycling, swimming, or another workout \\[6pt]
+
+\texttt{MAX\_DAILY\_CURRENCY} & 300 currency units \\[6pt]
+
+\texttt{MAX\_DAILY\_STEPS} & 150,000 steps \\[6pt]
+
+\texttt{MAX\_DAILY\_PUSHES} & 100,000 pushes \\[6pt]
+
+\texttt{MAX\_WORKOUT\_DURATION} & 12 hours \\[6pt]
+
+\texttt{REST\_DAYS\_PER\_PERIOD} & 2 days \\[6pt]
+
+\texttt{STREAK\_PERIOD} &
+Monday to Sunday in the user's time zone \\[6pt]
+
+\texttt{GOAL\_REVIEW\_PERIOD} & 7 consecutive days \\[6pt]
+
+\texttt{MILESTONES} &
+Streaks of 7, 30, and 100 days; total earnings of 1,000,
+10,000, and 100,000 currency units \\
+
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{p{0.48\textwidth} p{0.42\textwidth}}
+\hline
+\textbf{Parameter} & \textbf{Value} \\
+\hline
+
+\texttt{MIN\_TRADABLE\_STOCKS} & 50 stocks \\[6pt]
+
+\texttt{QUOTE\_CURRENCY} & US dollars (USD) \\[6pt]
+
+\texttt{QUOTE\_STALENESS\_LIMIT} & 15 minutes \\[6pt]
+
+\texttt{SCENARIO\_START\_BALANCE} & 10,000 currency units \\[6pt]
+
+\texttt{VALUE\_TOLERANCE} & 0.01 currency units \\[6pt]
+
+\texttt{FEEDBACK\_THRESHOLD} & 5\% \\[6pt]
+
+\texttt{CONCENTRATION\_LIMIT} & 50\% \\[6pt]
+
+\texttt{KNOWLEDGE\_CHECK\_\allowbreak PASS\_MARK} & 70\% \\[6pt]
+
+\texttt{DEFAULT\_REMINDER\_\allowbreak PERIOD} &
+09:00--20:00 in the user's time zone \\[6pt]
+
+\texttt{DATA\_DELETION\_PERIOD} & 30 days \\[6pt]
+
+\texttt{MIN\_TASK\_SUCCESS\_RATE} & 80\% \\[6pt]
+
+\texttt{MAX\_TEXT\_SCALE} & 200\% of default text size \\
+
+\hline
+\end{tabular}
+\end{center}
 
 \subsection{Usability Survey Questions} \label{SecUsabilitySurvey}
 
@@ -4004,9 +4575,19 @@ project? Examples of possible knowledge and skills include dynamic testing
 knowledge, static testing knowledge, specific tool usage, Valgrind etc. You
 should look to identify at least one item for each team member.}
 
+Preston: A specific tool I will need to learn is Gitleaks. It is used in our project because the repository is public, so an API key, password, or token is exposed as soon as it is pushed. GitLeaks checks that sensitive information isn't included in a commit, it does this by checking for sensitive info prior to the commit and in our CI pipeline. 
+
+
 \subsubsection*{4. For each of the knowledge areas and skills identified in the
 previous question, what are at least two approaches to acquiring the knowledge
 or mastering the skill? Of the identified approaches, which will each team
 member pursue, and why did they make this choice?}
+
+Preston: One approach I can take to learn Gitleaks is to read the README
+in the \href{https://github.com/gitleaks/gitleaks}{official GitHub repository}.
+A second approach is to create a sample repository containing fake secrets
+and use Gitleaks to practise running scans and interpreting warnings.
+Of the proposed approaches I would choose the second choice as the
+hands-on experience provides a more indepth tutorial to the application.
 
 \end{document}
