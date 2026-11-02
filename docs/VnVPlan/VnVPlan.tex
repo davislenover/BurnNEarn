@@ -53,34 +53,37 @@ Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1
   FR3, FR52 and FR57.\\
 Nov 1, 2026 & Zaid Alsaadi & Section 3.5: Implementation Verification.\\
 Nov 2, 2026 & Zaid Alsaadi & Section 7: Generative AI Disclosure, including tools and model versions, affected sections, and verification of AI-assisted content.\\
+Nov 2, 2026 & Davis Lenover & Removed the template hints and the early unit
+  tests in Section 5, which will be written once the MIS is complete.\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-~\\
-\wss{The intention of the VnV plan is to increase confidence in the software.
-However, this does not mean listing every verification and validation technique
-that has ever been devised.  The VnV plan should also be a \textbf{feasible}
-plan. Execution of the plan should be possible with the time and team available.
-If the full plan cannot be completed during the time available, it can either be
-modified to ``fake it'', or a better solution is to add a section describing
-what work has been completed and what work is still planned for the future.}
+% ~\\
+% \wss{The intention of the VnV plan is to increase confidence in the software.
+% However, this does not mean listing every verification and validation technique
+% that has ever been devised.  The VnV plan should also be a \textbf{feasible}
+% plan. Execution of the plan should be possible with the time and team available.
+% If the full plan cannot be completed during the time available, it can either be
+% modified to ``fake it'', or a better solution is to add a section describing
+% what work has been completed and what work is still planned for the future.}
 
-\wss{The VnV plan is typically started after the requirements stage, but before
-the design stage.  This means that the sections related to unit testing cannot
-initially be completed.  The sections will be filled in after the design stage
-is complete.  the final version of the VnV plan should have all sections filled
-in.}
+% \wss{The VnV plan is typically started after the requirements stage, but before
+% the design stage.  This means that the sections related to unit testing cannot
+% initially be completed.  The sections will be filled in after the design stage
+% is complete.  the final version of the VnV plan should have all sections filled
+% in.}
 
 \newpage
 
 \tableofcontents
 
 \listoftables
-\wss{Remove this section if it isn't needed}
+% \wss{Remove this section if it isn't needed}
 
-\listoffigures
-\wss{Remove this section if it isn't needed}
+% There are no figures, so the list of figures is left out.
+% \listoffigures
+% \wss{Remove this section if it isn't needed}
 
 \newpage
 
@@ -144,7 +147,8 @@ An identifier is a prefix followed by a number, such as FR12 or test-act-5.
   SC & System constraint in SRS Section 2.5\\
   SEC & Security requirement in the Hazard Analysis\\
   test- & System test, as in test-act-5 (Sections 4.1 and 4.2)\\
-  ut- & Unit test, as in ut-acct-3 (Section 5.2)\\
+  % Add this row back once Section 5 is written.
+  % ut- & Unit test, as in ut-acct-3 (Section 5.2)\\
   A to F, I, L & Usability survey question (Section 6.2): A to F for the parts
     of the questionnaires, L for the experience log, and I for the debrief
     interview\\
@@ -196,8 +200,8 @@ obtained in test-mkt-6, are defined in that test.
 
 \pagenumbering{arabic}
 
-This document ... \wss{provide an introductory blurb and roadmap of the
-  Verification and Validation plan}
+% This document ... \wss{provide an introductory blurb and roadmap of the
+%   Verification and Validation plan}
 
 \section{General Information}
 
@@ -480,7 +484,7 @@ This V\&V Plan will be checked by teammates and classmates to ensure that its te
 
 For tests with calculated outputs, another team member will check a sample by hand. As an additional check on the review itself, we will intentionally change one expected result or boundary in a copy of a test and confirm that the reviewer will catch the inconsistency. The altered version won't be merged. 
 
-A problem found during review will be recorded in the relevant pull request or a linked GitHub issue and checked again after it has been fixed. Sections 4.2 and 4.3 must be filled in before the initial system test plan is considered complete. The module level details in Section 5 will be revisited after the MIS is written.
+A problem found during review will be recorded in the relevant pull request or a linked GitHub issue and checked again after it has been fixed. Sections 4.2 and 4.3 must be filled in before the initial system test plan is considered complete. The module level details in Section 5 will be written after the MIS is complete.
 
 \subsection{Implementation Verification}
 
@@ -488,7 +492,7 @@ The team will check FitFolio's implementation through testing, code review, and 
 
 \bigskip
 \noindent
-\textbf{Testing:} The team will run the system tests in Section 4 and implement the unit tests described in Section 5 as features are developed. System tests will check the application against its functional and nonfunctional requirements. Unit tests will check individual parts of the code, while integration tests will check how components work together, including backend operations that use the database. The preliminary unit tests in Section 5 will be extended and mapped to modules once the Module Interface Specification is complete. 
+\textbf{Testing:} The team will run the system tests in Section 4 and implement the unit tests described in Section 5 as features are developed. System tests will check the application against its functional and nonfunctional requirements. Unit tests will check individual parts of the code, while integration tests will check how components work together, including backend operations that use the database. The unit tests in Section 5 will be written and mapped to modules once the Module Interface Specification is complete.
 
 \medskip
 \noindent
@@ -636,8 +640,12 @@ evidence of usability across all intended users. Any issues identified
 will be recorded in GitHub and considered for future improvements.
 \section{System Tests} \label{SecSystemTests}
 
-\wss{There should be text between all headings, even if it is just a roadmap of
-the contents of the subsections.}
+% \wss{There should be text between all headings, even if it is just a roadmap of
+% the contents of the subsections.}
+
+This section describes the system tests. Section 4.1 tests the functional
+requirements, Section 4.2 tests the nonfunctional requirements, and Section 4.3
+traces each test back to the requirements it covers.
 
 \subsection{Tests for Functional Requirements}
 
@@ -3876,214 +3884,9 @@ test-nfr-accessibility-1 & NFR8 \\
 
 \section{Unit Test Description}
 
-\wss{This section should not be filled in until after the MIS (detailed design
-  document) has been completed.}
+The unit tests will be written once the Module Interface Specification (MIS)
+is complete, since they will be organized by the modules it defines.
 
-\wss{Reference your MIS (detailed design document) and explain your overall
-philosophy for test case selection.}  
-
-\wss{To save space and time, it may be an option to provide less detail in this section.  
-For the unit tests you can potentially layout your testing strategy here.  That is, you 
-can explain how tests will be selected for each module.  For instance, your test building 
-approach could be test cases for each access program, including one test for normal behaviour 
-and as many tests as needed for edge cases.  Rather than create the details of the input 
-and output here, you could point to the unit testing code.  For this to work, you code 
-needs to be well-documented, with meaningful names for all of the tests.}
-
-\subsection{Unit Testing Scope}
-
-\wss{What modules are outside of the scope.  If there are modules that are
-  developed by someone else, then you would say here if you aren't planning on
-  verifying them.  There may also be modules that are part of your software, but
-  have a lower priority for verification than others.  If this is the case,
-  explain your rationale for the ranking of module importance.}
-
-\subsection{Tests for Functional Requirements}
-
-% \wss{Most of the verification will be through automated unit testing.  If
-%   appropriate specific modules can be verified by a non-testing based
-%   technique.  That can also be documented in this section.}
-
-% \subsubsection{Module 1}
-
-% \wss{Include a blurb here to explain why the subsections below cover the module.
-%   References to the MIS would be good.  You will want tests from a black box
-%   perspective and from a white box perspective.  Explain to the reader how the
-%   tests were selected.}
-
-% \begin{enumerate}
-
-% \item{test-id1\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: \wss{The expected result for the given inputs}
-
-% Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-% How test will be performed: 
-					
-% \item{test-id2\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: \wss{The expected result for the given inputs}
-
-% Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-% How test will be performed: 
-
-% \item{...\\}
-    
-% \end{enumerate}
-
-% \subsubsection{Module 2}
-
-% ...
-
-The detailed design (Module Interface Specification, MIS) has not been
-written yet, so the unit tests below are organized by the three areas of
-SRS Section 6 rather than by module. Once the MIS is complete, each area will
-be mapped to its modules, and each access program of those modules will get
-at least one test of its normal behaviour and one for each boundary or error
-case in its specification. The cases listed here are the ones already known
-from the SRS: boundaries of the symbolic constants, and rules whose failure
-the system tests above would detect only indirectly. Backend units are tested
-with pytest in \texttt{test/backend}, and app units with Jest, on every pull
-request.
-
-\subsubsection{Accounts and Profile}
-
-These tests check the account rules on the backend, below the API, so that a
-failure points to the rule that caused it rather than to the request.
-
-\begin{enumerate}
-  \item \textbf{ut-acct-1: Password length.} A password of 7 characters is
-    refused and one of 8 is accepted, testing \texttt{MIN\_PASSWORD\_LENGTH}
-    (8) on both sides (Hazard Analysis, SEC-38).
-  \item \textbf{ut-acct-2: Age confirmation.} Sign-up details with the age
-    confirmation true are accepted. False and missing are both refused (FR2).
-  \item \textbf{ut-acct-3: Username in use.} Checking \texttt{sam\_test} when
-    an account already uses it reports it as taken, as does checking
-    \texttt{SAM\_TEST}, and checking \texttt{jordan\_test} reports it as free
-    (FR3).
-  \item \textbf{ut-acct-4: Stored passwords.} After sign-up with the password
-    \texttt{Walk2026run}, the stored value is not equal to the password,
-    checking the stored value against the password succeeds, and checking it
-    against \texttt{Walk2026ruN} fails (FR4).
-  \item \textbf{ut-acct-5: Reset links.} A reset link works once for the
-    account it was issued to. Using it a second time, or for another account,
-    is refused (FR6).
-\end{enumerate}
-
-\subsubsection{Learning and Feedback}
-
-The feedback rules are calculations on a portfolio, so they are tested as
-functions with portfolios given directly, with no database or API. Each test
-has a hand-calculated expected value.
-
-\begin{enumerate}
-  \item \textbf{ut-learn-1: Feedback threshold.} With a value of 1,000.00 at
-    the last view, a new value of 1,050.00 (a change of exactly
-    \texttt{FEEDBACK\_THRESHOLD}, 5\%) gives no feedback, and 1,050.01 and
-    949.99 both give feedback. With a value of 0 at the last view, where a
-    percentage change would divide by zero, a new value of 1,000.00 gives no
-    feedback (FR52).
-  \item \textbf{ut-learn-2: Largest change.} For changes of $+70$ in A and
-    $-10$ in B, A is named. For $0$ in A and $-70$ in B, B is named (FR52).
-  \item \textbf{ut-learn-3: Shares of the portfolio.} For holdings worth
-    100.00, 100.00 and 100.00, each share is one third, and the shares add up
-    to 100\% within \texttt{VALUE\_TOLERANCE} (0.01). For a single holding, its
-    share is 100\% (FR53).
-  \item \textbf{ut-learn-4: Concentration limit.} Holdings worth 500.00 and
-    500.00 (exactly \texttt{CONCENTRATION\_LIMIT}, 50\%) give no explanation,
-    and 501.00 and 499.00 give one (FR54).
-  \item \textbf{ut-learn-5: Grading.} For a check with answers b, a and c, the
-    answers b, c and c give questions 1 and 3 correct and question 2
-    incorrect. All correct and all wrong are also tested (FR56).
-\end{enumerate}
-
-\subsubsection{Social Feed}
-
-The visibility rule decides every check in the social feed system tests, so
-it is tested on its own for every combination of its inputs.
-
-\begin{enumerate}
-  \item \textbf{ut-social-1: Visibility.} An update is visible to a viewer
-    exactly when the viewer is its author, or is both a selected viewer and
-    currently a friend of the author. The test checks all four combinations of
-    selected or not and friend or not, and the author (FR64, FR66; Hazard
-    Analysis, SEC-13).
-  \item \textbf{ut-social-2: Friend requests.} A pending request becomes
-    accepted only when its recipient accepts it, and declined when its
-    recipient declines it. Accepting by the sender, and accepting a declined
-    request, are refused (FR62, FR63).
-  \item \textbf{ut-social-3: Building an update.} Each of the four kinds in
-    SRS Table 6.5 builds an update, and any other kind is refused. No built
-    update contains an age, height, weight, individual record, location or
-    time of day (FR65, FR68; Hazard Analysis, SEC-14).
-  \item \textbf{ut-social-4: Feed order.} Updates shared at 10:00, 10:05 and
-    10:10 are returned newest first, whatever order they are given in (FR69).
-\end{enumerate}
-
-\subsection{Tests for Nonfunctional Requirements}
-
-\wss{If there is a module that needs to be independently assessed for
-  performance, those test cases can go here.  In some projects, planning for
-  nonfunctional tests of units will not be that relevant.}
-
-\wss{These tests may involve collecting performance data from previously
-  mentioned functional tests.}
-
-\subsubsection{Module ?}
-		
-\begin{enumerate}
-
-\item{test-id1\\}
-
-Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-  be automatic}
-					
-Initial State: 
-					
-Input/Condition: 
-					
-Output/Result: 
-					
-How test will be performed: 
-					
-\item{test-id2\\}
-
-Type: Functional, Dynamic, Manual, Static etc.
-					
-Initial State: 
-					
-Input: 
-					
-Output: 
-					
-How test will be performed: 
-
-\end{enumerate}
-
-\subsubsection{Module ?}
-
-...
-
-\subsection{Traceability Between Test Cases and Modules}
-
-\wss{Provide evidence that all modules have been considered.}
-				
 \bibliographystyle{plainnat}
 
 \bibliography{../../refs/References}
@@ -4092,7 +3895,8 @@ How test will be performed:
 
 \section{Appendix}
 
-This is where you can place additional information.
+This appendix gives the values of the symbolic parameters used in this
+document and the questions for the usability study.
 
 \subsection{Symbolic Parameters}
 
@@ -4588,7 +4392,7 @@ The following AI tools and models were used while preparing this document:
 \end{itemize}
 
 \subsection{How and Where Used}
-ChatGPT helped with LaTeX formatting and syntax, grammar and typo checks, and reviewing content for potential errors or inconsistencies. This assistance covered contributions to Section 2.1 (Summary), Section 2.3 (Custom Documents), Section 2.4 (Relevant Documentation), Section 3.2 (SRS Verification), Section 3.3 (Design Verification), Section 3.4 (Verification and Validation Plan Verification), Section 3.7 (Software Validation), Section 4.1 (Tests for Functional Requirements), and Section 5.2 (Tests for Functional Requirements).
+ChatGPT helped with LaTeX formatting and syntax, grammar and typo checks, and reviewing content for potential errors or inconsistencies. This assistance covered contributions to Section 2.1 (Summary), Section 2.3 (Custom Documents), Section 2.4 (Relevant Documentation), Section 3.2 (SRS Verification), Section 3.3 (Design Verification), Section 3.4 (Verification and Validation Plan Verification), Section 3.7 (Software Validation), and Section 4.1 (Tests for Functional Requirements).
 
 \medskip\noindent
 Codex helped improve wording, check grammar, and format content in LaTeX. This assistance covered contributions to Section 3 (Plan), including Section 3.1 (Verification and Validation Team), as well as Section 4.2 (Tests for Nonfunctional Requirements), Section 4.3 (Traceability Between Test Cases and Requirements), and Section 8 (Appendix -- Reflection). 
@@ -4612,7 +4416,7 @@ The team remains responsible for the accuracy, completeness, consistency, and ap
 
 \section{Appendix --- Reflection}
 
-\wss{This section is not required for CAS 741}
+% \wss{This section is not required for CAS 741}
 
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Lifelong Learning.
