@@ -3223,15 +3223,17 @@ Type: Nonfunctional, Dynamic, Automatic
 					
 Initial State:  An account with a static balance and stock holdings.
 					
-Input/Condition: Reuse the following cases from the
-matching functional tests in Section 4.1:
+Input/Condition: Follow the tests in Section 4.1:
 
 \begin{itemize}
-    \item Rewards (FR13):
-    \item Purchase (FR35):
-    \item Sale (FR36):
-    \item Portfolio value (FR42):
-    \item Empty portfolio (FR42):
+    \item Rewards (FR13): test-act-1.
+    \item Purchase (FR35): test-mkt-9.
+    \item Sale (FR36): test-mkt-10.
+    \item Portfolio value (FR42): test-mkt-19.
+    \item Each holding's percentage before and after a trade (FR53):
+    test-learn-4.
+    \item Balances involving cents when trading at updated prices (FR32):
+    test-mkt-5.
 \end{itemize}
 
 Output/Result: The result of this test should be that every displayed balance and portfolio value differs from its independently calculated expected value by no more than VALUE\_TOLERANCE, which is \$0.01. Also, we include the absolute and relative errors for each result.					
