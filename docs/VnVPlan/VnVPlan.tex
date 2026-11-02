@@ -3276,6 +3276,8 @@ This section lists tests for the seven nonfunctional requirements from the SRS. 
 
 \item{test-nfr-accuracy-1\\}
 
+Requirements: NFR1.
+
 Type: Nonfunctional, Dynamic, Automatic
 					
 Initial State:  An account with a static balance and stock holdings.
@@ -3293,7 +3295,11 @@ Input/Condition: Follow the tests in Section 4.1:
     test-mkt-5.
 \end{itemize}
 
-Output/Result: The result of this test should be that every displayed balance and portfolio value differs from its independently calculated expected value by no more than VALUE\_TOLERANCE, which is \$0.01. Also, we include the absolute and relative errors for each result.					
+Output/Result: The result of this test should be that every displayed balance and portfolio value differs from its independently calculated expected value by no more than  \texttt{VALUE\_TOLERANCE}. Also, we include the absolute and relative errors for each result.					
+
+Test Case Derivation: NFR1 requires displayed balances and portfolio
+values to be within \texttt{VALUE\_TOLERANCE}  of independently
+calculated expected values.
 
 How test will be performed: The test will reuse the functional test inputs listed above. We will calculate
 the expected results separately using the rules in SRS Section 6.7 and compare
@@ -3308,7 +3314,7 @@ them with the values displayed by the app. We will then calculate two errors:
 \end{itemize}
 
 If the expected value is zero, relative error will be recorded as N/A.
-The test passes if the absolute error for every result is no more than \$0.01.
+The test passes if the absolute error for every result is no more than  \texttt{VALUE\_TOLERANCE}.
 					
 
 
@@ -3322,7 +3328,7 @@ The test passes if the absolute error for every result is no more than \$0.01.
 
 \item{test-nfr-usability-1\\}
 
-
+Requirements: NFR2.
 
 Type: Nonfunctional, Dynamic, Manual.
 
@@ -3334,15 +3340,19 @@ Input/Condition: The participants will follow the study in Section 6.2.
 Which has them use FitFolio for 4-7 days, and attemp the four tasks
 in part D.
 
-Output/Result: At least \texttt{MIN\_TASK\_SUCCESS\_RATE} (80\%)
+Output/Result: At least \texttt{MIN\_TASK\_SUCCESS\_RATE} 
 of beginners complete all four tasks without outside assistance.
+
+Test Case Derivation: NFR2 requires at least
+\texttt{MIN\_TASK\_SUCCESS\_RATE} of beginners to complete
+D1 to D4 independently,
 
 How test will be performed: We will recruit participants according
 to Section 3.7 and follow Section 6.2's study procedure. Participants
 will record their experiences in the log and complete the questionnaires
 and debrief. A beginner counts as successful if they answer
-``Yes, without help from outside the app'' for all four Part D tasks.
-The non-functional requirement is met if 80\% of the beginners
+"Yes, without help from outside the app" for all four Part D tasks.
+The non-functional requirement is met if \texttt{MIN\_TASK\_SUCCESS\_RATE} of the beginners
 are successful.
 
 \end{enumerate}
@@ -3355,7 +3365,9 @@ are successful.
 
 \item{test-nfr-portability-1\\}
 
-Type: Nonfunctional, Dynamic, and Manual.
+Requirements: NFR4.
+
+Type: Nonfunctional, Dynamic, Manual.
 
 Initial State: FitFolio is installed on an Android phone and iPhone.
 Both use the same test backend, accounts with equivalent data, and run either \texttt{MIN\_ANDROID\_VERSION} or later for Andriod or \texttt{MIN\_IOS\_VERSION} or later for iPhone .
@@ -3400,6 +3412,10 @@ Input/Condition: Run the following core tests on both phones:
 
 Output/Result: All core tests pass on both Android and iOS, meeting NFR4.
 
+Test Case Derivation: NFR4 requires the listed 
+tasks to produce the expected results on both supported Android
+and iOS devices.
+
 How test will be performed: The team will run the same tests on both
 phones, starting with equivalent data. We will record the phone models,
 operating system versions, and each test's result in a table. The test
@@ -3415,19 +3431,25 @@ passes if all core features work as expected on both phones.
 
 \item{test-nfr-performance-1\\}
 
+Requirements: NFR5.
+
 Type: Nonfunctional, Dynamic.
 
 Initial State: A signed-in test account which contains activity
 summaries, portfolio holdings, and shared social updates. The application
 is running on a device with a stable network connection.
 
-Input/Condition: Perform \texttt{RESPONSE\_TRIALS} (30) trials:
+Input/Condition: Perform \texttt{RESPONSE\_TRIALS}  trials:
 10 for activity summaries, 10 for portfolio summaries, and 10
 for the social feed.
 
-Output/Result: At least \texttt{MIN\_RESPONSE\_RATE} (95\%)
-of the trials complete within \texttt{MAX\_RESPONSE\_TIME}
-(3 seconds). This requires at least 29 successful trials out of 30.
+Output/Result: At least \texttt{MIN\_RESPONSE\_RATE} 
+of the trials complete within \texttt{MAX\_RESPONSE\_TIME}. This requires at least 29 successful trials out of 30.
+
+Test Case Derivation: NFR5 requires at least
+\texttt{MIN\_RESPONSE\_RATE} of \texttt{RESPONSE\_TRIALS}
+the trials to finish within \texttt{MAX\_RESPONSE\_TIME}.
+
 
 How test will be performed: The test will measure how long each request
 takes to display its information after the user requests it. We will
@@ -3446,12 +3468,14 @@ of each request.
 
 \item{test-nfr-reliability-1\\}
 
+Requirements: NFR6.
+
 Type: Nonfunctional, Dynamic, Automatic.
 
 Initial State: A test account has enough of a balance to test purchases
 and sales of stocks.
 
-Input/Condition: Perform \texttt{RELIABILITY\_TRIALS} (20) trials
+Input/Condition: Perform \texttt{RELIABILITY\_TRIALS}  trials
 by running each of the following five cases four times:
 
 \begin{itemize}
@@ -3499,6 +3523,9 @@ Output/Result:
     for the purchase or sale.
 \end{itemize}
 
+Test Case Derivation: NFR6 requires no incomplete or duplicate trades
+across \texttt{RELIABILITY\_TRIALS}  trials.
+
 How test will be performed: Before running each test, reset the account
 to its original state, then interrupt or repeat the trade request.
 After the requests are processed, we will check the balance, holdings,
@@ -3515,7 +3542,9 @@ to meet NFR6.
 
 \item{test-nfr-security-1\\}
 
-Type: Nonfunctional, Dynamic, Manual and Automatic.
+Requirements: NFR7.
+
+Type: Nonfunctional, Dynamic, Manual.
 
 Initial State: Two different test accounts, A and B, both are friends
 with each other on the app. A shared an update to account B.
@@ -3538,6 +3567,10 @@ Input/Condition:
 
 Output/Result: Users can only access information they are allowed to see.
 
+Test Case Derivation: NFR7 requires all tested requests without valid
+authentication or authorization to be rejected without exposing
+private data.
+
 How test will be performed: A team member will attempt the steps above
 within the application and record the results. We will also have
 automated tests that will send the above requests directly to the server.
@@ -3554,6 +3587,8 @@ checks must pass to meet NFR7.
 
 \item{test-nfr-accessibility-1\\}
 
+Requirements: NFR8.
+
 Type: Nonfunctional, Dynamic, Manual.
 
 Initial State: FitFolio installed on an Android phone and iPhone.
@@ -3564,6 +3599,8 @@ and share a progress update.
 
 Output/Result: Text remains readable, buttons are not cut off or hidden,
 and all tasks can be completed. 
+
+Test Case Derivation: NFR8 requires information to be readable and core task to be doable at \texttt{MAX\_TEXT\_SCALE}.
 
 How test will be performed: A team member will go through the core
 components of the application: create an account, track an activity,
