@@ -57,10 +57,16 @@ Oct 29--30, 2026 & Farid Bastoros & 4.1 tests for Accounts and Profile, Learning
 Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1,
   FR3, FR52 and FR57.\\
 Nov 1, 2026 & Zaid Alsaadi & Section 3.5: Implementation Verification.\\
+Nov 1, 2026 & Angad Chhabra & 3.2 SRS Verification, 3.3 Design Verification,
+  and 3.4 Verification and Validation Plan Verification.\\
+Nov 1--2, 2026 & Angad Chhabra & 2.4 Relevant Documentation, and 3.7 Software
+  Validation with the supervisor review, usability study participants, study
+  procedure, and measures and results.\\
 Nov 2, 2026 & Zaid Alsaadi & Section 7: Generative AI Disclosure, including tools and model versions, affected sections, and verification of AI-assisted content.\\
 Nov 2, 2026 & Davis Lenover & Removed the template hints and the early unit
   tests in Section 5, which will be written once the MIS is complete.\\
 Nov 2, 2026 & Farid Bastoros & Reflection Q1, Q3 and Q4.\\
+Nov 2, 2026 & Davis Lenover & Reflection Q1.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -4430,6 +4436,23 @@ graduate attribute of Lifelong Learning.
 \input{../Reflection.text}
 
 \subsubsection*{1. What went well while writing this deliverable?}
+\noindent\textbf{Davis:} What went well for me was writing this plan while I
+was building the backend for the proof of concept. Working on both at the same
+time let me think about my work more strategically, and the sections I wrote
+are based on what I actually built instead of guesses. I set up Ruff and pytest
+in the backend's CI the day before I started Section~3.6, and I added gitleaks
+the same day I described it, so the backend tools in 3.6 already run on every
+pull request. I had also just written the Finnhub client and the prices table
+when I wrote the market tests in 4.1. That made it clear which prices the
+automated tests had to control, so I planned for a test provider that returns
+known prices. It worked the other way too. While planning the usability study,
+I noticed that our starting stocks were all large companies with expensive
+shares, so a participant earning 1 unit per 100 steps could spend days saving
+for a single share. I added five stocks under 50 USD to the backend that same
+night. Writing the tests also showed me what the backend still needs for
+testing, such as a clock the tests can set, so I can build it in from the start
+instead of adding it later.\\
+
 \noindent\textbf{Farid:} What went well for me was how quickly the tests
 improved the requirements. Writing each test with an exact input and an
 expected output that follows from the fit criterion showed me, one FR at a
