@@ -47,14 +47,20 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
+Oct 28, 2026 & Farid Bastoros & Introduction to Section 2, 2.1 Summary, and 2.3
+  Custom Documents, with references to the SRS and Hazard Analysis.\\
 Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
   updates to 2.3.\\
+Oct 29--30, 2026 & Farid Bastoros & 4.1 tests for Accounts and Profile, Learning
+  and Feedback, and Social Feed, and a first 5.2 unit test plan for those
+  areas. Reflection Q2.\\
 Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1,
   FR3, FR52 and FR57.\\
 Nov 1, 2026 & Zaid Alsaadi & Section 3.5: Implementation Verification.\\
 Nov 2, 2026 & Zaid Alsaadi & Section 7: Generative AI Disclosure, including tools and model versions, affected sections, and verification of AI-assisted content.\\
 Nov 2, 2026 & Davis Lenover & Removed the template hints and the early unit
   tests in Section 5, which will be written once the MIS is complete.\\
+Nov 2, 2026 & Farid Bastoros & Reflection Q1, Q3 and Q4.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -4424,6 +4430,20 @@ graduate attribute of Lifelong Learning.
 \input{../Reflection.text}
 
 \subsubsection*{1. What went well while writing this deliverable?}
+\noindent\textbf{Farid:} What went well for me was how quickly the tests
+improved the requirements. Writing each test with an exact input and an
+expected output that follows from the fit criterion showed me, one FR at a
+time, where the SRS was not precise enough. I raised the four gaps I found as
+issues (\#197 to \#200), and within a day the SRS was updated: FR57 now has a
+pass mark, FR3 compares usernames without regard to case, FR52 gives no
+feedback from a previous value of 0, and FR1 refuses an email address already
+in use. The tests were then updated to match. This made the V\&V Plan feel
+like part of the project rather than a separate document. Working from Davis's
+test conventions also helped. Because the test ID format, the meaning of
+Automatic and Manual, and the use of the backend's test clock were already set,
+I could focus on choosing inputs that would catch a specific mistake, such as
+a portfolio change of exactly 5\% for \texttt{FEEDBACK\_THRESHOLD}, instead of
+deciding on format.
 
 \subsubsection*{2. What pain points did you experience during this deliverable,
 and how did you resolve them?}
@@ -4471,19 +4491,42 @@ project? Examples of possible knowledge and skills include dynamic testing
 knowledge, static testing knowledge, specific tool usage, Valgrind etc. You
 should look to identify at least one item for each team member.}
 
-Preston: A specific tool I will need to learn is Gitleaks. It is used in our project because the repository is public, so an API key, password, or token is exposed as soon as it is pushed. GitLeaks checks that sensitive information isn't included in a commit, it does this by checking for sensitive info prior to the commit and in our CI pipeline. 
+\noindent\textbf{Preston:} A specific tool I will need to learn is Gitleaks. It is used in our project because the repository is public, so an API key, password, or token is exposed as soon as it is pushed. GitLeaks checks that sensitive information isn't included in a commit, it does this by checking for sensitive info prior to the commit and in our CI pipeline. \\
 
+\noindent\textbf{Farid:} I will need to learn how to write backend tests that
+replace outside services with test versions. Many of my tests in Section~4.1
+depend on this. test-acct-5 replaces the email service with a test mailbox so
+the test can read the reset link, the social feed tests act as four users with
+their own sessions, and test-social-7 needs a clock the test can set. Our
+backend already has a pytest setup that calls the app through FastAPI's
+\texttt{TestClient}, and \texttt{test\_health.py} shows how a dependency can be
+swapped with \texttt{app.dependency\_overrides}. I have not yet written tests
+this way, so I need to learn how to build fixtures for these test services and
+how to keep tests that share one PostgreSQL database from affecting each
+other.
 
 \subsubsection*{4. For each of the knowledge areas and skills identified in the
 previous question, what are at least two approaches to acquiring the knowledge
 or mastering the skill? Of the identified approaches, which will each team
 member pursue, and why did they make this choice?}
 
-Preston: One approach I can take to learn Gitleaks is to read the README
+\noindent\textbf{Preston:} One approach I can take to learn Gitleaks is to read the README
 in the \href{https://github.com/gitleaks/gitleaks}{official GitHub repository}.
 A second approach is to create a sample repository containing fake secrets
 and use Gitleaks to practise running scans and interpreting warnings.
 Of the proposed approaches I would choose the second choice as the
-hands-on experience provides a more indepth tutorial to the application.
+hands-on experience provides a more indepth tutorial to the application.\\
+
+\noindent\textbf{Farid:} One approach is to read the testing chapters of the
+FastAPI documentation, especially the page on overriding dependencies, along
+with the pytest documentation on fixtures. A second approach is to learn by
+writing a real test: once the account endpoints exist, implement test-acct-5
+with a test mailbox, using \texttt{test\_health.py} as a model, and ask Davis,
+who set up our pytest configuration, to review it. I will take the second
+approach and use the documentation as a reference while doing it. The test has
+to be written anyway, so the time spent learning goes straight into the
+project, and a review from someone who knows our setup will catch mistakes
+that reading alone would not show me, such as a test that leaves data behind
+for the next one.
 
 \end{document}
