@@ -2,6 +2,9 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+% Like tabularx, but the table can continue onto the next page. The revision
+% history is now longer than one page.
+\usepackage{xltabular}
 
 % Keep each questionnaire question and its choices together on one page.
 \makeatletter
@@ -40,13 +43,21 @@
 
 \pagenumbering{roman}
 
-\begin{table}[hp]
-\caption{Revision History} \label{TblRevisionHistory}
-\begin{tabularx}{\textwidth}{llX}
+\begin{xltabular}{\textwidth}{llX}
+\caption{Revision History} \label{TblRevisionHistory}\\
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
+\endfirsthead
+% Repeat the column headings at the top of the next page.
+\toprule
+\textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
+\midrule
+\endhead
 Oct 26--27, 2026 & Davis Lenover & 3.6 Automated Testing and Verification Tools.\\
+Oct 27, 2026 & Davis Lenover & 2.2 Objectives. Introduction and test conventions
+  for 4.1, and 4.1 tests for Activity and Rewards, Simulated Market and
+  Portfolio, and Reminders and Settings.\\
 Oct 28, 2026 & Farid Bastoros & Introduction to Section 2, 2.1 Summary, and 2.3
   Custom Documents, with references to the SRS and Hazard Analysis.\\
 Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
@@ -54,6 +65,9 @@ Oct 29, 2026 & Davis Lenover & 6.2 Usability Survey Questions, with matching
 Oct 29--30, 2026 & Farid Bastoros & 4.1 tests for Accounts and Profile, Learning
   and Feedback, and Social Feed, and a first 5.2 unit test plan for those
   areas. Reflection Q2.\\
+Oct 30, 2026 & Davis Lenover & 4.1 tests updated for the revised FR14 and FR34
+  notices, removed assets, and queued trades. 6.2 updated to allow iPhones and
+  to include participants who invest regularly. Reflection Q2.\\
 Oct 31, 2026 & Davis Lenover & 4.1 and 5.2: tests updated for the changes to FR1,
   FR3, FR52 and FR57.\\
 Nov 1, 2026 & Zaid Alsaadi & Section 3.5: Implementation Verification.\\
@@ -63,13 +77,13 @@ Nov 1--2, 2026 & Angad Chhabra & 2.4 Relevant Documentation, and 3.7 Software
   Validation with the supervisor review, usability study participants, study
   procedure, and measures and results.\\
 Nov 2, 2026 & Zaid Alsaadi & Section 7: Generative AI Disclosure, including tools and model versions, affected sections, and verification of AI-assisted content.\\
+Nov 2, 2026 & Davis Lenover & Section 1: Symbols, Abbreviations, and Acronyms.\\
 Nov 2, 2026 & Davis Lenover & Removed the template hints and the early unit
   tests in Section 5, which will be written once the MIS is complete.\\
 Nov 2, 2026 & Farid Bastoros & Reflection Q1, Q3 and Q4.\\
 Nov 2, 2026 & Davis Lenover & Reflection Q1.\\
 \bottomrule
-\end{tabularx}
-\end{table}
+\end{xltabular}
 
 % ~\\
 % \wss{The intention of the VnV plan is to increase confidence in the software.
