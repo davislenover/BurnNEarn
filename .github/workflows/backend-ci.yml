@@ -44,6 +44,8 @@ jobs:
   test:
     name: Test (pytest + PostgreSQL)
     runs-on: ubuntu-latest
+    # A stuck test would otherwise hold the job for GitHub's limit of 6 hours.
+    timeout-minutes: 10
     services:
       postgres:
         image: postgres:18
@@ -70,7 +72,19 @@ jobs:
         run: pip install uv
       - name: Install dependencies
         run: uv sync --locked
+      # Comes first because Alembic refuses to run with more than one newest
+      # migration, and this test explains how to fix that.
+      - name: Check there is one newest migration
+        run: uv run pytest -k test_migrations
       - name: Apply migrations
         run: uv run alembic upgrade head
+      - name: Undo every migration and apply them again
+        run: |
+          uv run alembic downgrade base
+          uv run alembic upgrade head
+      # Comes after the step above, so it also catches an undo that left
+      # something behind.
+      - name: Check the models match the migrations
+        run: uv run alembic check
       - name: Run tests
         run: uv run pytest --cov=app --cov-report=term-missing
