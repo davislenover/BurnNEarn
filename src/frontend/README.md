@@ -29,7 +29,6 @@ navigation, and backend integration are not implemented yet.
 | `package-lock.json` | Exact dependency versions managed by npm |
 | `tsconfig.json` | TypeScript configuration |
 | `.gitignore` | Files and folders excluded from Git |
-| `LICENSE` | Expo template licence and attribution |
 | `README.md` | Frontend setup and development instructions |
 
 The feature folders currently contain `.gitkeep` placeholders so Git
