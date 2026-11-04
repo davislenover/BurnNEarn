@@ -35,3 +35,49 @@ navigation, and backend integration are not implemented yet.
 The feature folders currently contain `.gitkeep` placeholders so Git
 includes them before feature code is added. 
 
+## First-time setup
+
+You need [Node.js 24](https://nodejs.org/en/download), which includes
+npm and npx. npm installs the frontend's packages.
+
+### macOS
+
+1. Install Node.js with [Homebrew](https://brew.sh):
+
+   ```bash
+   brew install node@24
+   brew link --force node@24
+   ```
+
+   Skip this step if Node.js 24 is already installed.
+
+2. Set up the frontend, from the repository root:
+
+   ```bash
+   cd src/frontend
+   npm ci                       # installs the packages from package-lock.json
+   ```
+
+### Windows 10/11
+
+1. Install Node.js 24 using the Windows installer from the
+   [Node.js website](https://nodejs.org/en/download). Keep npm selected
+   during installation.
+
+   Open a new PowerShell window afterwards so the `node`, `npm`,
+   and `npx` commands are found.
+
+2. Set up the frontend, from the repository root:
+
+   ```powershell
+   cd src\frontend
+   npm ci                       # installs the packages from package-lock.json
+   ```
+
+To check the setup, run these from `src/frontend`:
+
+```bash
+node --version                  # should show v24.x.x
+npm --version                   # should show the installed npm version
+npx tsc --noEmit                 # checks TypeScript for errors
+```
