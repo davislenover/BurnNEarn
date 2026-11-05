@@ -10,14 +10,14 @@ from app.market.providers import build_provider
 from app.market.providers.base import MarketDataProvider
 from app.market.providers.fake import MAX_STEP, FakeProvider
 from app.market.providers.finnhub import FinnhubProvider
-from app.market.settings import MarketSettings
+from app.market.providers.settings import ProviderSettings
 
 NOW = datetime(2026, 11, 10, 15, 0, tzinfo=UTC)
 
 
-def settings(**values: object) -> MarketSettings:
+def settings(**values: object) -> ProviderSettings:
     """Settings from the values given only, ignoring your own .env."""
-    return MarketSettings(_env_file=None, **values)
+    return ProviderSettings(_env_file=None, **values)
 
 
 def test_the_fake_provider_is_the_default(
@@ -42,7 +42,7 @@ def test_finnhub_is_used_when_chosen() -> None:
 
 def test_an_unknown_provider_name_is_refused() -> None:
     # model_construct skips the checks, as a typo in build_provider would.
-    unknown = MarketSettings.model_construct(market_provider="alpaca")
+    unknown = ProviderSettings.model_construct(market_provider="alpaca")
 
     with pytest.raises(ValueError, match="alpaca"):
         build_provider(unknown)

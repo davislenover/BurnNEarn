@@ -20,7 +20,8 @@ from app.market.models import Price
 from app.market.plugin import PLUGIN
 from app.market.poller import run_poller, should_poll
 from app.market.providers.base import Quote
-from app.market.settings import MarketSettings, get_market_settings
+from app.market.providers.settings import get_provider_settings
+from app.market.settings import MarketSettings
 
 
 def new_york(*args: int) -> datetime:
@@ -156,7 +157,7 @@ def test_bad_market_settings_stop_the_app_from_starting(
 ) -> None:
     monkeypatch.setenv("MARKET_PROVIDER", "finnhub")
     monkeypatch.setenv("FINNHUB_API_KEY", "")
-    get_market_settings.cache_clear()
+    get_provider_settings.cache_clear()
     try:
         with (
             pytest.raises(ValidationError),
@@ -164,4 +165,21 @@ def test_bad_market_settings_stop_the_app_from_starting(
         ):
             pass
     finally:
-        get_market_settings.cache_clear()
+        get_provider_settings.cache_clear()
+
+
+def test_always_open_with_finnhub_stops_the_app_from_starting(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    use_settings(monkeypatch, market_always_open=True)
+    monkeypatch.setenv("MARKET_PROVIDER", "finnhub")
+    monkeypatch.setenv("FINNHUB_API_KEY", "not-real")
+    get_provider_settings.cache_clear()
+    try:
+        with (
+            pytest.raises(ValueError, match="MARKET_ALWAYS_OPEN"),
+            TestClient(create_app([PLUGIN])),
+        ):
+            pass
+    finally:
+        get_provider_settings.cache_clear()

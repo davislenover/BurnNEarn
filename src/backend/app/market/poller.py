@@ -36,7 +36,8 @@ from app.market.providers.base import (
     RateLimitedError,
     UnknownSymbolError,
 )
-from app.market.settings import get_market_settings
+from app.market.providers.settings import get_provider_settings
+from app.market.settings import check_always_open, get_market_settings
 
 logger = logging.getLogger(__name__)
 
@@ -161,6 +162,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """Start the poller thread with the app, and stop it with the app."""
     # Read the settings now, so bad ones stop the app from starting.
     settings = get_market_settings()
+    providers = get_provider_settings()
+    check_always_open(settings, providers)
     if not settings.market_poller_enabled:
         yield
         return
@@ -168,7 +171,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     stop = threading.Event()
     thread = threading.Thread(
         target=run_poller,
-        args=(stop, build_provider(settings)),
+        args=(stop, build_provider(providers)),
         name="market-poller",
         daemon=True,
     )

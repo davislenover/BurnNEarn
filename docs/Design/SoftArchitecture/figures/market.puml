@@ -36,10 +36,9 @@ class "calendar.py" as calendar <<logic>> {
 class "providers/" as providers <<provider>> {
   build_provider(settings)
   MarketDataProvider, FinnhubProvider, FakeProvider
+  settings: MARKET_PROVIDER, FINNHUB_API_KEY
 }
 class "settings.py" as settings <<settings>> {
-  MARKET_PROVIDER
-  FINNHUB_API_KEY
   MARKET_ALWAYS_OPEN
   MARKET_POLLER_ENABLED
 }
@@ -58,7 +57,8 @@ queries --> calendar
 poller --> calendar
 poller --> providers
 calendar --> settings
-providers --> settings
+poller --> settings
+settings --> providers
 queries --> tables
 poller --> tables
 prices -> assets

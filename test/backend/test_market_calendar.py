@@ -3,11 +3,11 @@
 from datetime import datetime
 
 import pytest
-from pydantic import ValidationError
 
 from app.market import calendar
 from app.market.calendar import NEW_YORK, is_market_open, is_trading_time
-from app.market.settings import MarketSettings
+from app.market.providers.settings import ProviderSettings
+from app.market.settings import MarketSettings, check_always_open
 
 
 def new_york(*args: int) -> datetime:
@@ -64,10 +64,17 @@ def test_always_open_opens_the_market_on_a_saturday(
 
 
 def test_always_open_is_refused_with_finnhub() -> None:
-    with pytest.raises(ValidationError, match="MARKET_ALWAYS_OPEN"):
-        MarketSettings(
-            _env_file=None,
-            market_provider="finnhub",
-            finnhub_api_key="not-real",
-            market_always_open=True,
-        )
+    always_open = MarketSettings(_env_file=None, market_always_open=True)
+    finnhub = ProviderSettings(
+        _env_file=None, market_provider="finnhub", finnhub_api_key="not-real"
+    )
+
+    with pytest.raises(ValueError, match="MARKET_ALWAYS_OPEN"):
+        check_always_open(always_open, finnhub)
+
+
+def test_always_open_is_allowed_with_the_fake_provider() -> None:
+    always_open = MarketSettings(_env_file=None, market_always_open=True)
+    fake = ProviderSettings(_env_file=None, market_provider="fake")
+
+    check_always_open(always_open, fake)

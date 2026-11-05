@@ -162,7 +162,7 @@ of the module never knows which provider it is using.
 To add a provider:
 1. Write a class in `app/market/providers/` that names `MarketDataProvider` as
    its base and has `get_quote(symbol)`.
-2. Add its name to `MARKET_PROVIDER` in `app/market/settings.py` and to
+2. Add its name to `MARKET_PROVIDER` in `app/market/providers/settings.py` and to
    `.env.example`.
 3. Add it to `build_provider`.
 
