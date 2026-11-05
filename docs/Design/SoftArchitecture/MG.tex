@@ -46,8 +46,8 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 5, 2026 & 1.0 & Davis Lenover: Revision $-1$. Sections 1 to 3, 5
+Module Hierarchy, and 9 Use Hierarchy Between Modules.\\
 \bottomrule
 \end{tabularx}
 
@@ -65,16 +65,23 @@ This section records information for easy reference.
   \textbf{symbol} & \textbf{description}\\
   \midrule 
   AC & Anticipated Change\\
-  DAG & Directed Acyclic Graph \\
-  M & Module \\
-  MG & Module Guide \\
-  OS & Operating System \\
-  R & Requirement\\
-  SC & Scientific Computing \\
+  API & Application Programming Interface\\
+  DAG & Directed Acyclic Graph\\
+  \progname & A phone app where physical activity earns virtual currency\\
+   & that the user invests in a simulated stock market\\
+  FR & Functional Requirement (SRS)\\
+  HA & Hazard Analysis\\
+  JSON & JavaScript Object Notation\\
+  LC & Likely Change (SRS)\\
+  M & Module\\
+  MG & Module Guide\\
+  MIS & Module Interface Specification\\
+  NFR & Nonfunctional Requirement (SRS)\\
+  OS & Operating System\\
+  PoC & Proof of Concept\\
+  REST & Representational State Transfer\\
   SRS & Software Requirements Specification\\
-  \progname & Explanation of program name\\
-  UC & Unlikely Change \\
-  \wss{etc.} & \wss{...}\\
+  UC & Unlikely Change\\
   \bottomrule
 \end{tabular}\\
 
@@ -97,11 +104,18 @@ software.  A module is a work assignment for a programmer or programming
 team~\citep{ParnasEtAl1984}.  We advocate a decomposition
 based on the principle of information hiding~\citep{Parnas1972a}.  This
 principle supports design for change, because the ``secrets'' that each module
-hides represent likely future changes.  Design for change is valuable in SC,
-where modifications are frequent, especially during initial development as the
-solution space is explored.  
+hides represent likely future changes. Design for change is valuable for
+\progname{}. It is built in stages, from the proof of concept to Revision 0
+and Revision 1, by five people working in parallel, and parts of it depend on
+outside services that may change, such as the market data provider and the
+phones' health platforms (SRS Likely Changes).
 
-Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
+\progname{} is two programs: a server, written in Python with FastAPI and
+backed by PostgreSQL, and a phone app, written in React Native. The phone app
+talks to the server over HTTPS with JSON. This MG covers the modules of both
+programs.
+
+Our design follows the rules laid out by \citet{ParnasEtAl1984}, as follows:
 \begin{itemize}
 \item System details that are likely to change independently should be the
   secrets of separate modules.
@@ -139,7 +153,9 @@ modules. Section \ref{SecMD} gives a detailed description of the
 modules. Section \ref{SecTM} includes two traceability matrices. One checks
 the completeness of the design against the requirements provided in the SRS. The
 other shows the relation between anticipated changes and the modules. Section
-\ref{SecUse} describes the use relation between modules.
+\ref{SecUse} describes the use relation between modules. The remaining sections
+cover the user interfaces, the communication protocols, the database design and
+the timeline.
 
 \section{Anticipated and Unlikely Changes} \label{SecChange}
 
