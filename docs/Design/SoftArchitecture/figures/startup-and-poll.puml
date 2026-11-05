@@ -1,0 +1,36 @@
+@startuml startup-and-poll
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/startup-and-poll.puml
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam sequenceMessageAlign center
+skinparam ParticipantBackgroundColor #EEEDFE
+skinparam ParticipantBorderColor #534AB7
+title Startup and a price poll
+
+participant "create_app()\n(kernel)" as app
+participant "registry" as registry
+participant "market plugin\n(poller.lifespan)" as plugin
+participant "poller thread\n(run_poller)" as thread
+participant "provider\n(Finnhub or fake)" as provider
+database "PostgreSQL" as db
+
+== The app starts ==
+app -> registry : PLUGINS
+app -> app : add each module's routes under /v1
+app -> plugin : start
+plugin -> plugin : build_provider(settings)
+plugin -> thread : start(stop, provider)
+
+== Every 60 seconds, while should_poll(now) ==
+loop each tradable stock
+  thread -> provider : get_quote(symbol)
+  provider --> thread : Quote
+  thread -> db : save the price, record the call
+end
+thread -> db : commit
+
+== The app stops ==
+app -> plugin : stop
+plugin -> thread : stop.set(), then wait for it to finish
+@enduml

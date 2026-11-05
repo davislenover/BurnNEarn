@@ -1,0 +1,42 @@
+@startuml plugin-kernel
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/plugin-kernel.puml
+!include style.iuml
+title Plug-in kernel: modules plug in, the kernel never changes
+
+package "Kernel: app/core and main" #FAFAFA {
+  class "create_app()" as create_app <<app factory>> #F1EFE8
+  class Plugin <<dataclass>> {
+    +name: str
+    +router: APIRouter | None
+    +lifespan: Lifespan | None
+  }
+}
+
+class "PLUGINS\n(app/registry.py)" as registry <<registry>> #F1EFE8
+
+class "market PLUGIN" as market #E1F5EE {
+  +router = routes.router
+  +lifespan = poller.lifespan
+}
+class "wallet PLUGIN (#189)" as wallet #FFFFFF
+class "activity PLUGIN (#190)" as activity #FFFFFF
+class "trading PLUGIN (#188)" as trading #FFFFFF
+
+create_app ..> registry : reads
+registry --> market : lists
+registry --> wallet
+registry --> activity
+registry --> trading
+market ..|> Plugin
+create_app ..> Plugin : uses
+
+note bottom of create_app
+  create_app adds each plugin's router
+  under /v1 and runs each lifespan.
+end note
+
+note bottom of registry
+  To add a module: write its plugin.py
+  and add one line to PLUGINS.
+end note
+@enduml

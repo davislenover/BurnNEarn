@@ -75,6 +75,46 @@ made from it.
 6. Take the time from `app/core/clock.py`, never from `datetime.now()`, so
    tests can set it.
 
+## Design patterns
+
+Four patterns, each used where it solves a real problem.
+
+**Plug-in kernel.** The kernel (`app/core/` and `create_app()`) doesn't know
+which modules exist. Each module fills in a `Plugin` in its `plugin.py`, with
+its routes and any work that runs in the background, and `app/registry.py`
+lists them. Adding a module never changes the kernel.
+
+![UML class diagram of the plug-in kernel](figures/plugin-kernel.png)
+
+**Strategy, adapter and factory.** Market asks for prices through one
+interface, `MarketDataProvider`. `FinnhubProvider` adapts Finnhub's API to
+it, `FakeProvider` makes up prices, and `build_provider` picks one from
+`MARKET_PROVIDER`. See [Market](#market-where-prices-come-from) for the
+diagram.
+
+**Dependency injection.** Code is handed what it needs instead of fetching
+it. Routes get a database session and the clock from the kernel, through
+`Depends(get_db)` and `Depends(get_clock)`. The poller is given its provider,
+clock and session factory. Tests hand in stand-ins, such as a fixed time or a
+stub provider.
+
+**Read-only records.** A module hands other modules frozen copies, such as
+`AssetInfo` and `CurrentPrice` in `app/market/types.py`, never database rows.
+That way no module can change another module's tables by accident.
+
+## How it runs
+
+When the app starts, the kernel adds each module's routes and starts each
+module's background work. For market, that is the poller thread, which saves
+a price for every stock once a minute while the market is open.
+
+![UML sequence diagram of startup and a price poll](figures/startup-and-poll.png)
+
+A request goes from the kernel to the module's route, which reads through the
+module's queries.
+
+![UML sequence diagram of a request for the asset list](figures/request-assets.png)
+
 ## What the PoC builds
 
 | Folder | Owns these tables | Routes | Issue |
