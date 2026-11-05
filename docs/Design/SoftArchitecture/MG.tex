@@ -328,8 +328,8 @@ between requirements and modules is listed in Table~\ref{TblRT}.
 
 \section{Module Decomposition} \label{SecMD}
 
-Modules are decomposed according to the principle of ``information hiding''
-proposed by \citet{ParnasEtAl1984}. The \emph{Secrets} field in a module
+Modules are decomposed according to the principle of ``information
+hiding''. The \emph{Secrets} field in a module
 decomposition is a brief statement of the design decision hidden by the
 module. The \emph{Services} field specifies \emph{what} the module will do
 without documenting \emph{how} to do it. For each module, a suggestion for the
@@ -340,24 +340,56 @@ module will be implemented by the \progname{} software.
 
 Only the leaf modules in the hierarchy have to be implemented. If a dash
 (\emph{--}) is shown, this means that the module is not a leaf and will not have
-to be implemented.
+to be implemented. Server paths under \emph{Implemented By} are relative to
+\path{src/backend/app/}.
 
-\subsection{Hardware Hiding Modules (\mref{mHH})}
+\subsection{Hardware Hiding Modules}
 
 \begin{description}
-\item[Secrets:]The data structure and algorithm used to implement the virtual
-  hardware.
-\item[Services:]Serves as a virtual hardware used by the rest of the
-  system. This module provides the interface between the hardware and the
-  software. So, the system can use it to display outputs or to accept inputs.
-\item[Implemented By:] OS
+\item[Secrets:] The interfaces of software and devices the team does not
+  write: the database server, the server's clock, the market data provider, and
+  the phone's health platform and operating system.
+\item[Services:] Serve as a virtual version of these outside systems for the
+  rest of \progname{}, so that a change to one of them stays inside its module.
+\item[Implemented By:] --
 \end{description}
 
-\subsection{Behaviour-Hiding Module}
+\subsubsection{Database Module (\mref{mDB})}
 
 \begin{description}
-\item[Secrets:]The contents of the required behaviours.
-\item[Services:]Includes programs that provide externally visible behaviour of
+\item[Secrets:] The database server and the connection to it.
+\item[Services:] Opens sessions to the database, gives each request its own session, and provides the base that every module's tables are defined on. Each module still owns its own tables.
+\item[Implemented By:] \progname{} server, in \path{core/db.py}, using SQLAlchemy and PostgreSQL
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Clock Module (\mref{mClock})}
+
+\begin{description}
+\item[Secrets:] The source of the current time.
+\item[Services:] Gives the current time, with its time zone, to routes and background work. Tests replace it with a fixed time.
+\item[Implemented By:] \progname{} server, in \path{core/clock.py}, using the OS clock
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Market Providers Module (\mref{mProviders})}
+
+\begin{description}
+\item[Secrets:] The market data provider's API.
+\item[Services:] Gets the latest quote for a stock through one interface that every provider follows, and picks the provider that \texttt{MARKET\_PROVIDER} names. The Finnhub provider turns Finnhub's replies and errors into \progname{}'s own quotes and errors. A fake provider makes up prices for development and tests.
+\item[Implemented By:] \progname{} server, in \path{market/providers/}, using Finnhub
+\item[Type of Module:] Abstract Data Type, with one interface and a Finnhub and a fake implementation
+\end{description}
+
+% M4 Health Service (app): #235
+
+% M5 Device Service (app): #237
+
+\subsection{Behaviour-Hiding Modules}
+
+\begin{description}
+\item[Secrets:] The contents of the required behaviours.
+\item[Services:] Includes programs that provide externally visible behaviour of
   the system as specified in the software requirements specification (SRS)
   documents. This module serves as a communication layer between the
   hardware-hiding module and the software decision module. The programs in this
@@ -365,34 +397,84 @@ to be implemented.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Input Format Module (\mref{mInput})}
+\subsubsection{Control Module (\mref{mControl})}
 
 \begin{description}
-\item[Secrets:]The format and structure of the input data.
-\item[Services:]Converts the input data into the data structure used by the
-  input parameters module.
-\item[Implemented By:] [Your Program Name Here]
-\item[Type of Module:] [Record, Library, Abstract Object, or Abstract Data Type]
-  [Information to include for leaf modules in the decomposition by secrets tree.]
+\item[Secrets:] The set of modules that make up the running server.
+\item[Services:] Builds the server from the list of module plug-ins. It adds each module's routes, and starts and stops each module's background work with the server. It also serves the health check.
+\item[Implemented By:] \progname{} server, in \path{main.py}, \path{registry.py} and \path{core/routes.py}
+\item[Type of Module:] Abstract Object
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{Constants Module (\mref{mConstants})}
 
+\begin{description}
+\item[Secrets:] The values of the SRS symbolic constants (SRS Appendix C).
+\item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit, so that a value changes in one place.
+\item[Implemented By:] \progname{} server, in \path{core/constants.py}, and a matching file in the app
+\item[Type of Module:] Library, with exported constants only
+\end{description}
 
-\subsection{Software Decision Module}
+% M8 Users and M9 Wallet: #234
+
+\subsubsection{Market Module (\mref{mMarket})}
+
+\begin{description}
+\item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
+\item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list and the provider's usage to the phone.
+\item[Implemented By:] \progname{} server, in \path{market/}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+% M11 Activity: #235
+
+\subsubsection{Trading Module (\mref{mTrading})}
+
+\begin{description}
+\item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
+\item[Services:] Buys and sells whole shares at the current price, and refuses a trade that is not allowed, such as one while the market is closed, on a price that is out of date, or without enough currency. Applies each trade request once, and values the user's holdings.
+\item[Implemented By:] \progname{} server, in \path{trading/}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+% M13 Goals, M14 Learning, M15 Social, M16 Scenarios and M17 Privacy: #238
+
+% M18 Navigation and M19 Screens (app): #236
+
+% M20 Sync Service (app): #235
+
+% M21 Reminder Service (app): #237
+
+\subsection{Software Decision Modules}
 
 \begin{description}
 \item[Secrets:] The design decision based on mathematical theorems, physical
   facts, or programming considerations. The secrets of this module are
   \emph{not} described in the SRS.
 \item[Services:] Includes data structure and algorithms used in the system that
-  do not provide direct interaction with the user. 
-  % Changes in these modules are more likely to be motivated by a desire to
-  % improve performance than by externally imposed changes.
+  do not provide direct interaction with the user.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{Plugins Module (\mref{mPlugins})}
+
+\begin{description}
+\item[Secrets:] The shape of a module's plug-in.
+\item[Services:] Defines what a module hands to Control: its name, its routes and its background work. Control can then add any module without knowing anything else about it.
+\item[Implemented By:] \progname{} server, in \path{core/plugins.py}
+\item[Type of Module:] Record
+\end{description}
+
+\subsubsection{JSON Format Module (\mref{mJSON})}
+
+\begin{description}
+\item[Secrets:] The JSON form of amounts and refusals.
+\item[Services:] Sends amounts to the phone as text with four decimals, so no precision is lost, and sends every refusal in the same shape: a code and a message.
+\item[Implemented By:] \progname{} server, in \path{core/money.py} and \path{core/errors.py}
+\item[Type of Module:] Library
+\end{description}
+
+% M24 API Service (app): #236
 
 \section{Traceability Matrix} \label{SecTM}
 
@@ -451,8 +533,8 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
 In this section, the uses hierarchy between modules is
-provided. \citet{Parnas1978} said of two programs A and B that A {\em uses} B if
-correct execution of B may be necessary for A to complete the task described in
+provided. Of two programs A and B, A {\em uses} B if correct execution of B
+may be necessary for A to complete the task described in
 its specification. That is, A {\em uses} B if there exist situations in which
 the correct functioning of A depends upon the availability of a correct
 implementation of B.  Figure \ref{FigUH} illustrates the use relation between
@@ -570,10 +652,5 @@ uses that materially contributed to your work}
 consistency, and appropriateness of the submitted document, regardless of
 whether material was generated by a human or an AI system.}
 \end{itemize}}
-
-\newpage{}
-
-\bibliographystyle {plainnat}
-\bibliography{../../../refs/References}
 
 \end{document}
