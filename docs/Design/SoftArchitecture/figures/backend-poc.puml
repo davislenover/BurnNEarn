@@ -1,0 +1,60 @@
+@startuml backend-poc
+' PoC backend: modules on a small kernel. Render with:
+'   plantuml -tsvg docs/Design/SoftArchitecture/figures/backend-poc.puml
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam ArrowColor #555555
+skinparam component {
+  BackgroundColor #EEEDFE
+  BorderColor #534AB7
+}
+skinparam rectangle {
+  BorderColor #888780
+}
+skinparam database {
+  BackgroundColor #F1EFE8
+  BorderColor #888780
+}
+skinparam cloud {
+  BackgroundColor #F1EFE8
+  BorderColor #888780
+}
+
+component "Phone app" as phone <<client>> #F1EFE8
+
+rectangle "FitFolio server (one FastAPI process)" as server {
+  component "Composition root\ncreate_app() and the registry" as root #F1EFE8
+  rectangle "Modules (each owns its tables)" as modules {
+    component "trading" as trading
+    component "activity" as activity
+    component "market" as market
+    component "wallet" as wallet
+    component "users" as users
+  }
+  component "Kernel (app/core)\nclock, money, database session" as core #E1F5EE;line:0F6E56
+}
+
+database "PostgreSQL" as pg
+cloud "Finnhub" as finnhub
+
+phone -down-> root : HTTPS, JSON
+root -down-> modules : adds each module's routes
+modules -down-> core
+core -down-> pg : SQL
+market -left-> finnhub : prices
+users -[hidden]down- core
+
+trading -[hidden]right- activity
+trading -[hidden]down- market
+activity -[hidden]down- wallet
+market -[hidden]right- wallet
+wallet -[hidden]down- users
+
+note right of modules
+  Calls only go down.
+  A module is used only through its
+  interface.py, queries.py and types.py.
+end note
+@enduml
