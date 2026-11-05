@@ -1,74 +1,107 @@
 @startuml market
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market.puml
-!include style.iuml
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 45
+skinparam ArrowColor #555555
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #B4B2A9
+skinparam PackageBorderColor #B4B2A9
+skinparam PackageFontColor #5F5E5A
+skinparam class {
+  BorderColor #888780
+  BackgroundColor<<entry point>> #FAEEDA
+  BorderColor<<entry point>> #854F0B
+  BackgroundColor<<public>> #E1F5EE
+  BorderColor<<public>> #0F6E56
+  BackgroundColor<<logic>> #EEEDFE
+  BorderColor<<logic>> #534AB7
+  BackgroundColor<<providers>> #FBEAF0
+  BorderColor<<providers>> #993556
+  BackgroundColor<<settings>> #F1EFE8
+  BorderColor<<settings>> #5F5E5A
+  BackgroundColor<<table>> #E6F1FB
+  BorderColor<<table>> #185FA5
+}
+hide circle
+hide empty members
 title Market module
 
-package "Public: other modules import only these" #FAFAFA {
-  class queries <<module>> {
-    +is_market_open(now): bool
-    +get_asset_by_symbol(session, symbol): AssetInfo
-    +get_asset(session, asset_id): AssetInfo
-    +get_current_price(session, asset_id, now): CurrentPrice | None
-    +is_delayed(quoted_at, now): bool
-  }
-  class types <<module>> {
-    AssetInfo: asset_id, symbol, name, is_tradable
-    CurrentPrice: price, quoted_at, obtained_at, delayed
-    UnknownAssetError: 404 unknown_asset
-  }
+class "plugin.py" as plugin <<entry point>> {
+  PLUGIN = Plugin(name, router, lifespan)
 }
-
-class routes <<module>> {
+class "routes.py" as routes <<entry point>> {
   GET /v1/assets
   GET /v1/market/usage
 }
-class plugin <<module>> {
-  +PLUGIN = Plugin(name, router, lifespan)
+
+class "queries.py" as queries <<public>> {
+  is_market_open(now)
+  get_asset_by_symbol(session, symbol)
+  get_asset(session, asset_id)
+  get_current_price(session, asset_id, now)
 }
-class poller <<module>> {
-  +lifespan(app): starts and stops the thread
-  +run_poller(stop, provider, clock, session_factory)
-  +should_poll(now): bool
-  +poll_once(session, provider, now)
-  +save_quote(session, asset_id, quote)
-}
-class calendar <<module>> {
-  +is_trading_time(now): bool
-  +is_market_open(now): bool
-}
-class MarketSettings {
-  +market_provider: "finnhub" | "fake"
-  +finnhub_api_key: SecretStr | None
-  +market_always_open: bool
-  +market_poller_enabled: bool
-}
-class providers <<package>> {
-  +build_provider(settings): MarketDataProvider
-}
-class Asset <<table assets>> {
-  asset_id, symbol, name, is_tradable
-}
-class Price <<table prices>> {
-  asset_id, price, quoted_at, obtained_at
-}
-class ProviderRequest <<table provider_requests>> {
-  requested_at, symbol, outcome
+class "types.py" as types <<public>> {
+  AssetInfo
+  CurrentPrice
+  UnknownAssetError
 }
 
-plugin ..> routes
-plugin ..> poller
-routes ..> queries
-queries ..> types
-queries ..> calendar
-queries ..> Price
-queries ..> Asset
-poller ..> providers : provider
-poller ..> Price : saves
-poller ..> ProviderRequest : records each call
-poller ..> Asset : reads tradable
-poller ..> calendar
-poller ..> MarketSettings
-calendar ..> MarketSettings
-providers ..> MarketSettings
-Price "*" --> "1" Asset
+class "poller.py" as poller <<logic>> {
+  lifespan(app)
+  run_poller(stop, provider, clock, session_factory)
+  should_poll(now)
+  poll_once(session, provider, now)
+}
+class "calendar.py" as calendar <<logic>> {
+  is_trading_time(now)
+  is_market_open(now)
+}
+class "providers/" as providers <<providers>> {
+  build_provider(settings)
+  MarketDataProvider, FinnhubProvider, FakeProvider
+}
+class "settings.py" as settings <<settings>> {
+  MARKET_PROVIDER
+  FINNHUB_API_KEY
+  MARKET_ALWAYS_OPEN
+  MARKET_POLLER_ENABLED
+}
+
+package "Tables (models.py)" as tables {
+  class "assets" as assets <<table>>
+  class "prices" as prices <<table>>
+  class "provider_requests" as requests <<table>>
+}
+
+plugin --> routes
+plugin --> poller
+routes --> queries
+queries --> types
+queries --> calendar
+poller --> calendar
+poller --> providers
+calendar --> settings
+providers --> settings
+queries --> tables
+poller --> tables
+prices -> assets
+
+queries -[hidden]right- calendar
+calendar -[hidden]right- providers
+types -[hidden]right- tables
+
+legend right
+  <color:#854F0B>■</color> Entry point: how the app reaches the module
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#534AB7>■</color> Logic
+  <color:#993556>■</color> Providers: where prices come from
+  <color:#5F5E5A>■</color> Settings
+  <color:#185FA5>■</color> Table
+  An arrow means "uses".
+endlegend
 @enduml
