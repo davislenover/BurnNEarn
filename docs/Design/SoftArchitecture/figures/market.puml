@@ -1,0 +1,79 @@
+@startuml market
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market.puml
+!include style.iuml
+title Market module
+
+class "plugin.py" as plugin <<entry point>> {
+  PLUGIN = Plugin(name, router, lifespan)
+}
+class "routes.py" as routes <<entry point>> {
+  GET /v1/assets
+  GET /v1/market/usage
+}
+
+class "queries.py" as queries <<public>> {
+  is_market_open(now)
+  get_asset_by_symbol(session, symbol)
+  get_asset(session, asset_id)
+  get_current_price(session, asset_id, now)
+}
+class "types.py" as types <<public>> {
+  AssetInfo
+  CurrentPrice
+  UnknownAssetError
+}
+
+class "poller.py" as poller <<logic>> {
+  lifespan(app)
+  run_poller(stop, provider, clock, session_factory)
+  should_poll(now)
+  poll_once(session, provider, now)
+}
+class "calendar.py" as calendar <<logic>> {
+  is_trading_time(now)
+  is_market_open(now)
+}
+class "providers/" as providers <<provider>> {
+  build_provider(settings)
+  MarketDataProvider, FinnhubProvider, FakeProvider
+  settings: MARKET_PROVIDER, FINNHUB_API_KEY
+}
+class "settings.py" as settings <<settings>> {
+  MARKET_ALWAYS_OPEN
+  MARKET_POLLER_ENABLED
+}
+
+package "Tables (models.py)" as tables {
+  class "assets" as assets <<table>>
+  class "prices" as prices <<table>>
+  class "provider_requests" as requests <<table>>
+}
+
+plugin --> routes
+plugin --> poller
+routes --> queries
+queries -left-> types
+queries --> calendar
+poller --> calendar
+poller --> providers
+calendar --> settings
+poller --> settings
+settings --> providers
+queries --> tables
+poller --> tables
+prices -> assets
+
+queries -[hidden]right- calendar
+calendar -[hidden]right- providers
+settings -[hidden]left- tables
+
+legend right
+  <color:#854F0B>■</color> Entry point: how the app reaches the module
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#534AB7>■</color> Logic
+  <color:#993556>■</color> Providers: where prices come from
+  <color:#3B6D11>■</color> Settings
+  <color:#185FA5>■</color> Table
+  An arrow means "uses".
+endlegend
+@enduml

@@ -1,0 +1,38 @@
+@startuml request-assets
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/request-assets.puml
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam sequenceMessageAlign center
+skinparam ParticipantBorderColor #888780
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #B4B2A9
+title A request: GET /v1/assets
+
+actor "Phone" as phone
+participant "FastAPI app\n(kernel)" as app #F1EFE8
+participant "market routes" as routes #FAEEDA
+participant "market queries" as queries #E1F5EE
+database "PostgreSQL" as db #E6F1FB
+
+phone -> app : GET /v1/assets
+app -> routes : list_assets(db, clock)
+note right of app
+  The kernel hands the route a database
+  session (get_db) and the clock (get_clock).
+end note
+loop each tradable stock
+  routes -> queries : get_current_price(asset_id, now)
+  queries -> db : newest price
+  queries --> routes : CurrentPrice (read-only)
+end
+routes --> app : AssetList
+app --> phone : JSON, prices as text
+
+legend right
+  <color:#5F5E5A>■</color> Kernel
+  <color:#854F0B>■</color> A module's entry point
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#185FA5>■</color> Database
+endlegend
+@enduml

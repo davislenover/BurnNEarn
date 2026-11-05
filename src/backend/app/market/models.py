@@ -1,4 +1,5 @@
-"""The market module's tables: assets and their prices (SRS Section 6.3)."""
+"""The market module's tables: assets, their prices, and the calls made to
+the market data provider (SRS Section 6.3)."""
 
 import uuid
 from datetime import datetime
@@ -19,11 +20,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.constants import QUOTE_CURRENCY
 from app.core.db import Base
-
-
-class AssetType(StrEnum):
-    STOCK = "stock"
-    ETF = "etf"
 
 
 class Asset(Base):
@@ -96,3 +92,33 @@ class Price(Base):
     obtained_at: Mapped[datetime] = mapped_column(
         server_default=func.statement_timestamp()
     )
+
+
+class RequestOutcome(StrEnum):
+    """How a call to the market data provider ended."""
+
+    OK = "ok"
+    RATE_LIMITED = "rate_limited"
+    UNKNOWN_SYMBOL = "unknown_symbol"
+    ERROR = "error"
+
+
+class ProviderRequest(Base):
+    """One call to the market data provider. Used to watch its request limit
+    (SC_MarketData). The API key is never stored."""
+
+    __tablename__ = "provider_requests"
+    __table_args__ = (
+        CheckConstraint(
+            "outcome IN ('ok', 'rate_limited', 'unknown_symbol', 'error')",
+            name="outcome_valid",
+        ),
+    )
+
+    provider_request_id: Mapped[int] = mapped_column(
+        BigInteger, Identity(), primary_key=True
+    )
+    # Indexed to count the calls in the last minute and today.
+    requested_at: Mapped[datetime] = mapped_column(index=True)
+    symbol: Mapped[str] = mapped_column(String(16))
+    outcome: Mapped[str] = mapped_column(String(14))
