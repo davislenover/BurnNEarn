@@ -91,10 +91,10 @@ adds `create_app()` in `app/main.py`, which adds each module's routes, and
 poller is market's own background thread, which market's plugin starts and
 stops with the app.
 
-#191 adds import-linter to CI, with three rules:
-- modules import each other only through their public files
-- no module imports one above it
-- `app/core/` imports no module
+#191 adds two checks to CI:
+- an import-linter rule: no module imports one above it, and `app/core/`
+  imports no module
+- a test: modules import each other only through their public files
 
 ## Migrations
 

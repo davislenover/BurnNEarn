@@ -3,6 +3,7 @@
 '   plantuml -tsvg docs/Design/SoftArchitecture/figures/backend-poc.puml
 skinparam componentStyle uml2
 skinparam shadowing false
+skinparam linetype ortho
 skinparam defaultFontName Helvetica
 skinparam defaultFontSize 13
 skinparam ArrowColor #555555
@@ -22,10 +23,10 @@ skinparam cloud {
   BorderColor #888780
 }
 
-component "Phone app" as phone <<client>> #F1EFE8
+component "Phone app\nHTTPS, JSON" as phone <<client>> #F1EFE8
 
 rectangle "FitFolio server (one FastAPI process)" as server {
-  component "Composition root\ncreate_app() and the registry" as root #F1EFE8
+  component "Composition root\ncreate_app() adds each\nmodule's routes" as root #F1EFE8
   rectangle "Modules (each owns its tables)" as modules {
     component "trading" as trading
     component "activity" as activity
@@ -39,10 +40,10 @@ rectangle "FitFolio server (one FastAPI process)" as server {
 database "PostgreSQL" as pg
 cloud "Finnhub" as finnhub
 
-phone -down-> root : HTTPS, JSON
-root -down-> modules : adds each module's routes
+phone -down-> root
+root -down-> modules
 modules -down-> core
-core -down-> pg : SQL
+core -down-> pg
 market -left-> finnhub : prices
 users -[hidden]down- core
 
