@@ -30,17 +30,17 @@ The server isn't split into separate services, because a buy must change the
 balance and the shares in one database transaction (FR_MktAtomicTrade). CI
 rejects any import that breaks these rules.
 
-![UML component diagram of the PoC backend](figures/backend-poc.svg)
+![UML component diagram of the PoC backend](figures/backend-poc.png)
 
 The rows inside "Modules" show the stacking. Trading uses market and wallet,
 activity uses wallet, and wallet uses users. Every module with routes also uses users to
 get the current user.
 
 The diagram's source is `figures/backend-poc.puml`. After changing it, run
-this from the repository root to update the SVG:
+this from the repository root to update the PNG:
 
 ```bash
-plantuml -tsvg docs/Design/SoftArchitecture/figures/backend-poc.puml
+plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 ```
 
 ## A module's files

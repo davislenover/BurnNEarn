@@ -1,6 +1,6 @@
 @startuml backend-poc
 ' PoC backend: modules on a small kernel. Render with:
-'   plantuml -tsvg docs/Design/SoftArchitecture/figures/backend-poc.puml
+'   plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 skinparam componentStyle uml2
 skinparam shadowing false
 skinparam linetype ortho
