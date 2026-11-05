@@ -105,5 +105,5 @@ migration after its module:
 uv run alembic revision --autogenerate --rev-id market_0001 -m "provider requests"
 ```
 
-If two pull requests both add a migration, the second one to merge runs
-`uv run alembic merge heads`.
+If `main` gets a new migration while you work, set your migration's
+`down_revision` to it before you merge. The backend README shows how.
