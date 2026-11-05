@@ -422,21 +422,57 @@ the modules. It can be seen that the graph is a directed acyclic graph
 system, and modules in the higher level of the hierarchy are essentially simpler
 because they use modules from the lower levels.
 
-\wss{The uses relation is not a data flow diagram.  In the code there will often
-be an import statement in module A when it directly uses module B.  Module B
-provides the services that module A needs.  The code for module A needs to be
-able to see these services (hence the import statement).  Since the uses
-relation is transitive, there is a use relation without an import, but the
-arrows in the diagram typically correspond to the presence of import statement.}
-
-\wss{If module A uses module B, the arrow is directed from A to B.}
+An arrow from module A to module B means that A uses B: the code of A imports
+B. To keep Figure~\ref{FigUH} readable, one arrow into a group stands for uses
+of the modules in that group. The shared group holds the modules that many
+others use. For example, every server module with routes uses \mref{mUsers}
+Users to find the current user. Modules in the shared group can also use each
+other. Table~\ref{TblUses} lists every use.
 
 \begin{figure}[H]
 \centering
-%\includegraphics[width=0.7\textwidth]{UsesHierarchy.png}
-\caption{Use hierarchy among modules}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{figures/uses-hierarchy.pdf}
+\caption{Use hierarchy among modules. Blue: hardware-hiding. Purple:
+behaviour-hiding. Orange: software decision. A dashed outline marks a module
+built after the proof of concept.}
 \label{FigUH}
 \end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.35\textwidth} p{0.55\textwidth}}
+\toprule
+\textbf{Module} & \textbf{Uses}\\
+\midrule
+\mref{mDB} Database & None\\
+\mref{mClock} Clock & None\\
+\mref{mProviders} Market Providers & \mref{mClock}\\
+\mref{mHealth} Health Service & None\\
+\mref{mDevice} Device Service & None\\
+\mref{mControl} Control & \mref{mDB}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mActivity}, \mref{mTrading}, \mref{mGoals}, \mref{mLearning}, \mref{mSocial}, \mref{mScenarios}, \mref{mPrivacy}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mConstants} Constants & None\\
+\mref{mUsers} Users & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mWallet} Wallet & \mref{mDB}, \mref{mUsers}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mMarket} Market & \mref{mDB}, \mref{mClock}, \mref{mProviders}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mActivity} Activity & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mTrading} Trading & \mref{mDB}, \mref{mClock}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mGoals} Goals & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mActivity}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mLearning} Learning & \mref{mDB}, \mref{mConstants}, \mref{mUsers}, \mref{mTrading}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mSocial} Social & \mref{mDB}, \mref{mClock}, \mref{mUsers}, \mref{mActivity}, \mref{mGoals}, \mref{mLearning}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mScenarios} Scenarios & \mref{mDB}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mTrading}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mPrivacy} Privacy & \mref{mDB}, \mref{mUsers}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mNavigation} Navigation & \mref{mScreens}\\
+\mref{mScreens} Screens & \mref{mConstants}, \mref{mSync}, \mref{mReminders}, \mref{mAPI}\\
+\mref{mSync} Sync Service & \mref{mHealth}, \mref{mDevice}, \mref{mConstants}, \mref{mAPI}\\
+\mref{mReminders} Reminder Service & \mref{mDevice}, \mref{mConstants}, \mref{mAPI}\\
+\mref{mPlugins} Plugins & None\\
+\mref{mJSON} JSON Format & None\\
+\mref{mAPI} API Service & \mref{mDevice}\\
+\bottomrule
+\end{tabular}
+\caption{Modules each module uses}
+\label{TblUses}
+\end{table}
 
 %\section*{References}
 
