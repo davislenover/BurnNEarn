@@ -17,16 +17,24 @@ class MarketSettings(BaseSettings):
     market_provider: Literal["finnhub", "fake"] = "fake"
     # Kept on the server only, never sent to the app (HA SEC-33).
     finnhub_api_key: SecretStr | None = None
+    # Treat the market as open at any time, for development in the evening.
+    # Only allowed with the fake provider, so real prices are never shown as
+    # live when the market is closed.
+    market_always_open: bool = False
 
     @model_validator(mode="after")
-    def check_finnhub_key(self) -> Self:
-        """Refuse to start with Finnhub but no key, instead of failing on
-        the first price request."""
+    def check_combination(self) -> Self:
+        """Refuse settings that can't work, when they load, instead of
+        failing later."""
         key = self.finnhub_api_key
         if self.market_provider == "finnhub" and not (
             key and key.get_secret_value()
         ):
             raise ValueError("MARKET_PROVIDER=finnhub needs FINNHUB_API_KEY")
+        if self.market_always_open and self.market_provider != "fake":
+            raise ValueError(
+                "MARKET_ALWAYS_OPEN only works with MARKET_PROVIDER=fake"
+            )
         return self
 
 
