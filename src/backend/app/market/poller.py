@@ -1,20 +1,34 @@
 """Keeps prices up to date by asking the market data provider for them.
 
-poll_once asks for every tradable asset's quote once and saves it. It only
-knows the provider through MarketDataProvider, so it works the same with
-Finnhub or the fake provider.
+- poll_once asks for every tradable asset's quote once and saves it.
+- run_poller calls poll_once every minute while the market is open, on its
+  own thread.
+- lifespan starts that thread when the app starts and stops it when the app
+  stops, if MARKET_POLLER_ENABLED is on.
+
+They only know the provider through MarketDataProvider, so they work the
+same with Finnhub or the fake provider.
 """
 
+import asyncio
 import logging
+import threading
 import uuid
-from datetime import datetime
+from collections.abc import AsyncIterator, Callable
+from contextlib import AbstractContextManager, asynccontextmanager
+from datetime import datetime, timedelta
 
+from fastapi import FastAPI
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.core.clock import Clock, system_clock
+from app.core.db import SessionLocal
+from app.market.calendar import is_market_open
 from app.market.models import Asset, Price, ProviderRequest, RequestOutcome
+from app.market.providers import build_provider
 from app.market.providers.base import (
     MarketDataError,
     MarketDataProvider,
@@ -22,8 +36,16 @@ from app.market.providers.base import (
     RateLimitedError,
     UnknownSymbolError,
 )
+from app.market.settings import get_market_settings
 
 logger = logging.getLogger(__name__)
+
+POLL_INTERVAL = timedelta(seconds=60)
+# Finnhub's last quote of the day, the official close, can arrive a few
+# minutes after the market closes, so keep polling for this long after.
+POLL_AFTER_CLOSE = timedelta(minutes=15)
+# How long to wait for the thread to finish when the app stops.
+STOP_TIMEOUT = timedelta(seconds=15)
 
 
 def poll_once(
@@ -97,3 +119,62 @@ def _record(
     session.add(
         ProviderRequest(requested_at=now, symbol=symbol, outcome=outcome)
     )
+
+
+def should_poll(now: datetime) -> bool:
+    """Whether to poll at now: while the market is open, and for
+    POLL_AFTER_CLOSE after it closes."""
+    return is_market_open(now) or is_market_open(now - POLL_AFTER_CLOSE)
+
+
+def run_poller(
+    stop: threading.Event,
+    provider: MarketDataProvider,
+    clock: Clock = system_clock,
+    session_factory: Callable[[], AbstractContextManager[Session]] = (
+        SessionLocal
+    ),
+    interval: timedelta = POLL_INTERVAL,
+) -> None:
+    """Poll every interval until stop is set. Runs on its own thread.
+
+    Each poll gets its own session and commits once, like a route does for
+    a request. An error is logged and the next poll tries again, so one bad
+    minute never stops the thread. With stop already set, it polls once and
+    returns, which is how the tests run it.
+    """
+    while True:
+        now = clock()
+        if should_poll(now):
+            try:
+                with session_factory() as session:
+                    poll_once(session, provider, now)
+                    session.commit()
+            except Exception:
+                logger.exception("The price poll failed")
+        if stop.wait(interval.total_seconds()):
+            return
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    """Start the poller thread with the app, and stop it with the app."""
+    # Read the settings now, so bad ones stop the app from starting.
+    settings = get_market_settings()
+    if not settings.market_poller_enabled:
+        yield
+        return
+
+    stop = threading.Event()
+    thread = threading.Thread(
+        target=run_poller,
+        args=(stop, build_provider(settings)),
+        name="market-poller",
+        daemon=True,
+    )
+    thread.start()
+    try:
+        yield
+    finally:
+        stop.set()
+        await asyncio.to_thread(thread.join, STOP_TIMEOUT.total_seconds())

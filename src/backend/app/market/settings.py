@@ -21,6 +21,8 @@ class MarketSettings(BaseSettings):
     # Only allowed with the fake provider, so real prices are never shown as
     # live when the market is closed.
     market_always_open: bool = False
+    # Start the price poller with the app. Off by default, and off in tests.
+    market_poller_enabled: bool = False
 
     @model_validator(mode="after")
     def check_combination(self) -> Self:

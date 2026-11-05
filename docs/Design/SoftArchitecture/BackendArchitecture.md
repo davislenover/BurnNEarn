@@ -66,7 +66,8 @@ made from it.
 2. Never import a module above yours in the diagram.
 3. Never use another module's tables. A foreign key into them is fine, such
    as `trades.asset_id` to `assets`.
-4. Only routes commit, and only once.
+4. Only routes commit, once per request. Market's poller thread is the one
+   exception: it commits once per poll.
 5. Money only moves through wallet. Lock the portfolio first with
    `wallet.interface.lock_live_portfolio()`. `change_balance` needs what it
    returns. This way a buy and a step sync at the same time wait in turn

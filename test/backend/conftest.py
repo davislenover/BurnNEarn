@@ -35,10 +35,12 @@ TEST_DATABASE_URL = _url
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL.render_as_string(
     hide_password=False
 )
-# Every test gets made-up prices and the exchange's real hours, whatever your
-# own .env says. Environment variables win over .env.
+# Every test gets made-up prices, the exchange's real hours and no poller,
+# whatever your own .env says. Environment variables win over .env.
 os.environ["MARKET_PROVIDER"] = "fake"
 os.environ["MARKET_ALWAYS_OPEN"] = "false"
+# A running poller would save real rows that the tests never undo.
+os.environ["MARKET_POLLER_ENABLED"] = "false"
 
 from app.core.db import SessionLocal, engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402

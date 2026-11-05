@@ -1,7 +1,7 @@
 @startuml market
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market.puml
 !include style.iuml
-title Market module (grey = stage 6, not built yet)
+title Market module
 
 package "Public: other modules import only these" #FAFAFA {
   class queries <<module>> {
@@ -23,13 +23,14 @@ class routes <<module>> {
   GET /v1/market/usage
 }
 class plugin <<module>> {
-  +PLUGIN = Plugin(name, router)
-  -lifespan(app): starts the poller thread (stage 6)
+  +PLUGIN = Plugin(name, router, lifespan)
 }
 class poller <<module>> {
+  +lifespan(app): starts and stops the thread
+  +run_poller(stop, provider, clock, session_factory)
+  +should_poll(now): bool
   +poll_once(session, provider, now)
   +save_quote(session, asset_id, quote)
-  +run_poller(stop, provider, clock, session_factory) (stage 6)
 }
 class calendar <<module>> {
   +is_trading_time(now): bool
@@ -39,7 +40,7 @@ class MarketSettings {
   +market_provider: "finnhub" | "fake"
   +finnhub_api_key: SecretStr | None
   +market_always_open: bool
-  +market_poller_enabled: bool  [stage 6]
+  +market_poller_enabled: bool
 }
 class providers <<package>> {
   +build_provider(settings): MarketDataProvider
@@ -65,6 +66,8 @@ poller ..> providers : provider
 poller ..> Price : saves
 poller ..> ProviderRequest : records each call
 poller ..> Asset : reads tradable
+poller ..> calendar
+poller ..> MarketSettings
 calendar ..> MarketSettings
 providers ..> MarketSettings
 Price "*" --> "1" Asset
