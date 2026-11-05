@@ -16,6 +16,8 @@ from app.market.providers.base import (
 )
 
 FINNHUB_BASE_URL = "https://finnhub.io/api/v1"
+# The free plan allows this many calls a minute. More are refused with 429.
+FINNHUB_CALLS_PER_MINUTE = 60
 
 
 class FinnhubProvider(MarketDataProvider):

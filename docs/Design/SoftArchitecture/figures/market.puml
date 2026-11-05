@@ -1,7 +1,7 @@
 @startuml market
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market.puml
 !include style.iuml
-title Market module (grey = stages 5-6, not built yet)
+title Market module (grey = stage 6, not built yet)
 
 package "Public: other modules import only these" #FAFAFA {
   class queries <<module>> {
@@ -18,12 +18,12 @@ package "Public: other modules import only these" #FAFAFA {
   }
 }
 
-class routes <<module>> #F1EFE8 {
+class routes <<module>> {
   GET /v1/assets
   GET /v1/market/usage
 }
 class plugin <<module>> {
-  +PLUGIN
+  +PLUGIN = Plugin(name, router)
   -lifespan(app): starts the poller thread (stage 6)
 }
 class poller <<module>> {
