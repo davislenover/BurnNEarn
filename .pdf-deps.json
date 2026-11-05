@@ -52,6 +52,10 @@
   "docs/Checklists/Writing-Checklist.tex": [
     "docs/Checklists/Writing-Checklist.tex"
   ],
+  "docs/Design/SoftArchitecture/BackendArchitecture.md": [
+    "docs/Design/SoftArchitecture/BackendArchitecture.md",
+    "docs/Design/SoftArchitecture/figures/backend-poc.png"
+  ],
   "docs/Design/SoftArchitecture/MG.tex": [
     "docs/Comments.text",
     "docs/Common.text",
