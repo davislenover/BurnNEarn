@@ -106,43 +106,39 @@ goals, learning content and a social feed. That brings three design
 challenges:
 
 \begin{itemize}
-\item The features depend on each other. A buy needs the latest price from the
-  market and the user's balance from the wallet, and must change the balance
-  and the shares together. Activity rewards land in the same wallet. The social
-  feed shares activity and milestones, but must never show a balance or health
-  data.
+\item The features depend on each other. A user buying a stock needs the
+  latest price from the market and their balance from the wallet, and must
+  change both the balance and the shares together. Activity rewards land in
+  the same wallet. The social feed shares activity and milestones, but must
+  never show a balance or health data.
 \item Some parts rely on outside services that may change: the market data
-  provider, and the health platforms on iOS and Android.
-\item Five people build the features at the same time, in stages from the
-  proof of concept to Revision 1.
+  provider, which allows users to buy shares in the first place, and the health
+  platforms on iOS and Android.
+\item Given this is a group project, the system will be developed in parallel,
+  in stages, from the proof of concept to Revision 1.
 \end{itemize}
 
-When we first designed the modules, they talked to each other a lot. Every
-feature's tables sat in one shared folder, so any feature could read or change
-another feature's data. Activity, for example, worked out the rewards already
-paid by reading the wallet's own table, and both trading and activity changed
-balances. Each new feature added more of these connections. A change in one
-place could break several others, and two people could not work on
-neighbouring features without getting in each other's way. We needed a way to
-separate the modules, so that each one keeps its data and its decisions to
-itself, and the others reach it only through a small interface.
+When we first designed the backend, we routed commands to different services
+and let those services talk to each other directly, each with its own
+libraries. Taking a step back, this greatly increased coupling: a logic change
+in any one of these modules could easily ripple through the others. We needed
+a way to separate the modules, so that each one keeps its data and its
+decisions to itself, and the others reach it only through a small interface.
+This helps to support changes and additions to the modules.
 
 Decomposing a system into modules is a commonly accepted approach to developing
-software.  A module is a work assignment for a programmer or programming
-team~\citep{ParnasEtAl1984}.  We advocate a decomposition
-based on the principle of information hiding~\citep{Parnas1972a}.  This
-principle supports design for change, because the ``secrets'' that each module
-hides represent likely future changes. For \progname{}, each part that is likely
-to change, such as the market data provider or a health platform, becomes the
-secret of one module, and features reach each other only through small
-interfaces. One module can then change without the others noticing.
+software. We decompose \progname{} by information hiding: each module hides a
+``secret'', a design decision that is likely to change, such as the market data
+provider or a health platform. Separate modules also naturally become work
+assignments that people can develop in tandem. With a defined interface in
+between, it becomes much easier to work in parallel.
 
 \progname{} is two programs: a server, written in Python with FastAPI and
 backed by PostgreSQL, and a phone app, written in React Native. The phone app
 talks to the server over HTTPS with JSON. This MG covers the modules of both
 programs.
 
-Our design follows the rules laid out by \citet{ParnasEtAl1984}, as follows:
+Our design follows three rules:
 \begin{itemize}
 \item System details that are likely to change independently should be the
   secrets of separate modules.
@@ -152,7 +148,7 @@ Our design follows the rules laid out by \citet{ParnasEtAl1984}, as follows:
 \end{itemize}
 
 After completing the first stage of the design, the Software Requirements
-Specification (SRS), the Module Guide (MG) is developed~\citep{ParnasEtAl1984}. The MG
+Specification (SRS), the Module Guide (MG) is developed. The MG
 specifies the modular structure of the system and is intended to allow both
 designers and maintainers to easily identify the parts of the software.  The
 potential readers of this document are as follows:
