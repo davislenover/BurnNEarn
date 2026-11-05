@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import engine, get_db
 from app.main import app
-from app.models import Asset
+from app.market.models import Asset
 
 
 def test_tests_run_on_a_database_ending_in_test(db_session: Session) -> None:

@@ -5,7 +5,7 @@ from sqlalchemy import insert, select
 from sqlalchemy.exc import IntegrityError
 
 from app.core.db import engine
-from app.models import Asset
+from app.market.models import Asset
 
 STARTING_SYMBOLS = {
     "AAPL",
