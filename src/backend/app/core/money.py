@@ -1,4 +1,4 @@
-"""Types shared by the JSON routes."""
+"""Money: the type for amounts sent to the phone."""
 
 from decimal import Decimal
 from typing import Annotated

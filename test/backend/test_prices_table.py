@@ -9,7 +9,7 @@ from sqlalchemy import Connection, func, insert, select
 from sqlalchemy.exc import IntegrityError
 
 from app.core.db import engine
-from app.models import Asset, Price
+from app.market.models import Asset, Price
 
 QUOTED_AT = datetime(2026, 10, 26, 18, 42, 19, tzinfo=UTC)
 

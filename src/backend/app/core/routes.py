@@ -1,4 +1,5 @@
-"""Health check, used by developers and CI to see that the API is up."""
+"""The kernel's own route: the health check, used by developers and CI to
+see that the API is up."""
 
 from typing import Literal
 

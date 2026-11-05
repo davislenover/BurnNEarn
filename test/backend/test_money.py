@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from pydantic import BaseModel, ValidationError
 
-from app.api.common import Money
+from app.core.money import Money
 
 
 class Example(BaseModel):

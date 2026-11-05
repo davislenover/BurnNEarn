@@ -1,1 +1,1 @@
-"""Settings, database access and shared constants."""
+"""The kernel: what every module shares. It never imports a module."""

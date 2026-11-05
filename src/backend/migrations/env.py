@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-import app.models  # noqa: F401  (registers table models)
+import app.registry  # noqa: F401  (imports every module's tables)
 from app.core.db import Base
 from app.core.settings import get_settings
 
@@ -25,8 +25,8 @@ config.set_main_option(
 )
 
 # Table models register on Base.metadata, which autogenerate compares
-# against the database. New model modules are imported in
-# app/models/__init__.py.
+# against the database. A module's tables are found once its plugin is
+# listed in app/registry.py.
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
