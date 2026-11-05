@@ -7,7 +7,7 @@ from decimal import Decimal, InvalidOperation
 import httpx2
 from pydantic import SecretStr
 
-from app.market.provider import (
+from app.market.providers.base import (
     MarketDataError,
     Quote,
     RateLimitedError,

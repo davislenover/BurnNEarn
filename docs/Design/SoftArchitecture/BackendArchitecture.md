@@ -96,6 +96,24 @@ stops with the app.
   imports no module
 - a test: modules import each other only through their public files
 
+## Market: where prices come from
+
+Market gets prices through one interface, `MarketDataProvider`, so the rest
+of the module never knows which provider it is using.
+
+![UML class diagram of the market data providers](figures/market-providers.png)
+
+- **Strategy:** `MarketDataProvider` has one method, `get_quote(symbol)`,
+  which returns a `Quote`: the symbol, the price and when it was quoted.
+- **Adapter:** `FinnhubProvider` turns Finnhub's HTTP API into a `Quote`, and
+  its errors into ours, such as `RateLimitedError`.
+- **Fake:** `FakeProvider` makes up prices, for development and tests.
+- **Factory:** `build_provider(settings)` picks one from `MARKET_PROVIDER`.
+  The poller is given that provider and only calls `get_quote`.
+
+To add a provider, write a class with `get_quote(symbol)` in
+`app/market/providers/` and add it to `build_provider`. Nothing else changes.
+
 ## Migrations
 
 There is still one chain, and 0001 to 0003 don't change. Name each new

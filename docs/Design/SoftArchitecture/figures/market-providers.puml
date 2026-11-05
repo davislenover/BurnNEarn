@@ -1,0 +1,43 @@
+@startuml market-providers
+' Where market prices come from. Render with:
+'   plantuml -tpng docs/Design/SoftArchitecture/figures/market-providers.puml
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #EEEDFE
+  BorderColor #534AB7
+  ArrowColor #555555
+}
+hide empty members
+
+interface MarketDataProvider <<strategy>> {
+  +get_quote(symbol): Quote
+}
+
+class FinnhubProvider <<adapter>> {
+  +get_quote(symbol): Quote
+}
+
+class FakeProvider {
+  +get_quote(symbol): Quote
+}
+
+class Quote <<data>> {
+  symbol
+  price
+  quoted_at
+}
+
+class "build_provider(settings)" as factory <<factory>> #F1EFE8
+class Poller #E1F5EE {
+  +poll_once(session, provider, now)
+}
+
+MarketDataProvider <|.. FinnhubProvider
+MarketDataProvider <|.. FakeProvider
+MarketDataProvider ..> Quote : returns
+factory ..> MarketDataProvider : picks one from\nMARKET_PROVIDER
+Poller --> MarketDataProvider : uses
+@enduml

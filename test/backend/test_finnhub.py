@@ -8,12 +8,12 @@ import httpx2
 import pytest
 from pydantic import SecretStr
 
-from app.market.finnhub import FINNHUB_BASE_URL, FinnhubProvider
-from app.market.provider import (
+from app.market.providers.base import (
     MarketDataError,
     RateLimitedError,
     UnknownSymbolError,
 )
+from app.market.providers.finnhub import FINNHUB_BASE_URL, FinnhubProvider
 
 FAKE_KEY = "test-key-not-real"
 
