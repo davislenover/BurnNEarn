@@ -190,11 +190,44 @@ in a hierarchy decomposed by secrets in Table \ref{TblMH}. The modules listed
 below, which are leaves in the hierarchy tree, are the modules that will
 actually be implemented.
 
-\begin{description}
-\item [\refstepcounter{mnum} \mthemnum \label{mHH}:] Hardware-Hiding Module
-\item ...
-\end{description}
+The hierarchy covers both programs in \progname{}, the server and the phone
+app. Modules that are only in the app are marked (app). Hardware-hiding modules
+hide the interfaces of software and devices the team does not write. These are
+the database server, the server's clock, the market data provider, and the
+phone's health platform and operating system. Behaviour-hiding modules hide the
+behaviour the SRS describes. Software decision modules hide choices the team
+made that the SRS does not mention.
 
+\begin{description}
+% Hardware-Hiding
+\item [\refstepcounter{mnum} \mthemnum \label{mDB}:] Database
+\item [\refstepcounter{mnum} \mthemnum \label{mClock}:] Clock
+\item [\refstepcounter{mnum} \mthemnum \label{mProviders}:] Market Providers
+\item [\refstepcounter{mnum} \mthemnum \label{mHealth}:] Health Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)
+% Behaviour-Hiding, server
+\item [\refstepcounter{mnum} \mthemnum \label{mControl}:] Control
+\item [\refstepcounter{mnum} \mthemnum \label{mConstants}:] Constants (server and app)
+\item [\refstepcounter{mnum} \mthemnum \label{mUsers}:] Users
+\item [\refstepcounter{mnum} \mthemnum \label{mWallet}:] Wallet
+\item [\refstepcounter{mnum} \mthemnum \label{mMarket}:] Market
+\item [\refstepcounter{mnum} \mthemnum \label{mActivity}:] Activity
+\item [\refstepcounter{mnum} \mthemnum \label{mTrading}:] Trading
+\item [\refstepcounter{mnum} \mthemnum \label{mGoals}:] Goals\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mLearning}:] Learning\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mSocial}:] Social\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mScenarios}:] Scenarios\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mPrivacy}:] Privacy\textsuperscript{\dag}
+% Behaviour-Hiding, app
+\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mScreens}:] Screens (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mSync}:] Sync Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mReminders}:] Reminder Service (app)\textsuperscript{\dag}
+% Software Decision
+\item [\refstepcounter{mnum} \mthemnum \label{mPlugins}:] Plugins
+\item [\refstepcounter{mnum} \mthemnum \label{mJSON}:] JSON Format
+\item [\refstepcounter{mnum} \mthemnum \label{mAPI}:] API Service (app)
+\end{description}
 
 \begin{table}[h!]
 \centering
@@ -203,28 +236,43 @@ actually be implemented.
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-{Hardware-Hiding Module} & ~ \\
+\multirow{5}{0.3\textwidth}{Hardware-Hiding Module} & \mref{mDB} Database\\
+& \mref{mClock} Clock\\
+& \mref{mProviders} Market Providers\\
+& \mref{mHealth} Health Service (app)\\
+& \mref{mDevice} Device Service (app)\\
 \midrule
 
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding Module} & ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\ 
-& ?\\
+\multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & \mref{mControl} Control\\
+& \mref{mConstants} Constants (server and app)\\
+& \mref{mUsers} Users\\
+& \mref{mWallet} Wallet\\
+& \mref{mMarket} Market\\
+& \mref{mActivity} Activity\\
+& \mref{mTrading} Trading\\
+& \mref{mGoals} Goals\textsuperscript{\dag}\\
+& \mref{mLearning} Learning\textsuperscript{\dag}\\
+& \mref{mSocial} Social\textsuperscript{\dag}\\
+& \mref{mScenarios} Scenarios\textsuperscript{\dag}\\
+& \mref{mPrivacy} Privacy\textsuperscript{\dag}\\
+& \mref{mNavigation} Navigation (app)\\
+& \mref{mScreens} Screens (app)\\
+& \mref{mSync} Sync Service (app)\\
+& \mref{mReminders} Reminder Service (app)\textsuperscript{\dag}\\
 \midrule
 
-\multirow{3}{0.3\textwidth}{Software Decision Module} & {?}\\
-& ?\\
-& ?\\
+\multirow{3}{0.3\textwidth}{Software Decision Module} & \mref{mPlugins} Plugins\\
+& \mref{mJSON} JSON Format\\
+& \mref{mAPI} API Service (app)\\
 \bottomrule
 
 \end{tabular}
 \caption{Module Hierarchy}
 \label{TblMH}
 \end{table}
+
+Modules marked with \textsuperscript{\dag} in Table~\ref{TblMH} are built after
+the proof of concept and are specified in the MIS at Revision~0.
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
