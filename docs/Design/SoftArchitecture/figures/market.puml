@@ -1,0 +1,68 @@
+@startuml market
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market.puml
+!include style.iuml
+title Market module (grey = stages 4-6, not built yet)
+
+package "Public: other modules import only these" #FAFAFA {
+  class queries <<module>> #F1EFE8 {
+    +is_market_open(now): bool
+    +get_asset_by_symbol(session, symbol): AssetInfo
+    +get_current_price(session, asset_id, now): CurrentPrice | None
+  }
+  class types <<module>> #F1EFE8 {
+    AssetInfo: asset_id, symbol, name, is_tradable
+    CurrentPrice: price, quoted_at, obtained_at, delayed
+    UnknownAssetError: 404 unknown_asset
+  }
+}
+
+class routes <<module>> #F1EFE8 {
+  GET /v1/assets
+  GET /v1/market/usage
+}
+class plugin <<module>> {
+  +PLUGIN
+  -lifespan(app): starts the poller thread (stage 6)
+}
+class poller <<module>> {
+  +poll_once(session, provider, now)
+  +save_quote(session, asset_id, quote)
+  +run_poller(stop, provider, clock, session_factory) (stage 6)
+}
+class calendar <<module>> {
+  +is_trading_time(now): bool
+  +is_market_open(now): bool
+}
+class MarketSettings {
+  +market_provider: "finnhub" | "fake"
+  +finnhub_api_key: SecretStr | None
+  +market_always_open: bool
+  +market_poller_enabled: bool  [stage 6]
+}
+class providers <<package>> {
+  +build_provider(settings): MarketDataProvider
+}
+class Asset <<table assets>> {
+  asset_id, symbol, name, is_tradable
+}
+class Price <<table prices>> {
+  asset_id, price, quoted_at, obtained_at
+}
+class ProviderRequest <<table provider_requests>> {
+  requested_at, symbol, outcome
+}
+
+plugin ..> routes
+plugin ..> poller
+routes ..> queries
+queries ..> types
+queries ..> calendar
+queries ..> Price
+poller ..> providers : provider
+poller ..> Price : saves
+poller ..> ProviderRequest : records each call
+poller ..> Asset : reads tradable
+calendar ..> MarketSettings
+providers ..> MarketSettings
+Price "*" --> "1" Asset
+@enduml

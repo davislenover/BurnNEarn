@@ -1,0 +1,57 @@
+@startuml core
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/core.puml
+!include style.iuml
+title Kernel (app/core) and how a module plugs in
+
+class main <<module>> #F1EFE8 {
+  +create_app(plugins = PLUGINS): FastAPI
+  +app = create_app()
+}
+class registry <<module>> #F1EFE8 {
+  +PLUGINS: tuple[Plugin, ...]
+}
+class "<module>/plugin.py" as modplugin <<module>> #E1F5EE {
+  +PLUGIN = Plugin(name, router, lifespan)
+}
+
+package "app/core (imports no module)" #FAFAFA {
+  class Plugin <<dataclass>> {
+    +name: str
+    +router: APIRouter | None
+    +lifespan: Lifespan | None
+  }
+  class clock <<module>> {
+    +Clock = function returning datetime
+    +system_clock(): datetime
+    +get_clock(): Clock
+  }
+  class db <<module>> {
+    +Base
+    +SessionLocal
+    +get_db(): Session
+  }
+  class DomainError <<exception>> {
+    +code: str
+    +message: str
+    +status: int
+  }
+  class Money <<type>> {
+    Decimal, sent as text with 4 decimals
+  }
+  class Settings {
+    +database_url: str
+  }
+}
+
+main ..> registry : reads PLUGINS
+main ..> Plugin
+main ..> DomainError
+registry ..> modplugin : lists
+modplugin ..> Plugin
+db ..> Settings
+note right of main
+  create_app adds each plugin's router
+  under /v1, runs each lifespan, and turns
+  any DomainError into the same JSON shape.
+end note
+@enduml

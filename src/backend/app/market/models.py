@@ -22,11 +22,6 @@ from app.core.constants import QUOTE_CURRENCY
 from app.core.db import Base
 
 
-class AssetType(StrEnum):
-    STOCK = "stock"
-    ETF = "etf"
-
-
 class Asset(Base):
     """One tradable asset, such as a stock. Its prices are stored
     separately, each with the time it was obtained."""

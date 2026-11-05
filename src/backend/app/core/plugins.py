@@ -11,8 +11,17 @@ from dataclasses import dataclass
 from fastapi import APIRouter, FastAPI
 
 # Work that starts with the app and stops with it, such as a background
-# thread. It is an async context manager: code before its yield runs at
-# startup, and code after it runs at shutdown.
+# thread. It is an async context manager. Start the work before its yield,
+# and stop it in a finally block after the yield, so it still stops if
+# another module fails to start:
+#
+#     @asynccontextmanager
+#     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+#         start()
+#         try:
+#             yield
+#         finally:
+#             stop()
 Lifespan = Callable[[FastAPI], AbstractAsyncContextManager[None]]
 
 

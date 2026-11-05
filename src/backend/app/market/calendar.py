@@ -51,6 +51,10 @@ def is_trading_time(now: datetime) -> bool:
     now must have a time zone. It is converted to New York time, so daylight
     saving time is handled.
     """
+    if now.tzinfo is None:
+        # Without a zone, Python would assume the computer's own zone, so
+        # the answer would differ between CI and a laptop.
+        raise ValueError("now must have a time zone")
     local = now.astimezone(NEW_YORK)
     day = local.date()
     if local.weekday() >= 5 or day in HOLIDAYS:

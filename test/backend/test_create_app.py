@@ -40,8 +40,10 @@ def test_lifespans_start_in_order_and_stop_in_reverse() -> None:
         @asynccontextmanager
         async def lifespan(_: FastAPI) -> AsyncIterator[None]:
             events.append(f"start {name}")
-            yield
-            events.append(f"stop {name}")
+            try:
+                yield
+            finally:
+                events.append(f"stop {name}")
 
         return lifespan
 

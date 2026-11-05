@@ -7,6 +7,7 @@ import pytest
 from pydantic import SecretStr, ValidationError
 
 from app.market.providers import build_provider
+from app.market.providers.base import MarketDataProvider
 from app.market.providers.fake import MAX_STEP, FakeProvider
 from app.market.providers.finnhub import FinnhubProvider
 from app.market.settings import MarketSettings
@@ -19,7 +20,13 @@ def settings(**values: object) -> MarketSettings:
     return MarketSettings(_env_file=None, **values)
 
 
-def test_the_fake_provider_is_the_default() -> None:
+def test_the_fake_provider_is_the_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # conftest.py sets MARKET_PROVIDER for every test. Remove it to see the
+    # default.
+    monkeypatch.delenv("MARKET_PROVIDER")
+
     provider = build_provider(settings())
 
     assert isinstance(provider, FakeProvider)
@@ -31,6 +38,22 @@ def test_finnhub_is_used_when_chosen() -> None:
     )
 
     assert isinstance(provider, FinnhubProvider)
+
+
+def test_an_unknown_provider_name_is_refused() -> None:
+    # model_construct skips the checks, as a typo in build_provider would.
+    unknown = MarketSettings.model_construct(market_provider="alpaca")
+
+    with pytest.raises(ValueError, match="alpaca"):
+        build_provider(unknown)
+
+
+def test_a_provider_without_get_quote_fails_when_created() -> None:
+    class Forgetful(MarketDataProvider):
+        pass
+
+    with pytest.raises(TypeError):
+        Forgetful()
 
 
 @pytest.mark.parametrize("key", [None, ""])

@@ -1,0 +1,19 @@
+' Shared look for the class diagrams, included by each .puml file.
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 40
+skinparam ranksep 50
+skinparam class {
+  BackgroundColor #EEEDFE
+  BorderColor #534AB7
+  ArrowColor #555555
+  StereotypeFontColor #534AB7
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #B4B2A9
+}
+hide empty members

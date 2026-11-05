@@ -5,13 +5,13 @@ import zlib
 from decimal import Decimal
 
 from app.core.clock import Clock, system_clock
-from app.market.providers.base import Quote
+from app.market.providers.base import MarketDataProvider, Quote
 
 # Each call moves a price by up to this much, either way.
 MAX_STEP = Decimal("0.005")
 
 
-class FakeProvider:
+class FakeProvider(MarketDataProvider):
     """Gives each symbol a made-up price that moves a little on every call,
     quoted at the current time."""
 

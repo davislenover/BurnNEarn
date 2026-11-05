@@ -55,7 +55,9 @@ plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 | `routes.py` | HTTP routes. Commits once | No |
 | `plugin.py` | Adds the module's routes to the app | No, only `app/registry.py` |
 
-Leave out any file a module doesn't need.
+Leave out any file a module doesn't need. Each module's pull request also adds
+or updates the module's UML class diagram, `figures/<module>.puml`, and the PNG
+made from it.
 
 ## Rules
 
@@ -91,6 +93,8 @@ adds `create_app()` in `app/main.py`, which adds each module's routes, and
 poller is market's own background thread, which market's plugin starts and
 stops with the app.
 
+![UML class diagram of the kernel and how a module plugs in](figures/core.png)
+
 #191 adds two checks to CI:
 - an import-linter rule: no module imports one above it, and `app/core/`
   imports no module
@@ -110,9 +114,20 @@ of the module never knows which provider it is using.
 - **Fake:** `FakeProvider` makes up prices, for development and tests.
 - **Factory:** `build_provider(settings)` picks one from `MARKET_PROVIDER`.
   The poller is given that provider and only calls `get_quote`.
+- **Errors:** every provider reports a problem as `MarketDataError` or one of
+  its subclasses, so the poller can record what happened without knowing
+  which provider it has.
 
-To add a provider, write a class with `get_quote(symbol)` in
-`app/market/providers/` and add it to `build_provider`. Nothing else changes.
+To add a provider:
+1. Write a class in `app/market/providers/` that names `MarketDataProvider` as
+   its base and has `get_quote(symbol)`.
+2. Add its name to `MARKET_PROVIDER` in `app/market/settings.py` and to
+   `.env.example`.
+3. Add it to `build_provider`.
+
+The whole market module, with the parts still to come in grey:
+
+![UML class diagram of the market module](figures/market.png)
 
 ## Migrations
 

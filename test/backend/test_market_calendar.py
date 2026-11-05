@@ -37,6 +37,11 @@ def test_the_exchanges_hours(when: datetime, is_open: bool) -> None:
     assert is_trading_time(when) is is_open
 
 
+def test_a_time_without_a_zone_is_refused() -> None:
+    with pytest.raises(ValueError, match="time zone"):
+        is_trading_time(datetime(2026, 11, 10, 10, 0))
+
+
 def test_a_time_in_another_zone_is_converted_to_new_york() -> None:
     # 15:00 UTC is 10:00 in New York in November.
     when = datetime.fromisoformat("2026-11-10T15:00:00+00:00")
@@ -44,7 +49,7 @@ def test_a_time_in_another_zone_is_converted_to_new_york() -> None:
     assert is_trading_time(when)
 
 
-def test_the_market_is_open_at_its_real_hours_by_default() -> None:
+def test_the_market_is_open_at_its_real_hours() -> None:
     assert is_market_open(new_york(2026, 11, 10, 10, 0))
     assert not is_market_open(new_york(2026, 11, 14, 10, 0))
 

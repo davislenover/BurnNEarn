@@ -1,43 +1,38 @@
 @startuml market-providers
-' Where market prices come from. Render with:
-'   plantuml -tpng docs/Design/SoftArchitecture/figures/market-providers.puml
-skinparam shadowing false
-skinparam defaultFontName Helvetica
-skinparam defaultFontSize 13
-skinparam linetype ortho
-skinparam class {
-  BackgroundColor #EEEDFE
-  BorderColor #534AB7
-  ArrowColor #555555
-}
-hide empty members
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market-providers.puml
+!include style.iuml
+title Market: where prices come from
 
 interface MarketDataProvider <<strategy>> {
-  +get_quote(symbol): Quote
+  +get_quote(symbol: str): Quote
 }
-
 class FinnhubProvider <<adapter>> {
-  +get_quote(symbol): Quote
+  -api_key: SecretStr
+  -client: httpx2.Client
+  +get_quote(symbol: str): Quote
 }
-
 class FakeProvider {
-  +get_quote(symbol): Quote
+  -clock: Clock
+  -prices: dict[str, Decimal]
+  +get_quote(symbol: str): Quote
 }
-
-class Quote <<data>> {
-  symbol
-  price
-  quoted_at
+class Quote <<value object>> {
+  +symbol: str
+  +price: Decimal
+  +quoted_at: datetime
 }
-
+class MarketDataError <<exception>>
+class RateLimitedError <<exception>>
+class UnknownSymbolError <<exception>>
 class "build_provider(settings)" as factory <<factory>> #F1EFE8
-class Poller #E1F5EE {
-  +poll_once(session, provider, now)
-}
+class "poll_once(session, provider, now)" as poll <<function>> #E1F5EE
 
-MarketDataProvider <|.. FinnhubProvider
-MarketDataProvider <|.. FakeProvider
+MarketDataProvider <|-- FinnhubProvider
+MarketDataProvider <|-- FakeProvider
 MarketDataProvider ..> Quote : returns
-factory ..> MarketDataProvider : picks one from\nMARKET_PROVIDER
-Poller --> MarketDataProvider : uses
+MarketDataProvider ..> MarketDataError : raises
+MarketDataError <|-- RateLimitedError
+MarketDataError <|-- UnknownSymbolError
+factory ..> MarketDataProvider : creates the one\nMARKET_PROVIDER names
+poll ..> MarketDataProvider : is given one,\ncalls get_quote
 @enduml
