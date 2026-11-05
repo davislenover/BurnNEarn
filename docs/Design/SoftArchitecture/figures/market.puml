@@ -1,15 +1,17 @@
 @startuml market
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market.puml
 !include style.iuml
-title Market module (grey = stages 4-6, not built yet)
+title Market module (grey = stages 5-6, not built yet)
 
 package "Public: other modules import only these" #FAFAFA {
-  class queries <<module>> #F1EFE8 {
+  class queries <<module>> {
     +is_market_open(now): bool
     +get_asset_by_symbol(session, symbol): AssetInfo
+    +get_asset(session, asset_id): AssetInfo
     +get_current_price(session, asset_id, now): CurrentPrice | None
+    +is_delayed(quoted_at, now): bool
   }
-  class types <<module>> #F1EFE8 {
+  class types <<module>> {
     AssetInfo: asset_id, symbol, name, is_tradable
     CurrentPrice: price, quoted_at, obtained_at, delayed
     UnknownAssetError: 404 unknown_asset
@@ -58,6 +60,7 @@ routes ..> queries
 queries ..> types
 queries ..> calendar
 queries ..> Price
+queries ..> Asset
 poller ..> providers : provider
 poller ..> Price : saves
 poller ..> ProviderRequest : records each call
