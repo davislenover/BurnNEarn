@@ -99,16 +99,43 @@ This section records information for easy reference.
 
 \section{Introduction}
 
+\progname{} joins two things that are usually kept apart: fitness and
+investing. Activity recorded on the phone earns virtual currency, the user
+spends it on simulated stocks priced from a real market, and the results feed
+goals, learning content and a social feed. That brings three design
+challenges:
+
+\begin{itemize}
+\item The features depend on each other. A buy needs the latest price from the
+  market and the user's balance from the wallet, and must change the balance
+  and the shares together. Activity rewards land in the same wallet. The social
+  feed shares activity and milestones, but must never show a balance or health
+  data.
+\item Some parts rely on outside services that may change: the market data
+  provider, and the health platforms on iOS and Android.
+\item Five people build the features at the same time, in stages from the
+  proof of concept to Revision 1.
+\end{itemize}
+
+When we first designed the modules, they talked to each other a lot. Every
+feature's tables sat in one shared folder, so any feature could read or change
+another feature's data. Activity, for example, worked out the rewards already
+paid by reading the wallet's own table, and both trading and activity changed
+balances. Each new feature added more of these connections. A change in one
+place could break several others, and two people could not work on
+neighbouring features without getting in each other's way. We needed a way to
+separate the modules, so that each one keeps its data and its decisions to
+itself, and the others reach it only through a small interface.
+
 Decomposing a system into modules is a commonly accepted approach to developing
 software.  A module is a work assignment for a programmer or programming
 team~\citep{ParnasEtAl1984}.  We advocate a decomposition
 based on the principle of information hiding~\citep{Parnas1972a}.  This
 principle supports design for change, because the ``secrets'' that each module
-hides represent likely future changes. Design for change is valuable for
-\progname{}. It is built in stages, from the proof of concept to Revision 0
-and Revision 1, by five people working in parallel, and parts of it depend on
-outside services that may change, such as the market data provider and the
-phones' health platforms (SRS Likely Changes).
+hides represent likely future changes. For \progname{}, each part that is likely
+to change, such as the market data provider or a health platform, becomes the
+secret of one module, and features reach each other only through small
+interfaces. One module can then change without the others noticing.
 
 \progname{} is two programs: a server, written in Python with FastAPI and
 backed by PostgreSQL, and a phone app, written in React Native. The phone app
