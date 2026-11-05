@@ -3,40 +3,40 @@
 !include style.iuml
 title Plug-in kernel: modules plug in, the kernel never changes
 
-package "Kernel: app/core and main" #FAFAFA {
-  class "create_app()" as create_app <<app factory>> #F1EFE8
-  class Plugin <<dataclass>> {
-    +name: str
-    +router: APIRouter | None
-    +lifespan: Lifespan | None
-  }
+class "create_app()" as create_app <<kernel>> {
+  adds each plugin's routes under /v1
+  and runs each plugin's lifespan
+}
+class "PLUGINS (registry.py)" as registry <<kernel>> {
+  the list of modules
+}
+class Plugin <<kernel>> {
+  name
+  router
+  lifespan
 }
 
-class "PLUGINS\n(app/registry.py)" as registry <<registry>> #F1EFE8
-
-class "market PLUGIN" as market #E1F5EE {
-  +router = routes.router
-  +lifespan = poller.lifespan
+class "market PLUGIN" as market <<entry point>> {
+  router = routes.router
+  lifespan = poller.lifespan
 }
-class "wallet PLUGIN (#189)" as wallet #FFFFFF
-class "activity PLUGIN (#190)" as activity #FFFFFF
-class "trading PLUGIN (#188)" as trading #FFFFFF
+class "wallet PLUGIN (#189)" as wallet <<not built yet>>
+class "activity PLUGIN (#190)" as activity <<not built yet>>
+class "trading PLUGIN (#188)" as trading <<not built yet>>
 
-create_app ..> registry : reads
-registry --> market : lists
+create_app --> registry : reads
+create_app -left-> Plugin : uses
+registry --> market
 registry --> wallet
 registry --> activity
 registry --> trading
-market ..|> Plugin
-create_app ..> Plugin : uses
+market -up-|> Plugin
 
-note bottom of create_app
-  create_app adds each plugin's router
-  under /v1 and runs each lifespan.
-end note
-
-note bottom of registry
+legend right
+  <color:#5F5E5A>■</color> Kernel
+  <color:#854F0B>■</color> A module's plugin
+  <color:#B4B2A9>□</color> Not built yet
   To add a module: write its plugin.py
   and add one line to PLUGINS.
-end note
+endlegend
 @enduml

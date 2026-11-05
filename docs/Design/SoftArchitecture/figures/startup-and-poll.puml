@@ -4,16 +4,17 @@ skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam defaultFontSize 13
 skinparam sequenceMessageAlign center
-skinparam ParticipantBackgroundColor #EEEDFE
-skinparam ParticipantBorderColor #534AB7
+skinparam ParticipantBorderColor #888780
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #B4B2A9
 title Startup and a price poll
 
-participant "create_app()\n(kernel)" as app
-participant "registry" as registry
-participant "market plugin\n(poller.lifespan)" as plugin
-participant "poller thread\n(run_poller)" as thread
-participant "provider\n(Finnhub or fake)" as provider
-database "PostgreSQL" as db
+participant "create_app()\n(kernel)" as app #F1EFE8
+participant "registry\n(kernel)" as registry #F1EFE8
+participant "market plugin\n(poller.lifespan)" as plugin #FAEEDA
+participant "poller thread\n(run_poller)" as thread #EEEDFE
+participant "provider\n(Finnhub or fake)" as provider #FBEAF0
+database "PostgreSQL" as db #E6F1FB
 
 == The app starts ==
 app -> registry : PLUGINS
@@ -33,4 +34,12 @@ thread -> db : commit
 == The app stops ==
 app -> plugin : stop
 plugin -> thread : stop.set(), then wait for it to finish
+
+legend right
+  <color:#5F5E5A>■</color> Kernel
+  <color:#854F0B>■</color> A module's entry point
+  <color:#534AB7>■</color> Logic
+  <color:#993556>■</color> Provider
+  <color:#185FA5>■</color> Database
+endlegend
 @enduml

@@ -3,55 +3,58 @@
 !include style.iuml
 title Kernel (app/core) and how a module plugs in
 
-class main <<module>> #F1EFE8 {
-  +create_app(plugins = PLUGINS): FastAPI
-  +app = create_app()
+class "main.py" as main <<kernel>> {
+  create_app(plugins = PLUGINS): FastAPI
+  app = create_app()
 }
-class registry <<module>> #F1EFE8 {
-  +PLUGINS: tuple[Plugin, ...]
+class "registry.py" as registry <<kernel>> {
+  PLUGINS: tuple[Plugin, ...]
 }
-class "<module>/plugin.py" as modplugin <<module>> #E1F5EE {
-  +PLUGIN = Plugin(name, router, lifespan)
-}
-
-package "app/core (imports no module)" #FAFAFA {
-  class Plugin <<dataclass>> {
-    +name: str
-    +router: APIRouter | None
-    +lifespan: Lifespan | None
-  }
-  class clock <<module>> {
-    +Clock = function returning datetime
-    +system_clock(): datetime
-    +get_clock(): Clock
-  }
-  class db <<module>> {
-    +Base
-    +SessionLocal
-    +get_db(): Session
-  }
-  class DomainError <<exception>> {
-    +code: str
-    +message: str
-    +status: int
-  }
-  class Money <<type>> {
-    Decimal, sent as text with 4 decimals
-  }
-  class Settings {
-    +database_url: str
-  }
+class "<module>/plugin.py" as modplugin <<entry point>> {
+  PLUGIN = Plugin(name, router, lifespan)
 }
 
-main ..> registry : reads PLUGINS
-main ..> Plugin
-main ..> DomainError
-registry ..> modplugin : lists
-modplugin ..> Plugin
-db ..> Settings
-note right of main
-  create_app adds each plugin's router
-  under /v1, runs each lifespan, and turns
-  any DomainError into the same JSON shape.
-end note
+package "app/core" {
+  class Plugin <<kernel>> {
+    name: str
+    router: APIRouter | None
+    lifespan: Lifespan | None
+  }
+  class "clock.py" as clock <<kernel>> {
+    Clock
+    system_clock()
+    get_clock()
+  }
+  class "db.py" as db <<kernel>> {
+    Base
+    SessionLocal
+    get_db()
+  }
+  class "money.py" as money <<kernel>> {
+    Money: Decimal, sent as text
+  }
+  class DomainError <<error>> {
+    code
+    message
+    status
+  }
+  class "settings.py" as settings <<settings>> {
+    DATABASE_URL
+  }
+}
+
+main --> registry : reads
+registry --> modplugin : lists
+modplugin --> Plugin
+main --> DomainError : sends as JSON
+db --> settings
+
+legend right
+  <color:#5F5E5A>■</color> Kernel
+  <color:#854F0B>■</color> A module's entry point
+  <color:#A32D2D>■</color> Error
+  <color:#3B6D11>■</color> Settings
+  An arrow means "uses".
+  app/core never imports a module.
+endlegend
 @enduml

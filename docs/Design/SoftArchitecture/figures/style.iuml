@@ -1,19 +1,45 @@
 ' Shared look for the class diagrams, included by each .puml file.
+' Each type of box has one color, the same in every diagram:
+'   kernel grey, entry point orange, public or interface green, logic purple,
+'   provider pink, settings light green, table or data blue, error red.
 skinparam shadowing false
 skinparam defaultFontName Helvetica
 skinparam defaultFontSize 13
 skinparam classAttributeIconSize 0
 skinparam linetype ortho
-skinparam nodesep 40
-skinparam ranksep 50
-skinparam class {
-  BackgroundColor #EEEDFE
-  BorderColor #534AB7
-  ArrowColor #555555
-  StereotypeFontColor #534AB7
-}
+skinparam nodesep 30
+skinparam ranksep 45
+skinparam ArrowColor #555555
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #B4B2A9
+skinparam PackageBorderColor #B4B2A9
+skinparam PackageFontColor #5F5E5A
 skinparam note {
   BackgroundColor #FFFDE7
   BorderColor #B4B2A9
 }
+skinparam class {
+  BorderColor #888780
+  BackgroundColor<<kernel>> #F1EFE8
+  BorderColor<<kernel>> #5F5E5A
+  BackgroundColor<<entry point>> #FAEEDA
+  BorderColor<<entry point>> #854F0B
+  BackgroundColor<<public>> #E1F5EE
+  BorderColor<<public>> #0F6E56
+  BackgroundColor<<logic>> #EEEDFE
+  BorderColor<<logic>> #534AB7
+  BackgroundColor<<provider>> #FBEAF0
+  BorderColor<<provider>> #993556
+  BackgroundColor<<settings>> #EAF3DE
+  BorderColor<<settings>> #3B6D11
+  BackgroundColor<<table>> #E6F1FB
+  BorderColor<<table>> #185FA5
+  BackgroundColor<<data>> #E6F1FB
+  BorderColor<<data>> #185FA5
+  BackgroundColor<<error>> #FCEBEB
+  BorderColor<<error>> #A32D2D
+  BackgroundColor<<not built yet>> #FFFFFF
+  BorderColor<<not built yet>> #B4B2A9
+}
+hide circle
 hide empty members
