@@ -108,7 +108,13 @@ character & char & a single symbol or digit\\
 integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$) \\
 natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$) \\
 real & $\mathbb{R}$ & any number in (-$\infty$, $\infty$)\\
+boolean & $\mathbb{B}$ & a value that is either true or false\\
+string & String & a sequence of characters\\
+decimal & Decimal & an exact decimal number, such as a price or an amount of currency\\
+date & Date & a calendar day, without a time of day\\
 date and time & DateTime & a moment in time, with its time zone\\
+duration & Duration & a length of time, such as 15 minutes\\
+identifier & ID & a universally unique identifier (UUID)\\
 \bottomrule
 \end{tabular} 
 \end{center}
@@ -120,6 +126,12 @@ are sequences of characters. Tuples contain a list of values, potentially of
 different types. In addition, \progname \ uses functions, which
 are defined by the data types of their inputs and outputs. Local functions are
 described by giving their type signature followed by their specification.
+
+The sections write these types as follows. A sequence of values of type T is
+``seq of T'', a set is ``set of T'', and a tuple is ``tuple of (name: T,
+...)''. A value that may be missing is ``T or None''. A function from T1 to T2
+is T1 $\rightarrow$ T2. ``new X'' makes a value of type X. A constant is
+defined with $=$, and $:=$ gives a value in the semantics.
 
 \section{Module Decomposition}
 
@@ -155,7 +167,6 @@ The following table is taken directly from the Module Guide document for this pr
 \end{table}
 
 \newpage
-~\newpage
 
 \section{MIS of Clock} \label{MisClock}
 
@@ -225,6 +236,19 @@ The server's operating system clock is kept accurate.
 None
 
 \newpage
+
+% The sections follow the MG's module order, and each starts on a new page.
+% M3 Market Providers: #247
+% M4 Health Service and M5 Device Service (app): #250
+% M6 Control and M7 Constants: #247
+% M8 Users and M9 Wallet: #248
+% M10 Market: #247
+% M11 Activity: #249
+% M12 Trading: #247
+% M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
+% M18 Navigation, M19 Screens and M20 Sync Service (app): #250
+% M22 Plugins and M23 JSON Format: #247
+% M24 API Service (app): #250
 
 \bibliographystyle {plainnat}
 \bibliography {../../../refs/References}
