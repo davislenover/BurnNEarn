@@ -168,6 +168,128 @@ The following table is taken directly from the Module Guide document for this pr
 
 \newpage
 
+\section{MIS of Database} \label{MisDB}
+
+\subsection{Module}
+
+Database (M1 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Session: one unit of work on the database, saved by commit and
+dropped by rollback or close.
+
+\medskip
+
+\noindent Base: the type every module defines its own tables on. Every
+timestamp keeps its time zone. Base also names every key, constraint and index
+that has no name of its own, from its table and columns, by the rules below,
+instead of letting PostgreSQL choose. A migration (a script that changes the
+tables in the database) can then change or drop one by a name known when the
+migration is written. The rules, with examples from Market (M10):
+
+\begin{center}
+\begin{tabular}{p{2.4cm} p{5.6cm} p{6.6cm}}
+\toprule
+\textbf{Kind} & \textbf{Name} & \textbf{Example} \\
+\midrule
+Primary key & pk\_\textit{table} & pk\_assets \\
+Foreign key & fk\_\textit{table}\_\textit{first column}\_\textit{other table} & fk\_prices\_asset\_id\_assets \\
+Unique & uq\_\textit{table}\_\textit{each column} & uq\_prices\_asset\_id\_quoted\_at \\
+Check & ck\_\textit{table}\_\textit{check name} & ck\_prices\_price\_positive \\
+Index & ix\_\textit{table}\_\textit{first column} & ix\_provider\_requests\_requested\_at \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent A check has no column to be named after, so whoever writes it gives
+it a name, such as price\_positive. A check without a name is an error.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2cm} p{3cm} p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+SessionLocal & - & Session & - \\
+get\_db & - & Session & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+engine: the connection to the database at DATABASE\_URL, made once when the
+module is first loaded.
+
+\subsubsection{Environment Variables}
+
+\noindent database: the PostgreSQL server that holds every module's tables.
+
+\medskip
+
+\noindent DATABASE\_URL: String, the database to connect to, read from the
+environment or .env.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The migrations are applied before the server starts.
+\item Each module owns its tables. It never reads or writes another module's
+  tables, though it may have a foreign key into them.
+\item Only routes commit, at most once per request. A route is the function in
+  a module's routes.py that answers one HTTP request, such as GET /v1/assets in
+  Market (M10). To commit is to save a session's changes to the database for
+  good.
+\end{itemize}
+
+\noindent The commit rule works like this. The code a route calls, in its own
+module or another, changes the session but never commits. The route commits
+once, after every step has succeeded. If a step refuses the request or fails,
+the route does not commit, so nothing is saved. So everything one request
+changes, such as a buy's payment and its new shares, is saved together or not
+at all. The price poller in Market (M10) is the one exception: it answers no
+request, so it commits once per poll.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent SessionLocal():
+\begin{itemize}
+\item output: $out :=$ a new Session on engine. The caller closes it, and
+  commits only as the Assumptions allow.
+\item exception: None
+\end{itemize}
+
+\noindent get\_db():
+\begin{itemize}
+\item transition: when the request ends, the session is closed and anything
+  the route did not commit is dropped.
+\item output: $out :=$ SessionLocal(), a session for one request alone. Routes
+  ask for it as a dependency, so a test can replace get\_db with a session whose
+  changes are undone after the test.
+\item exception: None. The session raises OperationalError, a kind of
+  SQLAlchemyError, at its first use if the database cannot be reached.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
 \section{MIS of Clock} \label{MisClock}
 
 \subsection{Module}
