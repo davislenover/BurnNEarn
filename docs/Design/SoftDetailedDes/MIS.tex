@@ -370,7 +370,144 @@ None
 \newpage
 
 % The sections follow the MG's module order, and each starts on a new page.
-% M3 Market Providers: #247
+\section{MIS of Market Providers} \label{MisProviders}
+
+\subsection{Module}
+
+Market Providers (M3 in the MG)
+
+\subsection{Uses}
+
+Clock (M2)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Quote = tuple of (symbol: String, price: Decimal, quoted\_at:
+DateTime), a stock's latest price and when the provider set it (not when the
+server asked for it).
+
+\medskip
+\noindent MarketDataProvider: the abstract type of every provider. It has one
+access program, get\_quote. The providers are currently FinnhubProvider and
+FakeProvider.
+
+\medskip
+\noindent ProviderSettings = tuple of (market\_provider: String,
+finnhub\_api\_key: String or None), the name of the provider to use,
+currently ``finnhub'' or ``fake'', and the key for Finnhub.
+
+\medskip
+\noindent MarketDataError, the error for no usable price, with its kinds
+RateLimitedError (the request limit was hit) and UnknownSymbolError (no price
+for the symbol).
+
+\subsubsection{Exported Constants}
+
+FINNHUB\_CALLS\_PER\_MINUTE: $\mathbb{N}$ = 60, Finnhub's free plan limit.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.95cm} p{3.05cm} p{3.75cm} p{4.05cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new FinnhubProvider & String & FinnhubProvider & - \\
+new FakeProvider & Clock & FakeProvider & - \\
+get\_quote & String & Quote & MarketDataError,\newline RateLimitedError,\newline
+UnknownSymbolError \\
+build\_provider & ProviderSettings & MarketDataProvider & ValueError \\
+get\_provider\_settings & - & ProviderSettings & ValidationError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent key: String, a FinnhubProvider's API key, sent only to Finnhub in a
+request header. It is never put in a URL or an error message, and never sent
+to the phone.\\
+clock: Clock and prices: String $\rightarrow$ Decimal, a FakeProvider's clock
+and last prices.
+
+\subsubsection{Environment Variables}
+
+\noindent finnhubApi: the Finnhub quote API, whose reply has a status, a price
+$c$ and its time $t$.
+
+\medskip
+\noindent MARKET\_PROVIDER, FINNHUB\_API\_KEY: String, the two fields of
+ProviderSettings, read from the environment or the .env file.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Every provider follows MarketDataProvider: its get\_quote returns a Quote
+  or raises a MarketDataError, never another error.
+\item build\_provider is only given settings from get\_provider\_settings, so
+  they hold all that the named provider needs.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new FinnhubProvider($k$), new FakeProvider($f$):
+\begin{itemize}
+\item output: $out :=$ FinnhubProvider(key $= k$) or FakeProvider(clock $= f$,
+  no prices)
+\item exception: None
+\end{itemize}
+
+\noindent $p$.get\_quote($s$), for a FinnhubProvider $p$:
+\begin{itemize}
+\item output: $out :=$ (symbol: $s$, price: $c$, quoted\_at: $t$ seconds after
+  1970-01-01 00:00 UTC), from one request to finnhubApi holding only $s$ and
+  key (10 second timeout)
+\item exception: $exc :=$ (the request fails or its reply cannot be read
+  $\Rightarrow$ \mbox{MarketDataError} $|$ status $= 429 \Rightarrow$ RateLimitedError
+  $|$ status $\neq 200$, or no finite $c$ or valid $t$ $\Rightarrow$
+  \mbox{MarketDataError} $|$ $c \leq 0 \lor t = 0 \Rightarrow$ UnknownSymbolError), in
+  that order
+\end{itemize}
+
+\noindent $p$.get\_quote($s$), for a FakeProvider $p$:
+\begin{itemize}
+\item transition: prices($s$) $:=$ (no price for $s$ yet $\Rightarrow$
+  start($s$) $|$ otherwise $\Rightarrow$ step(prices($s$)))
+\item output: $out :=$ (symbol: $s$, price: prices($s$), quoted\_at: clock())
+\item exception: None, even for a symbol no real stock has
+\end{itemize}
+
+\noindent build\_provider($v$):
+\begin{itemize}
+\item output: $out :=$ the provider that $v$ names. That is currently new
+  FinnhubProvider with $v$'s key for ``finnhub'', or new
+  FakeProvider(system\_clock) for ``fake''.
+\item exception: $exc :=$ ($v$.market\_provider names no provider
+  $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent get\_provider\_settings():
+\begin{itemize}
+\item output: $out :=$ the settings in MARKET\_PROVIDER and FINNHUB\_API\_KEY,
+  read once, on the first call that succeeds. Unset, they give ``fake'' and None.
+\item exception: $exc :=$ (MARKET\_PROVIDER names no provider, or names one
+  that needs a key, currently only Finnhub, and the key is unset or empty
+  $\Rightarrow$ ValidationError)
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent start: String $\rightarrow$ Decimal, start($s$) $:=$ a price from 20
+to 500 that depends only on $s$\\
+step: Decimal $\rightarrow$ Decimal, step($x$) $:=$ $x$ moved up or down at
+random by at most 0.5\%, to four decimals
+
+\newpage
+
 % M4 Health Service and M5 Device Service (app): #250
 % M6 Control and M7 Constants: #247
 % M8 Users and M9 Wallet: #248
