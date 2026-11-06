@@ -46,8 +46,8 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 5, 2026 & 1.0 & Davis Lenover: Revision $-1$. Sections 1 to 3, 5
+Module Hierarchy, and 9 Use Hierarchy Between Modules.\\
 \bottomrule
 \end{tabularx}
 
@@ -65,16 +65,23 @@ This section records information for easy reference.
   \textbf{symbol} & \textbf{description}\\
   \midrule 
   AC & Anticipated Change\\
-  DAG & Directed Acyclic Graph \\
-  M & Module \\
-  MG & Module Guide \\
-  OS & Operating System \\
-  R & Requirement\\
-  SC & Scientific Computing \\
+  API & Application Programming Interface\\
+  DAG & Directed Acyclic Graph\\
+  \progname & A phone app where physical activity earns virtual currency\\
+   & that the user invests in a simulated stock market\\
+  FR & Functional Requirement (SRS)\\
+  HA & Hazard Analysis\\
+  JSON & JavaScript Object Notation\\
+  LC & Likely Change (SRS)\\
+  M & Module\\
+  MG & Module Guide\\
+  MIS & Module Interface Specification\\
+  NFR & Nonfunctional Requirement (SRS)\\
+  OS & Operating System\\
+  PoC & Proof of Concept\\
+  REST & Representational State Transfer\\
   SRS & Software Requirements Specification\\
-  \progname & Explanation of program name\\
-  UC & Unlikely Change \\
-  \wss{etc.} & \wss{...}\\
+  UC & Unlikely Change\\
   \bottomrule
 \end{tabular}\\
 
@@ -92,16 +99,46 @@ This section records information for easy reference.
 
 \section{Introduction}
 
-Decomposing a system into modules is a commonly accepted approach to developing
-software.  A module is a work assignment for a programmer or programming
-team~\citep{ParnasEtAl1984}.  We advocate a decomposition
-based on the principle of information hiding~\citep{Parnas1972a}.  This
-principle supports design for change, because the ``secrets'' that each module
-hides represent likely future changes.  Design for change is valuable in SC,
-where modifications are frequent, especially during initial development as the
-solution space is explored.  
+\progname{} joins two things that are usually kept apart: fitness and
+investing. Activity recorded on the phone earns virtual currency, the user
+spends it on simulated stocks priced from a real market, and the results feed
+goals, learning content and a social feed. That brings three design
+challenges:
 
-Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
+\begin{itemize}
+\item The features depend on each other. A user buying a stock needs the
+  latest price from the market and their balance from the wallet, and must
+  change both the balance and the shares together. Activity rewards land in
+  the same wallet. The social feed shares activity and milestones, but must
+  never show a balance or health data.
+\item Some parts rely on outside services that may change: the market data
+  provider, which allows users to buy shares in the first place, and the health
+  platforms on iOS and Android.
+\item Given this is a group project, the system will be developed in parallel,
+  in stages, from the proof of concept to Revision 1.
+\end{itemize}
+
+When we first designed the backend, we routed commands to different services
+and let those services talk to each other directly, each with its own
+libraries. Taking a step back, this greatly increased coupling: a logic change
+in any one of these modules could easily ripple through the others. We needed
+a way to separate the modules, so that each one keeps its data and its
+decisions to itself, and the others reach it only through a small interface.
+This helps to support changes and additions to the modules.
+
+Decomposing a system into modules is a commonly accepted approach to developing
+software. We decompose \progname{} by information hiding: each module hides a
+``secret'', a design decision that is likely to change, such as the market data
+provider or a health platform. Separate modules also naturally become work
+assignments that people can develop in tandem. With a defined interface in
+between, it becomes much easier to work in parallel.
+
+\progname{} is two programs: a server, written in Python with FastAPI and
+backed by PostgreSQL, and a phone app, written in React Native. The phone app
+talks to the server over HTTPS with JSON. This MG covers the modules of both
+programs.
+
+Our design follows three rules:
 \begin{itemize}
 \item System details that are likely to change independently should be the
   secrets of separate modules.
@@ -111,7 +148,7 @@ Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
 \end{itemize}
 
 After completing the first stage of the design, the Software Requirements
-Specification (SRS), the Module Guide (MG) is developed~\citep{ParnasEtAl1984}. The MG
+Specification (SRS), the Module Guide (MG) is developed. The MG
 specifies the modular structure of the system and is intended to allow both
 designers and maintainers to easily identify the parts of the software.  The
 potential readers of this document are as follows:
@@ -139,7 +176,9 @@ modules. Section \ref{SecMD} gives a detailed description of the
 modules. Section \ref{SecTM} includes two traceability matrices. One checks
 the completeness of the design against the requirements provided in the SRS. The
 other shows the relation between anticipated changes and the modules. Section
-\ref{SecUse} describes the use relation between modules.
+\ref{SecUse} describes the use relation between modules. The remaining sections
+cover the user interfaces, the communication protocols, the database design and
+the timeline.
 
 \section{Anticipated and Unlikely Changes} \label{SecChange}
 
@@ -190,11 +229,44 @@ in a hierarchy decomposed by secrets in Table \ref{TblMH}. The modules listed
 below, which are leaves in the hierarchy tree, are the modules that will
 actually be implemented.
 
-\begin{description}
-\item [\refstepcounter{mnum} \mthemnum \label{mHH}:] Hardware-Hiding Module
-\item ...
-\end{description}
+The hierarchy covers both programs in \progname{}, the server and the phone
+app. Modules that are only in the app are marked (app). Hardware-hiding modules
+hide the interfaces of software and devices the team does not write. These are
+the database server, the server's clock, the market data provider, and the
+phone's health platform and operating system. Behaviour-hiding modules hide the
+behaviour the SRS describes. Software decision modules hide choices the team
+made that the SRS does not mention.
 
+\begin{description}
+% Hardware-Hiding
+\item [\refstepcounter{mnum} \mthemnum \label{mDB}:] Database
+\item [\refstepcounter{mnum} \mthemnum \label{mClock}:] Clock
+\item [\refstepcounter{mnum} \mthemnum \label{mProviders}:] Market Providers
+\item [\refstepcounter{mnum} \mthemnum \label{mHealth}:] Health Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)
+% Behaviour-Hiding, server
+\item [\refstepcounter{mnum} \mthemnum \label{mControl}:] Control
+\item [\refstepcounter{mnum} \mthemnum \label{mConstants}:] Constants (server and app)
+\item [\refstepcounter{mnum} \mthemnum \label{mUsers}:] Users
+\item [\refstepcounter{mnum} \mthemnum \label{mWallet}:] Wallet
+\item [\refstepcounter{mnum} \mthemnum \label{mMarket}:] Market
+\item [\refstepcounter{mnum} \mthemnum \label{mActivity}:] Activity
+\item [\refstepcounter{mnum} \mthemnum \label{mTrading}:] Trading
+\item [\refstepcounter{mnum} \mthemnum \label{mGoals}:] Goals\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mLearning}:] Learning\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mSocial}:] Social\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mScenarios}:] Scenarios\textsuperscript{\dag}
+\item [\refstepcounter{mnum} \mthemnum \label{mPrivacy}:] Privacy\textsuperscript{\dag}
+% Behaviour-Hiding, app
+\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mScreens}:] Screens (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mSync}:] Sync Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mReminders}:] Reminder Service (app)\textsuperscript{\dag}
+% Software Decision
+\item [\refstepcounter{mnum} \mthemnum \label{mPlugins}:] Plugins
+\item [\refstepcounter{mnum} \mthemnum \label{mJSON}:] JSON Format
+\item [\refstepcounter{mnum} \mthemnum \label{mAPI}:] API Service (app)
+\end{description}
 
 \begin{table}[h!]
 \centering
@@ -203,28 +275,43 @@ actually be implemented.
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-{Hardware-Hiding Module} & ~ \\
+\multirow{5}{0.3\textwidth}{Hardware-Hiding Module} & \mref{mDB} Database\\
+& \mref{mClock} Clock\\
+& \mref{mProviders} Market Providers\\
+& \mref{mHealth} Health Service (app)\\
+& \mref{mDevice} Device Service (app)\\
 \midrule
 
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding Module} & ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\ 
-& ?\\
+\multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & \mref{mControl} Control\\
+& \mref{mConstants} Constants (server and app)\\
+& \mref{mUsers} Users\\
+& \mref{mWallet} Wallet\\
+& \mref{mMarket} Market\\
+& \mref{mActivity} Activity\\
+& \mref{mTrading} Trading\\
+& \mref{mGoals} Goals\textsuperscript{\dag}\\
+& \mref{mLearning} Learning\textsuperscript{\dag}\\
+& \mref{mSocial} Social\textsuperscript{\dag}\\
+& \mref{mScenarios} Scenarios\textsuperscript{\dag}\\
+& \mref{mPrivacy} Privacy\textsuperscript{\dag}\\
+& \mref{mNavigation} Navigation (app)\\
+& \mref{mScreens} Screens (app)\\
+& \mref{mSync} Sync Service (app)\\
+& \mref{mReminders} Reminder Service (app)\textsuperscript{\dag}\\
 \midrule
 
-\multirow{3}{0.3\textwidth}{Software Decision Module} & {?}\\
-& ?\\
-& ?\\
+\multirow{3}{0.3\textwidth}{Software Decision Module} & \mref{mPlugins} Plugins\\
+& \mref{mJSON} JSON Format\\
+& \mref{mAPI} API Service (app)\\
 \bottomrule
 
 \end{tabular}
 \caption{Module Hierarchy}
 \label{TblMH}
 \end{table}
+
+Modules marked with \textsuperscript{\dag} in Table~\ref{TblMH} are built after
+the proof of concept and are specified in the MIS at Revision~0.
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
@@ -241,8 +328,8 @@ between requirements and modules is listed in Table~\ref{TblRT}.
 
 \section{Module Decomposition} \label{SecMD}
 
-Modules are decomposed according to the principle of ``information hiding''
-proposed by \citet{ParnasEtAl1984}. The \emph{Secrets} field in a module
+Modules are decomposed according to the principle of ``information
+hiding''. The \emph{Secrets} field in a module
 decomposition is a brief statement of the design decision hidden by the
 module. The \emph{Services} field specifies \emph{what} the module will do
 without documenting \emph{how} to do it. For each module, a suggestion for the
@@ -253,24 +340,56 @@ module will be implemented by the \progname{} software.
 
 Only the leaf modules in the hierarchy have to be implemented. If a dash
 (\emph{--}) is shown, this means that the module is not a leaf and will not have
-to be implemented.
+to be implemented. Server paths under \emph{Implemented By} are relative to
+\path{src/backend/app/}.
 
-\subsection{Hardware Hiding Modules (\mref{mHH})}
+\subsection{Hardware Hiding Modules}
 
 \begin{description}
-\item[Secrets:]The data structure and algorithm used to implement the virtual
-  hardware.
-\item[Services:]Serves as a virtual hardware used by the rest of the
-  system. This module provides the interface between the hardware and the
-  software. So, the system can use it to display outputs or to accept inputs.
-\item[Implemented By:] OS
+\item[Secrets:] The interfaces of software and devices the team does not
+  write: the database server, the server's clock, the market data provider, and
+  the phone's health platform and operating system.
+\item[Services:] Serve as a virtual version of these outside systems for the
+  rest of \progname{}, so that a change to one of them stays inside its module.
+\item[Implemented By:] --
 \end{description}
 
-\subsection{Behaviour-Hiding Module}
+\subsubsection{Database Module (\mref{mDB})}
 
 \begin{description}
-\item[Secrets:]The contents of the required behaviours.
-\item[Services:]Includes programs that provide externally visible behaviour of
+\item[Secrets:] The database server and the connection to it.
+\item[Services:] Opens sessions to the database, gives each request its own session, and provides the base that every module's tables are defined on. Each module still owns its own tables.
+\item[Implemented By:] \progname{} server, in \path{core/db.py}, using SQLAlchemy and PostgreSQL
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Clock Module (\mref{mClock})}
+
+\begin{description}
+\item[Secrets:] The source of the current time.
+\item[Services:] Gives the current time, with its time zone, to routes and background work. Tests replace it with a fixed time.
+\item[Implemented By:] \progname{} server, in \path{core/clock.py}, using the OS clock
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Market Providers Module (\mref{mProviders})}
+
+\begin{description}
+\item[Secrets:] The market data provider's API.
+\item[Services:] Gets the latest quote for a stock through one interface that every provider follows, and picks the provider that \texttt{MARKET\_PROVIDER} names. The Finnhub provider turns Finnhub's replies and errors into \progname{}'s own quotes and errors. A fake provider makes up prices for development and tests.
+\item[Implemented By:] \progname{} server, in \path{market/providers/}, using Finnhub
+\item[Type of Module:] Abstract Data Type, with one interface and a Finnhub and a fake implementation
+\end{description}
+
+% M4 Health Service (app): #235
+
+% M5 Device Service (app): #237
+
+\subsection{Behaviour-Hiding Modules}
+
+\begin{description}
+\item[Secrets:] The contents of the required behaviours.
+\item[Services:] Includes programs that provide externally visible behaviour of
   the system as specified in the software requirements specification (SRS)
   documents. This module serves as a communication layer between the
   hardware-hiding module and the software decision module. The programs in this
@@ -278,34 +397,84 @@ to be implemented.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Input Format Module (\mref{mInput})}
+\subsubsection{Control Module (\mref{mControl})}
 
 \begin{description}
-\item[Secrets:]The format and structure of the input data.
-\item[Services:]Converts the input data into the data structure used by the
-  input parameters module.
-\item[Implemented By:] [Your Program Name Here]
-\item[Type of Module:] [Record, Library, Abstract Object, or Abstract Data Type]
-  [Information to include for leaf modules in the decomposition by secrets tree.]
+\item[Secrets:] The set of modules that make up the running server.
+\item[Services:] Builds the server from the list of module plug-ins. It adds each module's routes, and starts and stops each module's background work with the server. It also serves the health check.
+\item[Implemented By:] \progname{} server, in \path{main.py}, \path{registry.py} and \path{core/routes.py}
+\item[Type of Module:] Abstract Object
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{Constants Module (\mref{mConstants})}
 
+\begin{description}
+\item[Secrets:] The values of the SRS symbolic constants (SRS Appendix C).
+\item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit, so that a value changes in one place.
+\item[Implemented By:] \progname{} server, in \path{core/constants.py}, and a matching file in the app
+\item[Type of Module:] Library, with exported constants only
+\end{description}
 
-\subsection{Software Decision Module}
+% M8 Users and M9 Wallet: #234
+
+\subsubsection{Market Module (\mref{mMarket})}
+
+\begin{description}
+\item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
+\item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list and the provider's usage to the phone.
+\item[Implemented By:] \progname{} server, in \path{market/}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+% M11 Activity: #235
+
+\subsubsection{Trading Module (\mref{mTrading})}
+
+\begin{description}
+\item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
+\item[Services:] Buys and sells whole shares at the current price, and refuses a trade that is not allowed, such as one while the market is closed, on a price that is out of date, or without enough currency. Applies each trade request once, and values the user's holdings.
+\item[Implemented By:] \progname{} server, in \path{trading/}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+% M13 Goals, M14 Learning, M15 Social, M16 Scenarios and M17 Privacy: #238
+
+% M18 Navigation and M19 Screens (app): #236
+
+% M20 Sync Service (app): #235
+
+% M21 Reminder Service (app): #237
+
+\subsection{Software Decision Modules}
 
 \begin{description}
 \item[Secrets:] The design decision based on mathematical theorems, physical
   facts, or programming considerations. The secrets of this module are
   \emph{not} described in the SRS.
 \item[Services:] Includes data structure and algorithms used in the system that
-  do not provide direct interaction with the user. 
-  % Changes in these modules are more likely to be motivated by a desire to
-  % improve performance than by externally imposed changes.
+  do not provide direct interaction with the user.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{Plugins Module (\mref{mPlugins})}
+
+\begin{description}
+\item[Secrets:] The shape of a module's plug-in.
+\item[Services:] Defines what a module hands to Control: its name, its routes and its background work. Control can then add any module without knowing anything else about it.
+\item[Implemented By:] \progname{} server, in \path{core/plugins.py}
+\item[Type of Module:] Record
+\end{description}
+
+\subsubsection{JSON Format Module (\mref{mJSON})}
+
+\begin{description}
+\item[Secrets:] The JSON form of amounts and refusals.
+\item[Services:] Sends amounts to the phone as text with four decimals, so no precision is lost, and sends every refusal in the same shape: a code and a message.
+\item[Implemented By:] \progname{} server, in \path{core/money.py} and \path{core/errors.py}
+\item[Type of Module:] Library
+\end{description}
+
+% M24 API Service (app): #236
 
 \section{Traceability Matrix} \label{SecTM}
 
@@ -364,8 +533,8 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
 In this section, the uses hierarchy between modules is
-provided. \citet{Parnas1978} said of two programs A and B that A {\em uses} B if
-correct execution of B may be necessary for A to complete the task described in
+provided. Of two programs A and B, A {\em uses} B if correct execution of B
+may be necessary for A to complete the task described in
 its specification. That is, A {\em uses} B if there exist situations in which
 the correct functioning of A depends upon the availability of a correct
 implementation of B.  Figure \ref{FigUH} illustrates the use relation between
@@ -374,21 +543,57 @@ the modules. It can be seen that the graph is a directed acyclic graph
 system, and modules in the higher level of the hierarchy are essentially simpler
 because they use modules from the lower levels.
 
-\wss{The uses relation is not a data flow diagram.  In the code there will often
-be an import statement in module A when it directly uses module B.  Module B
-provides the services that module A needs.  The code for module A needs to be
-able to see these services (hence the import statement).  Since the uses
-relation is transitive, there is a use relation without an import, but the
-arrows in the diagram typically correspond to the presence of import statement.}
-
-\wss{If module A uses module B, the arrow is directed from A to B.}
+An arrow from module A to module B means that A uses B: the code of A imports
+B. To keep Figure~\ref{FigUH} readable, one arrow into a group stands for uses
+of the modules in that group. The shared group holds the modules that many
+others use. For example, every server module with routes uses \mref{mUsers}
+Users to find the current user. Modules in the shared group can also use each
+other. Table~\ref{TblUses} lists every use.
 
 \begin{figure}[H]
 \centering
-%\includegraphics[width=0.7\textwidth]{UsesHierarchy.png}
-\caption{Use hierarchy among modules}
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{figures/uses-hierarchy.pdf}
+\caption{Use hierarchy among modules. Blue: hardware-hiding. Purple:
+behaviour-hiding. Orange: software decision. A dashed outline marks a module
+built after the proof of concept.}
 \label{FigUH}
 \end{figure}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{0.35\textwidth} p{0.55\textwidth}}
+\toprule
+\textbf{Module} & \textbf{Uses}\\
+\midrule
+\mref{mDB} Database & None\\
+\mref{mClock} Clock & None\\
+\mref{mProviders} Market Providers & \mref{mClock}\\
+\mref{mHealth} Health Service & None\\
+\mref{mDevice} Device Service & None\\
+\mref{mControl} Control & \mref{mDB}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mActivity}, \mref{mTrading}, \mref{mGoals}, \mref{mLearning}, \mref{mSocial}, \mref{mScenarios}, \mref{mPrivacy}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mConstants} Constants & None\\
+\mref{mUsers} Users & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mWallet} Wallet & \mref{mDB}, \mref{mUsers}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mMarket} Market & \mref{mDB}, \mref{mClock}, \mref{mProviders}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mActivity} Activity & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mTrading} Trading & \mref{mDB}, \mref{mClock}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mGoals} Goals & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mActivity}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mLearning} Learning & \mref{mDB}, \mref{mConstants}, \mref{mUsers}, \mref{mTrading}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mSocial} Social & \mref{mDB}, \mref{mClock}, \mref{mUsers}, \mref{mActivity}, \mref{mGoals}, \mref{mLearning}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mScenarios} Scenarios & \mref{mDB}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mTrading}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mPrivacy} Privacy & \mref{mDB}, \mref{mUsers}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mNavigation} Navigation & \mref{mScreens}\\
+\mref{mScreens} Screens & \mref{mConstants}, \mref{mSync}, \mref{mReminders}, \mref{mAPI}\\
+\mref{mSync} Sync Service & \mref{mHealth}, \mref{mDevice}, \mref{mConstants}, \mref{mAPI}\\
+\mref{mReminders} Reminder Service & \mref{mDevice}, \mref{mConstants}, \mref{mAPI}\\
+\mref{mPlugins} Plugins & None\\
+\mref{mJSON} JSON Format & None\\
+\mref{mAPI} API Service & \mref{mDevice}\\
+\bottomrule
+\end{tabular}
+\caption{Modules each module uses}
+\label{TblUses}
+\end{table}
 
 %\section*{References}
 
@@ -447,10 +652,5 @@ uses that materially contributed to your work}
 consistency, and appropriateness of the submitted document, regardless of
 whether material was generated by a human or an AI system.}
 \end{itemize}}
-
-\newpage{}
-
-\bibliographystyle {plainnat}
-\bibliography{../../../refs/References}
 
 \end{document}
