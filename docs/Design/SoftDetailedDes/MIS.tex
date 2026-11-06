@@ -213,13 +213,23 @@ osTime: DateTime, the current time from the server's operating system clock.
 
 \subsubsection{Assumptions}
 
-The server's operating system clock is kept accurate.
+The server's operating system clock has these properties:
+\begin{itemize}
+\item It is synchronized to Coordinated Universal Time (UTC) by the Network
+  Time Protocol, and stays within 1 second of UTC. That is close enough, since
+  market hours, the price staleness limit and the server's date (SEC-24 in the
+  SRS) all work in whole minutes or more.
+\item It is not monotonic. A sync can move it back slightly, so a later call
+  can return an earlier time. That does no harm. Its times are stored and
+  compared with other stored times and with market hours, and nothing uses it
+  to time a wait.
+\end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent system\_clock():
 \begin{itemize}
-\item output: $out := $ osTime, in Coordinated Universal Time (UTC)
+\item output: $out := $ osTime in UTC, to the microsecond
 \item exception: None
 \end{itemize}
 
