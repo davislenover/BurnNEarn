@@ -31,8 +31,12 @@ class Portfolio(Base):
     __tablename__ = "portfolios"
     __table_args__ = (
         # A balance can never go below 0 (SEC-5). change_balance relies on
-        # this as its last line of defence.
-        CheckConstraint("cash_balance >= 0", name="cash_balance_not_negative"),
+        # this as its last line of defence. PostgreSQL counts NaN as above
+        # every number, so it is refused by name.
+        CheckConstraint(
+            "cash_balance >= 0 AND cash_balance <> 'NaN'",
+            name="cash_balance_not_negative",
+        ),
         # Each user has one live portfolio.
         Index(
             "uq_portfolios_live_user_id",
@@ -59,8 +63,16 @@ class BalanceChange(Base):
 
     __tablename__ = "balance_changes"
     __table_args__ = (
-        CheckConstraint("amount <> 0", name="amount_not_zero"),
+        CheckConstraint(
+            "amount <> 0 AND amount <> 'NaN'", name="amount_not_zero"
+        ),
         CheckConstraint(f"reason IN ({_REASONS})", name="reason_valid"),
+        # A reward adds currency and a purchase spends it, so a missing
+        # minus sign can never turn a purchase into free currency.
+        CheckConstraint(
+            "(reason = 'activity_reward') = (amount > 0)",
+            name="amount_sign_matches_reason",
+        ),
         # An activity reward is for one day of activity. Nothing else is.
         CheckConstraint(
             "(reason = 'activity_reward') = (activity_date IS NOT NULL)",

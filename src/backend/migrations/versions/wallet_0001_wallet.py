@@ -41,7 +41,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "cash_balance >= 0",
+            "cash_balance >= 0 AND cash_balance <> 'NaN'",
             name=op.f("ck_portfolios_cash_balance_not_negative"),
         ),
         sa.ForeignKeyConstraint(
@@ -85,7 +85,12 @@ def upgrade() -> None:
             name=op.f("ck_balance_changes_reason_valid"),
         ),
         sa.CheckConstraint(
-            "amount <> 0", name=op.f("ck_balance_changes_amount_not_zero")
+            "amount <> 0 AND amount <> 'NaN'",
+            name=op.f("ck_balance_changes_amount_not_zero"),
+        ),
+        sa.CheckConstraint(
+            "(reason = 'activity_reward') = (amount > 0)",
+            name=op.f("ck_balance_changes_amount_sign_matches_reason"),
         ),
         sa.ForeignKeyConstraint(
             ["portfolio_id"],

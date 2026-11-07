@@ -52,9 +52,12 @@ def test_a_portfolio_starts_with_no_currency(connection: Connection) -> None:
     assert balance == Decimal("0")
 
 
-def test_a_balance_can_never_go_below_zero(connection: Connection) -> None:
+@pytest.mark.parametrize("balance", [Decimal("-0.0001"), Decimal("NaN")])
+def test_a_balance_can_never_go_below_zero(
+    connection: Connection, balance: Decimal
+) -> None:
     with pytest.raises(IntegrityError, match="cash_balance_not_negative"):
-        new_portfolio(connection, cash_balance=Decimal("-0.0001"))
+        new_portfolio(connection, cash_balance=balance)
 
 
 def test_a_user_has_one_live_portfolio(connection: Connection) -> None:
@@ -87,7 +90,24 @@ def change(
             {"amount": Decimal(0), "reason": "trade_purchase"},
             "amount_not_zero",
         ),
-        ({"amount": Decimal(1), "reason": "gift"}, "reason_valid"),
+        (
+            {"amount": Decimal("NaN"), "reason": "trade_purchase"},
+            "amount_not_zero",
+        ),
+        ({"amount": Decimal(-1), "reason": "gift"}, "reason_valid"),
+        # A reward adds currency and a purchase spends it.
+        (
+            {
+                "amount": Decimal(-1),
+                "reason": "activity_reward",
+                "activity_date": date(2026, 11, 7),
+            },
+            "amount_sign_matches_reason",
+        ),
+        (
+            {"amount": Decimal(1), "reason": "trade_purchase"},
+            "amount_sign_matches_reason",
+        ),
         # A reward is for one day of activity, so it needs that day.
         (
             {"amount": Decimal(1), "reason": "activity_reward"},
