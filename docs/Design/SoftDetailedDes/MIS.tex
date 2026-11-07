@@ -748,7 +748,246 @@ None
 \newpage
 
 % M8 Users and M9 Wallet: #248
-% M10 Market: #247
+\section{MIS of Market} \label{MisMarket}
+
+\subsection{Module}
+
+Market (M10 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Market Providers (M3), Constants (M7), Plugins (M22),
+JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent AssetInfo = tuple of (asset\_id: ID, symbol: String, name: String,
+is\_tradable: $\mathbb{B}$), a read-only copy of one asset, such as a stock.
+is\_tradable is false once the asset is removed from the live market.
+
+\medskip
+\noindent CurrentPrice = tuple of (price: Decimal, quoted\_at: DateTime,
+obtained\_at: DateTime, delayed: $\mathbb{B}$), an asset's newest price.
+quoted\_at is when the provider set the price, and obtained\_at is when the
+server got it.
+
+\medskip
+\noindent UnknownAssetError, a DomainError with code ``unknown\_asset'', status
+404 and the message ``There is no asset with that symbol.''
+
+\subsubsection{Exported Constants}
+
+PLUGIN: Plugin $=$ (name: ``market'', router: the two routes below, lifespan:
+lifespan, health: health). Both of Market's routes need no signed-in user. They
+take now from get\_clock of Clock (M2) and session from get\_db of Database
+(M1).
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.6cm}
+  >{\raggedright\arraybackslash}p{2.4cm}
+  >{\raggedright\arraybackslash}p{5.1cm} p{3.7cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+get\_asset\_by\_symbol & Session, String & AssetInfo & UnknownAssetError \\
+get\_asset & Session, ID & AssetInfo & UnknownAssetError \\
+get\_current\_price & Session, ID, DateTime & CurrentPrice or None & - \\
+is\_delayed & DateTime, DateTime & $\mathbb{B}$ & - \\
+is\_market\_open & DateTime & $\mathbb{B}$ & - \\
+GET /v1/assets & - & tuple of (market\_open: $\mathbb{B}$, assets: seq of
+tuple of (symbol: String, name: String, price: Money or None, price\_currency:
+String, quoted\_at: DateTime or None, obtained\_at: DateTime or None, delayed:
+$\mathbb{B}$)) & - \\
+GET /v1/market/usage & - & tuple of (calls\_last\_minute: $\mathbb{Z}$,
+busiest\_minute\_today: $\mathbb{Z}$, calls\_today: $\mathbb{Z}$,
+limit\_per\_minute: $\mathbb{N}$) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent assets: set of tuple of (asset\_id: ID, symbol: String, name: String,
+asset\_type: String, price\_currency: String, is\_tradable: $\mathbb{B}$), every
+asset, with each symbol once.
+
+\medskip
+\noindent prices: set of tuple of (asset\_id: ID, price: Decimal,
+price\_currency: String, quoted\_at: DateTime, obtained\_at: DateTime), every
+price saved, at most one per asset and quoted\_at. An asset's current price is
+the one with the latest quoted\_at. Every price\_currency, here and in assets, is
+QUOTE\_CURRENCY from Constants (M7).
+
+\medskip
+\noindent requests: seq of tuple of (requested\_at: DateTime, symbol: String,
+outcome: String), one per call to the provider in a committed poll (see
+poll\_once).
+
+\medskip
+\noindent poller: \{off, running, stopped\}, the state of the price poller's
+thread. It is off until lifespan starts the thread and again once the server
+stops, running while the thread runs, and stopped if the thread ends while the
+server runs.
+
+\medskip
+\noindent lastPollFailed: $\mathbb{B}$, whether the latest poll failed (see
+run\_poller). It is false when lifespan starts.
+
+\subsubsection{Environment Variables}
+
+\noindent MARKET\_ALWAYS\_OPEN: $\mathbb{B}$, default false, treats the market as
+always open.
+
+\noindent MARKET\_POLLER\_ENABLED: $\mathbb{B}$, default false, starts the price
+poller with the server.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The database migrations add the assets. Market never adds or removes one.
+\item At most one running server has MARKET\_POLLER\_ENABLED on.
+\item Every time given to Market has a time zone.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent get\_asset\_by\_symbol(session, symbol):
+\begin{itemize}
+\item output: $out := $ the AssetInfo of $a \in$ assets with $a$.symbol $=$
+  symbol, even if not tradable
+\item exception: $exc := $ (no $a \in$ assets has $a$.symbol $=$ symbol
+  $\Rightarrow$ UnknownAssetError)
+\end{itemize}
+
+\noindent get\_asset(session, asset\_id):
+\begin{itemize}
+\item output: $out := $ the AssetInfo of $a \in$ assets with $a$.asset\_id $=$
+  asset\_id
+\item exception: $exc := $ (no $a \in$ assets has $a$.asset\_id $=$ asset\_id
+  $\Rightarrow$ UnknownAssetError)
+\end{itemize}
+
+\noindent get\_current\_price(session, asset\_id, now):
+\begin{itemize}
+\item output: $out := $ None if the asset has no price yet, else (price,
+  quoted\_at and obtained\_at of its current price $p$, delayed:
+  is\_delayed($p$.quoted\_at, now))
+\item exception: None
+\end{itemize}
+
+\noindent is\_delayed(quoted\_at, now):
+\begin{itemize}
+\item output: $out := $ is\_market\_open(now) $\land$ now $-$ quoted\_at $>$
+  limit, where limit is QUOTE\_STALENESS\_LIMIT from Constants (M7)
+\item exception: None
+\end{itemize}
+
+\noindent is\_market\_open(now):
+\begin{itemize}
+\item output: $out := $ MARKET\_ALWAYS\_OPEN $\lor$ is\_trading\_time(now)
+\item exception: None
+\end{itemize}
+
+\noindent GET /v1/assets():
+\begin{itemize}
+\item output: $out := $ (market\_open: is\_market\_open(now), assets: for each
+  tradable $a \in$ assets by symbol, its symbol, name and price\_currency, with
+  the price (as Money), quoted\_at, obtained\_at and delayed from
+  get\_current\_price, or None, None, None and false before its first price)
+\item exception: None
+\end{itemize}
+
+\noindent GET /v1/market/usage():
+\begin{itemize}
+\item output: $out := $ (calls\_last\_minute: $|R(\text{now} - 1 \text{
+  minute})|$, busiest\_minute\_today: the most entries of $R(\text{start})$ in
+  one clock minute, or 0 if there are none, calls\_today:
+  $|R(\text{start})|$, limit\_per\_minute: FINNHUB\_CALLS\_PER\_MINUTE of
+  Market Providers (M3)), where $R(t)$ is the entries of requests from $t$ to
+  now, and start is the midnight that begins now's New York day
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent HOLIDAYS: set of Date, the weekdays in 2026 and 2027 that the New
+York Stock Exchange closes for a holiday.\\
+EARLY\_CLOSES: set of Date = \{2026-11-27, 2026-12-24, 2027-11-26\}, its early
+closes.
+
+\smallskip
+\noindent is\_trading\_time: DateTime $\rightarrow \mathbb{B}$\\
+is\_trading\_time(now) $:= d$ is a weekday not in HOLIDAYS $\land\ 9{:}30 \leq
+t < c$, where $d$ and $t$ are now's day and time in New York (NEW\_YORK, the
+America/New\_York time zone), and $c$ is 13:00 if $d \in$ EARLY\_CLOSES, else
+16:00.
+
+\smallskip
+\noindent POLL\_INTERVAL: Duration = 60 seconds, the wait after each poll.\\
+POLL\_AFTER\_CLOSE: Duration = 15 minutes, how long polling goes on after the
+close.\\
+STOP\_TIMEOUT: Duration = 15 seconds, how long the server waits for the poller
+to stop.
+
+\smallskip
+\noindent should\_poll: DateTime $\rightarrow \mathbb{B}$\\
+should\_poll(now) $:=$ is\_market\_open(now) $\lor$ is\_market\_open(now $-$
+POLL\_AFTER\_CLOSE)
+
+\smallskip
+\noindent poll\_once(session: Session, provider: MarketDataProvider, now:
+DateTime): for each tradable asset, it gets a quote from provider.get\_quote,
+saves it with save\_quote and adds (now, symbol, outcome) to requests. outcome
+is ``ok'' for a quote. A RateLimitedError gives ``rate\_limited'' and ends the
+poll, an UnknownSymbolError gives ``unknown\_symbol'' and any other
+MarketDataError gives ``error''. It does not commit. It returns true only if
+it saved a quote for every tradable asset.
+
+\smallskip
+\noindent save\_quote(session: Session, asset\_id: ID, $q$: Quote) adds $q$ to
+prices with obtained\_at the database's time. If the asset has a price at
+$q$.quoted\_at already, an equal price is kept and a different one is replaced,
+with a new obtained\_at.
+
+\smallskip
+\noindent run\_poller(stop: $\mathbb{B}$, provider: MarketDataProvider): until
+stop is true, if should\_poll(now) with now $:=$ system\_clock(), it runs
+poll\_once at now in a new SessionLocal session and commits, then waits
+POLL\_INTERVAL. A poll that raises an error is logged and rolled back. After
+each poll, lastPollFailed $:=$ (the poll raised an error, or poll\_once
+returned false). So a rate limit, a provider that is down, a wrong key or a
+single symbol without a price all count as a failed poll.
+
+\smallskip
+\noindent lifespan: Lifespan. At start it reads the two environment variables
+and get\_provider\_settings of Market Providers (M3) and runs
+check\_always\_open, and a ValidationError or ValueError stops the server. If
+MARKET\_POLLER\_ENABLED, run\_poller runs on its own thread with the provider
+from build\_provider until the server stops, which waits up to STOP\_TIMEOUT.
+It sets poller and lastPollFailed as their descriptions say.
+
+\smallskip
+\noindent health: HealthCheck\\
+health() $:=$ (poller $=$ off $\Rightarrow$ (``ok'', ``poller off'') $|$
+poller $=$ stopped $\Rightarrow$ (\mbox{``degraded''}, ``poller stopped'') $|$
+poller $=$ running $\land$ lastPollFailed $\Rightarrow$ (\mbox{``degraded''},
+``last poll failed'') $|$ poller $=$ running $\land \neg$lastPollFailed
+$\Rightarrow$ (``ok'', None)). A failed poll shows until the next poll, which
+may be the next trading day.
+
+\smallskip
+\noindent check\_always\_open(market, providers: ProviderSettings) raises
+ValueError if market has MARKET\_ALWAYS\_OPEN on and providers.market\_provider
+$\neq$ ``fake''.
+
+\newpage
+
 % M11 Activity: #249
 % M12 Trading: #247
 % M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
