@@ -188,11 +188,44 @@ dropped by rollback or close.
 \medskip
 
 \noindent Base: the type every module defines its own tables on. Every
-timestamp keeps its time zone. Base also names every key, constraint and index
+timestamp keeps its time zone.
+
+\medskip
+\noindent A table holds one kind of thing, such as assets. It has a row for
+each asset and a column for each fact about it, such as its symbol.
+
+\medskip
+\noindent A table can have constraints. A constraint is a rule the database
+itself checks every time a row is added, changed or deleted, and it refuses a
+change that breaks the rule. There are five kinds, shown here with examples
+from Market (M10):
+\begin{itemize}
+\item Not null: every row must have a value in this column. Every column in
+  Market is not null.
+\item Primary key: the column that tells each row apart, so no two rows have
+  the same value in it. A table has one. Each asset has its own asset\_id.
+\item Foreign key: a column that must hold the primary key of a row in another
+  table. Each price's asset\_id must be the asset\_id of an asset, so a price
+  can never belong to an asset that does not exist. For the same reason, an
+  asset that still has prices cannot be deleted.
+\item Unique: no two rows may have the same value in the columns it names. A
+  table can have several. No two assets share a symbol. With more than one
+  column, only the combination must differ: an asset has many prices, but at
+  most one for each quoted\_at (the time the price was set).
+\item Check: a condition every row must meet, such as a price being above 0.
+\end{itemize}
+Last, a table can have an index. Like the index of a book, it lets the
+database find rows by a column without reading every row. An index is not a
+rule. The table of calls to the market data provider, provider\_requests, has
+one on requested\_at, so counting the calls in the last minute stays fast. A
+primary key or unique comes with its own index, so it needs no second one.
+
+\medskip
+\noindent Base names every primary key, foreign key, unique, check and index
 that has no name of its own, from its table and columns, by the rules below,
-instead of letting PostgreSQL choose. A migration (a script that changes the
+instead of letting the database choose. A migration (a script that changes the
 tables in the database) can then change or drop one by a name known when the
-migration is written. The rules, with examples from Market (M10):
+migration is written:
 
 \begin{center}
 \begin{tabular}{p{2.4cm} p{5.6cm} p{6.6cm}}
@@ -208,8 +241,9 @@ Index & ix\_\textit{table}\_\textit{first column} & ix\_provider\_requests\_requ
 \end{tabular}
 \end{center}
 
-\noindent A check has no column to be named after, so whoever writes it gives
-it a name, such as price\_positive. A check without a name is an error.
+\noindent A check is a condition, not a list of columns, so whoever writes it
+gives it a name, such as price\_positive, and Base adds the rest. A check
+without a name is an error.
 
 \subsubsection{Exported Constants}
 
