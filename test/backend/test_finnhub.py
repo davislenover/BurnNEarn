@@ -91,6 +91,21 @@ def test_bad_responses_are_reported(response: httpx2.Response) -> None:
         provider.get_quote("AAPL")
 
 
+@pytest.mark.parametrize("price", ["NaN", "Infinity", "-Infinity"])
+def test_a_price_that_is_not_a_number_is_reported(price: str) -> None:
+    provider = provider_answering(
+        lambda request: httpx2.Response(
+            200, text=f'{{"c": {price}, "t": 1793040139}}'
+        )
+    )
+
+    with pytest.raises(MarketDataError) as caught:
+        provider.get_quote("AAPL")
+
+    # The reply is broken, which is not the same as an unknown stock.
+    assert type(caught.value) is MarketDataError
+
+
 def test_a_reply_that_cannot_be_read_is_reported() -> None:
     def handler(request: httpx2.Request) -> httpx2.Response:
         # Marked as compressed, but it isn't.

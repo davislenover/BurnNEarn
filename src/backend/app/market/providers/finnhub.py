@@ -74,6 +74,11 @@ class FinnhubProvider(MarketDataProvider):
                 f"Unexpected Finnhub response for {symbol}"
             ) from error
 
+        # json reads NaN and Infinity as numbers, but neither is a price.
+        # This comes first, since comparing NaN below would raise.
+        if not price.is_finite():
+            raise MarketDataError(f"Unexpected Finnhub response for {symbol}")
+
         # Finnhub answers an unknown symbol with zeros instead of an error.
         if price <= 0 or quoted_at.timestamp() == 0:
             raise UnknownSymbolError(f"Finnhub has no price for {symbol}")
