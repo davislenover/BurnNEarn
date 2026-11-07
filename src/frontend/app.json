@@ -5,11 +5,40 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow FitFolio to access motion and fitness data to count steps during your walking sessions."
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "Allow FitFolio to read your step count from Apple Health.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.health.READ_STEPS"
+      ],
+      "package": "com.pgyk.frontend"
     }
   }
 }

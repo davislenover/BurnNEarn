@@ -1,10 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import { useTodaySteps } from "./services/health/useTodaySteps";
 
 export default function App() {
+  const { steps } = useTodaySteps();
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+      <Text>Today's steps: {steps ?? '—'}</Text>
       <StatusBar style="auto" />
     </View>
   );
