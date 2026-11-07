@@ -3,6 +3,7 @@
 | Date | Version | Author | Notes |
 |---|---|---|---|
 | Nov 5, 2026 | 1.0 | Davis Lenover | PoC version |
+| Nov 7, 2026 | 1.1 | Davis Lenover | Module health, users and wallet |
 
 This covers only what the PoC needs. It grows as features are added.
 
@@ -68,16 +69,16 @@ made from it.
    as `trades.asset_id` to `assets`.
 4. Only routes commit, once per request. Market's poller thread is the one
    exception: it commits once per poll.
-5. Money only moves through wallet. Lock the portfolio first with
-   `wallet.interface.lock_live_portfolio()`. `change_balance` needs what it
-   returns. This way a buy and a step sync at the same time wait in turn
-   instead of deadlocking.
+5. Money only moves through wallet. Lock the portfolio with
+   `wallet.interface.lock_live_portfolio()` before calling `change_balance`,
+   as [Users and wallet](#users-and-wallet-who-is-calling-and-how-money-changes)
+   shows.
 6. Take the time from `app/core/clock.py`, never from `datetime.now()`, so
    tests can set it.
 
 ## Design patterns
 
-Four patterns, each used where it solves a real problem.
+Five patterns, each used where it solves a real problem.
 
 **Plug-in kernel.** The kernel (`app/core/` and `create_app()`) doesn't know
 which modules exist. Each module fills in a `Plugin` in its `plugin.py`, with
@@ -97,13 +98,20 @@ diagram.
 
 **Dependency injection.** Code is handed what it needs instead of fetching
 it. Routes get a database session and the clock from the kernel, through
-`Depends(get_db)` and `Depends(get_clock)`. The poller is given its provider,
+`Depends(get_db)` and `Depends(get_clock)`, and the current user from users,
+through `Depends(get_current_user)`. The poller is given its provider,
 clock and session factory. Tests hand in stand-ins, such as a fixed time or a
 stub provider.
 
 **Read-only records.** A module hands other modules frozen copies, such as
-`AssetInfo` and `CurrentPrice` in `app/market/types.py`, never database rows.
-That way no module can change another module's tables by accident.
+`AssetInfo` and `CurrentPrice` in `app/market/types.py` or wallet's
+`BalanceChangeReceipt`, never database rows. That way no module can change
+another module's tables by accident.
+
+**Lock token.** Wallet's `change_balance` only takes the `LockedPortfolio`
+that `lock_live_portfolio` returns, so changing a balance without locking it
+first is hard to do by accident. See
+[Users and wallet](#users-and-wallet-who-is-calling-and-how-money-changes).
 
 ## How it runs
 
@@ -124,8 +132,8 @@ module's queries.
 |---|---|---|---|
 | `app/core/`, `app/registry.py`, `app/main.py` | none | `GET /v1/health` | #187, first pull request |
 | `app/market/` | `assets`, `prices`, `provider_requests` | `GET /v1/assets`, `GET /v1/market/usage` | #187 |
-| `app/users/` | `users` | none (it provides the demo user) | #189 |
-| `app/wallet/` | `portfolios`, `balance_changes` | `GET /v1/me/balance` | #189 |
+| `app/users/` | `users` | none (it provides the current user) | #279 |
+| `app/wallet/` | `portfolios`, `balance_changes` | `GET /v1/me/balance` (#189) | #279 |
 | `app/activity/` | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190 |
 | `app/trading/` | `trades`, `holdings` | `POST /v1/me/trades`, `GET /v1/me/portfolio` | #188 |
 
@@ -172,6 +180,75 @@ To add a provider:
 The whole market module, with the parts still to come in grey:
 
 ![UML class diagram of the market module](figures/market.png)
+
+## Users and wallet: who is calling, and how money changes
+
+**Users.** `users.interface.get_current_user` is the one place that knows who
+is calling. A route that needs a user asks for it with
+`Depends(get_current_user)`, so the phone never sends a user ID. The PoC has
+no sign-in. While `DEMO_USER_ENABLED` is on, every request is the demo user,
+whose ID is `DEMO_USER_ID` in `app/users/types.py`. While it is off, as it is
+by default, the route answers 401 `not_authenticated`. Real sign-in later
+only changes the inside of this function.
+
+`get_current_user` doesn't check that the user exists. The demo user and its
+live portfolio have to be made first, with `create_user(db, DEMO_USER_ID)` and
+`create_live_portfolio(db, DEMO_USER_ID)`, which the seed script (#189) does.
+Until then, wallet's functions fail for the demo user.
+
+![UML class diagram of the users module](figures/users.png)
+
+**Wallet.** Each portfolio's currency lives in wallet, and only wallet changes
+it. A route that changes money does three things:
+
+```python
+from app.wallet.interface import change_balance, lock_live_portfolio
+from app.wallet.types import BalanceChangeReason
+
+locked = lock_live_portfolio(db, user.user_id)
+receipt = change_balance(db, locked, -cost, BalanceChangeReason.TRADE_PURCHASE)
+db.commit()
+```
+
+1. **Lock first.** `lock_live_portfolio` locks the portfolio's row until the
+   transaction ends. Two requests for one portfolio, such as a buy and a step
+   sync, then run one after the other, and the second sees what the first
+   saved. That only holds for what the route reads after the lock, so read
+   anything the amount depends on there, such as what a day's rewards have
+   paid so far (`wallet.queries.activity_paid`).
+2. **Change with one guarded `UPDATE`.** `change_balance` adds the amount only
+   if the balance stays at 0 or more, then records the change in
+   `balance_changes`. If the balance would go below 0, it raises
+   `InsufficientFundsError` (409) and changes nothing. It never commits.
+3. **Commit once.** The route commits after every step has succeeded, so the
+   payment and what it pays for are saved together or not at all.
+
+`change_balance` also refuses, with `ValueError` and before changing anything,
+a call that makes no sense:
+- an amount that is 0, isn't a finite `Decimal`, or has more than 4 decimals.
+  So when a reward comes to 0, don't call it
+- a reward that takes currency away, or a purchase that adds it
+- a reward without its `activity_date` (the `date` it pays for), or anything
+  else with one
+
+The database also refuses bad rows, even from code that skips wallet's
+functions: a balance below 0, a second live portfolio for a user, a change of
+0, a reward that spends or a purchase that adds, and a reward without a day or
+anything else with one. It deletes a portfolio's changes with it. It doesn't
+check that a balance equals the sum of its changes (SEC-22). `change_balance`
+keeps that true by changing both in one transaction, which is why nothing
+else may change a balance.
+
+Two of the patterns above keep this safe:
+- **Read-only records:** `change_balance` returns a `BalanceChangeReceipt`
+  (the change's ID, its amount and the balance after it), never the row.
+  Trading will store the receipt's ID with its trade (#188).
+- **Lock token:** `change_balance` asks for the `LockedPortfolio` that
+  `lock_live_portfolio` returns. Nothing stops code making one itself, but
+  asking for it makes skipping the lock hard to do by accident. If the lock is
+  skipped anyway, the guarded `UPDATE` still keeps the balance at 0 or more.
+
+![UML class diagram of the wallet module](figures/wallet.png)
 
 ## Migrations
 
