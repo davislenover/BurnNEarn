@@ -1,5 +1,11 @@
 """Tests for the shared test setup in conftest.py."""
 
+import uuid
+from collections.abc import Callable
+from datetime import date
+from decimal import Decimal
+from typing import Any
+
 import pytest
 from fastapi import Depends, FastAPI
 from fastapi.testclient import TestClient
@@ -10,6 +16,14 @@ from sqlalchemy.orm import Session
 from app.core.db import engine, get_db
 from app.main import app
 from app.market.models import Asset
+from app.users.interface import get_current_user
+from app.users.types import DEMO_USER_ID, CurrentUser
+from app.wallet.queries import activity_paid, get_balance, live_portfolio_id
+
+# The fixtures' types. They are defined in conftest.py, which tests don't
+# import.
+MakePortfolio = Callable[..., Any]
+AsUser = Callable[[CurrentUser], None]
 
 
 def test_tests_run_on_a_database_ending_in_test(db_session: Session) -> None:
@@ -92,3 +106,38 @@ def test_the_real_get_db_works(database: None) -> None:
         "database": "ok",
         "modules": {"market": {"status": "ok", "detail": "poller off"}},
     }
+
+
+def test_make_portfolio_funds_one_old_reward_and_commits(
+    db_session: Session, make_portfolio: MakePortfolio
+) -> None:
+    owner = make_portfolio(Decimal("500"))
+    # A rollback can't undo it, because it was committed.
+    db_session.rollback()
+
+    assert get_balance(db_session, owner.portfolio_id) == Decimal("500")
+    assert activity_paid(
+        db_session, owner.portfolio_id, date(2000, 1, 1)
+    ) == Decimal("500")
+    assert live_portfolio_id(db_session, owner.user.user_id) == (
+        owner.portfolio_id
+    )
+
+
+def test_make_portfolio_can_make_the_demo_user(
+    db_session: Session, make_portfolio: MakePortfolio
+) -> None:
+    owner = make_portfolio(user=CurrentUser(user_id=DEMO_USER_ID))
+
+    assert owner.user.user_id == DEMO_USER_ID
+    assert get_balance(db_session, owner.portfolio_id) == Decimal("0")
+
+
+def test_as_user_changes_the_user_routes_see(
+    client: TestClient, as_user: AsUser
+) -> None:
+    user = CurrentUser(user_id=uuid.uuid4())
+
+    as_user(user)
+
+    assert app.dependency_overrides[get_current_user]() == user
