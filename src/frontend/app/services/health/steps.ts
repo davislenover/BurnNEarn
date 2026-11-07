@@ -1,3 +1,4 @@
+import { Pedometer } from "expo-sensors";
 import { Platform } from "react-native";
 
 export class StepTrackingError extends Error {
@@ -54,8 +55,6 @@ export async function getTodaysSteps(): Promise<number> {
     }
 
     if (Platform.OS === "ios") {
-        const { Pedometer } = await import("expo-sensors");
-
         // Expo Pedometer uses motion/fitness permission on iPhone.
         let permission = await Pedometer.getPermissionsAsync();
         if (!permission.granted && permission.canAskAgain) {

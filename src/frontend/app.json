@@ -37,7 +37,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.health.READ_STEPS"
-      ]
+      ],
+      "package": "com.pgyk.frontend"
     }
   }
 }
