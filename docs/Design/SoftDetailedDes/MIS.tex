@@ -989,7 +989,180 @@ $\neq$ ``fake''.
 \newpage
 
 % M11 Activity: #249
-% M12 Trading: #247
+\section{MIS of Trading} \label{MisTrading}
+
+\subsection{Module}
+
+Trading (M12 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Users (M8), Wallet (M9), Market (M10), Plugins
+(M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+{\raggedright\noindent Trading's errors are DomainErrors with HTTP status
+409: RequestIdReusedError (code request\_id\_reused), MarketClosedError
+(market\_closed), PriceOutOfDateError (price\_out\_of\_date) and
+PriceChangedError (price\_changed). The local function buy says when each is
+raised.\par}
+
+\medskip
+\noindent HoldingValue = tuple of (symbol: String, quantity: $\mathbb{Z}$,
+price: Money, quoted\_at: DateTime, delayed: $\mathbb{B}$, value: Money), one
+holding in the reply to GET /v1/me/portfolio.
+
+\subsubsection{Exported Constants}
+
+PLUGIN: Plugin $=$ (name: ``trading'', router: the two routes below, lifespan:
+None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright}p{3.2cm} >{\raggedright}p{2.1cm}
+  >{\raggedright}p{5.2cm} >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+POST /v1/me/trades & ID, String, String, $\mathbb{N}$, Money
+  & tuple of (trade\_id: ID, status: String, unit\_price: Money,
+  currency\_amount: Money, executed\_at: DateTime, cash\_balance: Money)
+  & RequestIdReusedError, MarketClosedError, UnknownAssetError,
+  PriceOutOfDateError, PriceChangedError, InsufficientFundsError \\
+GET /v1/me/portfolio & - & tuple of (cash\_balance: Money, holdings: seq of
+  HoldingValue, holdings\_value: Money, total\_value: Money, simulated:
+  $\mathbb{B}$) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent trades: set of Trade, every trade made, where Trade = tuple of
+(trade\_id: ID, request\_id: ID, portfolio\_id: ID, asset\_id: ID,
+trade\_type: String, quantity: $\mathbb{N}$, unit\_price: Decimal,
+currency\_amount: Decimal, cash\_balance\_after: Decimal, status: String,
+balance\_change\_id: ID, created\_at: DateTime). A request\_id appears at most
+once among a portfolio's trades. Every trade is a ``buy'' with status
+``executed''.
+
+\medskip
+\noindent holdings: set of tuple of (portfolio\_id: ID, asset\_id: ID,
+quantity: $\mathbb{Z}$), the shares each portfolio holds, at most one entry per
+portfolio and stock, with quantity never below 0.
+
+\medskip
+\noindent When Wallet deletes a portfolio, its trades and holdings go with it.
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+The lock from lock\_live\_portfolio lasts until the session commits or is
+closed, so requests that change one portfolio run one at a time. Every stock in
+holdings has at least one price.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent Both routes take session from get\_db, now from get\_clock and $u :=$
+get\_current\_user(), which refuses with status 401 when there is no current
+user.
+
+\medskip
+\noindent POST /v1/me/trades(request\_id, symbol, trade\_type, quantity,
+expected\_price):
+\begin{itemize}
+\item transition: the route locks the portfolio with locked $:=$
+  lock\_live\_portfolio(session, $u$.user\_id), runs $(t, \mathit{new}) :=$
+  buy(session, locked, request, now) on the request body, and commits once. So
+  the payment, the shares and the trade are saved together or not at all.
+  With the lock first, two copies of one request run one after the other, and
+  if the first made a trade, the second finds it.
+\item output: the status is 201 for a new trade and 200 for a repeat, and
+  $out :=$ ($t$.trade\_id, $t$.status, $t$.unit\_price,
+  $t$.currency\_amount, $t$.created\_at, $t$.cash\_balance\_after), so a
+  repeated request\_id gets the same body as the first answer.
+\item exception: $exc :=$ the exception buy raises, with status 404 for
+  UnknownAssetError and 409 for the rest. A refused request saves nothing, so
+  sending it again runs every check again. A trade\_type other than ``buy'' gets status 422.
+\end{itemize}
+
+\noindent GET /v1/me/portfolio():
+\begin{itemize}
+\item output: $out :=$ portfolio\_value(session, live\_portfolio\_id(session,
+  $u$.user\_id), now) with simulated $=$ true, so the phone labels the values
+  as simulated.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent TradeRequest = tuple of (request\_id: ID, symbol: String,
+trade\_type: String, quantity: $\mathbb{N}$, expected\_price: Money), the body
+of POST /v1/me/trades.
+
+\medskip
+\noindent buy(session: Session, locked: LockedPortfolio, request: TradeRequest,
+now: DateTime) $\rightarrow$ tuple of (t: Trade, new: $\mathbb{B}$) holds the
+trade rules and never commits. Here $p :=$ locked.portfolio\_id, and old is the
+trade in trades with portfolio\_id $p$ and request\_id request.request\_id, or
+None. old matches request when it has the same symbol and quantity, and
+old.unit\_price $=$ request.expected\_price. For a new request (old $=$ None),
+$a :=$ get\_asset\_by\_symbol(session, request.symbol), $c :=$
+get\_current\_price(session, $a$.asset\_id, now) and cost $:=$
+request.quantity $\times$ $c$.price.
+\begin{itemize}
+\item transition: for a new request that passes every check, $b :=$
+  change\_balance(session, locked, $-$cost, trade\_purchase) pays for it, $p$'s
+  holding of $a$ gains request.quantity shares (from 0 if none), and trades
+  $:=$ trades $\cup \{t\}$, where $t :=$ (a new ID, request.request\_id, $p$,
+  $a$.asset\_id, ``buy'', request.quantity, $c$.price, cost,
+  get\_balance(session, $p$) after the payment, ``executed'',
+  $b$.balance\_change\_id, now).
+\item output: $out :=$ (old matches request $\Rightarrow$ (old, false) $\mid$
+  old $=$ None $\Rightarrow$ ($t$, true)), so a repeat gets its first trade
+  back, even after the market closes or the price moves.
+\item exception: for a repeat, $exc := ($old $\neq$ None $\land$ old does not
+  match request $\Rightarrow$\\
+  \hspace*{1em}RequestIdReusedError$)$.\\
+  For a new request the first of these
+  that holds is raised, in this order:\\
+  \hspace*{1em}$exc := (\neg$is\_market\_open(now) $\Rightarrow$
+    MarketClosedError\\
+  \hspace*{1em}$\mid$ no asset has symbol request.symbol $\Rightarrow$
+    UnknownAssetError\\
+  \hspace*{1em}$\mid c =$ None $\lor$ $c$.delayed $\Rightarrow$
+    PriceOutOfDateError\\
+  \hspace*{1em}$\mid c$.price $\neq$ request.expected\_price $\Rightarrow$
+    PriceChangedError\\
+  \hspace*{1em}$\mid$ get\_balance(session, $p$) $<$ cost $\Rightarrow$
+    InsufficientFundsError$)$\\
+  PriceChangedError's message gives the new price, $c$.price.
+\end{itemize}
+
+\noindent portfolio\_value(session: Session, portfolio\_id: ID, now: DateTime)
+$\rightarrow$ tuple of (cash\_balance: Decimal, holdings: seq of HoldingValue,
+holdings\_value: Decimal, total\_value: Decimal) only reads.
+\begin{itemize}
+\item output: $out := (b, H, s, b + s)$, where $b :=$ get\_balance(session,
+  portfolio\_id), $H$ has one entry per holding $h$ of portfolio\_id, in order
+  of symbol, and $s$ is the sum of their values. With $c :=$
+  get\_current\_price(session, $h$.asset\_id, now), $h$'s entry is (its symbol,
+  $h$.quantity, $c$.price, $c$.quoted\_at, $c$.delayed, $h$.quantity $\times$
+  $c$.price). A delayed price is still used, and delayed flags it.
+\item exception: None
+\end{itemize}
+
+\newpage
+
 % M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
 % M18 Navigation, M19 Screens and M20 Sync Service (app): #250
 % M22 Plugins and M23 JSON Format: #247
