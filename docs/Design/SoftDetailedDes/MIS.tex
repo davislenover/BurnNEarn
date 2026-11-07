@@ -1165,7 +1165,107 @@ holdings\_value: Decimal, total\_value: Decimal) only reads.
 
 % M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
 % M18 Navigation, M19 Screens and M20 Sync Service (app): #250
-% M22 Plugins and M23 JSON Format: #247
+\section{MIS of Plugins} \label{MisPlugins}
+
+\subsection{Module}
+
+Plugins (M22 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Plugin = tuple of (name: String, router: Router or None, lifespan:
+Lifespan or None, health: HealthCheck or None), a record of what one module adds
+to the server. It cannot be changed once built.
+\begin{itemize}
+\item name: the module's folder name, such as ``market''.
+\item router: the module's routes, which Control (M6) adds under /v1.
+\item lifespan: the module's background work, which runs while the server runs.
+\item health: the module's health check, which Control (M6) shows in
+  GET~/v1/health.
+\end{itemize}
+
+\noindent Lifespan = App $\rightarrow$ work that starts with the server and
+stops when it shuts down, such as the price poller of Market (M10). A Lifespan
+stops its work in a finally block, so the work still stops if another module
+fails to start.
+
+\medskip
+\noindent HealthCheck = () $\rightarrow$ ModuleHealth, a check of the
+module's own state.
+
+\medskip
+\noindent ModuleHealth = tuple of (status: String, detail: String or None), a
+module's health. Its status is ``ok'' or \mbox{``degraded''}, and its detail is a
+short fixed text for the team, such as ``poller stopped''.
+
+\medskip
+\noindent Router: a group of HTTP routes (a FastAPI APIRouter).
+
+\medskip
+\noindent App: the web app that serves the routes (a FastAPI app).
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{2.4cm} p{6.4cm} p{2cm} p{2.6cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new Plugin & String, Router or None, Lifespan or None, HealthCheck or None &
+  Plugin & ValueError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Every Lifespan follows the start and stop rule in its type above.
+\item A HealthCheck reads only its module's own state in memory, with no
+  database or network call, so it answers at once. Its detail never holds a
+  secret or an error's own text, because GET /v1/health needs no signed-in
+  user.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new Plugin(name, router, lifespan, health):
+\begin{itemize}
+\item output: $out :=$ (name: name, router: router, lifespan: lifespan, health:
+  health). Each of router, lifespan and health is None when the module leaves
+  it out.
+\item exception: $exc :=$ (lifespan $\neq$ None $\land$ health $=$ None
+  $\Rightarrow$ ValueError). A module with background work must report its
+  health, because that work can fail without any request seeing it.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
+% M23 JSON Format: #247
 % M24 API Service (app): #250
 
 \bibliographystyle {plainnat}
