@@ -7,4 +7,9 @@ from app.market import (
     routes,
 )
 
-PLUGIN = Plugin(name="market", router=routes.router, lifespan=poller.lifespan)
+PLUGIN = Plugin(
+    name="market",
+    router=routes.router,
+    lifespan=poller.lifespan,
+    health=poller.health,
+)

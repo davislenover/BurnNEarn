@@ -64,7 +64,15 @@ def health_router(plugins: Sequence[Plugin]) -> APIRouter:
 
 def _check(name: str, health: HealthCheck) -> ModuleHealth:
     try:
-        return health()
+        result = health()
+        # Python does not check types when the code runs, so a check that
+        # returns the wrong thing would otherwise break the whole route.
+        if not isinstance(result, ModuleHealth) or result.status not in (
+            "ok",
+            "degraded",
+        ):
+            raise TypeError(f"returned {result!r}")
+        return result
     except Exception:
         # The error goes to the log only. Its text could say too much, and
         # the route needs no signed-in user.

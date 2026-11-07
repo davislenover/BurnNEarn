@@ -87,4 +87,8 @@ def test_the_real_get_db_works(database: None) -> None:
     with TestClient(app) as real_client:
         response = real_client.get("/v1/health")
 
-    assert response.json() == {"status": "ok", "database": "ok", "modules": {}}
+    assert response.json() == {
+        "status": "ok",
+        "database": "ok",
+        "modules": {"market": {"status": "ok", "detail": "poller off"}},
+    }

@@ -21,7 +21,8 @@ def test_health_is_ok_when_database_is_reachable(
     assert response.json() == {
         "status": "ok",
         "database": "ok",
-        "modules": {},
+        # The poller is off in tests.
+        "modules": {"market": {"status": "ok", "detail": "poller off"}},
     }
 
 
@@ -44,7 +45,7 @@ def test_health_reports_unavailable_database(client: TestClient) -> None:
     assert response.json() == {
         "status": "degraded",
         "database": "unavailable",
-        "modules": {},
+        "modules": {"market": {"status": "ok", "detail": "poller off"}},
     }
 
 
@@ -127,3 +128,23 @@ def test_an_unreachable_database_answers_503_even_if_modules_are_ok() -> None:
     assert code == 503
     assert body["status"] == "degraded"
     assert body["database"] == "unavailable"
+    # The modules are still reported.
+    assert body["modules"] == {"fine": {"status": "ok", "detail": None}}
+
+
+@pytest.mark.parametrize(
+    "result",
+    # Nothing, a plain string, and a status that is not ok or degraded.
+    [None, "ok", ModuleHealth("fine")],
+)
+def test_a_health_check_that_returns_the_wrong_thing_counts_as_failed(
+    db_session: Session, result: object
+) -> None:
+    plugins = [Plugin(name="odd", health=lambda: result)]
+
+    code, body = health_of(plugins, db_session)
+
+    assert code == 200
+    assert body["modules"] == {
+        "odd": {"status": "degraded", "detail": "health check failed"}
+    }

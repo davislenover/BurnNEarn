@@ -4,7 +4,7 @@
 title Market module
 
 class "plugin.py" as plugin <<entry point>> {
-  PLUGIN = Plugin(name, router, lifespan)
+  PLUGIN = Plugin(name, router, lifespan, health)
 }
 class "routes.py" as routes <<entry point>> {
   GET /v1/assets
@@ -27,7 +27,8 @@ class "poller.py" as poller <<logic>> {
   lifespan(app)
   run_poller(stop, provider, clock, session_factory)
   should_poll(now)
-  poll_once(session, provider, now)
+  poll_once(session, provider, now): bool
+  health(): ModuleHealth
 }
 class "calendar.py" as calendar <<logic>> {
   is_trading_time(now)

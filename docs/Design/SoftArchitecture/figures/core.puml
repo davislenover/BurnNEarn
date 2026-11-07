@@ -11,7 +11,7 @@ class "registry.py" as registry <<kernel>> {
   PLUGINS: tuple[Plugin, ...]
 }
 class "<module>/plugin.py" as modplugin <<entry point>> {
-  PLUGIN = Plugin(name, router, lifespan)
+  PLUGIN = Plugin(name, router, lifespan, health)
 }
 
 package "app/core" {
@@ -19,6 +19,14 @@ package "app/core" {
     name: str
     router: APIRouter | None
     lifespan: Lifespan | None
+    health: HealthCheck | None
+  }
+  class ModuleHealth <<kernel>> {
+    status: ok | degraded
+    detail: str | None
+  }
+  class "routes.py" as routes <<kernel>> {
+    GET /v1/health
   }
   class "clock.py" as clock <<kernel>> {
     Clock
@@ -44,8 +52,11 @@ package "app/core" {
 }
 
 main --> registry : reads
+main --> routes
 registry --> modplugin : lists
 modplugin --> Plugin
+Plugin --> ModuleHealth : health check returns
+routes --> Plugin : asks each for its health
 main --> DomainError : sends as JSON
 db --> settings
 

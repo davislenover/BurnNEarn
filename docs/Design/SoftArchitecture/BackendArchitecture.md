@@ -53,7 +53,7 @@ plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 | `service.py` | The rules. Never commits | No |
 | `models.py` | The tables | No |
 | `routes.py` | HTTP routes. Commits once | No |
-| `plugin.py` | Adds the module's routes to the app | No, only `app/registry.py` |
+| `plugin.py` | Adds the module to the app: its routes, background work and health check | No, only `app/registry.py` |
 
 Leave out any file a module doesn't need. Each module's pull request also adds
 or updates the module's UML class diagram, `figures/<module>.puml`, and the PNG
@@ -81,8 +81,11 @@ Four patterns, each used where it solves a real problem.
 
 **Plug-in kernel.** The kernel (`app/core/` and `create_app()`) doesn't know
 which modules exist. Each module fills in a `Plugin` in its `plugin.py`, with
-its routes and any work that runs in the background, and `app/registry.py`
-lists them. Adding a module never changes the kernel.
+its routes, any work that runs in the background, and a health check, and
+`app/registry.py` lists them. Adding a module never changes the kernel.
+`GET /v1/health` shows each module's health check. A health check is
+optional, but a module with background work must have one, since that work
+can fail without any request seeing it. `Plugin` refuses one without it.
 
 ![UML class diagram of the plug-in kernel](figures/plugin-kernel.png)
 

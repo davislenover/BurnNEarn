@@ -53,5 +53,13 @@ class Plugin:
     # Work that runs while the app runs. None if there is none.
     lifespan: Lifespan | None = None
     # How the module reports its health in GET /v1/health. None if it has
-    # nothing to report.
+    # nothing to report. Required with a lifespan, see __post_init__.
     health: HealthCheck | None = None
+
+    def __post_init__(self) -> None:
+        # Background work can fail without any request seeing it, so a
+        # module that has some must report its health.
+        if self.lifespan is not None and self.health is None:
+            raise ValueError(
+                f"The {self.name} plugin has a lifespan but no health check"
+            )
