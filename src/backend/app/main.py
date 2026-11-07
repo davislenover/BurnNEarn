@@ -41,7 +41,7 @@ def create_app(plugins: Sequence[Plugin] = PLUGINS) -> FastAPI:
 
     # Every route is versioned under /v1 so the app and the API can change
     # separately later.
-    app.include_router(routes.router, prefix="/v1")
+    app.include_router(routes.health_router(plugins), prefix="/v1")
     for plugin in plugins:
         if plugin.router is not None:
             app.include_router(plugin.router, prefix="/v1")
