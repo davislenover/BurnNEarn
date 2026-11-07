@@ -8,5 +8,6 @@ here once it has a plugin.py.
 from app.core.plugins import Plugin
 from app.market import plugin as market
 from app.users import plugin as users
+from app.wallet import plugin as wallet
 
-PLUGINS: tuple[Plugin, ...] = (users.PLUGIN, market.PLUGIN)
+PLUGINS: tuple[Plugin, ...] = (users.PLUGIN, wallet.PLUGIN, market.PLUGIN)
