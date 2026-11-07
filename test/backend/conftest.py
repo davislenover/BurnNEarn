@@ -41,6 +41,8 @@ os.environ["MARKET_PROVIDER"] = "fake"
 os.environ["MARKET_ALWAYS_OPEN"] = "false"
 # A running poller would save real rows that the tests never undo.
 os.environ["MARKET_POLLER_ENABLED"] = "false"
+# Routes refuse a request with no user, unless a test picks one.
+os.environ["DEMO_USER_ENABLED"] = "false"
 
 from app.core.db import SessionLocal, engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
