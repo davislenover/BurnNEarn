@@ -1265,7 +1265,107 @@ None
 
 \newpage
 
-% M23 JSON Format: #247
+\section{MIS of JSON Format} \label{MisJSON}
+
+\subsection{Module}
+
+JSON Format (M23 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Money = Decimal, an amount, such as a price. It is sent to the phone
+as a JSON string with exactly four decimals (see \_to\_text).
+
+\medskip
+\noindent DomainError = tuple of (code: String, message: String, status:
+$\mathbb{N}$), an error a route raises to refuse a request it understood. The
+code names the kind of refusal, the message says why in words a user can read,
+and the status is the HTTP status of the reply. The defaults are code
+``domain\_error'', message ``This request could not be completed.'' and status
+400. Each kind of refusal is a subtype of DomainError with its own code, and it
+can also set its own message and status.
+
+\medskip
+\noindent Refusal = tuple of (detail: tuple of (code: String, message:
+String)), the JSON body Control (M6) sends, with HTTP status $e$.status, for
+every DomainError $e$ a route raises:
+
+\begin{center}
+\verb|{"detail": {"code": e.code, "message": e.message}}|
+\end{center}
+
+\noindent FastAPI itself refuses a request that does not fit a route's types
+with status 422, in its own shape.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3.4cm} p{4.6cm} p{2.4cm} p{2.9cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new Money & Decimal, $\mathbb{Z}$, $\mathbb{R}$ or String & Money &
+  ValidationError \\
+new DomainError & String or None & DomainError & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+Every amount a route sends to the phone has the type Money. An amount that
+comes from a division or an average is rounded to four decimals before it goes
+in a Money field.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new Money(amount):
+\begin{itemize}
+\item output: $out := $ the Decimal that amount names
+\item exception: $exc := $ (amount is not a finite number, or cannot be
+  written exactly with four decimals $\Rightarrow$ ValidationError). It is
+  refused, never rounded.
+\end{itemize}
+
+\noindent new DomainError(message):
+\begin{itemize}
+\item output: $out :=$ (code: $k$.code, message: (message $\neq$ None
+  $\Rightarrow$ message $|$ message $=$ None $\Rightarrow$ $k$.message),
+  status: $k$.status), where $k$ is the kind of DomainError being made and
+  message is None when left out
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent \_to\_text: Money $\rightarrow$ String
+
+\noindent \_to\_text($m$) $:=$ $m$ with exactly four digits after the decimal
+point, such as ``84.0000'' for 84. A zero is always ``0.0000'', never
+``-0.0000''.
+
+\newpage
+
 % M24 API Service (app): #250
 
 \bibliographystyle {plainnat}
