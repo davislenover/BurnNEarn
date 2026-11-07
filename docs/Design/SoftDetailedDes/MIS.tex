@@ -628,7 +628,91 @@ $\mathbb{N}$, body: Refusal), the reply sent when a route raises a DomainError.
 
 \newpage
 
-% M7 Constants: #247
+\section{MIS of Constants} \label{MisConstants}
+
+\subsection{Module}
+
+Constants (M7 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+{\raggedright
+ActivityType = \{STEPS, WHEELCHAIR\_PUSHES, CYCLING, SWIMMING, OTHER\_WORKOUT\},
+the supported activity types (SUPPORTED\_ACTIVITY\_TYPES in SRS Appendix C).
+Each value is also a String, its name in lower case, such as ``steps''.\par}
+
+\subsubsection{Exported Constants}
+
+Names and values match SRS Appendix C. EARNING\_RATES($t$) is the amount of
+activity type $t$ that earns one unit of virtual currency ($u_t$ in SRS
+Section~6.7). Decimal amounts are in virtual currency. The phone app's copy,
+once written, must hold the same values.
+
+\begin{longtable}{p{6cm} p{3.4cm} >{\raggedright\arraybackslash}p{5.4cm}}
+\toprule
+\textbf{Name} & \textbf{Type} & \textbf{Value} \\
+\midrule
+\endhead
+\multicolumn{3}{l}{\textit{Activity and rewards}} \\
+EARNING\_RATES & ActivityType $\rightarrow \mathbb{N}$ & 100 steps for STEPS,
+  100 pushes for WHEELCHAIR\_PUSHES, 1 minute for each other type \\
+MAX\_DAILY\_CURRENCY & Decimal & 300 \\
+MAX\_DAILY\_STEPS & $\mathbb{N}$ & 150,000 \\
+MAX\_DAILY\_PUSHES & $\mathbb{N}$ & 100,000 \\
+MAX\_WORKOUT\_DURATION & Duration & 12 hours \\
+SYNC\_LOOKBACK\_PERIOD & Duration & 7 days \\
+\midrule
+\multicolumn{3}{l}{\textit{Simulated market}} \\
+QUOTE\_CURRENCY & String & ``USD'' (US dollars) \\
+QUOTE\_STALENESS\_LIMIT & Duration & 15 minutes \\
+MIN\_TRADABLE\_STOCKS & $\mathbb{N}$ & 50 \\
+SCENARIO\_START\_BALANCE & Decimal & 10,000 \\
+VALUE\_TOLERANCE & Decimal & 0.01 \\
+\midrule
+\multicolumn{3}{l}{\textit{Accounts and data}} \\
+MIN\_USER\_AGE & $\mathbb{N}$ & 18 years \\
+MIN\_PASSWORD\_LENGTH & $\mathbb{N}$ & 8 characters \\
+MAX\_FAILED\_SIGNINS & $\mathbb{N}$ & 5 \\
+SIGNIN\_LOCKOUT\_PERIOD & Duration & 15 minutes \\
+SESSION\_TIMEOUT & Duration & 14 days \\
+DATA\_DELETION\_PERIOD & Duration & 30 days \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Exported Access Programs}
+
+None
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+None
+
+\subsubsection{Access Routine Semantics}
+
+None
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
 % M8 Users and M9 Wallet: #248
 % M10 Market: #247
 % M11 Activity: #249
