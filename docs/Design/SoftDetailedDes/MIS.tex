@@ -509,7 +509,126 @@ random by at most 0.5\%, to four decimals
 \newpage
 
 % M4 Health Service and M5 Device Service (app): #250
-% M6 Control and M7 Constants: #247
+\section{MIS of Control} \label{MisControl}
+
+\subsection{Module}
+
+Control (M6 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Users (M8), Wallet (M9), Market (M10), Activity (M11), Trading
+(M12), Plugins (M22), JSON Format (M23)
+
+\medskip
+\noindent For now PLUGINS holds only Market (M10). The others are added as they
+are built.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+None
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGINS: seq of Plugin $=$ $\langle$PLUGIN of Market (M10)$\rangle$,
+the PLUGIN of each module in the server, in the order their background work
+starts. Listing a module here is also how database migrations find its tables.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2.4cm} >{\raggedright\arraybackslash}p{6.8cm} p{2.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+create\_app & seq of Plugin & App & - \\
+GET /v1/health & - & tuple of (status: String, database: String, modules:
+  String $\rightarrow$ ModuleHealth) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+app: App, the running server, built by create\_app(PLUGINS) when
+\texttt{uvicorn app.main:app} starts the server.
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+No two plug-ins in PLUGINS share a name, and no two routes share a method and
+path. Each plug-in's lifespan and health check follow the rules in Plugins
+(M22).
+
+\subsubsection{Access Routine Semantics}
+
+\noindent create\_app(\textit{plugins}):
+\begin{itemize}
+\item output: $out :=$ a new App that serves GET /v1/health, which reports
+  the health of each plug-in in \textit{plugins}, and the routes of
+  each plug-in in \textit{plugins}, all under /v1, plus the API docs at /docs.
+  It answers any DomainError a route raises with handle\_domain\_error, and
+  runs lifespan when it starts and shuts down. \textit{plugins} is PLUGINS when
+  none are given.
+\item exception: None
+\end{itemize}
+
+\noindent GET /v1/health():
+\begin{itemize}
+\item output: $out :=$ (status: $s$, database: $d$, modules: $m$), where
+  \begin{itemize}
+  \item $d :=$ (a query to the database succeeds $\Rightarrow$ ``ok'' $|$ it
+    fails $\Rightarrow$ ``unavailable'')
+  \item for each plug-in $p$ of the App with a health check, $m(p$.name$) :=$
+    ($p$.health() raises an error $\Rightarrow$ (\mbox{``degraded''}, ``health
+    check failed''), and the error is logged $|$ otherwise $\Rightarrow$
+    $p$.health()). A plug-in without a health check is left out of $m$.
+  \item $s :=$ ($d =$ ``ok'' $\land$ every status in $m$ is ``ok''
+    $\Rightarrow$ ``ok'' $|$ otherwise $\Rightarrow$ ``degraded'')
+  \end{itemize}
+  The reply has HTTP status 503 when $d$ is ``unavailable'', since nothing
+  works without the database, and 200 otherwise, even when a module is
+  degraded.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent lifespan: Lifespan, the background work of each App that create\_app
+builds, made from its \textit{plugins}.
+
+\medskip
+\noindent lifespan($a$):
+\begin{itemize}
+\item transition: the lifespans of \textit{plugins} start in order when $a$
+  starts and stop in reverse order when $a$ shuts down, and if one fails to
+  start, the ones already started still stop.
+\item exception: $exc :=$ (a lifespan raises an error $\mathit{err}$ while it
+  starts $\Rightarrow$ $\mathit{err}$). $a$ does not start.
+\end{itemize}
+
+\medskip
+\noindent handle\_domain\_error: DomainError $\rightarrow$ tuple of (status:
+$\mathbb{N}$, body: Refusal), the reply sent when a route raises a DomainError.
+
+\medskip
+\noindent handle\_domain\_error($e$):
+\begin{itemize}
+\item output: $out :=$ (status: $e$.status, body: the Refusal of $e$ in JSON
+  Format (M23))
+\item exception: None
+\end{itemize}
+
+\newpage
+
+% M7 Constants: #247
 % M8 Users and M9 Wallet: #248
 % M10 Market: #247
 % M11 Activity: #249
