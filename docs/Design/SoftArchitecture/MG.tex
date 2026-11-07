@@ -401,7 +401,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] The set of modules that make up the running server.
-\item[Services:] Builds the server from the list of module plug-ins. It adds each module's routes, and starts and stops each module's background work with the server. It also serves the health check.
+\item[Services:] Builds the server from the list of module plug-ins. It adds each module's routes, and starts and stops each module's background work with the server. It also serves the health check, which reports the database and each module's own health.
 \item[Implemented By:] \progname{} server, in \path{main.py}, \path{registry.py} and \path{core/routes.py}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -460,7 +460,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] The shape of a module's plug-in.
-\item[Services:] Defines what a module hands to Control: its name, its routes and its background work. Control can then add any module without knowing anything else about it.
+\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it.
 \item[Implemented By:] \progname{} server, in \path{core/plugins.py}
 \item[Type of Module:] Record
 \end{description}
