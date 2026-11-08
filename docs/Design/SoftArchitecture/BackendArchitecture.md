@@ -244,7 +244,8 @@ else may change a balance.
 Two of the patterns above keep this safe:
 - **Read-only records:** `change_balance` returns a `BalanceChangeReceipt`
   (the change's ID, its amount and the balance after it), never the row.
-  Trading will store the receipt's ID with its trade (#188).
+  Trading stores the receipt's ID with each trade, so every trade points
+  at the change that paid for it.
 - **Lock token:** `change_balance` asks for the `LockedPortfolio` that
   `lock_live_portfolio` returns. Nothing stops code making one itself, but
   asking for it makes skipping the lock hard to do by accident. If the lock is

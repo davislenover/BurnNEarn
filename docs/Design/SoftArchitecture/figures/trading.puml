@@ -41,6 +41,7 @@ package "Tables (models.py)" as tables {
     unique balance_change_id
     currency_amount = quantity × unit_price
     quantity > 0, unit_price > 0
+    cash_balance_after ≥ 0
     trade_type 'buy', status 'executed'
   }
   class "holdings" as holdings <<table>> {

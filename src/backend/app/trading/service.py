@@ -1,7 +1,9 @@
-"""Trading's rules: buying shares. Never commits."""
+"""Trading's rules: buying shares, and what a portfolio is worth. Never
+commits."""
 
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -18,12 +20,14 @@ from app.market.queries import (
 )
 from app.trading.models import Holding, Trade
 from app.trading.types import (
+    HoldingValue,
     MarketClosedError,
     PriceChangedError,
     PriceOutOfDateError,
     RequestIdReusedError,
 )
 from app.wallet.interface import change_balance
+from app.wallet.queries import get_balance
 from app.wallet.types import BalanceChangeReason, LockedPortfolio
 
 
@@ -48,6 +52,21 @@ class TradeRequest(BaseModel):
     # The price the user saw, sent back exactly as GET /v1/assets gave it.
     # More than 4 decimals is refused.
     expected_price: Money
+
+
+class PortfolioValue(BaseModel):
+    """What a portfolio is worth at the latest prices. A read-only copy."""
+
+    model_config = ConfigDict(frozen=True)
+
+    cash_balance: Money
+    # One per stock held, in order of symbol.
+    holdings: tuple[HoldingValue, ...]
+    # The sum of the holdings' values: the SRS's portfolio value V, which
+    # leaves the cash out (FR_MktPortfolioValue).
+    holdings_value: Money
+    # cash_balance + holdings_value.
+    total_value: Money
 
 
 def buy(
@@ -120,6 +139,46 @@ def buy(
     session.add(trade)
     session.flush()
     return trade, True
+
+
+def portfolio_value(
+    session: Session, portfolio_id: uuid.UUID, now: datetime
+) -> PortfolioValue:
+    """What the portfolio is worth: each holding at quantity × its stock's
+    latest price, their sum, and that sum plus the cash. Only reads.
+
+    A delayed price is still used, and its holding is marked delayed.
+    """
+    rows = session.execute(
+        select(Holding.asset_id, Holding.quantity).where(
+            Holding.portfolio_id == portfolio_id
+        )
+    ).all()
+    holdings = []
+    for asset_id, quantity in rows:
+        current = get_current_price(session, asset_id, now)
+        # Every held stock has a price, since it was bought at one.
+        assert current is not None
+        holdings.append(
+            HoldingValue(
+                symbol=get_asset(session, asset_id).symbol,
+                quantity=quantity,
+                price=current.price,
+                quoted_at=current.quoted_at,
+                delayed=current.delayed,
+                value=quantity * current.price,
+            )
+        )
+    # Sorted here, since trading may not join market's assets table.
+    holdings.sort(key=lambda holding: holding.symbol)
+    cash = get_balance(session, portfolio_id)
+    held = sum((holding.value for holding in holdings), Decimal(0))
+    return PortfolioValue(
+        cash_balance=cash,
+        holdings=tuple(holdings),
+        holdings_value=held,
+        total_value=cash + held,
+    )
 
 
 def _same_trade(session: Session, old: Trade, request: TradeRequest) -> bool:

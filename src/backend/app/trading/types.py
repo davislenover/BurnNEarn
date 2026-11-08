@@ -1,12 +1,35 @@
-"""What trading hands to other modules: its refusals.
+"""What trading hands to other modules: its refusals, and the value of one
+holding.
 
-Each reaches the phone as {"detail": {"code": ..., "message": ...}} with
-status 409. buy in service.py says when each is raised.
+Each refusal reaches the phone as {"detail": {"code": ..., "message": ...}}
+with status 409. buy in service.py says when each is raised.
 """
 
+from datetime import datetime
 from decimal import Decimal
 
+from pydantic import BaseModel, ConfigDict
+
 from app.core.errors import DomainError
+from app.core.money import Money
+
+
+class HoldingValue(BaseModel):
+    """What one holding is worth at its stock's latest price. A read-only
+    copy, never a database row."""
+
+    model_config = ConfigDict(frozen=True)
+
+    symbol: str
+    quantity: int
+    price: Money
+    # When the provider set the price.
+    quoted_at: datetime
+    # True when the market is open and the price is out of date. It is
+    # still used, and the phone shows it as delayed.
+    delayed: bool
+    # quantity × price.
+    value: Money
 
 
 class RequestIdReusedError(DomainError):

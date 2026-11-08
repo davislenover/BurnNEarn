@@ -1,21 +1,27 @@
-"""Trading's HTTP routes: buying shares."""
+"""Trading's HTTP routes: buying shares, and the portfolio's value."""
 
 import uuid
 from datetime import UTC, datetime
-from typing import Self
+from typing import Literal, Self
 
 from fastapi import APIRouter, Depends, Response, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import Session
 
 from app.core.clock import Clock, get_clock
 from app.core.db import get_db
 from app.core.money import Money
 from app.trading.models import Trade
-from app.trading.service import TradeRequest, buy
+from app.trading.service import (
+    PortfolioValue,
+    TradeRequest,
+    buy,
+    portfolio_value,
+)
 from app.users.interface import get_current_user
 from app.users.types import CurrentUser
 from app.wallet.interface import lock_live_portfolio
+from app.wallet.queries import live_portfolio_id
 
 router = APIRouter(tags=["trading"])
 
@@ -72,3 +78,30 @@ def post_trade(
     if not new:
         response.status_code = status.HTTP_200_OK
     return receipt
+
+
+class PortfolioReply(PortfolioValue):
+    """What GET /v1/me/portfolio sends back."""
+
+    # The JSON schema lists simulated as always sent, though it has a
+    # default.
+    model_config = ConfigDict(json_schema_serialization_defaults_required=True)
+
+    # Always true, so the phone labels the values as simulated
+    # (FR_MktLabelReturns).
+    simulated: Literal[True] = True
+
+
+@router.get("/me/portfolio")
+def get_portfolio(
+    db: Session = Depends(get_db),
+    clock: Clock = Depends(get_clock),
+    user: CurrentUser = Depends(get_current_user),
+) -> PortfolioReply:
+    """The current user's live portfolio at the latest prices
+    (FR_MktHoldings, FR_MktPortfolioValue).
+
+    It only reads, so it doesn't lock or commit.
+    """
+    value = portfolio_value(db, live_portfolio_id(db, user.user_id), clock())
+    return PortfolioReply(**dict(value))
