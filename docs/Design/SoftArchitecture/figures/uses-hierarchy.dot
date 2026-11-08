@@ -1,0 +1,95 @@
+// MG uses hierarchy: an arrow from A to B means module A uses module B.
+// An arrow into a group stands for uses of the modules in it. Every server
+// module with routes uses M8 Users, so Users is in the shared group. The MG's
+// table lists every single use.
+// Render with: dot -Tpdf uses-hierarchy.dot -o uses-hierarchy.pdf
+digraph uses {
+  graph [rankdir=TB, compound=true, newrank=true, nodesep=0.18, ranksep=0.3,
+         fontname="Helvetica", fontsize=13, labeljust=l];
+  node  [shape=box, style="rounded,filled", fontname="Helvetica",
+         fontsize=15, penwidth=1.2, margin="0.08,0.04"];
+  edge  [color="#555555", arrowsize=0.6, penwidth=0.9];
+
+  subgraph cluster_server {
+    label="Server"; color="#B4B2A9"; style="rounded"; fontcolor="#5F5E5A";
+    node [fillcolor="#EEEDFE", color="#534AB7"];
+    M6 [label="M6 Control"];
+
+    subgraph cluster_features {
+      label="Feature modules (each plugs in to Control)"; color="#D3D1C7";
+      style="rounded,dashed"; fontcolor="#5F5E5A";
+      node [fillcolor="#EEEDFE", color="#534AB7"];
+      M15 [label="M15 Social", style="rounded,filled,dashed"];
+      M16 [label="M16 Scenarios", style="rounded,filled,dashed"];
+      M17 [label="M17 Privacy", style="rounded,filled,dashed"];
+      M14 [label="M14 Learning", style="rounded,filled,dashed"];
+      M13 [label="M13 Goals", style="rounded,filled,dashed"];
+      M12 [label="M12 Trading"];
+      M11 [label="M11 Activity"];
+      M10 [label="M10 Market"];
+      M9  [label="M9 Wallet"];
+    }
+    node [fillcolor="#E6F1FB", color="#185FA5"];
+    M3 [label="M3 Market Providers"];
+  }
+
+  subgraph cluster_app {
+    label="App"; color="#B4B2A9"; style="rounded"; fontcolor="#5F5E5A";
+    node [fillcolor="#EEEDFE", color="#534AB7"];
+    M18 [label="M18 Navigation"];
+    M19 [label="M19 Screens"];
+    M20 [label="M20 Sync Service"];
+    M21 [label="M21 Reminder Service", style="rounded,filled,dashed"];
+    node [fillcolor="#FAEEDA", color="#854F0B"];
+    M24 [label="M24 API Service"];
+    node [fillcolor="#E6F1FB", color="#185FA5"];
+    M4 [label="M4 Health Service"];
+    M5 [label="M5 Device Service"];
+  }
+
+  subgraph cluster_shared {
+    label="Shared"; color="#B4B2A9"; style="rounded,dashed"; fontcolor="#5F5E5A";
+    node [fillcolor="#E6F1FB", color="#185FA5"];
+    M1 [label="M1 Database"];
+    M2 [label="M2 Clock"];
+    node [fillcolor="#EEEDFE", color="#534AB7"];
+    M7 [label="M7 Constants"];
+    M8 [label="M8 Users"];
+    node [fillcolor="#FAEEDA", color="#854F0B"];
+    M22 [label="M22 Plugins"];
+    M23 [label="M23 JSON Format"];
+  }
+
+  // Control uses every feature module's plug-in
+  M6 -> M15 [lhead=cluster_features, penwidth=1.6];
+
+  // Uses between feature modules
+  M15 -> {M13 M14 M11};        // Social never uses Wallet or Trading
+  M16 -> {M12 M10 M9};
+    M14 -> M12;
+  M13 -> {M11 M9};
+  M12 -> {M10 M9};
+  M11 -> M9;
+  M10 -> M3;
+  
+  // App
+  M18 -> M19;
+  M19 -> {M20 M21 M24};
+  M20 -> {M4 M5 M24};
+  M21 -> {M5 M24};
+  M24 -> M5;
+
+  // Into the shared modules
+  M9 -> M22 [ltail=cluster_server, lhead=cluster_shared, penwidth=1.6];
+  M5 -> M7  [ltail=cluster_app, lhead=cluster_shared, penwidth=1.6];
+
+  // Layout only: the app sits below the server, and the shared modules on
+  // the bottom row, so the figure is narrow enough to read on a page.
+  {rank=same; M1; M2; M7; M8; M22; M23}
+  M9 -> M18 [style=invis, weight=10];
+  M6 -> M17 [style=invis];
+  M6 -> M16 [style=invis];
+  M3 -> M18 [style=invis];
+  M4 -> M1 [style=invis];
+  M5 -> M7 [style=invis];
+}
