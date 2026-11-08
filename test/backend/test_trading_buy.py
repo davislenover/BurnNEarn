@@ -1,5 +1,5 @@
-"""Tests for buy: paying, adding the shares, recording the trade, and
-refusing a buy that breaks a rule."""
+"""Tests for buy: paying, adding the shares, recording the trade, refusing
+a buy that breaks a rule, and applying each request_id once."""
 
 import uuid
 from collections.abc import Callable
@@ -20,6 +20,7 @@ from app.trading.types import (
     MarketClosedError,
     PriceChangedError,
     PriceOutOfDateError,
+    RequestIdReusedError,
 )
 from app.users.interface import create_user
 from app.wallet.interface import (
@@ -99,10 +100,14 @@ def price(
 
 
 def request(
-    symbol: str = "AAPL", quantity: int = 1, expected_price: str = "101.5"
+    symbol: str = "AAPL",
+    quantity: int = 1,
+    expected_price: str = "101.5",
+    request_id: uuid.UUID | None = None,
 ) -> TradeRequest:
+    """A buy request, with a new request_id unless one is given."""
     return TradeRequest(
-        request_id=uuid.uuid4(),
+        request_id=request_id or uuid.uuid4(),
         symbol=symbol,
         trade_type="buy",
         quantity=quantity,
@@ -367,3 +372,162 @@ def test_a_buy_that_is_rolled_back_leaves_nothing(
     assert shares(db_session, locked) is None
     assert count(db_session, Trade, locked) == 0
     assert count(db_session, BalanceChange, locked) == 1
+
+
+# Each request_id applies once (FR_MktNoDuplicate).
+
+
+def test_the_same_request_twice_makes_one_trade(session: Session) -> None:
+    # 2 shares, so the trade's cost (203) differs from its price (101.5).
+    locked = wallet(session, "500")
+    price(session, "AAPL", "101.5")
+    sent = request("AAPL", 2)
+
+    first, first_new = buy(session, locked, sent, NOW)
+    again, again_new = buy(session, locked, sent, NOW)
+
+    assert first_new
+    assert not again_new
+    assert again.trade_id == first.trade_id
+    assert count(session, Trade, locked) == 1
+    assert shares(session, locked) == 2
+    # The funding and one payment.
+    assert count(session, BalanceChange, locked) == 2
+    assert get_balance(session, locked.portfolio_id) == Decimal("297")
+
+
+@pytest.mark.parametrize(
+    ("later", "new_price"),
+    [
+        pytest.param(CLOSED, None, id="after-the-close"),
+        pytest.param(NOW + timedelta(minutes=2), "105", id="price-moved"),
+        pytest.param(NOW + timedelta(minutes=20), None, id="price-delayed"),
+    ],
+)
+def test_a_repeat_gets_its_first_trade_back_whatever_changed(
+    session: Session, later: datetime, new_price: str | None
+) -> None:
+    # The first buy spends the whole balance, so a repeat that tried to pay
+    # again would be refused too.
+    locked = wallet(session, "101.5")
+    price(session, "AAPL", "101.5")
+    sent = request()
+    first, _ = buy(session, locked, sent, NOW)
+    if new_price is not None:
+        price(session, "AAPL", new_price, later - timedelta(minutes=1))
+
+    again, new = buy(session, locked, sent, later)
+
+    assert not new
+    assert again.trade_id == first.trade_id
+    assert count(session, Trade, locked) == 1
+    assert shares(session, locked) == 1
+    assert get_balance(session, locked.portfolio_id) == Decimal("0")
+
+
+def test_a_repeat_with_the_price_written_another_way_is_the_same_trade(
+    session: Session,
+) -> None:
+    locked = wallet(session, "500")
+    price(session, "AAPL", "101.5")
+    sent = request()
+    first, _ = buy(session, locked, sent, NOW)
+
+    again, new = buy(
+        session, locked, request("AAPL", 1, "1.015E2", sent.request_id), NOW
+    )
+
+    assert not new
+    assert again.trade_id == first.trade_id
+
+
+@pytest.mark.parametrize(
+    "changed",
+    [
+        # The first trade was 2 AAPL at 101.5. Each case changes one thing,
+        # up or down.
+        pytest.param({"quantity": 3}, id="more"),
+        pytest.param({"quantity": 1}, id="fewer"),
+        pytest.param({"expected_price": "101.5001"}, id="higher-price"),
+        pytest.param({"expected_price": "101.4999"}, id="lower-price"),
+        pytest.param({"symbol": "MSFT"}, id="symbol"),
+        pytest.param({"symbol": "aapl"}, id="symbol-case"),
+        # The repeat is checked first, so these aren't unknown_asset or
+        # market_closed.
+        pytest.param({"symbol": "ZZZZ"}, id="unknown-symbol"),
+        pytest.param({"quantity": 3, "now": CLOSED}, id="after-the-close"),
+    ],
+)
+def test_the_same_request_id_for_a_different_trade_is_refused(
+    session: Session, changed: dict[str, Any]
+) -> None:
+    locked = wallet(session, "500")
+    price(session, "AAPL", "101.5")
+    price(session, "MSFT", "400")
+    sent = request("AAPL", 2)
+    buy(session, locked, sent, NOW)
+    case = {
+        "now": NOW,
+        "symbol": "AAPL",
+        "quantity": 2,
+        "expected_price": "101.5",
+        **changed,
+    }
+    different = request(
+        case["symbol"],
+        case["quantity"],
+        case["expected_price"],
+        sent.request_id,
+    )
+
+    with pytest.raises(RequestIdReusedError):
+        buy(session, locked, different, case["now"])
+
+    assert count(session, Trade, locked) == 1
+    assert shares(session, locked) == 2
+    assert get_balance(session, locked.portfolio_id) == Decimal("297")
+
+
+def test_another_users_same_request_id_makes_their_own_trade(
+    session: Session,
+) -> None:
+    mine = wallet(session, "500")
+    theirs = wallet(session, "500")
+    price(session, "AAPL", "101.5")
+    sent = request()
+    my_trade, _ = buy(session, mine, sent, NOW)
+
+    their_trade, new = buy(session, theirs, sent, NOW)
+
+    assert new
+    assert their_trade.trade_id != my_trade.trade_id
+    assert their_trade.portfolio_id == theirs.portfolio_id
+    # Their retry finds their own trade, not mine.
+    again, again_new = buy(session, theirs, sent, NOW)
+    assert not again_new
+    assert again.trade_id == their_trade.trade_id
+    assert shares(session, mine) == 1
+    assert shares(session, theirs) == 1
+
+
+def test_a_refused_request_saves_nothing_so_it_can_be_sent_again(
+    session: Session,
+) -> None:
+    locked = wallet(session, "100")
+    price(session, "AAPL", "101.5")
+    sent = request()
+    with pytest.raises(InsufficientFundsError):
+        buy(session, locked, sent, NOW)
+    change_balance(
+        session,
+        locked,
+        Decimal("1.5"),
+        BalanceChangeReason.ACTIVITY_REWARD,
+        date(2026, 11, 9),
+    )
+
+    trade, new = buy(session, locked, sent, NOW)
+
+    assert new
+    assert trade.request_id == sent.request_id
+    assert get_balance(session, locked.portfolio_id) == Decimal("0")
