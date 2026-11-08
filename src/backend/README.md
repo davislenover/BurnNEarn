@@ -36,9 +36,18 @@ cp .env.example .env
 uv sync
 docker compose up -d
 uv run alembic upgrade head
+uv run python -m app.scripts.seed_demo
 ```
 
 On Windows, use `Copy-Item .env.example .env` instead of `cp`.
+
+The last command adds the PoC's demo user and their portfolio at 0. Running it
+again changes nothing. To start the demo over at 0, deleting the demo user's
+balance changes and everything else under their portfolio, run:
+
+```bash
+uv run python -m app.scripts.seed_demo reset
+```
 
 ## Run it
 
@@ -69,25 +78,25 @@ Tests use their own database, `fitfolio_test`, so your data is safe. A test
 gets what it needs from `test/backend/conftest.py` by naming it as a
 parameter:
 
-| Fixture | What it gives |
-|---|---|
-| `client` | Calls the app without a server |
-| `db_session` | A database session whose changes are undone afterwards |
-| `at_time` | Sets the time routes see: `at_time(OPEN)` |
-| `add_price` | Gives a stock a price routes see: `add_price("AAPL", "101.5", quoted_at)` |
+| Fixture          | What it gives                                                                                                                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `client`         | Calls the app without a server                                                                                                                                                         |
+| `db_session`     | A database session whose changes are undone afterwards                                                                                                                                 |
+| `at_time`        | Sets the time routes see: `at_time(OPEN)`                                                                                                                                              |
+| `add_price`      | Gives a stock a price routes see: `add_price("AAPL", "101.5", quoted_at)`                                                                                                              |
 | `make_portfolio` | Makes and commits a user with a live portfolio: `owner = make_portfolio(Decimal("500"))`. The 500 is one reward dated 1 Jan 2000. Pass `user=` for a given user, such as the demo user |
-| `as_user` | Makes routes see that user: `as_user(owner.user)`. Without it, a route that needs a user answers 401 |
+| `as_user`        | Makes routes see that user: `as_user(owner.user)`. Without it, a route that needs a user answers 401                                                                                   |
 
 ## Where code goes
 
-| Path | What it holds |
-|---|---|
-| `app/main.py` | Builds the app |
-| `app/registry.py` | The list of modules. Add yours here |
-| `app/core/` | What every module shares: settings, the database, the clock, `Money`, errors and constants |
-| `app/<module>/` | One feature, such as `app/market/` |
-| `migrations/` | Changes to the database |
-| `../../test/backend/` | Tests |
+| Path                  | What it holds                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `app/main.py`         | Builds the app                                                                             |
+| `app/registry.py`     | The list of modules. Add yours here                                                        |
+| `app/core/`           | What every module shares: settings, the database, the clock, `Money`, errors and constants |
+| `app/<module>/`       | One feature, such as `app/market/`                                                         |
+| `migrations/`         | Changes to the database                                                                    |
+| `../../test/backend/` | Tests                                                                                      |
 
 The files inside a module, and the rules for using another module, are in
 [BackendArchitecture.md](../../docs/Design/SoftArchitecture/BackendArchitecture.md#a-modules-files).
