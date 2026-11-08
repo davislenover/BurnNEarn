@@ -2,8 +2,8 @@
 
 Run from src/backend:
 
-    uv run python -m app.scripts.seed_demo        
-    uv run python -m app.scripts.seed_demo reset  
+    uv run python -m app.scripts.seed_demo
+    uv run python -m app.scripts.seed_demo reset
 
 It uses only the users and wallet interfaces, never their tables.
 """
