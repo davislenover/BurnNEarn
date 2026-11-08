@@ -5,6 +5,7 @@ provider, so the provider can change (SC_MarketData) without changing the
 code that stores and serves prices.
 """
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -35,6 +36,11 @@ class UnknownSymbolError(MarketDataError):
 
 
 class MarketDataProvider(Protocol):
+    """What every provider must do. Each provider class names this as its
+    base class, so one that forgets get_quote fails as soon as it is
+    created."""
+
+    @abstractmethod
     def get_quote(self, symbol: str) -> Quote:
         """Return the latest price for symbol, or raise MarketDataError."""
         ...

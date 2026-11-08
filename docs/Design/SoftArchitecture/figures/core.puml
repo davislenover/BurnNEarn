@@ -1,0 +1,71 @@
+@startuml core
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/core.puml
+!include style.iuml
+title Kernel (app/core) and how a module plugs in
+
+class "main.py" as main <<kernel>> {
+  create_app(plugins = PLUGINS): FastAPI
+  app = create_app()
+}
+class "registry.py" as registry <<kernel>> {
+  PLUGINS: tuple[Plugin, ...]
+}
+class "<module>/plugin.py" as modplugin <<entry point>> {
+  PLUGIN = Plugin(name, router, lifespan, health)
+}
+
+package "app/core" {
+  class Plugin <<kernel>> {
+    name: str
+    router: APIRouter | None
+    lifespan: Lifespan | None
+    health: HealthCheck | None
+  }
+  class ModuleHealth <<kernel>> {
+    status: ok | degraded
+    detail: str | None
+  }
+  class "routes.py" as routes <<kernel>> {
+    GET /v1/health
+  }
+  class "clock.py" as clock <<kernel>> {
+    Clock
+    system_clock()
+    get_clock()
+  }
+  class "db.py" as db <<kernel>> {
+    Base
+    SessionLocal
+    get_db()
+  }
+  class "money.py" as money <<kernel>> {
+    Money: Decimal, sent as text
+  }
+  class DomainError <<error>> {
+    code
+    message
+    status
+  }
+  class "settings.py" as settings <<settings>> {
+    DATABASE_URL
+  }
+}
+
+main --> registry : reads
+main --> routes
+registry --> modplugin : lists
+modplugin --> Plugin
+Plugin --> ModuleHealth : health check returns
+routes --> Plugin : asks each for its health
+main --> DomainError : sends as JSON
+db --> settings
+
+legend right
+  <color:#5F5E5A>■</color> Kernel
+  <color:#854F0B>■</color> A module's entry point
+  <color:#A32D2D>■</color> Error
+  <color:#3B6D11>■</color> Settings
+  An arrow means "uses".
+  app/core never imports a module.
+endlegend
+@enduml

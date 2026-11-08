@@ -1,0 +1,60 @@
+@startuml market-providers
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market-providers.puml
+!include style.iuml
+title Market: where prices come from (strategy, adapter, factory)
+
+class "build_provider(settings)" as factory <<logic>> {
+  factory: picks a provider
+  from MARKET_PROVIDER
+}
+class "poll_once(session, provider, now)" as poll <<logic>> {
+  only calls get_quote
+}
+
+interface MarketDataProvider <<public>> {
+  strategy: the one method
+  every provider has
+  --
+  +get_quote(symbol): Quote
+}
+
+class FinnhubProvider <<provider>> {
+  adapter: turns Finnhub's
+  replies into a Quote
+  --
+  +get_quote(symbol): Quote
+}
+class FakeProvider <<provider>> {
+  made-up prices, for
+  development and tests
+  --
+  +get_quote(symbol): Quote
+}
+
+class Quote <<data>> {
+  symbol
+  price
+  quoted_at
+}
+class MarketDataError <<error>>
+class RateLimitedError <<error>>
+class UnknownSymbolError <<error>>
+
+factory --> MarketDataProvider : creates one
+poll --> MarketDataProvider : is given one
+MarketDataProvider <|-- FinnhubProvider
+MarketDataProvider <|-- FakeProvider
+MarketDataProvider --> Quote : returns
+MarketDataProvider --> MarketDataError : raises
+MarketDataError <|-- RateLimitedError
+MarketDataError <|-- UnknownSymbolError
+
+legend right
+  <color:#534AB7>■</color> Logic
+  <color:#0F6E56>■</color> Interface other code depends on
+  <color:#993556>■</color> Provider
+  <color:#185FA5>■</color> Data
+  <color:#A32D2D>■</color> Error
+  A hollow arrowhead means "is a".
+endlegend
+@enduml

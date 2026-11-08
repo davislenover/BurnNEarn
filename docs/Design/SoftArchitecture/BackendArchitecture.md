@@ -53,9 +53,11 @@ plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 | `service.py` | The rules. Never commits | No |
 | `models.py` | The tables | No |
 | `routes.py` | HTTP routes. Commits once | No |
-| `plugin.py` | Adds the module's routes to the app | No, only `app/registry.py` |
+| `plugin.py` | Adds the module to the app: its routes, background work and health check | No, only `app/registry.py` |
 
-Leave out any file a module doesn't need.
+Leave out any file a module doesn't need. Each module's pull request also adds
+or updates the module's UML class diagram, `figures/<module>.puml`, and the PNG
+made from it.
 
 ## Rules
 
@@ -64,13 +66,57 @@ Leave out any file a module doesn't need.
 2. Never import a module above yours in the diagram.
 3. Never use another module's tables. A foreign key into them is fine, such
    as `trades.asset_id` to `assets`.
-4. Only routes commit, and only once.
+4. Only routes commit, once per request. Market's poller thread is the one
+   exception: it commits once per poll.
 5. Money only moves through wallet. Lock the portfolio first with
    `wallet.interface.lock_live_portfolio()`. `change_balance` needs what it
    returns. This way a buy and a step sync at the same time wait in turn
    instead of deadlocking.
 6. Take the time from `app/core/clock.py`, never from `datetime.now()`, so
    tests can set it.
+
+## Design patterns
+
+Four patterns, each used where it solves a real problem.
+
+**Plug-in kernel.** The kernel (`app/core/` and `create_app()`) doesn't know
+which modules exist. Each module fills in a `Plugin` in its `plugin.py`, with
+its routes, any work that runs in the background, and a health check, and
+`app/registry.py` lists them. Adding a module never changes the kernel.
+`GET /v1/health` shows each module's health check. A health check is
+optional, but a module with background work must have one, since that work
+can fail without any request seeing it. `Plugin` refuses one without it.
+
+![UML class diagram of the plug-in kernel](figures/plugin-kernel.png)
+
+**Strategy, adapter and factory.** Market asks for prices through one
+interface, `MarketDataProvider`. `FinnhubProvider` adapts Finnhub's API to
+it, `FakeProvider` makes up prices, and `build_provider` picks one from
+`MARKET_PROVIDER`. See [Market](#market-where-prices-come-from) for the
+diagram.
+
+**Dependency injection.** Code is handed what it needs instead of fetching
+it. Routes get a database session and the clock from the kernel, through
+`Depends(get_db)` and `Depends(get_clock)`. The poller is given its provider,
+clock and session factory. Tests hand in stand-ins, such as a fixed time or a
+stub provider.
+
+**Read-only records.** A module hands other modules frozen copies, such as
+`AssetInfo` and `CurrentPrice` in `app/market/types.py`, never database rows.
+That way no module can change another module's tables by accident.
+
+## How it runs
+
+When the app starts, the kernel adds each module's routes and starts each
+module's background work. For market, that is the poller thread, which saves
+a price for every stock once a minute while the market is open.
+
+![UML sequence diagram of startup and a price poll](figures/startup-and-poll.png)
+
+A request goes from the kernel to the module's route, which reads through the
+module's queries.
+
+![UML sequence diagram of a request for the asset list](figures/request-assets.png)
 
 ## What the PoC builds
 
@@ -91,10 +137,41 @@ adds `create_app()` in `app/main.py`, which adds each module's routes, and
 poller is market's own background thread, which market's plugin starts and
 stops with the app.
 
+![UML class diagram of the kernel and how a module plugs in](figures/core.png)
+
 #191 adds two checks to CI:
 - an import-linter rule: no module imports one above it, and `app/core/`
   imports no module
 - a test: modules import each other only through their public files
+
+## Market: where prices come from
+
+Market gets prices through one interface, `MarketDataProvider`, so the rest
+of the module never knows which provider it is using.
+
+![UML class diagram of the market data providers](figures/market-providers.png)
+
+- **Strategy:** `MarketDataProvider` has one method, `get_quote(symbol)`,
+  which returns a `Quote`: the symbol, the price and when it was quoted.
+- **Adapter:** `FinnhubProvider` turns Finnhub's HTTP API into a `Quote`, and
+  its errors into ours, such as `RateLimitedError`.
+- **Fake:** `FakeProvider` makes up prices, for development and tests.
+- **Factory:** `build_provider(settings)` picks one from `MARKET_PROVIDER`.
+  The poller is given that provider and only calls `get_quote`.
+- **Errors:** every provider reports a problem as `MarketDataError` or one of
+  its subclasses, so the poller can record what happened without knowing
+  which provider it has.
+
+To add a provider:
+1. Write a class in `app/market/providers/` that names `MarketDataProvider` as
+   its base and has `get_quote(symbol)`.
+2. Add its name to `MARKET_PROVIDER` in `app/market/providers/settings.py` and to
+   `.env.example`.
+3. Add it to `build_provider`.
+
+The whole market module, with the parts still to come in grey:
+
+![UML class diagram of the market module](figures/market.png)
 
 ## Migrations
 

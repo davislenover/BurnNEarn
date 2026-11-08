@@ -2,22 +2,25 @@
 
 import json
 from datetime import UTC, datetime
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 
 import httpx2
 from pydantic import SecretStr
 
-from app.market.provider import (
+from app.market.providers.base import (
     MarketDataError,
+    MarketDataProvider,
     Quote,
     RateLimitedError,
     UnknownSymbolError,
 )
 
 FINNHUB_BASE_URL = "https://finnhub.io/api/v1"
+# The free plan allows this many calls a minute. More are refused with 429.
+FINNHUB_CALLS_PER_MINUTE = 60
 
 
-class FinnhubProvider:
+class FinnhubProvider(MarketDataProvider):
     """Gets quotes from Finnhub. Only the asset's symbol is sent (HA SEC-11).
 
     The API key goes in a request header rather than the URL, so it never
@@ -39,7 +42,9 @@ class FinnhubProvider:
                 params={"symbol": symbol},
                 headers={"X-Finnhub-Token": self._api_key.get_secret_value()},
             )
-        except httpx2.TransportError as error:
+        # HTTPError covers both a failed connection and a reply that can't be
+        # read, such as a broken compressed body.
+        except httpx2.HTTPError as error:
             raise MarketDataError(
                 f"Could not reach Finnhub: {error}"
             ) from error
@@ -56,16 +61,26 @@ class FinnhubProvider:
             data = json.loads(response.text, parse_float=Decimal)
             price = Decimal(data["c"])
             quoted_at = datetime.fromtimestamp(int(data["t"]), tz=UTC)
-        except (ValueError, KeyError, TypeError, InvalidOperation) as error:
+        # ArithmeticError covers a bad number and a time too far in the
+        # future to convert. OSError is what some systems raise instead.
+        except (
+            ValueError,
+            KeyError,
+            TypeError,
+            ArithmeticError,
+            OSError,
+        ) as error:
             raise MarketDataError(
                 f"Unexpected Finnhub response for {symbol}"
             ) from error
+
+        # json reads NaN and Infinity as numbers, but neither is a price.
+        # This comes first, since comparing NaN below would raise.
+        if not price.is_finite():
+            raise MarketDataError(f"Unexpected Finnhub response for {symbol}")
 
         # Finnhub answers an unknown symbol with zeros instead of an error.
         if price <= 0 or quoted_at.timestamp() == 0:
             raise UnknownSymbolError(f"Finnhub has no price for {symbol}")
 
         return Quote(symbol=symbol, price=price, quoted_at=quoted_at)
-
-    def close(self) -> None:
-        self._client.close()

@@ -62,6 +62,9 @@ uv run ruff check --config pyproject.toml . ../../test/backend
 uv run ruff format --config pyproject.toml . ../../test/backend
 ```
 
+To run one test file, name it with `-k`, for example
+`uv run pytest -k test_market_poller`.
+
 Tests use their own database, `fitfolio_test`, so your data is safe. A test
 asks for `client` to call the app, or `db_session` for a database session
 whose changes are undone afterwards.
@@ -77,19 +80,8 @@ whose changes are undone afterwards.
 | `migrations/` | Changes to the database |
 | `../../test/backend/` | Tests |
 
-Inside a module, leave out any file it doesn't need:
-
-| File | What goes in it |
-|---|---|
-| `interface.py` | Functions other modules may call |
-| `queries.py` | Reads other modules may call |
-| `types.py` | Data classes and errors |
-| `service.py` | The rules. Never commits |
-| `models.py` | The tables |
-| `routes.py` | The HTTP routes. Commits once |
-| `plugin.py` | Adds the module to the app |
-
-Other modules may only import `interface.py`, `queries.py` and `types.py`.
+The files inside a module, and the rules for using another module, are in
+[BackendArchitecture.md](../../docs/Design/SoftArchitecture/BackendArchitecture.md#a-modules-files).
 
 ## Change the database
 
