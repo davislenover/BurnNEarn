@@ -1,47 +1,23 @@
 """Tests for GET /v1/assets and GET /v1/market/usage."""
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 
-import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select, update
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.core.clock import get_clock
-from app.main import app
-from app.market.models import Asset, Price, ProviderRequest, RequestOutcome
+from app.market.models import Asset, ProviderRequest, RequestOutcome
 
 # Tuesday Nov 10, 2026 at 10:00 in New York: the market is open.
 OPEN = datetime(2026, 11, 10, 15, 0, tzinfo=UTC)
 # Saturday Nov 14, 2026 at 10:00 in New York: the market is closed.
 CLOSED = datetime(2026, 11, 14, 15, 0, tzinfo=UTC)
 
+# at_time and add_price are fixtures in conftest.py, shared with the
+# modules that need prices.
 SetTime = Callable[[datetime], None]
-
-
-@pytest.fixture
-def at_time(client: TestClient) -> Iterator[SetTime]:
-    """Set the time routes see: at_time(OPEN)."""
-
-    def set_time(now: datetime) -> None:
-        app.dependency_overrides[get_clock] = lambda: lambda: now
-
-    yield set_time
-
-
-def add_price(
-    session: Session, symbol: str, price: str, quoted_at: datetime
-) -> None:
-    asset_id = session.scalar(
-        select(Asset.asset_id).where(Asset.symbol == symbol)
-    )
-    session.add(
-        Price(asset_id=asset_id, price=Decimal(price), quoted_at=quoted_at)
-    )
-    # Routes only see rows that were committed.
-    session.commit()
+AddPrice = Callable[[str, str, datetime], None]
 
 
 def by_symbol(body: dict) -> dict[str, dict]:
@@ -69,10 +45,10 @@ def test_assets_have_no_price_before_the_first_quote(
 
 
 def test_an_asset_shows_its_newest_price(
-    client: TestClient, db_session: Session, at_time: SetTime
+    client: TestClient, add_price: AddPrice, at_time: SetTime
 ) -> None:
     at_time(OPEN)
-    add_price(db_session, "AAPL", "101.5", OPEN - timedelta(seconds=20))
+    add_price("AAPL", "101.5", OPEN - timedelta(seconds=20))
 
     aapl = by_symbol(client.get("/v1/assets").json())["AAPL"]
 
@@ -85,10 +61,10 @@ def test_an_asset_shows_its_newest_price(
 
 
 def test_an_old_price_is_delayed_while_the_market_is_open(
-    client: TestClient, db_session: Session, at_time: SetTime
+    client: TestClient, add_price: AddPrice, at_time: SetTime
 ) -> None:
     at_time(OPEN)
-    add_price(db_session, "AAPL", "100", OPEN - timedelta(minutes=16))
+    add_price("AAPL", "100", OPEN - timedelta(minutes=16))
 
     aapl = by_symbol(client.get("/v1/assets").json())["AAPL"]
 

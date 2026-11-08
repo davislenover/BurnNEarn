@@ -66,8 +66,17 @@ To run one test file, name it with `-k`, for example
 `uv run pytest -k test_market_poller`.
 
 Tests use their own database, `fitfolio_test`, so your data is safe. A test
-asks for `client` to call the app, or `db_session` for a database session
-whose changes are undone afterwards.
+gets what it needs from `test/backend/conftest.py` by naming it as a
+parameter:
+
+| Fixture | What it gives |
+|---|---|
+| `client` | Calls the app without a server |
+| `db_session` | A database session whose changes are undone afterwards |
+| `at_time` | Sets the time routes see: `at_time(OPEN)` |
+| `add_price` | Gives a stock a price routes see: `add_price("AAPL", "101.5", quoted_at)` |
+| `make_portfolio` | Makes and commits a user with a live portfolio: `owner = make_portfolio(Decimal("500"))`. The 500 is one reward dated 1 Jan 2000. Pass `user=` for a given user, such as the demo user |
+| `as_user` | Makes routes see that user: `as_user(owner.user)`. Without it, a route that needs a user answers 401 |
 
 ## Where code goes
 
@@ -108,6 +117,8 @@ If `main` gets a new migration while you work, run
 - Every route is under `/v1`.
 - Send amounts to the phone with the `Money` type.
 - To refuse a request, raise a subclass of `DomainError`.
+- Change a balance only with `wallet.interface.change_balance`, after
+  `lock_live_portfolio`, and commit once in the route.
 - Take the time from `app/core/clock.py`, never from `datetime.now()`.
 - Use the constants in `app/core/constants.py` instead of literal numbers.
 - Secrets go in `.env` only. Never send the Finnhub key to the app.

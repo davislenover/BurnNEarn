@@ -1,0 +1,53 @@
+@startuml users
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/users.puml
+!include style.iuml
+title Users module
+
+class "plugin.py" as plugin <<entry point>> {
+  PLUGIN = Plugin(name)
+}
+
+class "interface.py" as interface <<public>> {
+  get_current_user(): CurrentUser
+  create_user(session, user_id = None): user_id
+}
+class "types.py" as types <<public>> {
+  CurrentUser: user_id
+  DEMO_USER_ID
+}
+class NotAuthenticatedError <<error>> {
+  401 not_authenticated
+}
+
+class "settings.py" as settings <<settings>> {
+  DEMO_USER_ENABLED
+}
+
+package "Tables (models.py)" as tables {
+  class "users" as users <<table>> {
+    user_id, time_zone, created_at
+  }
+}
+
+plugin --> tables : registers
+interface --> types
+interface --> NotAuthenticatedError : raises
+interface --> settings
+interface --> tables
+
+note bottom of interface
+  get_current_user is the one place that knows
+  who is calling. In the PoC it is the demo user
+  when DEMO_USER_ENABLED is on. Real sign-in
+  later only changes the inside of this function.
+end note
+
+legend right
+  <color:#854F0B>■</color> Entry point: how the app reaches the module
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#3B6D11>■</color> Settings
+  <color:#185FA5>■</color> Table
+  <color:#A32D2D>■</color> Error
+  An arrow means "uses".
+endlegend
+@enduml
