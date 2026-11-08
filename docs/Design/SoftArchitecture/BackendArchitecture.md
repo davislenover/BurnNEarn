@@ -264,11 +264,12 @@ portfolio at the latest prices. The PoC only buys.
 3. The route commits once, so the payment, the shares and the trade are saved
    together or not at all.
 
-**One trade per `request_id`.** The phone sends a new `request_id` for each buy
-the user confirms, and the same one again when it retries. A repeat gets the
-first trade back (200 instead of 201) and pays nothing. The same `request_id`
-with a different symbol, quantity or price is refused. The database also
-refuses a second trade with one `request_id` in a portfolio.
+**One trade per `request_id` (an idempotency key).** The phone sends a new
+`request_id` for each buy the user confirms, and the same one again when it
+retries. A repeat gets the first trade back (200 instead of 201) and pays
+nothing. The same `request_id` with a different symbol, quantity or price is
+refused. The database also refuses a second trade with one `request_id` in a
+portfolio.
 
 **Only at the price the user saw (SEC-29).** The phone sends back
 `expected_price` exactly as `GET /v1/assets` gave it. `buy` reads the price
@@ -288,8 +289,8 @@ once, and uses that one read for the check, the trade's price and the cost.
 `GET /v1/me/portfolio` values each holding at its quantity × its latest price,
 and flags a delayed price. It only reads, so it doesn't lock or commit.
 
-Trading needs no new pattern. It uses the plug-in kernel, dependency
-injection, read-only records and wallet's lock token.
+Besides the idempotency key, trading uses the patterns above: the plug-in
+kernel, dependency injection, read-only records and wallet's lock token.
 
 ![UML class diagram of the trading module](figures/trading.png)
 
