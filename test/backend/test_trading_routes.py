@@ -179,6 +179,44 @@ def test_a_reused_request_id_is_refused(
     assert trades(db_session, owner.portfolio_id) == 1
 
 
+def test_the_same_buy_with_a_new_request_id_is_a_second_trade(
+    client: TestClient, db_session: Session, owner: Any
+) -> None:
+    # Only the request_id makes a repeat. A second, identical buy that the
+    # user confirmed again is a new trade (VnV test-mkt-13).
+    sent = body()
+    first = client.post("/v1/me/trades", json=sent)
+    client.post("/v1/me/trades", json=sent)
+
+    second = client.post(
+        "/v1/me/trades", json={**sent, "request_id": str(uuid.uuid4())}
+    )
+
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert second.json()["trade_id"] != first.json()["trade_id"]
+    assert trades(db_session, owner.portfolio_id) == 2
+    assert holdings(db_session, owner.portfolio_id) == 2
+    assert get_balance(db_session, owner.portfolio_id) == Decimal("297")
+
+
+def test_a_new_request_at_an_old_price_gets_the_new_price(
+    client: TestClient, owner: Any, add_price: AddPrice, at_time: SetTime
+) -> None:
+    # SEC-29, after an earlier buy at that price: the earlier trade doesn't
+    # make the new request a repeat.
+    client.post("/v1/me/trades", json=body())
+    add_price("AAPL", "105", NOW + timedelta(minutes=1))
+    at_time(NOW + timedelta(minutes=2))
+
+    response = client.post("/v1/me/trades", json=body())
+
+    assert response.status_code == 409
+    detail = response.json()["detail"]
+    assert detail["code"] == "price_changed"
+    assert "105.0000" in detail["message"]
+
+
 @pytest.mark.parametrize(
     "changes",
     [

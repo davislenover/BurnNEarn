@@ -60,8 +60,8 @@ def test_the_app_follows_the_public_file_rules() -> None:
     assert violations(graph.modules, imports) == []
 
 
-# The tests below check the rules themselves on made-up modules, so they
-# work before trading exists.
+# The tests below check the rules themselves on made-up imports, so they
+# don't depend on what the app imports today.
 MODULES = {
     "app.registry",
     "app.core.db",

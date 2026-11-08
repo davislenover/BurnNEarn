@@ -1,1 +1,1 @@
-"""Trading: buying whole shares with a portfolio's currency (FR_MktBuy)."""
+"""Trading: buying whole shares, and what a portfolio is worth."""
