@@ -61,6 +61,68 @@ uv run uvicorn app.main:app --reload
 Open <http://127.0.0.1:8000/docs> to try the API. To stop the database, run
 `docker compose down`. Your data is kept.
 
+## Run for the phone
+
+Use this to test the app on a real Android phone, and for the demo. The phone
+reaches the server on your computer through its USB cable. An Android
+emulator works the same way.
+
+**Once:** install `adb`, the Android tool that talks to the phone.
+
+```bash
+brew install android-platform-tools               # macOS
+winget install --id Google.PlatformTools -e        # Windows
+```
+
+On the phone, turn on **Developer options** (tap **Build number** in
+**Settings > About phone** seven times), then turn on **USB debugging** in
+**Settings > System > Developer options**.
+
+**In `.env`**, turn on:
+
+| Setting                 | Value                                      | Why                                                       |
+| ----------------------- | ------------------------------------------ | --------------------------------------------------------- |
+| `DEMO_USER_ENABLED`     | `true`                                     | The PoC has no sign-in, so every request is the demo user |
+| `MARKET_PROVIDER`       | `fake` to practise, `finnhub` for the demo | `finnhub` needs `FINNHUB_API_KEY`                         |
+| `MARKET_POLLER_ENABLED` | `true`                                     | Keeps prices updating while the market is open            |
+
+**Before every run**, from `src/backend`:
+
+1. Start the database and reset the demo data, so the balance starts at 0:
+
+   ```bash
+   docker compose up -d
+   uv run alembic upgrade head
+   uv run python -m app.scripts.seed_demo reset
+   ```
+
+2. Start the server so other devices can reach it. Leave out `--reload`, so
+   saving a file can't restart the server in the middle of a demo:
+
+   ```bash
+   uv run uvicorn app.main:app --host 0.0.0.0
+   ```
+
+3. Connect the phone with USB and accept the **Allow USB debugging?** prompt
+   on it. Then, in a second terminal, forward the port, so `localhost:8000`
+   on the phone reaches your computer:
+
+   ```bash
+   adb devices                      # the phone should be listed as "device"
+   adb reverse tcp:8000 tcp:8000
+   adb reverse tcp:8081 tcp:8081    # only for a debug build, for Metro
+   ```
+
+   The forwarding stops when the phone is unplugged, so run these again
+   after you reconnect it.
+
+4. Open <http://localhost:8000/v1/health> in the phone's browser. It should
+   show `"status":"ok"`. If it doesn't load, run step 3 again.
+
+Plain HTTP is only for the PoC, where requests go over the USB cable to your
+own computer. When the server is hosted, every connection will use HTTPS
+(SEC-16).
+
 ## Check your work
 
 Run these before you push. CI runs the same checks on every pull request.
@@ -69,7 +131,14 @@ Run these before you push. CI runs the same checks on every pull request.
 uv run pytest
 uv run ruff check --config pyproject.toml . ../../test/backend
 uv run ruff format --config pyproject.toml . ../../test/backend
+uv run lint-imports
 ```
+
+`lint-imports` checks that modules only call down the stack in
+[BackendArchitecture.md](../../docs/Design/SoftArchitecture/BackendArchitecture.md),
+and that `app/core/` imports no module. `test_public_files.py` checks that a
+module uses another only through its `interface.py`, `queries.py` or
+`types.py`.
 
 To run one test file, name it with `-k`, for example
 `uv run pytest -k test_market_poller`.

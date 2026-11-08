@@ -40,6 +40,10 @@ jobs:
         run: >-
           uv run ruff format --check --config pyproject.toml
           . ../../test/backend
+      # Modules only call down the stack, and app/core imports no module
+      # (BackendArchitecture.md). test_public_files.py checks the files.
+      - name: Check module imports
+        run: uv run lint-imports
 
   test:
     name: Test (pytest + PostgreSQL)

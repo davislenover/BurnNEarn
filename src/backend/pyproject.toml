@@ -16,6 +16,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.16",
     "pytest>=8.4",
     "pytest-cov>=7.0",
     "ruff>=0.13",
@@ -53,3 +54,18 @@ testpaths = ["../../test/backend"]
 # Lets tests import the app package without installing it.
 pythonpath = ["."]
 addopts = "-ra"
+
+[tool.importlinter]
+root_package = "app"
+
+[[tool.importlinter.contracts]]
+name = "Modules only call down the stack, and app/core imports no module"
+type = "layers"
+layers = [
+    "app.main",
+    "app.registry",
+    "(app.trading) | (app.activity)",
+    "(app.market) | (app.wallet)",
+    "(app.users)",
+    "app.core",
+]
