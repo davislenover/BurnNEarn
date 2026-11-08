@@ -1,4 +1,5 @@
-"""Tests for buy: paying, adding the shares and recording the trade."""
+"""Tests for buy: paying, adding the shares, recording the trade, and
+refusing a buy that breaks a rule."""
 
 import uuid
 from collections.abc import Callable
@@ -10,10 +11,16 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.constants import QUOTE_STALENESS_LIMIT
 from app.market.models import Asset, Price
+from app.market.types import UnknownAssetError
 from app.trading.models import Holding, Trade
 from app.trading.service import TradeRequest, buy
-from app.trading.types import PriceOutOfDateError
+from app.trading.types import (
+    MarketClosedError,
+    PriceChangedError,
+    PriceOutOfDateError,
+)
 from app.users.interface import create_user
 from app.wallet.interface import (
     change_balance,
@@ -36,6 +43,10 @@ MakePortfolio = Callable[..., Any]
 # Monday, Nov 9, 2026 at 10:00 in New York, while the market is open.
 NOW = datetime(2026, 11, 9, 15, 0, tzinfo=UTC)
 A_MINUTE_AGO = NOW - timedelta(minutes=1)
+# Just past the age at which an open market's price is delayed.
+DELAYED = NOW - QUOTE_STALENESS_LIMIT - timedelta(microseconds=1)
+# The same day at 16:30 in New York, after the close.
+CLOSED = datetime(2026, 11, 9, 21, 30, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -231,17 +242,111 @@ def test_not_enough_currency_is_refused_and_changes_nothing(
     assert count(session, BalanceChange, locked) == 1
 
 
-def test_a_stock_with_no_price_yet_is_refused_and_changes_nothing(
+@pytest.mark.parametrize(
+    ("case", "error"),
+    [
+        # One rule broken.
+        pytest.param({"now": CLOSED}, MarketClosedError, id="closed"),
+        pytest.param({"symbol": "ZZZZ"}, UnknownAssetError, id="unknown"),
+        pytest.param({"symbol": "MSFT"}, PriceOutOfDateError, id="no-price"),
+        pytest.param(
+            {"quoted_at": DELAYED}, PriceOutOfDateError, id="delayed"
+        ),
+        # The user saw 101.4999, then the price went up to 101.5.
+        pytest.param(
+            {"expected_price": "101.4999"}, PriceChangedError, id="went-up"
+        ),
+        pytest.param(
+            {"expected_price": "101.5001"}, PriceChangedError, id="went-down"
+        ),
+        # Two rules broken. The first in the MIS order is the one refused.
+        pytest.param(
+            {"now": CLOSED, "symbol": "ZZZZ"},
+            MarketClosedError,
+            id="closed-and-unknown",
+        ),
+        pytest.param(
+            {"now": CLOSED, "balance": "100"},
+            MarketClosedError,
+            id="closed-and-poor",
+        ),
+        pytest.param(
+            {"quoted_at": DELAYED, "expected_price": "100"},
+            PriceOutOfDateError,
+            id="delayed-and-changed",
+        ),
+        pytest.param(
+            {"expected_price": "100", "balance": "100"},
+            PriceChangedError,
+            id="changed-and-poor",
+        ),
+    ],
+)
+def test_a_buy_that_breaks_a_rule_is_refused_and_changes_nothing(
+    session: Session, case: dict[str, Any], error: type[Exception]
+) -> None:
+    # A buy of 1 AAPL at 101.5 from 500, changed by case.
+    case = {
+        "now": NOW,
+        "symbol": "AAPL",
+        "quoted_at": A_MINUTE_AGO,
+        "expected_price": "101.5",
+        "balance": "500",
+        **case,
+    }
+    locked = wallet(session, case["balance"])
+    price(session, "AAPL", "101.5", case["quoted_at"])
+    sent = request(case["symbol"], 1, case["expected_price"])
+
+    with pytest.raises(error):
+        buy(session, locked, sent, case["now"])
+
+    assert get_balance(session, locked.portfolio_id) == Decimal(
+        case["balance"]
+    )
+    assert count(session, Holding, locked) == 0
+    assert count(session, Trade, locked) == 0
+    assert count(session, BalanceChange, locked) == 1
+
+
+def test_a_changed_price_is_refused_with_the_new_price(
     session: Session,
 ) -> None:
+    # 3 shares at a price that needs all 4 decimals, so the error can't
+    # pass by giving the cost or a rounded price instead.
     locked = wallet(session, "500")
+    price(session, "AAPL", "33.3333")
 
-    with pytest.raises(PriceOutOfDateError):
-        buy(session, locked, request(), NOW)
+    with pytest.raises(PriceChangedError) as refused:
+        buy(session, locked, request("AAPL", 3, "33.3332"), NOW)
 
-    assert get_balance(session, locked.portfolio_id) == Decimal("500")
-    assert shares(session, locked) is None
-    assert count(session, Trade, locked) == 0
+    assert refused.value.price == Decimal("33.3333")
+    assert "33.3333" in refused.value.message
+
+
+@pytest.mark.parametrize(
+    ("quoted_at", "expected_price"),
+    [
+        # Exactly as old as allowed, so not delayed yet.
+        (NOW - QUOTE_STALENESS_LIMIT, "101.5"),
+        # The database gives back 101.5000, so the price is compared as a
+        # number. The same number written another way is not a change.
+        (A_MINUTE_AGO, "1.015E2"),
+    ],
+)
+def test_a_buy_at_the_edge_of_a_rule_goes_through(
+    session: Session, quoted_at: datetime, expected_price: str
+) -> None:
+    locked = wallet(session, "500")
+    price(session, "AAPL", "101.5", quoted_at)
+
+    trade, new = buy(
+        session, locked, request(expected_price=expected_price), NOW
+    )
+
+    assert new
+    assert trade.unit_price == Decimal("101.5")
+    assert get_balance(session, locked.portfolio_id) == Decimal("398.5")
 
 
 def test_a_buy_that_is_rolled_back_leaves_nothing(

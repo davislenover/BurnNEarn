@@ -9,9 +9,17 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.money import Money
-from app.market.queries import get_asset_by_symbol, get_current_price
+from app.market.queries import (
+    get_asset_by_symbol,
+    get_current_price,
+    is_market_open,
+)
 from app.trading.models import Holding, Trade
-from app.trading.types import PriceOutOfDateError
+from app.trading.types import (
+    MarketClosedError,
+    PriceChangedError,
+    PriceOutOfDateError,
+)
 from app.wallet.interface import change_balance
 from app.wallet.types import BalanceChangeReason, LockedPortfolio
 
@@ -50,16 +58,27 @@ def buy(
 
     It pays with change_balance, adds the shares and records the trade, and
     never commits. The route commits once after it, so all three are saved
-    together or not at all (FR_MktAtomicTrade). A balance that is too low
-    raises InsufficientFundsError and changes nothing.
+    together or not at all (FR_MktAtomicTrade).
+
+    It refuses, changing nothing, with the first of these that holds:
+    - MarketClosedError: the market is closed
+    - UnknownAssetError (404): no stock has the symbol
+    - PriceOutOfDateError: the stock has no price yet, or it is delayed
+    - PriceChangedError: the price isn't the one the user saw (SEC-29)
+    - InsufficientFundsError: the balance is less than the cost
     """
+    if not is_market_open(now):
+        raise MarketClosedError()
     asset = get_asset_by_symbol(session, request.symbol)
     current = get_current_price(session, asset.asset_id, now)
-    if current is None:
+    if current is None or current.delayed:
         raise PriceOutOfDateError()
+    if current.price != request.expected_price:
+        raise PriceChangedError(current.price)
 
-    # One price read is used for both the cost and the trade's price. The
-    # cost is a whole number times the price, so it is exact.
+    # One price read is used for the check, the cost and the trade's price,
+    # so the user pays exactly what they saw. The cost is a whole number
+    # times the price, so it is exact.
     cost = request.quantity * current.price
     paid = change_balance(
         session, locked, -cost, BalanceChangeReason.TRADE_PURCHASE
