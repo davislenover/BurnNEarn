@@ -4,6 +4,7 @@
 |---|---|---|---|
 | Nov 5, 2026 | 1.0 | Davis Lenover | PoC version |
 | Nov 7, 2026 | 1.1 | Davis Lenover | Module health, users and wallet |
+| Nov 8, 2026 | 1.2 | Davis Lenover | Trading |
 
 This covers only what the PoC needs. It grows as features are added.
 
@@ -193,8 +194,9 @@ only changes the inside of this function.
 
 `get_current_user` doesn't check that the user exists. The demo user and its
 live portfolio have to be made first, with `create_user(db, DEMO_USER_ID)` and
-`create_live_portfolio(db, DEMO_USER_ID)`, which the seed script (#189) does.
-Until then, wallet's functions fail for the demo user.
+`create_live_portfolio(db, DEMO_USER_ID)`, which
+`uv run python -m app.scripts.seed_demo` does. Until then, wallet's functions
+fail for the demo user.
 
 ![UML class diagram of the users module](figures/users.png)
 
@@ -249,6 +251,47 @@ Two of the patterns above keep this safe:
   skipped anyway, the guarded `UPDATE` still keeps the balance at 0 or more.
 
 ![UML class diagram of the wallet module](figures/wallet.png)
+
+## Trading: buying shares
+
+Trading buys whole shares with a portfolio's currency, and values the
+portfolio at the latest prices. The PoC only buys.
+
+`POST /v1/me/trades` follows wallet's three steps:
+1. The route locks the portfolio with `lock_live_portfolio`.
+2. `buy` checks the request, pays with `change_balance`, adds the shares to
+   `holdings` and saves the trade. It never commits.
+3. The route commits once, so the payment, the shares and the trade are saved
+   together or not at all.
+
+**One trade per `request_id`.** The phone sends a new `request_id` for each buy
+the user confirms, and the same one again when it retries. A repeat gets the
+first trade back (200 instead of 201) and pays nothing. The same `request_id`
+with a different symbol, quantity or price is refused. The database also
+refuses a second trade with one `request_id` in a portfolio.
+
+**Only at the price the user saw (SEC-29).** The phone sends back
+`expected_price` exactly as `GET /v1/assets` gave it. `buy` reads the price
+once, and uses that one read for the check, the trade's price and the cost.
+
+`buy` refuses, in this order:
+
+| Code | Status | When |
+|---|---|---|
+| `request_id_reused` | 409 | The `request_id` was used for a different trade |
+| `market_closed` | 409 | The market is closed |
+| `unknown_asset` | 404 | No stock has that symbol |
+| `price_out_of_date` | 409 | The stock has no price yet, or it is delayed |
+| `price_changed` | 409 | The price isn't `expected_price`. The message gives the new one |
+| `insufficient_funds` | 409 | The balance is less than the cost. Wallet refuses this one |
+
+`GET /v1/me/portfolio` values each holding at its quantity × its latest price,
+and flags a delayed price. It only reads, so it doesn't lock or commit.
+
+Trading needs no new pattern. It uses the plug-in kernel, dependency
+injection, read-only records and wallet's lock token.
+
+![UML class diagram of the trading module](figures/trading.png)
 
 ## Migrations
 

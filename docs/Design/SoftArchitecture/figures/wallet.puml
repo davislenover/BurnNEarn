@@ -4,9 +4,9 @@
 title Wallet module
 
 class "plugin.py" as plugin <<entry point>> {
-  PLUGIN = Plugin(name)
+  PLUGIN = Plugin(name, router)
 }
-class "routes.py (#189)" as routes <<not built yet>> {
+class "routes.py" as routes <<entry point>> {
   GET /v1/me/balance
 }
 
@@ -53,6 +53,7 @@ service --> types
 service --> InsufficientFundsError : raises
 service --> tables
 queries --> tables
+routes --> queries
 changes --> portfolios : deleted with
 
 note bottom of service
@@ -69,7 +70,6 @@ legend right
   <color:#534AB7>■</color> Logic
   <color:#185FA5>■</color> Table
   <color:#A32D2D>■</color> Error
-  <color:#B4B2A9>□</color> Not built yet
   An arrow means "uses".
 endlegend
 @enduml
