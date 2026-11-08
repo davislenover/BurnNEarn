@@ -5,8 +5,10 @@
 | Nov 5, 2026 | 1.0 | Davis Lenover | PoC version |
 | Nov 7, 2026 | 1.1 | Davis Lenover | Module health, users and wallet |
 | Nov 8, 2026 | 1.2 | Davis Lenover | Trading |
+| Nov 8, 2026 | 1.3 | Davis Lenover | One doc per module, access specifiers in the class diagrams |
 
-This covers only what the PoC needs. It grows as features are added.
+This is the high-level view. Each module is explained in its own doc, linked
+below. It covers only what the PoC needs, and grows as features are added.
 
 ## Architecture
 
@@ -35,15 +37,29 @@ rejects any import that breaks these rules.
 ![UML component diagram of the PoC backend](figures/backend-poc.png)
 
 The rows inside "Modules" show the stacking. Trading uses market and wallet,
-activity uses wallet, and wallet uses users. Every module with routes also uses users to
-get the current user.
+activity uses wallet, and wallet uses users. Every module with routes also
+uses users to get the current user.
 
-The diagram's source is `figures/backend-poc.puml`. After changing it, run
-this from the repository root to update the PNG:
+The diagram's source is `figures/backend-poc.puml`. After changing a diagram,
+run this from the repository root to update its PNG:
 
 ```bash
 plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 ```
+
+## Modules
+
+| Module | What it does | Owns these tables | Routes | Issue |
+|---|---|---|---|---|
+| [Kernel](modules/core.md) (`app/core/`) | What every module shares | none | `GET /v1/health` | #187 |
+| [Users](modules/users.md) | Who is calling | `users` | none | #279 |
+| [Wallet](modules/wallet.md) | Each portfolio's currency, and the one safe way to change it | `portfolios`, `balance_changes` | `GET /v1/me/balance` | #279, #189 |
+| [Market](modules/market.md) | Stocks and their prices | `assets`, `prices`, `provider_requests` | `GET /v1/assets`, `GET /v1/market/usage` | #187 |
+| [Trading](modules/trading.md) | Buying shares, and what a portfolio is worth | `trades`, `holdings` | `POST /v1/me/trades`, `GET /v1/me/portfolio` | #188 |
+| Activity | Step rewards | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190, not built yet |
+
+Each module's pull request adds or updates its doc in `modules/`, and its UML
+class diagram in `figures/`.
 
 ## A module's files
 
@@ -57,9 +73,28 @@ plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 | `routes.py` | HTTP routes. Commits once | No |
 | `plugin.py` | Adds the module to the app: its routes, background work and health check | No, only `app/registry.py` |
 
-Leave out any file a module doesn't need. Each module's pull request also adds
-or updates the module's UML class diagram, `figures/<module>.puml`, and the PNG
-made from it.
+Leave out any file a module doesn't need.
+
+## How to read the class diagrams
+
+Each kind of box has one color in every diagram, shown in its legend. For
+example, an entry point is orange, a public file green, logic purple, a table
+or record blue and an error red. An arrow means "uses", and a hollow
+arrowhead means "is a".
+
+Each member has an access specifier. In a box for a file, it follows the
+import rules below:
+- `+` **public:** other modules may use it, because it is in the module's
+  `interface.py`, `queries.py` or `types.py`. A route is `+` too, since the
+  phone uses it.
+- `~` **module:** only the module's own files may use it, such as everything
+  in `service.py` and `models.py`.
+- `-` **private:** only its own file uses it. In Python its name starts with
+  `_`.
+
+In a box for a class, such as a record, a table, an error or a provider, `+`
+is a member that anyone holding one may use, and `-` is one whose name starts
+with `_`. Which file the class is in says who may import it.
 
 ## Rules
 
@@ -72,30 +107,28 @@ made from it.
    exception: it commits once per poll.
 5. Money only moves through wallet. Lock the portfolio with
    `wallet.interface.lock_live_portfolio()` before calling `change_balance`,
-   as [Users and wallet](#users-and-wallet-who-is-calling-and-how-money-changes)
-   shows.
+   as [wallet](modules/wallet.md#changing-a-balance) shows.
 6. Take the time from `app/core/clock.py`, never from `datetime.now()`, so
    tests can set it.
 
-## Design patterns
+CI checks rules 1 and 2. import-linter (`uv run lint-imports`) refuses an
+import of a module above, or of any module from `app/core/`.
+`test_public_files.py` refuses an import of another module's other files.
 
-Five patterns, each used where it solves a real problem.
+## Design patterns
 
 **Plug-in kernel.** The kernel (`app/core/` and `create_app()`) doesn't know
 which modules exist. Each module fills in a `Plugin` in its `plugin.py`, with
 its routes, any work that runs in the background, and a health check, and
 `app/registry.py` lists them. Adding a module never changes the kernel.
-`GET /v1/health` shows each module's health check. A health check is
-optional, but a module with background work must have one, since that work
-can fail without any request seeing it. `Plugin` refuses one without it.
+See [the kernel](modules/core.md).
 
 ![UML class diagram of the plug-in kernel](figures/plugin-kernel.png)
 
 **Strategy, adapter and factory.** Market asks for prices through one
 interface, `MarketDataProvider`. `FinnhubProvider` adapts Finnhub's API to
 it, `FakeProvider` makes up prices, and `build_provider` picks one from
-`MARKET_PROVIDER`. See [Market](#market-where-prices-come-from) for the
-diagram.
+`MARKET_PROVIDER`. See [market](modules/market.md).
 
 **Dependency injection.** Code is handed what it needs instead of fetching
 it. Routes get a database session and the clock from the kernel, through
@@ -105,14 +138,16 @@ clock and session factory. Tests hand in stand-ins, such as a fixed time or a
 stub provider.
 
 **Read-only records.** A module hands other modules frozen copies, such as
-`AssetInfo` and `CurrentPrice` in `app/market/types.py` or wallet's
-`BalanceChangeReceipt`, never database rows. That way no module can change
-another module's tables by accident.
+market's `CurrentPrice` or wallet's `BalanceChangeReceipt`, never database
+rows. That way no module can change another module's tables by accident.
 
 **Lock token.** Wallet's `change_balance` only takes the `LockedPortfolio`
 that `lock_live_portfolio` returns, so changing a balance without locking it
-first is hard to do by accident. See
-[Users and wallet](#users-and-wallet-who-is-calling-and-how-money-changes).
+first is hard to do by accident. See [wallet](modules/wallet.md).
+
+**Idempotency key.** Each buy carries a `request_id` from the phone, so a
+retried request gets its first answer back instead of buying twice. See
+[trading](modules/trading.md).
 
 ## How it runs
 
@@ -126,174 +161,6 @@ A request goes from the kernel to the module's route, which reads through the
 module's queries.
 
 ![UML sequence diagram of a request for the asset list](figures/request-assets.png)
-
-## What the PoC builds
-
-| Folder | Owns these tables | Routes | Issue |
-|---|---|---|---|
-| `app/core/`, `app/registry.py`, `app/main.py` | none | `GET /v1/health` | #187, first pull request |
-| `app/market/` | `assets`, `prices`, `provider_requests` | `GET /v1/assets`, `GET /v1/market/usage` | #187 |
-| `app/users/` | `users` | none (it provides the current user) | #279 |
-| `app/wallet/` | `portfolios`, `balance_changes` | `GET /v1/me/balance` (#189) | #279 |
-| `app/activity/` | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190 |
-| `app/trading/` | `trades`, `holdings` | `POST /v1/me/trades`, `GET /v1/me/portfolio` | #188 |
-
-#187's first pull request sets up the shared pieces. It moves `Money` from
-`app/api/` into `app/core/`, and the health route into `app/core/routes.py`.
-It adds `app/core/clock.py` and `app/registry.py`, the list of modules. It also
-adds `create_app()` in `app/main.py`, which adds each module's routes, and
-`app = create_app()` keeps `uv run uvicorn app.main:app` working. The price
-poller is market's own background thread, which market's plugin starts and
-stops with the app.
-
-![UML class diagram of the kernel and how a module plugs in](figures/core.png)
-
-#191 adds two checks to CI:
-- an import-linter rule: no module imports one above it, and `app/core/`
-  imports no module
-- a test: modules import each other only through their public files
-
-## Market: where prices come from
-
-Market gets prices through one interface, `MarketDataProvider`, so the rest
-of the module never knows which provider it is using.
-
-![UML class diagram of the market data providers](figures/market-providers.png)
-
-- **Strategy:** `MarketDataProvider` has one method, `get_quote(symbol)`,
-  which returns a `Quote`: the symbol, the price and when it was quoted.
-- **Adapter:** `FinnhubProvider` turns Finnhub's HTTP API into a `Quote`, and
-  its errors into ours, such as `RateLimitedError`.
-- **Fake:** `FakeProvider` makes up prices, for development and tests.
-- **Factory:** `build_provider(settings)` picks one from `MARKET_PROVIDER`.
-  The poller is given that provider and only calls `get_quote`.
-- **Errors:** every provider reports a problem as `MarketDataError` or one of
-  its subclasses, so the poller can record what happened without knowing
-  which provider it has.
-
-To add a provider:
-1. Write a class in `app/market/providers/` that names `MarketDataProvider` as
-   its base and has `get_quote(symbol)`.
-2. Add its name to `MARKET_PROVIDER` in `app/market/providers/settings.py` and to
-   `.env.example`.
-3. Add it to `build_provider`.
-
-The whole market module, with the parts still to come in grey:
-
-![UML class diagram of the market module](figures/market.png)
-
-## Users and wallet: who is calling, and how money changes
-
-**Users.** `users.interface.get_current_user` is the one place that knows who
-is calling. A route that needs a user asks for it with
-`Depends(get_current_user)`, so the phone never sends a user ID. The PoC has
-no sign-in. While `DEMO_USER_ENABLED` is on, every request is the demo user,
-whose ID is `DEMO_USER_ID` in `app/users/types.py`. While it is off, as it is
-by default, the route answers 401 `not_authenticated`. Real sign-in later
-only changes the inside of this function.
-
-`get_current_user` doesn't check that the user exists. The demo user and its
-live portfolio have to be made first, with `create_user(db, DEMO_USER_ID)` and
-`create_live_portfolio(db, DEMO_USER_ID)`, which
-`uv run python -m app.scripts.seed_demo` does. Until then, wallet's functions
-fail for the demo user.
-
-![UML class diagram of the users module](figures/users.png)
-
-**Wallet.** Each portfolio's currency lives in wallet, and only wallet changes
-it. A route that changes money does three things:
-
-```python
-from app.wallet.interface import change_balance, lock_live_portfolio
-from app.wallet.types import BalanceChangeReason
-
-locked = lock_live_portfolio(db, user.user_id)
-receipt = change_balance(db, locked, -cost, BalanceChangeReason.TRADE_PURCHASE)
-db.commit()
-```
-
-1. **Lock first.** `lock_live_portfolio` locks the portfolio's row until the
-   transaction ends. Two requests for one portfolio, such as a buy and a step
-   sync, then run one after the other, and the second sees what the first
-   saved. That only holds for what the route reads after the lock, so read
-   anything the amount depends on there, such as what a day's rewards have
-   paid so far (`wallet.queries.activity_paid`).
-2. **Change with one guarded `UPDATE`.** `change_balance` adds the amount only
-   if the balance stays at 0 or more, then records the change in
-   `balance_changes`. If the balance would go below 0, it raises
-   `InsufficientFundsError` (409) and changes nothing. It never commits.
-3. **Commit once.** The route commits after every step has succeeded, so the
-   payment and what it pays for are saved together or not at all.
-
-`change_balance` also refuses, with `ValueError` and before changing anything,
-a call that makes no sense:
-- an amount that is 0, isn't a finite `Decimal`, or has more than 4 decimals.
-  So when a reward comes to 0, don't call it
-- a reward that takes currency away, or a purchase that adds it
-- a reward without its `activity_date` (the `date` it pays for), or anything
-  else with one
-
-The database also refuses bad rows, even from code that skips wallet's
-functions: a balance below 0, a second live portfolio for a user, a change of
-0, a reward that spends or a purchase that adds, and a reward without a day or
-anything else with one. It deletes a portfolio's changes with it. It doesn't
-check that a balance equals the sum of its changes (SEC-22). `change_balance`
-keeps that true by changing both in one transaction, which is why nothing
-else may change a balance.
-
-Two of the patterns above keep this safe:
-- **Read-only records:** `change_balance` returns a `BalanceChangeReceipt`
-  (the change's ID, its amount and the balance after it), never the row.
-  Trading stores the receipt's ID with each trade, so every trade points
-  at the change that paid for it.
-- **Lock token:** `change_balance` asks for the `LockedPortfolio` that
-  `lock_live_portfolio` returns. Nothing stops code making one itself, but
-  asking for it makes skipping the lock hard to do by accident. If the lock is
-  skipped anyway, the guarded `UPDATE` still keeps the balance at 0 or more.
-
-![UML class diagram of the wallet module](figures/wallet.png)
-
-## Trading: buying shares
-
-Trading buys whole shares with a portfolio's currency, and values the
-portfolio at the latest prices. The PoC only buys.
-
-`POST /v1/me/trades` follows wallet's three steps:
-1. The route locks the portfolio with `lock_live_portfolio`.
-2. `buy` checks the request, pays with `change_balance`, adds the shares to
-   `holdings` and saves the trade. It never commits.
-3. The route commits once, so the payment, the shares and the trade are saved
-   together or not at all.
-
-**One trade per `request_id` (an idempotency key).** The phone sends a new
-`request_id` for each buy the user confirms, and the same one again when it
-retries. A repeat gets the first trade back (200 instead of 201) and pays
-nothing. The same `request_id` with a different symbol, quantity or price is
-refused. The database also refuses a second trade with one `request_id` in a
-portfolio.
-
-**Only at the price the user saw (SEC-29).** The phone sends back
-`expected_price` exactly as `GET /v1/assets` gave it. `buy` reads the price
-once, and uses that one read for the check, the trade's price and the cost.
-
-`buy` refuses, in this order:
-
-| Code | Status | When |
-|---|---|---|
-| `request_id_reused` | 409 | The `request_id` was used for a different trade |
-| `market_closed` | 409 | The market is closed |
-| `unknown_asset` | 404 | No stock has that symbol |
-| `price_out_of_date` | 409 | The stock has no price yet, or it is delayed |
-| `price_changed` | 409 | The price isn't `expected_price`. The message gives the new one |
-| `insufficient_funds` | 409 | The balance is less than the cost. Wallet refuses this one |
-
-`GET /v1/me/portfolio` values each holding at its quantity × its latest price,
-and flags a delayed price. It only reads, so it doesn't lock or commit.
-
-Besides the idempotency key, trading uses the patterns above: the plug-in
-kernel, dependency injection, read-only records and wallet's lock token.
-
-![UML class diagram of the trading module](figures/trading.png)
 
 ## Migrations
 

@@ -1,60 +1,80 @@
 @startuml market-providers
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market-providers.puml
 !include style.iuml
-title Market: where prices come from (strategy, adapter, factory)
+set separator none
+title Market: where prices come from
 
-class "build_provider(settings)" as factory <<logic>> {
-  factory: picks a provider
-  from MARKET_PROVIDER
-}
-class "poll_once(session, provider, now)" as poll <<logic>> {
-  only calls get_quote
+class "poller.py" as poller <<logic>> {
+  ~ lifespan(app)
+  ~ poll_once(session, provider, now): bool
 }
 
-interface MarketDataProvider <<public>> {
-  strategy: the one method
-  every provider has
-  --
-  +get_quote(symbol): Quote
+class "providers/__init__.py" as init <<provider>> <<factory>> {
+  ~ build_provider(settings): MarketDataProvider
 }
 
-class FinnhubProvider <<provider>> {
-  adapter: turns Finnhub's
-  replies into a Quote
-  --
-  +get_quote(symbol): Quote
-}
-class FakeProvider <<provider>> {
-  made-up prices, for
-  development and tests
-  --
-  +get_quote(symbol): Quote
+package "providers/settings.py" {
+  class ProviderSettings <<settings>> {
+    + market_provider: "finnhub" or "fake" = "fake"
+    + finnhub_api_key: SecretStr or None
+    + check_finnhub_key()
+  }
 }
 
-class Quote <<data>> {
-  symbol
-  price
-  quoted_at
+package "providers/base.py" {
+  interface MarketDataProvider <<provider>> <<strategy>> {
+    + {abstract} get_quote(symbol): Quote
+  }
+  class Quote <<data>> {
+    + symbol: str
+    + price: Decimal
+    + quoted_at: datetime
+  }
+  class MarketDataError <<error>>
+  class RateLimitedError <<error>>
+  class UnknownSymbolError <<error>>
 }
-class MarketDataError <<error>>
-class RateLimitedError <<error>>
-class UnknownSymbolError <<error>>
 
-factory --> MarketDataProvider : creates one
-poll --> MarketDataProvider : is given one
-MarketDataProvider <|-- FinnhubProvider
-MarketDataProvider <|-- FakeProvider
-MarketDataProvider --> Quote : returns
+package "providers/finnhub.py" {
+  class FinnhubProvider <<provider>> <<adapter>> {
+    - _api_key: SecretStr
+    - _client: httpx2.Client
+    + get_quote(symbol): Quote
+  }
+}
+
+package "providers/fake.py" {
+  class FakeProvider <<provider>> {
+    - _clock: Clock
+    - _prices: dict[str, Decimal]
+    - _random: Random
+    + get_quote(symbol): Quote
+  }
+}
+
+poller --> init : 1. build one
+init --> ProviderSettings
+init --> MarketDataProvider : creates
+poller --> MarketDataProvider : 2. get_quote
+MarketDataProvider -right-> Quote : returns
+Quote -[hidden]right- MarketDataError
 MarketDataProvider --> MarketDataError : raises
 MarketDataError <|-- RateLimitedError
 MarketDataError <|-- UnknownSymbolError
+MarketDataProvider <|-- FinnhubProvider
+MarketDataProvider <|-- FakeProvider
 
 legend right
   <color:#534AB7>■</color> Logic
-  <color:#0F6E56>■</color> Interface other code depends on
-  <color:#993556>■</color> Provider
-  <color:#185FA5>■</color> Data
-  <color:#A32D2D>■</color> Error
+  <color:#993556>■</color> Provider: where prices come from
+  <color:#3B6D11>■</color> Settings
+  <color:#185FA5>■</color> Data: a read-only record
+  <color:#A32D2D>■</color> Error: a plain Exception, never sent to the phone
+  + anyone holding one may use it
+  ~ only market's files may use it
+  - only its own file uses it
+  «strategy», «adapter», «factory»: the design pattern
+  An arrow means "uses".
   A hollow arrowhead means "is a".
 endlegend
 @enduml

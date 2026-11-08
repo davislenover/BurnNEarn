@@ -1,79 +1,50 @@
 @startuml trading
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/trading.puml
 !include style.iuml
-title Trading module
+title Trading module: its files
 
 class "plugin.py" as plugin <<entry point>> {
-  PLUGIN = Plugin(name, router)
+  + PLUGIN: Plugin
 }
 class "routes.py" as routes <<entry point>> {
-  POST /v1/me/trades
-  GET /v1/me/portfolio
-  TradeReceipt
-  PortfolioReply
+  + POST /v1/me/trades: TradeReceipt
+  + GET /v1/me/portfolio: PortfolioReply
+  ~ router: APIRouter
+  ~ TradeReceipt, PortfolioReply
 }
 
 class "service.py" as service <<logic>> {
-  TradeRequest
-  PortfolioValue
-  buy(session, locked, request, now): Trade, new
-  portfolio_value(session, portfolio_id, now): PortfolioValue
-  _same_trade(session, old, request)
-  _add_shares(session, portfolio_id, asset_id, quantity)
+  ~ TradeRequest, PortfolioValue
+  ~ buy(session, locked, request, now): (Trade, bool)
+  ~ portfolio_value(session, portfolio_id, now): PortfolioValue
+  - _same_trade(session, old, request): bool
+  - _add_shares(session, portfolio_id, asset_id, quantity)
 }
-
-package "types.py" as types {
-  class "HoldingValue" as records <<public>> {
-    symbol, quantity, price
-    quoted_at, delayed, value
-  }
-  class "Errors, all 409" as errors <<error>> {
-    RequestIdReusedError
-    MarketClosedError
-    PriceOutOfDateError
-    {field} PriceChangedError(new price)
-  }
+class "types.py" as types <<public>> {
+  + HoldingValue
+  + RequestIdReusedError, MarketClosedError
+  + PriceOutOfDateError, PriceChangedError
 }
-
-package "Tables (models.py)" as tables {
-  class "trades" as trades <<table>> {
-    {field} unique (portfolio_id, request_id)
-    unique balance_change_id
-    currency_amount = quantity × unit_price
-    quantity > 0, unit_price > 0
-    cash_balance_after ≥ 0
-    trade_type 'buy', status 'executed'
-  }
-  class "holdings" as holdings <<table>> {
-    {field} key (portfolio_id, asset_id)
-    quantity ≥ 0
-  }
+class "models.py" as models <<table>> {
+  ~ Trade: the trades table
+  ~ Holding: the holdings table
 }
 
 package "Other modules, public files only" as others {
   class "users" as users <<public>> {
-    .. interface.py ..
-    get_current_user(): CurrentUser
-    .. types.py ..
-    CurrentUser
+    + get_current_user(): CurrentUser
   }
   class "wallet" as wallet <<public>> {
-    .. interface.py ..
-    lock_live_portfolio(session, user_id): LockedPortfolio
-    change_balance(session, locked, amount, reason): BalanceChangeReceipt
-    .. queries.py ..
-    live_portfolio_id(session, user_id)
-    get_balance(session, portfolio_id)
-    .. types.py ..
-    LockedPortfolio, BalanceChangeReason
-    BalanceChangeReceipt
+    + lock_live_portfolio(session, user_id): LockedPortfolio
+    + change_balance(session, locked, amount, reason): BalanceChangeReceipt
+    + live_portfolio_id(session, user_id): UUID
+    + get_balance(session, portfolio_id): Decimal
   }
   class "market" as market <<public>> {
-    .. queries.py ..
-    is_market_open(now)
-    get_asset_by_symbol(session, symbol): AssetInfo
-    get_asset(session, asset_id): AssetInfo
-    get_current_price(session, asset_id, now): CurrentPrice or None
+    + is_market_open(now): bool
+    + get_asset_by_symbol(session, symbol): AssetInfo
+    + get_asset(session, asset_id): AssetInfo
+    + get_current_price(session, asset_id, now): CurrentPrice or None
   }
 }
 
@@ -84,25 +55,20 @@ routes -down-> wallet : 1. lock
 service -left-> wallet : 2. pay
 service --> market
 service --> types
-service --> tables
+service --> models
+routes --> models
 
 users -[hidden]down- wallet
 wallet -[hidden]down- market
-records -[hidden]down- errors
-trades -[hidden]down- holdings
-
-note bottom of tables
-  String foreign keys into portfolios
-  (ON DELETE CASCADE), balance_changes
-  and assets. No other module's models.py
-end note
 
 legend right
   <color:#854F0B>■</color> Entry point: how the app reaches the module
   <color:#0F6E56>■</color> Public: what other modules may import
   <color:#534AB7>■</color> Logic
-  <color:#A32D2D>■</color> Error
-  <color:#185FA5>■</color> Table
+  <color:#185FA5>■</color> Tables
+  + other modules or the phone may use it
+  ~ only this module's files may use it
+  - only its own file uses it
   An arrow means "uses".
 endlegend
 @enduml
