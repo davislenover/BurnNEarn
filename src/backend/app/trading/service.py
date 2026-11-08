@@ -1,11 +1,19 @@
 """Trading's rules: buying shares. Never commits."""
 
 import uuid
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 
 from app.core.money import Money
+from app.market.queries import get_asset_by_symbol, get_current_price
+from app.trading.models import Holding, Trade
+from app.trading.types import PriceOutOfDateError
+from app.wallet.interface import change_balance
+from app.wallet.types import BalanceChangeReason, LockedPortfolio
 
 
 class TradeRequest(BaseModel):
@@ -29,3 +37,70 @@ class TradeRequest(BaseModel):
     # The price the user saw, sent back exactly as GET /v1/assets gave it.
     # More than 4 decimals is refused.
     expected_price: Money
+
+
+def buy(
+    session: Session,
+    locked: LockedPortfolio,
+    request: TradeRequest,
+    now: datetime,
+) -> tuple[Trade, bool]:
+    """Buy whole shares for the locked portfolio. Returns the trade, and
+    whether it is new.
+
+    It pays with change_balance, adds the shares and records the trade, and
+    never commits. The route commits once after it, so all three are saved
+    together or not at all (FR_MktAtomicTrade). A balance that is too low
+    raises InsufficientFundsError and changes nothing.
+    """
+    asset = get_asset_by_symbol(session, request.symbol)
+    current = get_current_price(session, asset.asset_id, now)
+    if current is None:
+        raise PriceOutOfDateError()
+
+    # One price read is used for both the cost and the trade's price. The
+    # cost is a whole number times the price, so it is exact.
+    cost = request.quantity * current.price
+    paid = change_balance(
+        session, locked, -cost, BalanceChangeReason.TRADE_PURCHASE
+    )
+    _add_shares(session, locked.portfolio_id, asset.asset_id, request.quantity)
+    trade = Trade(
+        request_id=request.request_id,
+        portfolio_id=locked.portfolio_id,
+        asset_id=asset.asset_id,
+        trade_type="buy",
+        quantity=request.quantity,
+        unit_price=current.price,
+        currency_amount=cost,
+        cash_balance_after=paid.cash_balance_after,
+        status="executed",
+        balance_change_id=paid.balance_change_id,
+        created_at=now,
+    )
+    session.add(trade)
+    session.flush()
+    return trade, True
+
+
+def _add_shares(
+    session: Session,
+    portfolio_id: uuid.UUID,
+    asset_id: uuid.UUID,
+    quantity: int,
+) -> None:
+    """Add shares to the portfolio's holding of one stock, making the
+    holding if there is none.
+
+    It is one statement, never a read then a write, so it stays right even
+    if two buys ran at once.
+    """
+    new = insert(Holding).values(
+        portfolio_id=portfolio_id, asset_id=asset_id, quantity=quantity
+    )
+    session.execute(
+        new.on_conflict_do_update(
+            index_elements=[Holding.portfolio_id, Holding.asset_id],
+            set_={"quantity": Holding.quantity + new.excluded.quantity},
+        )
+    )
