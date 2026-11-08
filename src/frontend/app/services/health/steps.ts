@@ -9,12 +9,12 @@ export class StepTrackingError extends Error {
 }
 
 /**
- * Reads steps from local midnight to the time of this call.
+ * Reads steps from local midnight to the reading time (defaults to now).
  * Call only after the user acknowledges the health notice; this may ask for consent.
  */
-export async function getTodaysSteps(): Promise<number> {
+export async function getTodaysSteps(readAt = new Date()): Promise<number> {
     // Use the phone's local calendar day, rather than the last 24 hours.
-    const endDate = new Date();
+    const endDate = new Date(readAt);
     const startDate = new Date(endDate);
     startDate.setHours(0, 0, 0, 0);
 
