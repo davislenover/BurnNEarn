@@ -1,0 +1,84 @@
+@startuml wallet-data
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/wallet-data.puml
+!include style.iuml
+set separator none
+title Wallet module: its records, errors and tables
+
+package "types.py" {
+  class BalanceChangeReason <<public>> {
+    + ACTIVITY_REWARD = "activity_reward"
+    + TRADE_PURCHASE = "trade_purchase"
+  }
+  class LockedPortfolio <<public>> {
+    + portfolio_id: UUID
+    + user_id: UUID
+  }
+  class BalanceChangeReceipt <<public>> {
+    + balance_change_id: UUID
+    + amount: Decimal
+    + cash_balance_after: Decimal
+  }
+  class InsufficientFundsError <<error>> {
+    + code = "insufficient_funds"
+    + status = 409
+  }
+}
+
+package "routes.py" {
+  class Balance <<data>> {
+    + cash_balance: Money
+  }
+}
+
+package "models.py" {
+  class "Portfolio (portfolios)" as Portfolio <<table>> {
+    + portfolio_id: UUID
+    + user_id: UUID
+    + cash_balance: Decimal
+    + scenario_id: UUID or None
+    + created_at: datetime
+    .. the database refuses ..
+    cash_balance < 0, or NaN
+    a second live portfolio for a user
+    a user_id with no user
+  }
+  class "BalanceChange (balance_changes)" as BalanceChange <<table>> {
+    + balance_change_id: UUID
+    + portfolio_id: UUID
+    + amount: Decimal
+    + reason: str
+    + activity_date: date or None
+    + created_at: datetime
+    .. the database refuses ..
+    amount = 0, or NaN
+    a reason that isn't a BalanceChangeReason
+    a reward that spends, a purchase that adds
+    a reward with no activity_date
+    anything else with an activity_date
+    a portfolio_id with no portfolio
+  }
+}
+
+Portfolio *-- "many" BalanceChange
+BalanceChangeReceipt ..> BalanceChange : copied from
+LockedPortfolio ..> Portfolio : names
+
+InsufficientFundsError -[hidden]down- Balance
+
+note bottom of BalanceChange
+  Amounts have up to 12 digits before the point and 4 after.
+  Nothing here checks that cash_balance is the sum of its
+  portfolio's changes. change_balance keeps that true.
+  The foreign key to users is the string "users.user_id",
+  so wallet never imports users' models.py.
+end note
+
+legend right
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#185FA5>■</color> Data: a read-only record, or a table
+  <color:#A32D2D>■</color> Error: a DomainError
+  + anyone holding one may use it
+  A filled diamond means "owns": deleting
+  a portfolio deletes its changes.
+endlegend
+@enduml

@@ -1,45 +1,84 @@
 @startuml plugin-kernel
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/plugin-kernel.puml
 !include style.iuml
-title Plug-in kernel: modules plug in, the kernel never changes
+set separator none
+title Plug-in kernel: a module plugs in, the kernel never changes
 
-class "create_app()" as create_app <<kernel>> {
-  adds each plugin's routes under /v1,
-  runs each plugin's lifespan, and shows
-  each plugin's health in GET /v1/health
+class "main.py" as main <<kernel>> {
+  ~ create_app(plugins = PLUGINS): FastAPI
 }
-class "PLUGINS (registry.py)" as registry <<kernel>> {
-  the list of modules
-}
-class Plugin <<kernel>> {
-  name
-  router
-  lifespan
-  health: needed with a lifespan
+class "registry.py" as registry <<kernel>> {
+  ~ PLUGINS: tuple[Plugin, ...]
 }
 
-class "market PLUGIN" as market <<entry point>> {
-  router = routes.router
-  lifespan = poller.lifespan
-  health = poller.health
+package "Modules" as modules {
+  class "users/plugin.py" as users <<entry point>> {
+    + PLUGIN: Plugin
+    .. its values ..
+    name = "users"
+    no routes yet
+  }
+  class "wallet/plugin.py" as wallet <<entry point>> {
+    + PLUGIN: Plugin
+    .. its values ..
+    name = "wallet"
+    router = routes.router
+  }
+  class "market/plugin.py" as market <<entry point>> {
+    + PLUGIN: Plugin
+    .. its values ..
+    name = "market"
+    router = routes.router
+    lifespan = poller.lifespan
+    health = poller.health
+  }
+  class "trading/plugin.py" as trading <<entry point>> {
+    + PLUGIN: Plugin
+    .. its values ..
+    name = "trading"
+    router = routes.router
+  }
+  class "activity/plugin.py (#190)" as activity <<not built yet>>
 }
-class "wallet PLUGIN (#189)" as wallet <<not built yet>>
-class "activity PLUGIN (#190)" as activity <<not built yet>>
-class "trading PLUGIN (#188)" as trading <<not built yet>>
 
-create_app --> registry : reads
-create_app -left-> Plugin : uses
-registry --> market
+package "app/core/plugins.py" as core {
+  class Plugin <<data>> {
+    + name: str
+    + router: APIRouter or None
+    + lifespan: Lifespan or None
+    + health: HealthCheck or None
+    .. it refuses ..
+    a lifespan without a health check
+  }
+}
+
+main --> registry : reads
+registry --> users
 registry --> wallet
-registry --> activity
+registry --> market : lists
 registry --> trading
-market -up-|> Plugin
+registry ..> activity : later
+users --> Plugin
+wallet --> Plugin
+market --> Plugin
+trading --> Plugin
+
+note right of main
+  Adds each router under /v1, starts each
+  lifespan in order and stops them in reverse,
+  and shows each health check in GET /v1/health.
+end note
 
 legend right
   <color:#5F5E5A>■</color> Kernel
   <color:#854F0B>■</color> A module's plugin
+  <color:#185FA5>■</color> Data: a record
   <color:#B4B2A9>□</color> Not built yet
-  To add a module: write its plugin.py
-  and add one line to PLUGINS.
+  + code outside its own module may use it
+  ~ only the kernel's files may use it
+  An arrow means "uses".
+  To add a module: write its plugin.py,
+  add one line to PLUGINS, and add it
+  to the layers in pyproject.toml.
 endlegend
 @enduml

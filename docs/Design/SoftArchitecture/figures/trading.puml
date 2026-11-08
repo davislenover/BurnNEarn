@@ -1,0 +1,74 @@
+@startuml trading
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/trading.puml
+!include style.iuml
+title Trading module: its files
+
+class "plugin.py" as plugin <<entry point>> {
+  + PLUGIN: Plugin
+}
+class "routes.py" as routes <<entry point>> {
+  + POST /v1/me/trades: TradeReceipt
+  + GET /v1/me/portfolio: PortfolioReply
+  ~ router: APIRouter
+  ~ TradeReceipt, PortfolioReply
+}
+
+class "service.py" as service <<logic>> {
+  ~ TradeRequest, PortfolioValue
+  ~ buy(session, locked, request, now): (Trade, bool)
+  ~ portfolio_value(session, portfolio_id, now): PortfolioValue
+  - _same_trade(session, old, request): bool
+  - _add_shares(session, portfolio_id, asset_id, quantity)
+}
+class "types.py" as types <<public>> {
+  + HoldingValue
+  + RequestIdReusedError, MarketClosedError
+  + PriceOutOfDateError, PriceChangedError
+}
+class "models.py" as models <<table>> {
+  ~ Trade: the trades table
+  ~ Holding: the holdings table
+}
+
+package "Other modules, public files only" as others {
+  class "users" as users <<public>> {
+    + get_current_user(): CurrentUser
+  }
+  class "wallet" as wallet <<public>> {
+    + lock_live_portfolio(session, user_id): LockedPortfolio
+    + change_balance(session, locked, amount, reason): BalanceChangeReceipt
+    + live_portfolio_id(session, user_id): UUID
+    + get_balance(session, portfolio_id): Decimal
+  }
+  class "market" as market <<public>> {
+    + is_market_open(now): bool
+    + get_asset_by_symbol(session, symbol): AssetInfo
+    + get_asset(session, asset_id): AssetInfo
+    + get_current_price(session, asset_id, now): CurrentPrice or None
+  }
+}
+
+plugin --> routes
+routes --> service
+routes -left-> users
+routes -down-> wallet : 1. lock
+service -left-> wallet : 2. pay
+service --> market
+service --> types
+service --> models
+routes --> models
+
+users -[hidden]down- wallet
+wallet -[hidden]down- market
+
+legend right
+  <color:#854F0B>■</color> Entry point: how the app reaches the module
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#534AB7>■</color> Logic
+  <color:#185FA5>■</color> Tables
+  + other modules or the phone may use it
+  ~ only this module's files may use it
+  - only its own file uses it
+  An arrow means "uses".
+endlegend
+@enduml

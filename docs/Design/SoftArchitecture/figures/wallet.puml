@@ -1,75 +1,77 @@
 @startuml wallet
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/wallet.puml
 !include style.iuml
-title Wallet module
+title Wallet module: its files
 
 class "plugin.py" as plugin <<entry point>> {
-  PLUGIN = Plugin(name)
+  + PLUGIN: Plugin
 }
-class "routes.py (#189)" as routes <<not built yet>> {
-  GET /v1/me/balance
+class "routes.py" as routes <<entry point>> {
+  + GET /v1/me/balance: Balance
+  ~ router: APIRouter
+  ~ Balance
 }
 
 class "interface.py" as interface <<public>> {
-  lock_live_portfolio(session, user_id): LockedPortfolio
-  change_balance(session, locked, amount, reason, activity_date = None): BalanceChangeReceipt
-  create_live_portfolio(session, user_id): portfolio_id
-  delete_portfolio(session, portfolio_id)
+  + lock_live_portfolio(session, user_id): LockedPortfolio
+  + change_balance(session, locked, amount, reason, activity_date = None): BalanceChangeReceipt
+  + create_live_portfolio(session, user_id): UUID
+  + delete_portfolio(session, portfolio_id)
 }
 class "queries.py" as queries <<public>> {
-  live_portfolio_id(session, user_id)
-  get_balance(session, portfolio_id)
-  activity_paid(session, portfolio_id, activity_date)
+  + live_portfolio_id(session, user_id): UUID
+  + get_balance(session, portfolio_id): Decimal
+  + activity_paid(session, portfolio_id, activity_date): Decimal
 }
 class "types.py" as types <<public>> {
-  LockedPortfolio: portfolio_id, user_id
-  BalanceChangeReceipt: balance_change_id, amount, cash_balance_after
-  BalanceChangeReason: activity_reward, trade_purchase
-}
-class InsufficientFundsError <<error>> {
-  409 insufficient_funds
+  + BalanceChangeReason
+  + LockedPortfolio, BalanceChangeReceipt
+  + InsufficientFundsError
 }
 
 class "service.py" as service <<logic>> {
-  the rules behind interface.py
-  never commits
+  ~ lock_live_portfolio(session, user_id): LockedPortfolio
+  ~ change_balance(session, locked, amount, reason, activity_date = None): BalanceChangeReceipt
+  ~ create_live_portfolio(session, user_id): UUID
+  ~ delete_portfolio(session, portfolio_id)
+  {field} ~ FOUR_DECIMALS = Decimal("0.0001")
+  - _check_amount(amount)
+}
+class "models.py" as models <<table>> {
+  ~ Portfolio: the portfolios table
+  ~ BalanceChange: the balance_changes table
+  {field} ~ AMOUNT = Numeric(16, 4)
+  - _REASONS: the reasons, for a check
 }
 
-package "Tables (models.py)" as tables {
-  class "portfolios" as portfolios <<table>> {
-    user_id refers to a user
-    cash_balance >= 0
-    one live portfolio per user
-  }
-  class "balance_changes" as changes <<table>> {
-    amount != 0, never edited
+package "Other modules, public files only" as others {
+  class "users" as users <<public>> {
+    + get_current_user(): CurrentUser
   }
 }
 
-plugin --> tables : registers
 plugin --> routes
-interface --> service
-service --> types
-service --> InsufficientFundsError : raises
-service --> tables
-queries --> tables
-changes --> portfolios : deleted with
+plugin -down-> models : registers
+routes -left-> users
+routes -down-> queries
+interface -down-> service : re-exports
+queries -down-> models
+service -down-> models
+models -down-> types
+queries -down-> types
+service -down-> types
 
-note bottom of service
-  change_balance is the only code that changes
-  cash_balance. It is one UPDATE that applies only
-  if the balance stays at 0 or more, then one new
-  balance_changes row. Callers lock the portfolio
-  first with lock_live_portfolio.
-end note
+routes -[hidden]right- interface
+queries -[hidden]right- service
 
 legend right
   <color:#854F0B>■</color> Entry point: how the app reaches the module
   <color:#0F6E56>■</color> Public: what other modules may import
   <color:#534AB7>■</color> Logic
-  <color:#185FA5>■</color> Table
-  <color:#A32D2D>■</color> Error
-  <color:#B4B2A9>□</color> Not built yet
+  <color:#185FA5>■</color> Tables
+  + other modules or the phone may use it
+  ~ only this module's files may use it
+  - only its own file uses it
   An arrow means "uses".
 endlegend
 @enduml

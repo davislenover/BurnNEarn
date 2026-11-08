@@ -4,6 +4,8 @@ from collections.abc import AsyncIterator, Sequence
 from contextlib import AsyncExitStack, asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.core import routes
@@ -17,6 +19,24 @@ def handle_domain_error(_: Request, error: DomainError) -> JSONResponse:
     return JSONResponse(
         status_code=error.status,
         content={"detail": {"code": error.code, "message": error.message}},
+    )
+
+
+def handle_validation_error(
+    _: Request, error: RequestValidationError
+) -> JSONResponse:
+    """Send a request that doesn't fit its route as 422, like FastAPI does,
+    but without the values that were sent.
+
+    FastAPI's own handler sends each refused value back. Some can't be
+    written as JSON, such as NaN in a body, so the phone got a 500 instead.
+    """
+    errors = [
+        {key: value for key, value in found.items() if key != "input"}
+        for found in error.errors()
+    ]
+    return JSONResponse(
+        status_code=422, content={"detail": jsonable_encoder(errors)}
     )
 
 
@@ -38,6 +58,7 @@ def create_app(plugins: Sequence[Plugin] = PLUGINS) -> FastAPI:
 
     app = FastAPI(title="FitFolio API", version="0.1.0", lifespan=lifespan)
     app.add_exception_handler(DomainError, handle_domain_error)
+    app.add_exception_handler(RequestValidationError, handle_validation_error)
 
     # Every route is versioned under /v1 so the app and the API can change
     # separately later.

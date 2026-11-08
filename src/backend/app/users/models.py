@@ -18,6 +18,6 @@ class User(Base):
         primary_key=True, server_default=func.gen_random_uuid()
     )
     # An IANA time zone name, such as "America/Toronto". A user's activity
-    # is counted by the calendar day in this zone (SEC-24).
+    # is counted by the calendar day in this zone (SEC-23).
     time_zone: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

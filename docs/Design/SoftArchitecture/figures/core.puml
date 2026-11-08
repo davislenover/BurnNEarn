@@ -1,70 +1,88 @@
 @startuml core
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/core.puml
 !include style.iuml
-title Kernel (app/core) and how a module plugs in
+set separator none
+title Kernel: its files
 
 class "main.py" as main <<kernel>> {
-  create_app(plugins = PLUGINS): FastAPI
-  app = create_app()
+  {field} ~ app = create_app()
+  ~ create_app(plugins = PLUGINS): FastAPI
+  ~ handle_domain_error(request, error): JSONResponse
+  ~ handle_validation_error(request, error): JSONResponse
 }
 class "registry.py" as registry <<kernel>> {
-  PLUGINS: tuple[Plugin, ...]
-}
-class "<module>/plugin.py" as modplugin <<entry point>> {
-  PLUGIN = Plugin(name, router, lifespan, health)
+  ~ PLUGINS: tuple[Plugin, ...]
 }
 
-package "app/core" {
-  class Plugin <<kernel>> {
-    name: str
-    router: APIRouter | None
-    lifespan: Lifespan | None
-    health: HealthCheck | None
+package "Each module" as amodule {
+  class "plugin.py" as modplugin <<entry point>> {
+    + PLUGIN: Plugin
   }
-  class ModuleHealth <<kernel>> {
-    status: ok | degraded
-    detail: str | None
+}
+
+package "app/core" as core {
+  class "routes.py" as routes <<entry point>> {
+    + GET /v1/health: Health
+    + Health
+    + health_router(plugins): APIRouter
+    - _check(name, health): ModuleHealth
   }
-  class "routes.py" as routes <<kernel>> {
-    GET /v1/health
+  class "plugins.py" as plugins <<kernel>> {
+    + Plugin
+    + ModuleHealth
+    {field} + HealthCheck = () -> ModuleHealth
+    {field} + Lifespan = (FastAPI) -> async context manager
   }
-  class "clock.py" as clock <<kernel>> {
-    Clock
-    system_clock()
-    get_clock()
+  class "errors.py" as errors <<kernel>> {
+    + DomainError
   }
   class "db.py" as db <<kernel>> {
-    Base
-    SessionLocal
-    get_db()
-  }
-  class "money.py" as money <<kernel>> {
-    Money: Decimal, sent as text
-  }
-  class DomainError <<error>> {
-    code
-    message
-    status
+    + Base
+    + NAMING_CONVENTION
+    + engine
+    + SessionLocal: sessionmaker
+    + get_db(): Iterator[Session]
   }
   class "settings.py" as settings <<settings>> {
-    DATABASE_URL
+    + Settings
+    + get_settings(): Settings
+  }
+  class "clock.py" as clock <<kernel>> {
+    {field} + Clock = () -> datetime
+    + system_clock(): datetime
+    + get_clock(): Clock
+  }
+  class "money.py" as money <<kernel>> {
+    + Money: Decimal, sent as text
+    - _to_text(amount): str
+  }
+  class "constants.py" as constants <<kernel>> {
+    + QUOTE_CURRENCY = "USD"
+    + QUOTE_STALENESS_LIMIT = 15 minutes
+    + ActivityType: steps, wheelchair_pushes, ...
+    + 15 more from SRS Appendix C
   }
 }
 
-main --> registry : reads
-main --> routes
+main -left-> registry
 registry --> modplugin : lists
-modplugin --> Plugin
-Plugin --> ModuleHealth : health check returns
-routes --> Plugin : asks each for its health
-main --> DomainError : sends as JSON
+modplugin -right-> plugins : fills in
+main --> routes : adds
+main --> errors : sends to the phone
+routes --> plugins : asks for health
+routes --> db
 db --> settings
+
+clock -[hidden]down- money
+money -[hidden]down- constants
 
 legend right
   <color:#5F5E5A>■</color> Kernel
-  <color:#854F0B>■</color> A module's entry point
-  <color:#A32D2D>■</color> Error
+  <color:#854F0B>■</color> Entry point: how the phone or the app reaches it
   <color:#3B6D11>■</color> Settings
+  + modules, the kernel or the phone may use it
+  ~ only the kernel's files may use it
+  - only its own file uses it
   An arrow means "uses".
   app/core never imports a module.
 endlegend
