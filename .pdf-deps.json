@@ -55,7 +55,9 @@
     "docs/Design/SoftArchitecture/figures/market.png",
     "docs/Design/SoftArchitecture/figures/plugin-kernel.png",
     "docs/Design/SoftArchitecture/figures/request-assets.png",
-    "docs/Design/SoftArchitecture/figures/startup-and-poll.png"
+    "docs/Design/SoftArchitecture/figures/startup-and-poll.png",
+    "docs/Design/SoftArchitecture/figures/users.png",
+    "docs/Design/SoftArchitecture/figures/wallet.png"
   ],
   "docs/Design/SoftArchitecture/MG.tex": [
     "docs/Comments.text",
