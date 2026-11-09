@@ -100,5 +100,5 @@ user and returns their ID. It flushes but never commits.
 
 | File | What it checks |
 |---|---|
-| `test_users.py` | The demo user on and off, off by default, and `create_user` with its time zone check |
+| `test_users.py` | The demo user when it is on, that it is off by default, `create_user` with its time zone check, and the table refusing a user with no time zone |
 | `test_seed_demo.py` | The seed script: the demo user with a portfolio at 0, running it twice, a user with no portfolio, and `reset` |
