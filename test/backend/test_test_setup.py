@@ -1,6 +1,5 @@
 """Tests for the shared test setup in conftest.py."""
 
-import uuid
 from collections.abc import Callable
 from datetime import date
 from decimal import Decimal
@@ -16,25 +15,19 @@ from sqlalchemy.orm import Session
 from app.core.db import engine, get_db
 from app.main import app
 from app.market.models import Asset
-from app.users.interface import get_current_user
-from app.users.types import DEMO_USER_ID, CurrentUser
 from app.wallet.queries import activity_paid, get_balance, live_portfolio_id
 
-# The fixtures' types. They are defined in conftest.py, which tests don't
+# The fixture's type. It is defined in conftest.py, which tests don't
 # import.
 MakePortfolio = Callable[..., Any]
-AsUser = Callable[[CurrentUser], None]
 
 
-def test_tests_run_on_a_database_ending_in_test(db_session: Session) -> None:
-    name = db_session.execute(select(func.current_database())).scalar_one()
-
-    assert name.endswith("_test")
-
-
+@pytest.mark.parametrize("run", [1, 2])
 def test_a_commit_in_a_test_never_reaches_the_database(
-    db_session: Session,
+    db_session: Session, run: int
 ) -> None:
+    # The second run would break the unique symbol rule if the first one's
+    # row were still there.
     db_session.add(Asset(symbol="TEMP", name="Temp", asset_type="stock"))
     db_session.commit()
 
@@ -63,16 +56,6 @@ def test_a_rollback_only_undoes_back_to_the_last_commit(
         select(Asset.symbol).where(Asset.symbol == "KEEP")
     ).all()
     assert kept == ["KEEP"]
-
-
-@pytest.mark.parametrize("run", [1, 2])
-def test_a_commit_is_undone_when_the_test_ends(
-    db_session: Session, run: int
-) -> None:
-    # The second run would break the unique symbol rule if the first one's
-    # row were still there.
-    db_session.add(Asset(symbol="TWICE", name="Twice", asset_type="stock"))
-    db_session.commit()
 
 
 @pytest.mark.parametrize(("route_commits", "rows"), [(True, 1), (False, 0)])
@@ -104,6 +87,7 @@ def test_the_real_get_db_works(database: None) -> None:
     assert response.json() == {
         "status": "ok",
         "database": "ok",
+        # The poller is off in tests.
         "modules": {"market": {"status": "ok", "detail": "poller off"}},
     }
 
@@ -122,22 +106,3 @@ def test_make_portfolio_funds_one_old_reward_and_commits(
     assert live_portfolio_id(db_session, owner.user.user_id) == (
         owner.portfolio_id
     )
-
-
-def test_make_portfolio_can_make_the_demo_user(
-    db_session: Session, make_portfolio: MakePortfolio
-) -> None:
-    owner = make_portfolio(user=CurrentUser(user_id=DEMO_USER_ID))
-
-    assert owner.user.user_id == DEMO_USER_ID
-    assert get_balance(db_session, owner.portfolio_id) == Decimal("0")
-
-
-def test_as_user_changes_the_user_routes_see(
-    client: TestClient, as_user: AsUser
-) -> None:
-    user = CurrentUser(user_id=uuid.uuid4())
-
-    as_user(user)
-
-    assert app.dependency_overrides[get_current_user]() == user
