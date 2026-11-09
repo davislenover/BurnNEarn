@@ -3,41 +3,17 @@
 from collections.abc import AsyncIterator, Sequence
 from contextlib import AsyncExitStack, asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 
 from app.core import routes
-from app.core.errors import DomainError
+from app.core.errors import (
+    DomainError,
+    handle_domain_error,
+    handle_validation_error,
+)
 from app.core.plugins import Plugin
 from app.registry import PLUGINS
-
-
-def handle_domain_error(_: Request, error: DomainError) -> JSONResponse:
-    """Send any DomainError to the phone in the same shape."""
-    return JSONResponse(
-        status_code=error.status,
-        content={"detail": {"code": error.code, "message": error.message}},
-    )
-
-
-def handle_validation_error(
-    _: Request, error: RequestValidationError
-) -> JSONResponse:
-    """Send a request that doesn't fit its route as 422, like FastAPI does,
-    but without the values that were sent.
-
-    FastAPI's own handler sends each refused value back. Some can't be
-    written as JSON, such as NaN in a body, so the phone got a 500 instead.
-    """
-    errors = [
-        {key: value for key, value in found.items() if key != "input"}
-        for found in error.errors()
-    ]
-    return JSONResponse(
-        status_code=422, content={"detail": jsonable_encoder(errors)}
-    )
 
 
 def create_app(plugins: Sequence[Plugin] = PLUGINS) -> FastAPI:
