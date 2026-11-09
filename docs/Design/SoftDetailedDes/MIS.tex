@@ -748,6 +748,315 @@ None
 \newpage
 
 % M8 Users and M9 Wallet: #248
+\section{MIS of Users} \label{MisUsers}
+
+\subsection{Module}
+
+Users (M8 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Plugins (M22), JSON Format (M23). The MG also lists Clock (M2)
+and Constants (M7), which sign-up uses at Revision~0.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent CurrentUser = tuple of (user\_id: ID), a read-only copy of the user a
+request comes from.
+
+\medskip
+\noindent NotAuthenticatedError, a DomainError with code
+``not\_authenticated'', status 401 and the message ``Sign in to continue.''
+
+\subsubsection{Exported Constants}
+
+\noindent DEMO\_USER\_ID: ID $=$ 00000000-0000-4000-8000-000000000001, the
+proof of concept's one built-in user. It is fixed, so the seed script and
+get\_current\_user always agree on who it is.
+
+\medskip
+\noindent DEFAULT\_TIME\_ZONE: String $=$ ``America/Toronto''
+
+\medskip
+\noindent PLUGIN: Plugin $=$ (name: ``users'', router: None, lifespan: None,
+health: None). Users has no routes yet.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.6cm}
+  >{\raggedright\arraybackslash}p{4.4cm}
+  >{\raggedright\arraybackslash}p{2.4cm}
+  >{\raggedright\arraybackslash}p{4.4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+get\_current\_user & - & CurrentUser & NotAuthenticatedError \\
+create\_user & Session, ID or None, String & ID & ValueError, IntegrityError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent users: set of tuple of (user\_id: ID, time\_zone: String,
+created\_at: DateTime), every user, with each user\_id once. time\_zone is an
+IANA time zone name, such as America/Toronto. Nothing reads it yet. Activity
+(M11) counts each day in the time zone the phone sends with each sync.
+
+\subsubsection{Environment Variables}
+
+\noindent DEMO\_USER\_ENABLED: $\mathbb{B}$, default false, makes every request
+that needs a user come from the demo user. It is read once per process.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The seed script (app/scripts/seed\_demo.py) makes the demo user, and its
+  live portfolio in Wallet (M9), before a route needs them. get\_current\_user
+  does not check that the user exists.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent get\_current\_user():
+\begin{itemize}
+\item output: $out :=$ CurrentUser(DEMO\_USER\_ID). Routes ask for it as a
+  dependency, so the phone never sends a user ID, and a test can replace it to
+  pick the user. Sign-in at Revision~0 only changes how it finds the user.
+\item exception: $exc :=$ ($\neg$DEMO\_USER\_ENABLED $\Rightarrow$
+  NotAuthenticatedError)
+\end{itemize}
+
+{\raggedright
+\noindent create\_user(session, user\_id, time\_zone). Unless they are given,
+user\_id is None and time\_zone is DEFAULT\_TIME\_ZONE.\par}
+\begin{itemize}
+\item transition: users $:=$ users $\cup \{(u$, time\_zone, the database's
+  time$)\}$, where $u :=$ user\_id if it is given, else a new ID. It flushes but
+  never commits.
+\item output: $out := u$
+\item exception: $exc :=$ (time\_zone is not an IANA time zone name
+  $\Rightarrow$ ValueError $|$ some user already has user\_id $\Rightarrow$
+  IntegrityError). A ValueError is raised before anything changes.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
+\section{MIS of Wallet} \label{MisWallet}
+
+\subsection{Module}
+
+Wallet (M9 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent BalanceChangeReason $=$ \{activity\_reward, trade\_purchase\}, why a
+balance changed.
+
+\medskip
+\noindent LockedPortfolio = tuple of (portfolio\_id: ID, user\_id: ID), the
+read-only proof that a portfolio is locked. Only lock\_live\_portfolio makes
+one, and change\_balance asks for one, so changing a balance without locking it
+first is hard to do by accident.
+
+\medskip
+{\raggedright
+\noindent BalanceChangeReceipt = tuple of (balance\_change\_id: ID, amount:
+Decimal, cash\_balance\_after: Decimal), a read-only copy of one change.\par}
+
+\medskip
+\noindent InsufficientFundsError, a DomainError with code
+``insufficient\_funds'', status 409 and the message ``You don't have enough
+currency for this.''
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``wallet'', router: the route below,
+lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so names like
+% NotAuthenticatedError fit their columns.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.95cm}
+  >{\raggedright\arraybackslash}p{4.0cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+lock\_live\_portfolio & Session, ID & LockedPortfolio & NoResultFound \\
+change\_balance & Session, LockedPortfolio, Decimal, BalanceChangeReason, Date
+or None & BalanceChangeReceipt & ValueError, InsufficientFundsError \\
+create\_live\_portfolio & Session, ID & ID & IntegrityError \\
+delete\_portfolio & Session, ID & - & - \\
+live\_portfolio\_id & Session, ID & ID & NoResultFound \\
+get\_balance & Session, ID & Decimal & NoResultFound \\
+activity\_paid & Session, ID, Date & Decimal & ValueError \\
+GET /v1/me/balance & - & tuple of (cash\_balance: Money) &
+NotAuthenticatedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent portfolios: set of tuple of (portfolio\_id: ID, user\_id: ID,
+cash\_balance: Decimal, scenario\_id: ID or None, created\_at: DateTime). A
+portfolio is live when its scenario\_id is None, and each user has at most one
+live portfolio. Every cash\_balance is 0 or more.
+
+\medskip
+\noindent changes: set of tuple of (balance\_change\_id: ID, portfolio\_id: ID,
+amount: Decimal, reason: BalanceChangeReason, activity\_date: Date or None,
+created\_at: DateTime), every change to a balance, never edited. Each amount is
+not 0. It is above 0 exactly when the reason is activity\_reward, and the
+change has an activity\_date, the day of activity it pays for, exactly when the
+reason is activity\_reward.
+
+\medskip
+\noindent Every amount and balance has at most 4 decimals and 12 digits before
+the point. For every portfolio $p$, $p$.cash\_balance is the sum of the amounts
+of its changes (SEC-22). The database does not check this sum. change\_balance
+keeps it true, since it is the only routine that changes a cash\_balance, and it
+adds the change in the same transaction. Deleting a portfolio deletes its
+changes, and other modules' rows that point at it with ON DELETE CASCADE, such
+as the trades and holdings of Trading (M12).
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item A route that changes money calls lock\_live\_portfolio, then
+  change\_balance, then commits once, by the commit rule of Database (M1). The
+  lock lasts until the session's transaction ends, by a commit, a rollback or
+  closing the session.
+\item Every amount, and every balance a change leads to, is below $10^{12}$,
+  the most the columns hold. A reward is at most the daily cap, so in practice
+  none comes near it.
+\item Every user a route acts for has a live portfolio. The seed script makes
+  the demo user's.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent lock\_live\_portfolio(session, user\_id), with $p$ the live portfolio
+of user\_id:
+\begin{itemize}
+\item transition: $p$ is locked until session's transaction ends. Until
+  then, a call for $p$ from another session waits, and it then sees what the
+  first one saved.
+\item output: $out :=$ LockedPortfolio($p$.portfolio\_id, user\_id)
+\item exception: $exc :=$ (user\_id has no live portfolio $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent change\_balance(session, locked, amount, reason, activity\_date),
+with activity\_date None by default and $p$ the portfolio with portfolio\_id
+locked.portfolio\_id:
+\begin{itemize}
+\item transition: $p$.cash\_balance $:= p$.cash\_balance $+$ amount, and changes
+  $:=$ changes $\cup \{(c$, $p$.portfolio\_id, amount, reason, activity\_date,
+  the database's time$)\}$ with $c$ a new ID. It flushes but never commits.
+\item output: $out :=$ BalanceChangeReceipt($c$, amount, $p$.cash\_balance
+  after the change)
+\item exception: the first of these that holds is raised, before anything
+  changes:\\
+  \hspace*{1em}$exc :=$ (amount is 0, NaN or infinite, or has over 4 decimals
+  $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ (reason $=$ activity\_reward) $\neq$ (amount $> 0$)
+  $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ (reason $=$ activity\_reward) $\neq$ (activity\_date $\neq$
+  None) $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ activity\_date is a DateTime $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ $p$.cash\_balance $+$ amount $< 0$ $\Rightarrow$
+  InsufficientFundsError$)$\\
+  A ValueError means the calling code is wrong. It is not a refusal the phone
+  sees. In Python a DateTime is also a Date, so one can arrive where a Date is
+  expected. A balance never goes below 0, even if the caller skipped the lock,
+  since the change and the check are one database statement.
+\end{itemize}
+
+\noindent create\_live\_portfolio(session, user\_id):
+\begin{itemize}
+\item transition: portfolios $:=$ portfolios $\cup \{(q$, user\_id, 0, None, the
+  database's time$)\}$ with $q$ a new ID. It flushes but never commits.
+\item output: $out := q$
+\item exception: $exc :=$ (user\_id is not a user of Users (M8), or already has
+  a live portfolio $\Rightarrow$ IntegrityError)
+\end{itemize}
+
+\noindent delete\_portfolio(session, portfolio\_id):
+\begin{itemize}
+\item transition: the portfolio with portfolio\_id, its changes, and other
+  modules' rows that point at it with ON DELETE CASCADE are removed, in one
+  statement. It never commits.
+\item exception: None
+\end{itemize}
+
+\noindent live\_portfolio\_id(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the portfolio\_id of user\_id's live portfolio
+\item exception: $exc :=$ (user\_id has no live portfolio $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent get\_balance(session, portfolio\_id):
+\begin{itemize}
+\item output: $out :=$ the cash\_balance of the portfolio with portfolio\_id,
+  including changes session has made but not committed
+\item exception: $exc :=$ (no portfolio has portfolio\_id $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent activity\_paid(session, portfolio\_id, activity\_date):
+\begin{itemize}
+\item output: $out :=$ the sum of the amounts of the changes with
+  portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0 if there
+  are none. A step sync uses it to pay only the difference.
+\item exception: $exc :=$ (activity\_date is a DateTime $\Rightarrow$
+  ValueError)
+\end{itemize}
+
+\noindent GET /v1/me/balance() takes session from get\_db of Database (M1)
+and the user $u :=$ get\_current\_user() of Users (M8).
+\begin{itemize}
+\item output: $out :=$ (cash\_balance: $b$), where $b$ is get\_balance(session,
+  $q$) as Money, and $q$ is live\_portfolio\_id(session, $u$.user\_id). It only
+  reads, so it does not lock or commit.
+\item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user, with
+  status 401
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
 \section{MIS of Market} \label{MisMarket}
 
 \subsection{Module}
