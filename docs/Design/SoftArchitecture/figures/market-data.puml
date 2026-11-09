@@ -76,7 +76,7 @@ package "models.py" {
     .. the database refuses ..
     a second (asset_id, quoted_at)
     an asset_id not in assets
-    price ≤ 0
+    price ≤ 0, or NaN
     price_currency other than 'USD'
   }
   class "ProviderRequest (provider_requests)" as ProviderRequest <<table>> {

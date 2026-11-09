@@ -61,7 +61,9 @@ class Price(Base):
 
     __tablename__ = "prices"
     __table_args__ = (
-        CheckConstraint("price > 0", name="price_positive"),
+        # PostgreSQL counts NaN as above every number, so it is refused by
+        # name.
+        CheckConstraint("price > 0 AND price <> 'NaN'", name="price_positive"),
         # Every price is stored with its currency (SEC-27).
         CheckConstraint(
             f"price_currency = '{QUOTE_CURRENCY}'", name="one_currency"
