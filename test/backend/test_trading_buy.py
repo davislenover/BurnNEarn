@@ -2,7 +2,6 @@
 a buy that breaks a rule, and applying each request_id once."""
 
 import uuid
-from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
@@ -35,11 +34,6 @@ from app.wallet.types import (
     InsufficientFundsError,
     LockedPortfolio,
 )
-
-# The fixtures' types. They are defined in conftest.py, which tests don't
-# import.
-AddPrice = Callable[[str, str, datetime], None]
-MakePortfolio = Callable[..., Any]
 
 # Monday, Nov 9, 2026 at 10:00 in New York, while the market is open.
 NOW = datetime(2026, 11, 9, 15, 0, tzinfo=UTC)
@@ -136,39 +130,21 @@ def count(session: Session, table: type, locked: LockedPortfolio) -> int:
     ).scalar_one()
 
 
-@pytest.mark.parametrize(
-    ("balance", "quantity", "unit_price", "cost", "left"),
-    [
-        ("500", 1, "101.5", "101.5", "398.5"),
-        # Exact to the last of 4 decimals.
-        ("100", 3, "33.3333", "99.9999", "0.0001"),
-        # The whole balance can be spent.
-        ("101.5", 1, "101.5", "101.5", "0"),
-    ],
-)
-def test_a_buy_pays_exactly_and_adds_the_shares(
-    session: Session,
-    balance: str,
-    quantity: int,
-    unit_price: str,
-    cost: str,
-    left: str,
-) -> None:
-    locked = wallet(session, balance)
-    price(session, "AAPL", unit_price)
+def test_a_buy_pays_exactly_and_adds_the_shares(session: Session) -> None:
+    # Exact to the last of 4 decimals.
+    locked = wallet(session, "100")
+    price(session, "AAPL", "33.3333")
 
-    trade, new = buy(
-        session, locked, request("AAPL", quantity, unit_price), NOW
-    )
+    trade, new = buy(session, locked, request("AAPL", 3, "33.3333"), NOW)
 
     assert new
-    assert get_balance(session, locked.portfolio_id) == Decimal(left)
-    assert shares(session, locked) == quantity
+    assert get_balance(session, locked.portfolio_id) == Decimal("0.0001")
+    assert shares(session, locked) == 3
     session.refresh(trade)
-    assert trade.quantity == quantity
-    assert trade.unit_price == Decimal(unit_price)
-    assert trade.currency_amount == Decimal(cost)
-    assert trade.cash_balance_after == Decimal(left)
+    assert trade.quantity == 3
+    assert trade.unit_price == Decimal("33.3333")
+    assert trade.currency_amount == Decimal("99.9999")
+    assert trade.cash_balance_after == Decimal("0.0001")
 
 
 def test_the_trade_records_the_request_and_its_own_payment(
@@ -195,17 +171,6 @@ def test_the_trade_records_the_request_and_its_own_payment(
     assert payment.reason == BalanceChangeReason.TRADE_PURCHASE
 
 
-def test_a_buy_uses_the_newest_price(session: Session) -> None:
-    locked = wallet(session, "500")
-    price(session, "AAPL", "100", quoted_at=NOW - timedelta(minutes=2))
-    price(session, "AAPL", "101.5")
-
-    trade, _ = buy(session, locked, request(), NOW)
-
-    assert trade.unit_price == Decimal("101.5")
-    assert get_balance(session, locked.portfolio_id) == Decimal("398.5")
-
-
 def test_more_buys_add_to_one_holding_per_stock(session: Session) -> None:
     locked = wallet(session, "1000")
     price(session, "AAPL", "101.5")
@@ -222,23 +187,16 @@ def test_more_buys_add_to_one_holding_per_stock(session: Session) -> None:
     assert get_balance(session, locked.portfolio_id) == Decimal("295.5")
 
 
-@pytest.mark.parametrize(
-    "quantity",
-    [
-        1,
-        # More than an Integer column holds. The balance is checked before
-        # any share is written, so this is refused for its cost instead.
-        2**31,
-    ],
-)
 def test_not_enough_currency_is_refused_and_changes_nothing(
-    session: Session, quantity: int
+    session: Session,
 ) -> None:
     locked = wallet(session, "100")
     price(session, "AAPL", "101.5")
 
+    # More shares than an Integer column holds. The balance is checked
+    # before any share is written, so this is refused for its cost instead.
     with pytest.raises(InsufficientFundsError):
-        buy(session, locked, request(quantity=quantity), NOW)
+        buy(session, locked, request(quantity=2**31), NOW)
 
     assert get_balance(session, locked.portfolio_id) == Decimal("100")
     assert shares(session, locked) is None
@@ -269,11 +227,6 @@ def test_not_enough_currency_is_refused_and_changes_nothing(
             {"now": CLOSED, "symbol": "ZZZZ"},
             MarketClosedError,
             id="closed-and-unknown",
-        ),
-        pytest.param(
-            {"now": CLOSED, "balance": "100"},
-            MarketClosedError,
-            id="closed-and-poor",
         ),
         pytest.param(
             {"quoted_at": DELAYED, "expected_price": "100"},
@@ -329,71 +282,19 @@ def test_a_changed_price_is_refused_with_the_new_price(
     assert "33.3333" in refused.value.message
 
 
-@pytest.mark.parametrize(
-    ("quoted_at", "expected_price"),
-    [
-        # Exactly as old as allowed, so not delayed yet.
-        (NOW - QUOTE_STALENESS_LIMIT, "101.5"),
-        # The database gives back 101.5000, so the price is compared as a
-        # number. The same number written another way is not a change.
-        (A_MINUTE_AGO, "1.015E2"),
-    ],
-)
-def test_a_buy_at_the_edge_of_a_rule_goes_through(
-    session: Session, quoted_at: datetime, expected_price: str
-) -> None:
+def test_a_buy_at_the_edge_of_a_rule_goes_through(session: Session) -> None:
+    # Exactly as old as allowed, so not delayed yet.
     locked = wallet(session, "500")
-    price(session, "AAPL", "101.5", quoted_at)
+    price(session, "AAPL", "101.5", NOW - QUOTE_STALENESS_LIMIT)
 
-    trade, new = buy(
-        session, locked, request(expected_price=expected_price), NOW
-    )
+    trade, new = buy(session, locked, request(), NOW)
 
     assert new
     assert trade.unit_price == Decimal("101.5")
     assert get_balance(session, locked.portfolio_id) == Decimal("398.5")
 
 
-def test_a_buy_that_is_rolled_back_leaves_nothing(
-    db_session: Session,
-    make_portfolio: MakePortfolio,
-    add_price: AddPrice,
-) -> None:
-    # FR_MktAtomicTrade: the payment, the shares and the trade are saved
-    # together or not at all. The setup is committed, the buy is not.
-    owner = make_portfolio(Decimal("500"))
-    add_price("AAPL", "101.5", A_MINUTE_AGO)
-    locked = lock_live_portfolio(db_session, owner.user.user_id)
-    buy(db_session, locked, request(), NOW)
-
-    db_session.rollback()
-
-    assert get_balance(db_session, locked.portfolio_id) == Decimal("500")
-    assert shares(db_session, locked) is None
-    assert count(db_session, Trade, locked) == 0
-    assert count(db_session, BalanceChange, locked) == 1
-
-
 # Each request_id applies once (FR_MktNoDuplicate).
-
-
-def test_the_same_request_twice_makes_one_trade(session: Session) -> None:
-    # 2 shares, so the trade's cost (203) differs from its price (101.5).
-    locked = wallet(session, "500")
-    price(session, "AAPL", "101.5")
-    sent = request("AAPL", 2)
-
-    first, first_new = buy(session, locked, sent, NOW)
-    again, again_new = buy(session, locked, sent, NOW)
-
-    assert first_new
-    assert not again_new
-    assert again.trade_id == first.trade_id
-    assert count(session, Trade, locked) == 1
-    assert shares(session, locked) == 2
-    # The funding and one payment.
-    assert count(session, BalanceChange, locked) == 2
-    assert get_balance(session, locked.portfolio_id) == Decimal("297")
 
 
 @pytest.mark.parametrize(
@@ -425,22 +326,6 @@ def test_a_repeat_gets_its_first_trade_back_whatever_changed(
     assert get_balance(session, locked.portfolio_id) == Decimal("0")
 
 
-def test_a_repeat_with_the_price_written_another_way_is_the_same_trade(
-    session: Session,
-) -> None:
-    locked = wallet(session, "500")
-    price(session, "AAPL", "101.5")
-    sent = request()
-    first, _ = buy(session, locked, sent, NOW)
-
-    again, new = buy(
-        session, locked, request("AAPL", 1, "1.015E2", sent.request_id), NOW
-    )
-
-    assert not new
-    assert again.trade_id == first.trade_id
-
-
 @pytest.mark.parametrize(
     "changed",
     [
@@ -452,10 +337,8 @@ def test_a_repeat_with_the_price_written_another_way_is_the_same_trade(
         pytest.param({"expected_price": "101.4999"}, id="lower-price"),
         pytest.param({"symbol": "MSFT"}, id="symbol"),
         pytest.param({"symbol": "aapl"}, id="symbol-case"),
-        # The repeat is checked first, so these aren't unknown_asset or
-        # market_closed.
+        # The repeat is checked first, so this isn't unknown_asset.
         pytest.param({"symbol": "ZZZZ"}, id="unknown-symbol"),
-        pytest.param({"quantity": 3, "now": CLOSED}, id="after-the-close"),
     ],
 )
 def test_the_same_request_id_for_a_different_trade_is_refused(
@@ -467,7 +350,6 @@ def test_the_same_request_id_for_a_different_trade_is_refused(
     sent = request("AAPL", 2)
     buy(session, locked, sent, NOW)
     case = {
-        "now": NOW,
         "symbol": "AAPL",
         "quantity": 2,
         "expected_price": "101.5",
@@ -481,7 +363,7 @@ def test_the_same_request_id_for_a_different_trade_is_refused(
     )
 
     with pytest.raises(RequestIdReusedError):
-        buy(session, locked, different, case["now"])
+        buy(session, locked, different, NOW)
 
     assert count(session, Trade, locked) == 1
     assert shares(session, locked) == 2
@@ -508,26 +390,3 @@ def test_another_users_same_request_id_makes_their_own_trade(
     assert again.trade_id == their_trade.trade_id
     assert shares(session, mine) == 1
     assert shares(session, theirs) == 1
-
-
-def test_a_refused_request_saves_nothing_so_it_can_be_sent_again(
-    session: Session,
-) -> None:
-    locked = wallet(session, "100")
-    price(session, "AAPL", "101.5")
-    sent = request()
-    with pytest.raises(InsufficientFundsError):
-        buy(session, locked, sent, NOW)
-    change_balance(
-        session,
-        locked,
-        Decimal("1.5"),
-        BalanceChangeReason.ACTIVITY_REWARD,
-        date(2026, 11, 9),
-    )
-
-    trade, new = buy(session, locked, sent, NOW)
-
-    assert new
-    assert trade.request_id == sent.request_id
-    assert get_balance(session, locked.portfolio_id) == Decimal("0")

@@ -48,7 +48,8 @@ class Asset(Base):
         String(3), server_default=QUOTE_CURRENCY
     )
     # False once an administrator removes the asset from the live market.
-    # Users who hold it can still see and sell it (FR_MktRemovedHoldings).
+    # Its holders' shares are then sold for them at its most recent price
+    # (FR_MktRemovedHoldings, not built yet).
     is_tradable: Mapped[bool] = mapped_column(server_default="true")
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
@@ -60,7 +61,9 @@ class Price(Base):
 
     __tablename__ = "prices"
     __table_args__ = (
-        CheckConstraint("price > 0", name="price_positive"),
+        # PostgreSQL counts NaN as above every number, so it is refused by
+        # name.
+        CheckConstraint("price > 0 AND price <> 'NaN'", name="price_positive"),
         # Every price is stored with its currency (SEC-27).
         CheckConstraint(
             f"price_currency = '{QUOTE_CURRENCY}'", name="one_currency"

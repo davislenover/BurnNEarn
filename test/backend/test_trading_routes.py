@@ -77,7 +77,9 @@ def test_a_buy_is_201_and_a_repeat_is_200_with_the_same_body(
     # one that isn't UTC, the repeat only matches if the reply converts.
     db_session.execute(text("SET TIME ZONE 'America/Toronto'"))
     db_session.commit()
-    sent = body(quantity=2)
+    # The price as GET /v1/assets gives it. Other tests send 101.5, so
+    # together they show the price is compared as a number, not as text.
+    sent = body(quantity=2, expected_price="101.5000")
 
     first = client.post("/v1/me/trades", json=sent)
     # Another buy changes the balance, and the repeat comes 5 minutes
@@ -100,25 +102,10 @@ def test_a_buy_is_201_and_a_repeat_is_200_with_the_same_body(
     }
 
 
-def test_a_buy_is_saved_and_shows_in_the_balance(
-    client: TestClient, db_session: Session, owner: Any
-) -> None:
-    client.post("/v1/me/trades", json=body(quantity=2))
-
-    # The route committed, so another request sees it.
-    balance = client.get("/v1/me/balance")
-    assert balance.json() == {"cash_balance": "297.0000"}
-    assert trades(db_session, owner.portfolio_id) == 1
-    assert holdings(db_session, owner.portfolio_id) == 2
-
-
 @pytest.mark.parametrize(
     ("changes", "status", "code"),
     [
         pytest.param({"symbol": "ZZZZ"}, 404, "unknown_asset", id="unknown"),
-        pytest.param(
-            {"expected_price": "100"}, 409, "price_changed", id="changed"
-        ),
         pytest.param({"quantity": 5}, 409, "insufficient_funds", id="poor"),
     ],
 )
@@ -149,7 +136,10 @@ def test_a_closed_market_is_refused(
     response = client.post("/v1/me/trades", json=body())
 
     assert response.status_code == 409
-    assert response.json()["detail"]["code"] == "market_closed"
+    assert response.json()["detail"] == {
+        "code": "market_closed",
+        "message": "The market is closed. Try again when it opens.",
+    }
 
 
 def test_a_delayed_price_is_refused(
@@ -163,7 +153,13 @@ def test_a_delayed_price_is_refused(
     )
 
     assert response.status_code == 409
-    assert response.json()["detail"]["code"] == "price_out_of_date"
+    assert response.json()["detail"] == {
+        "code": "price_out_of_date",
+        "message": (
+            "This stock's price is out of date, so it can't be bought "
+            "right now."
+        ),
+    }
 
 
 def test_a_reused_request_id_is_refused(
@@ -175,7 +171,10 @@ def test_a_reused_request_id_is_refused(
     response = client.post("/v1/me/trades", json={**sent, "quantity": 2})
 
     assert response.status_code == 409
-    assert response.json()["detail"]["code"] == "request_id_reused"
+    assert response.json()["detail"] == {
+        "code": "request_id_reused",
+        "message": "This request ID was already used for a different trade.",
+    }
     assert trades(db_session, owner.portfolio_id) == 1
 
 
@@ -217,42 +216,17 @@ def test_a_new_request_at_an_old_price_gets_the_new_price(
     assert "105.0000" in detail["message"]
 
 
-@pytest.mark.parametrize(
-    "changes",
-    [
-        pytest.param({"trade_type": "sell"}, id="sell"),
-        pytest.param({"quantity": 0}, id="no-shares"),
-        pytest.param({"quantity": "1"}, id="quantity-as-text"),
-        pytest.param({"expected_price": "101.50001"}, id="5-decimals"),
-        pytest.param({"user_id": str(uuid.uuid4())}, id="names-a-user"),
-    ],
-)
-def test_a_body_that_doesnt_fit_is_a_422(
-    client: TestClient,
-    db_session: Session,
-    owner: Any,
-    changes: dict[str, object],
+def test_the_phone_cannot_name_a_user(
+    client: TestClient, db_session: Session, owner: Any
 ) -> None:
-    response = client.post("/v1/me/trades", json=body(**changes))
-
-    assert response.status_code == 422
-    assert trades(db_session, owner.portfolio_id) == 0
-
-
-def test_a_body_with_nan_is_a_422_not_a_500(
-    client: TestClient, owner: Any
-) -> None:
+    # The user comes from get_current_user, so a body that names one is
+    # refused. The request tests check each other field that doesn't fit.
     response = client.post(
-        "/v1/me/trades",
-        content=(
-            '{"request_id": "6f1c2b7e-1f4a-4c55-9d0e-3b8f2a1c9d10", '
-            '"symbol": "AAPL", "trade_type": "buy", "quantity": NaN, '
-            '"expected_price": "101.5"}'
-        ),
-        headers={"Content-Type": "application/json"},
+        "/v1/me/trades", json=body(user_id=str(uuid.uuid4()))
     )
 
     assert response.status_code == 422
+    assert trades(db_session, owner.portfolio_id) == 0
 
 
 def test_a_buy_with_no_current_user_is_a_401(

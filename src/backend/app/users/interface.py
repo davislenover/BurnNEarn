@@ -40,7 +40,7 @@ def create_user(
 
     The seed script passes DEMO_USER_ID. Without a user_id the database
     makes a new one. Raises ValueError for a time zone that doesn't exist,
-    rather than storing one that later breaks counting a user's days.
+    so a stored zone always works for whatever reads it later.
     """
     try:
         ZoneInfo(time_zone)

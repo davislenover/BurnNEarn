@@ -1,6 +1,7 @@
 """Tests for GET /v1/health."""
 
 from collections.abc import Iterator, Sequence
+from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
@@ -9,21 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.core.plugins import ModuleHealth, Plugin
-from app.main import app, create_app
-
-
-def test_health_is_ok_when_database_is_reachable(
-    client: TestClient, database: None
-) -> None:
-    response = client.get("/v1/health")
-
-    assert response.status_code == 200
-    assert response.json() == {
-        "status": "ok",
-        "database": "ok",
-        # The poller is off in tests.
-        "modules": {"market": {"status": "ok", "detail": "poller off"}},
-    }
+from app.main import create_app
 
 
 class _UnreachableDatabase:
@@ -31,22 +18,6 @@ class _UnreachableDatabase:
 
     def execute(self, *args: object, **kwargs: object) -> None:
         raise OperationalError("SELECT 1", {}, Exception("connection refused"))
-
-
-def test_health_reports_unavailable_database(client: TestClient) -> None:
-    def unreachable_db() -> Iterator[_UnreachableDatabase]:
-        yield _UnreachableDatabase()
-
-    app.dependency_overrides[get_db] = unreachable_db
-
-    response = client.get("/v1/health")
-
-    assert response.status_code == 503
-    assert response.json() == {
-        "status": "degraded",
-        "database": "unavailable",
-        "modules": {"market": {"status": "ok", "detail": "poller off"}},
-    }
 
 
 def health_of(
@@ -63,25 +34,12 @@ def health_of(
     return response.status_code, response.json()
 
 
-def test_each_module_with_a_health_check_is_reported(
-    db_session: Session,
-) -> None:
-    plugins = [
-        Plugin(name="quiet"),
-        Plugin(name="busy", health=lambda: ModuleHealth("ok")),
-    ]
-
-    code, body = health_of(plugins, db_session)
-
-    assert code == 200
-    # A module without a health check is left out.
-    assert body["modules"] == {"busy": {"status": "ok", "detail": None}}
-
-
 def test_a_degraded_module_makes_health_degraded_but_still_answers_200(
     db_session: Session,
 ) -> None:
     plugins = [
+        # A module without a health check is left out.
+        Plugin(name="quiet"),
         Plugin(name="fine", health=lambda: ModuleHealth("ok")),
         Plugin(
             name="behind",
@@ -134,8 +92,9 @@ def test_an_unreachable_database_answers_503_even_if_modules_are_ok() -> None:
 
 @pytest.mark.parametrize(
     "result",
-    # Nothing, a plain string, and a status that is not ok or degraded.
-    [None, "ok", ModuleHealth("fine")],
+    # Nothing, a look-alike that isn't a ModuleHealth, and a status that
+    # is not ok or degraded.
+    [None, SimpleNamespace(status="ok", detail=None), ModuleHealth("fine")],
 )
 def test_a_health_check_that_returns_the_wrong_thing_counts_as_failed(
     db_session: Session, result: object

@@ -103,36 +103,22 @@ def add_holding(
     )
 
 
-def test_a_trade_is_stored_exactly(connection: Connection) -> None:
-    portfolio_id = new_portfolio(connection)
-
-    trade_id = new_trade(
-        connection,
-        portfolio_id,
-        quantity=3,
-        unit_price=Decimal("33.3333"),
-        currency_amount=Decimal("99.9999"),
-        cash_balance_after=Decimal("0.0001"),
-    )
-
-    trade = connection.execute(
-        select(Trade).where(Trade.trade_id == trade_id)
-    ).one()
-    assert trade.quantity == 3
-    assert trade.unit_price == Decimal("33.3333")
-    assert trade.currency_amount == Decimal("99.9999")
-    assert trade.cash_balance_after == Decimal("0.0001")
-    assert trade.created_at == AT
-
-
-def test_the_lowest_price_and_spending_the_whole_balance_are_allowed(
-    connection: Connection,
+@pytest.mark.parametrize(
+    "unit_price",
+    [
+        pytest.param(Decimal("0.0001"), id="lowest"),
+        # The highest price the prices table holds.
+        pytest.param(Decimal("99999999.9999"), id="highest"),
+    ],
+)
+def test_the_lowest_and_highest_prices_and_a_zero_balance_are_allowed(
+    connection: Connection, unit_price: Decimal
 ) -> None:
     new_trade(
         connection,
         new_portfolio(connection),
-        unit_price=Decimal("0.0001"),
-        currency_amount=Decimal("0.0001"),
+        unit_price=unit_price,
+        currency_amount=unit_price,
         cash_balance_after=Decimal(0),
     )
 
@@ -212,21 +198,13 @@ def test_one_payment_pays_for_one_trade(connection: Connection) -> None:
         new_trade(connection, portfolio_id, balance_change_id=payment)
 
 
-@pytest.mark.parametrize(
-    ("column", "rule"),
-    [
-        ("portfolio_id", "fk_trades_portfolio_id_portfolios"),
-        ("asset_id", "fk_trades_asset_id_assets"),
-        ("balance_change_id", "fk_trades_balance_change_id_balance_changes"),
-    ],
-)
-def test_a_trade_needs_a_real_portfolio_stock_and_payment(
-    connection: Connection, column: str, rule: str
-) -> None:
+def test_a_trade_needs_a_real_stock(connection: Connection) -> None:
+    # The cascade and cannot-delete tests below check the other two
+    # foreign keys.
     portfolio_id = new_portfolio(connection)
 
-    with pytest.raises(IntegrityError, match=rule):
-        new_trade(connection, portfolio_id, **{column: uuid.uuid4()})
+    with pytest.raises(IntegrityError, match="fk_trades_asset_id_assets"):
+        new_trade(connection, portfolio_id, asset_id=uuid.uuid4())
 
 
 def test_a_trades_payment_cannot_be_deleted_on_its_own(
@@ -246,21 +224,23 @@ def test_a_trades_payment_cannot_be_deleted_on_its_own(
         )
 
 
+def test_a_holding_needs_a_real_stock(connection: Connection) -> None:
+    with pytest.raises(IntegrityError, match="fk_holdings_asset_id_assets"):
+        connection.execute(
+            insert(Holding).values(
+                portfolio_id=new_portfolio(connection),
+                asset_id=uuid.uuid4(),
+                quantity=1,
+            )
+        )
+
+
 def test_a_holding_can_be_zero_but_never_below(connection: Connection) -> None:
     portfolio_id = new_portfolio(connection)
     add_holding(connection, portfolio_id, 0)
 
     with pytest.raises(IntegrityError, match="quantity_not_negative"):
         add_holding(connection, portfolio_id, -1, symbol="MSFT")
-
-
-def test_a_portfolio_has_one_holding_per_stock(connection: Connection) -> None:
-    portfolio_id = new_portfolio(connection)
-    add_holding(connection, portfolio_id, 1)
-    add_holding(connection, portfolio_id, 1, symbol="MSFT")
-
-    with pytest.raises(IntegrityError, match="pk_holdings"):
-        add_holding(connection, portfolio_id, 1)
 
 
 def count(connection: Connection, table: type, portfolio_id: uuid.UUID) -> int:

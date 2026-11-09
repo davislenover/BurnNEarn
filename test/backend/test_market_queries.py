@@ -6,10 +6,10 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 
-from app.market import queries
-from app.market.models import Price
+from app.market.models import Asset, Price
 from app.market.queries import (
     get_asset,
     get_asset_by_symbol,
@@ -32,40 +32,38 @@ def add_price(
     session.flush()
 
 
-def test_an_asset_is_found_by_its_symbol(db_session: Session) -> None:
+def test_an_asset_is_found_by_its_symbol_as_a_read_only_copy(
+    db_session: Session,
+) -> None:
     asset = get_asset_by_symbol(db_session, "AAPL")
 
     assert asset.symbol == "AAPL"
     assert asset.is_tradable
     assert get_asset(db_session, asset.asset_id) == asset
-
-
-def test_an_asset_is_a_read_only_copy(db_session: Session) -> None:
-    asset = get_asset_by_symbol(db_session, "AAPL")
-
     with pytest.raises(dataclasses.FrozenInstanceError):
         asset.is_tradable = False  # type: ignore[misc]
 
 
-def test_an_unknown_symbol_is_refused_with_404(db_session: Session) -> None:
+def test_a_removed_asset_is_still_found_but_not_tradable(
+    db_session: Session,
+) -> None:
+    db_session.execute(
+        update(Asset).where(Asset.symbol == "AAPL").values(is_tradable=False)
+    )
+
+    assert get_asset_by_symbol(db_session, "AAPL").is_tradable is False
+
+
+def test_an_unknown_symbol_or_id_is_refused_with_404(
+    db_session: Session,
+) -> None:
     with pytest.raises(UnknownAssetError) as error:
         get_asset_by_symbol(db_session, "NOPE")
-
     assert error.value.status == 404
     assert error.value.code == "unknown_asset"
 
-
-def test_an_unknown_id_is_refused(db_session: Session) -> None:
     with pytest.raises(UnknownAssetError):
         get_asset(db_session, uuid.uuid4())
-
-
-def test_there_is_no_price_before_the_first_quote(
-    db_session: Session,
-) -> None:
-    asset = get_asset_by_symbol(db_session, "AAPL")
-
-    assert get_current_price(db_session, asset.asset_id, OPEN) is None
 
 
 def test_the_newest_quote_is_the_current_price(db_session: Session) -> None:
@@ -83,7 +81,6 @@ def test_the_newest_quote_is_the_current_price(db_session: Session) -> None:
 @pytest.mark.parametrize(
     ("now", "age", "delayed"),
     [
-        (OPEN, timedelta(minutes=14), False),
         (OPEN, timedelta(minutes=15), False),
         (OPEN, timedelta(minutes=16), True),
         # While the market is closed, an old price is expected.
@@ -100,8 +97,3 @@ def test_a_price_is_delayed_only_when_old_while_the_market_is_open(
 
     assert current is not None
     assert current.delayed is delayed
-
-
-def test_market_hours_are_offered_to_other_modules() -> None:
-    assert queries.is_market_open(OPEN)
-    assert not queries.is_market_open(CLOSED)

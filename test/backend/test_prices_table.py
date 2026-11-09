@@ -58,6 +58,7 @@ def test_price_is_stored_exactly_with_currency_and_both_times(
         ({"price_currency": "CAD"}, "only USD prices (SEC-27)"),
         ({"price": Decimal(0)}, "no zero prices"),
         ({"price": Decimal("-1")}, "no negative prices"),
+        ({"price": Decimal("NaN")}, "no NaN prices"),
         ({"asset_id": uuid.uuid4()}, "only prices of known assets"),
         ({"quoted_at": None}, "every price has its quote time"),
     ],

@@ -58,9 +58,15 @@ def test_sends_only_the_symbol_and_keeps_the_key_out_of_the_url() -> None:
     assert request.headers["X-Finnhub-Token"] == FAKE_KEY
 
 
-def test_unknown_symbol_is_reported() -> None:
+# Finnhub answers an unknown symbol with zeros. Either zero alone is enough.
+@pytest.mark.parametrize(
+    "body",
+    ['{"c": 0, "t": 1793040139}', '{"c": 1.5, "t": 0}'],
+    ids=["zero-price", "zero-time"],
+)
+def test_unknown_symbol_is_reported(body: str) -> None:
     provider = provider_answering(
-        lambda request: httpx2.Response(200, text='{"c": 0, "t": 0}')
+        lambda request: httpx2.Response(200, text=body)
     )
 
     with pytest.raises(UnknownSymbolError):
@@ -77,7 +83,8 @@ def test_request_limit_is_reported() -> None:
 @pytest.mark.parametrize(
     "response",
     [
-        httpx2.Response(500),
+        # With a good body, so only the status code is wrong.
+        httpx2.Response(500, text='{"c": 1.5, "t": 1793040139}'),
         httpx2.Response(200, text="not json"),
         httpx2.Response(200, text='{"error": "no c or t"}'),
         # A quote time too far in the future to convert.

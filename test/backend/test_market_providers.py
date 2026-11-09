@@ -56,10 +56,11 @@ def test_a_provider_without_get_quote_fails_when_created() -> None:
         Forgetful()
 
 
-@pytest.mark.parametrize("key", [None, ""])
-def test_finnhub_without_a_key_is_refused(key: str | None) -> None:
+def test_finnhub_without_a_key_is_refused() -> None:
+    # An empty key is tested where the app starts, in
+    # test_market_poller_thread.py.
     with pytest.raises(ValidationError, match="FINNHUB_API_KEY"):
-        settings(market_provider="finnhub", finnhub_api_key=key)
+        settings(market_provider="finnhub", finnhub_api_key=None)
 
 
 def test_the_key_is_hidden_when_printed() -> None:
@@ -68,19 +69,14 @@ def test_the_key_is_hidden_when_printed() -> None:
     assert "not-real" not in repr(loaded)
 
 
-def test_a_fake_symbol_starts_at_the_same_price_every_time() -> None:
+def test_a_fake_symbol_starts_at_the_same_price_at_the_current_time() -> None:
     first = FakeProvider(clock=lambda: NOW).get_quote("AAPL")
     second = FakeProvider(clock=lambda: NOW).get_quote("AAPL")
 
     assert first.price == second.price
     assert Decimal(20) <= first.price <= Decimal(500)
-
-
-def test_a_fake_quote_is_quoted_at_the_current_time() -> None:
-    quote = FakeProvider(clock=lambda: NOW).get_quote("AAPL")
-
-    assert quote.symbol == "AAPL"
-    assert quote.quoted_at == NOW
+    assert first.symbol == "AAPL"
+    assert first.quoted_at == NOW
 
 
 def test_a_fake_price_moves_a_little_on_each_call() -> None:

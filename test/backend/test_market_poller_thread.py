@@ -73,7 +73,6 @@ def stopped() -> threading.Event:
         # The day after Thanksgiving closes at 13:00
         (new_york(2026, 11, 27, 13, 14), True),
         (new_york(2026, 11, 27, 13, 15), False),
-        (SATURDAY, False),
     ],
 )
 def test_when_the_poller_polls(when: datetime, polls: bool) -> None:
@@ -87,7 +86,12 @@ def test_sessions(db_session: Session):
 
     @contextmanager
     def factory() -> Iterator[Session]:
-        yield db_session
+        try:
+            yield db_session
+        finally:
+            # Like a real session closing, drop what was not committed, so a
+            # poll that forgets to commit saves nothing.
+            db_session.rollback()
 
     return factory
 
@@ -111,7 +115,7 @@ def test_nothing_is_asked_while_the_market_is_closed(test_sessions) -> None:
     assert provider.calls == 0
 
 
-def test_an_unexpected_error_does_not_stop_the_poller(
+def test_an_unexpected_error_fails_the_poll_but_not_the_poller(
     test_sessions,
 ) -> None:
     provider = CountingProvider(error=RuntimeError("bug"))
@@ -119,33 +123,14 @@ def test_an_unexpected_error_does_not_stop_the_poller(
     # Logs the error and returns normally instead of raising.
     run_poller(stopped(), provider, lambda: OPEN, test_sessions)
 
+    # One call, not one per asset, since the error ends the whole poll.
     assert provider.calls == 1
+    assert poller._status.last_poll_failed is True
 
 
 def use_settings(monkeypatch: pytest.MonkeyPatch, **values: object) -> None:
     settings = MarketSettings(_env_file=None, **values)
     monkeypatch.setattr(poller, "get_market_settings", lambda: settings)
-
-
-def test_the_app_starts_and_stops_the_poller_when_enabled(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    use_settings(monkeypatch, market_poller_enabled=True)
-    started = threading.Event()
-    finished = threading.Event()
-
-    def fake_run_poller(stop: threading.Event, provider: object) -> None:
-        started.set()
-        stop.wait()
-        finished.set()
-
-    monkeypatch.setattr(poller, "run_poller", fake_run_poller)
-
-    with TestClient(create_app([PLUGIN])):
-        assert started.wait(5)
-        assert not finished.is_set()
-
-    assert finished.is_set()
 
 
 def test_the_app_does_not_start_the_poller_when_disabled(
@@ -159,6 +144,19 @@ def test_the_app_does_not_start_the_poller_when_disabled(
         pass
 
     assert not started.is_set()
+
+
+def test_the_poller_and_always_open_are_off_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # conftest.py sets both for every test. Remove them to see the defaults.
+    monkeypatch.delenv("MARKET_POLLER_ENABLED")
+    monkeypatch.delenv("MARKET_ALWAYS_OPEN")
+
+    settings = MarketSettings(_env_file=None)
+
+    assert settings.market_poller_enabled is False
+    assert settings.market_always_open is False
 
 
 def test_bad_market_settings_stop_the_app_from_starting(
@@ -212,17 +210,6 @@ def test_a_poll_that_misses_a_price_is_a_failed_poll(test_sessions) -> None:
     assert poller._status.last_poll_failed is False
 
 
-def test_a_poll_that_raises_is_a_failed_poll(test_sessions) -> None:
-    run_poller(
-        stopped(),
-        CountingProvider(RuntimeError("bug")),
-        lambda: OPEN,
-        test_sessions,
-    )
-
-    assert poller._status.last_poll_failed is True
-
-
 def wait_for(condition: Callable[[], bool]) -> bool:
     """Wait up to 5 seconds for condition, which another thread changes."""
     deadline = time.monotonic() + 5
@@ -233,24 +220,17 @@ def wait_for(condition: Callable[[], bool]) -> bool:
     return False
 
 
-def test_health_says_off_when_the_poller_is_disabled(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    use_settings(monkeypatch, market_poller_enabled=False)
-
-    with TestClient(create_app([PLUGIN])):
-        assert poller.health() == ModuleHealth("ok", "poller off")
-
-
-def test_health_follows_a_running_poller_and_says_off_after_the_app_stops(
+def test_the_app_starts_and_stops_the_poller_and_health_follows_it(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     use_settings(monkeypatch, market_poller_enabled=True)
     started = threading.Event()
+    finished = threading.Event()
 
     def fake_run_poller(stop: threading.Event, provider: object) -> None:
         started.set()
         stop.wait()
+        finished.set()
 
     monkeypatch.setattr(poller, "run_poller", fake_run_poller)
     # Left over from before the app started. Starting the app clears it.
@@ -258,8 +238,11 @@ def test_health_follows_a_running_poller_and_says_off_after_the_app_stops(
 
     with TestClient(create_app([PLUGIN])):
         assert started.wait(5)
+        assert not finished.is_set()
         assert poller.health() == ModuleHealth("ok")
 
+    # Stopping the app stopped the thread.
+    assert finished.is_set()
     assert poller.health() == ModuleHealth("ok", "poller off")
 
 

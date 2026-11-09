@@ -31,7 +31,8 @@ jobs:
         with:
           python-version-file: src/backend/.python-version
       - name: Install uv
-        run: pip install uv
+        # Pinned, so a new uv release only reaches CI through a pull request.
+        run: pip install "uv==0.13.7"
       - name: Install dependencies
         run: uv sync --locked
       - name: Check lint
@@ -73,7 +74,8 @@ jobs:
         with:
           python-version-file: src/backend/.python-version
       - name: Install uv
-        run: pip install uv
+        # Pinned, so a new uv release only reaches CI through a pull request.
+        run: pip install "uv==0.13.7"
       - name: Install dependencies
         run: uv sync --locked
       # Comes first because Alembic refuses to run with more than one newest
