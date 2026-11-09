@@ -34,12 +34,14 @@ Start Docker Desktop, then open a new PowerShell window.
 cd src/backend
 cp .env.example .env
 uv sync
-docker compose up -d
+docker compose up -d --wait
 uv run alembic upgrade head
 uv run python -m app.scripts.seed_demo
 ```
 
-On Windows, use `Copy-Item .env.example .env` instead of `cp`.
+On Windows, use `Copy-Item .env.example .env` instead of `cp`. `--wait` waits
+until the database accepts connections, so the migration after it doesn't
+fail.
 
 The last command adds the PoC's demo user and their portfolio at 0. Running it
 again changes nothing. To start the demo over at 0, deleting the demo user's
@@ -54,12 +56,14 @@ uv run python -m app.scripts.seed_demo reset
 From `src/backend`:
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
+uv run alembic upgrade head
 uv run uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000/docs> to try the API. To stop the database, run
-`docker compose down`. Your data is kept.
+The migration step applies any new migrations you pulled, and does nothing
+otherwise. Open <http://127.0.0.1:8000/docs> to try the API. To stop the
+database, run `docker compose down`. Your data is kept.
 
 ## Run for the phone
 
@@ -91,7 +95,7 @@ On the phone, turn on **Developer options** (tap **Build number** in
 1. Start the database and reset the demo data, so the balance starts at 0:
 
    ```bash
-   docker compose up -d
+   docker compose up -d --wait
    uv run alembic upgrade head
    uv run python -m app.scripts.seed_demo reset
    ```
@@ -125,14 +129,20 @@ own computer. When the server is hosted, every connection will use HTTPS
 
 ## Check your work
 
-Run these before you push. CI runs the same checks on every pull request.
+Run these before you push. CI runs them on every pull request, and also
+undoes every migration and applies them again.
 
 ```bash
 uv run pytest
 uv run ruff check --config pyproject.toml . ../../test/backend
 uv run ruff format --config pyproject.toml . ../../test/backend
 uv run lint-imports
+uv run alembic check
 ```
+
+`alembic check` fails if a model doesn't match the migrations. It needs your
+database at the newest migration, so run `uv run alembic upgrade head` first.
+It can't see CHECK rules or server defaults, so the table tests check those.
 
 `lint-imports` checks that modules only call down the stack in
 [BackendArchitecture.md](../../docs/Design/SoftArchitecture/BackendArchitecture.md),
@@ -141,7 +151,8 @@ module uses another only through its `interface.py`, `queries.py` or
 `types.py`.
 
 To run one test file, name it with `-k`, for example
-`uv run pytest -k test_market_poller`.
+`uv run pytest -k test_market_poller.py`. Without `.py`, `-k` also matches
+other files whose names start the same.
 
 Tests use their own database, `fitfolio_test`, so your data is safe. A test
 gets what it needs from `test/backend/conftest.py` by naming it as a
@@ -173,11 +184,15 @@ The files inside a module, and the rules for using another module, are in
 ## Change the database
 
 1. Change your module's `models.py`.
-2. Make a migration named after your module, numbered from 0001:
+2. Make a migration named after your module, with its next number. Look in
+   `migrations/versions/` for the ones it already has:
 
    ```bash
-   uv run alembic revision --autogenerate --rev-id wallet_0001 -m "wallet"
+   uv run alembic revision --autogenerate --rev-id <module>_<number> -m "<what it adds>"
    ```
+
+   Use a number the module doesn't have yet. Reusing one breaks the chain or
+   overwrites that migration.
 
 3. Read the new file, then apply it:
 
