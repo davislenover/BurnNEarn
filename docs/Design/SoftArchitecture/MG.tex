@@ -49,9 +49,11 @@
 Nov 5, 2026 & 1.0 & Davis Lenover: Revision $-1$. Sections 1 to 3, 5
 Module Hierarchy, 7 Module Decomposition for the kernel, market and trading,
 and 9 Use Hierarchy Between Modules.\\
-Nov 9, 2026 & 1.1 & Davis Lenover: 7 Module Decomposition: Users and Wallet,
-and module health in Control and Plugins. Review fixes to Database, Market and
-JSON Format, and to 9 Use Hierarchy Between Modules.\\
+Nov 9, 2026 & 1.1 & Davis Lenover: Email Service (M25) in 5 Module
+Hierarchy. 7 Module Decomposition: Users, Wallet and Email Service, a rationale
+for each module, and module health in Control and Plugins. Review fixes to Database, Market,
+Trading (queued trades and the simulation notice at Revision~0) and JSON
+Format, and to 9 Use Hierarchy Between Modules.\\
 \bottomrule
 \end{tabularx}
 
@@ -84,6 +86,8 @@ This section records information for easy reference.
   OS & Operating System\\
   PoC & Proof of Concept\\
   REST & Representational State Transfer\\
+  SC & System Constraint (SRS)\\
+  SEC & Security Requirement (SRS and HA)\\
   SRS & Software Requirements Specification\\
   UC & Unlikely Change\\
   \bottomrule
@@ -236,8 +240,8 @@ actually be implemented.
 The hierarchy covers both programs in \progname{}, the server and the phone
 app. Modules that are only in the app are marked (app). Hardware-hiding modules
 hide the interfaces of software and devices the team does not write. These are
-the database server, the server's clock, the market data provider, and the
-phone's health platform and operating system. Behaviour-hiding modules hide the
+the database server, the server's clock, the market data provider, the email
+service, and the phone's health platform and operating system. Behaviour-hiding modules hide the
 behaviour the SRS describes. Software decision modules hide choices the team
 made that the SRS does not mention.
 
@@ -270,6 +274,8 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mPlugins}:] Plugins
 \item [\refstepcounter{mnum} \mthemnum \label{mJSON}:] JSON Format
 \item [\refstepcounter{mnum} \mthemnum \label{mAPI}:] API Service (app)
+% Hardware-Hiding, added last so no other module is renumbered
+\item [\refstepcounter{mnum} \mthemnum \label{mEmail}:] Email Service\textsuperscript{\dag}
 \end{description}
 
 \begin{table}[h!]
@@ -279,9 +285,10 @@ made that the SRS does not mention.
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-\multirow{5}{0.3\textwidth}{Hardware-Hiding Module} & \mref{mDB} Database\\
+\multirow{6}{0.3\textwidth}{Hardware-Hiding Module} & \mref{mDB} Database\\
 & \mref{mClock} Clock\\
 & \mref{mProviders} Market Providers\\
+& \mref{mEmail} Email Service\textsuperscript{\dag}\\
 & \mref{mHealth} Health Service (app)\\
 & \mref{mDevice} Device Service (app)\\
 \midrule
@@ -344,15 +351,17 @@ module will be implemented by the \progname{} software.
 
 Only the leaf modules in the hierarchy have to be implemented. If a dash
 (\emph{--}) is shown, this means that the module is not a leaf and will not have
-to be implemented. Server paths under \emph{Implemented By} are relative to
+to be implemented. The \emph{Rationale} field says why the module is designed
+this way: the requirements it serves, by their number in the SRS (such as FR37
+or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented By} are relative to
 \path{src/backend/app/}.
 
 \subsection{Hardware Hiding Modules}
 
 \begin{description}
 \item[Secrets:] The interfaces of software and devices the team does not
-  write: the database server, the server's clock, the market data provider, and
-  the phone's health platform and operating system.
+  write: the database server, the server's clock, the market data provider, the
+  email service, and the phone's health platform and operating system.
 \item[Services:] Serve as a virtual version of these outside systems for the
   rest of \progname{}, so that a change to one of them stays inside its module.
 \item[Implemented By:] --
@@ -363,6 +372,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The database server and the connection to it.
 \item[Services:] Opens sessions to the database, gives each request its own session, and provides the base that every module's tables are defined on. Each module still owns its own tables.
+\item[Rationale:] A buy changes the balance and the shares, which two modules own, so both must be saved in one transaction (FR37). One database, reached only through this module, makes that possible, and is why the server is one process rather than separate services. Each request gets its own session, and only the route commits it, so a refused request saves nothing (NFR6). Naming every constraint lets a later migration change it by name.
 \item[Implemented By:] \progname{} server, in \path{core/db.py}, with its settings in \path{core/settings.py}, using SQLAlchemy and PostgreSQL
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -372,6 +382,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The source of the current time.
 \item[Services:] Gives the current time, with its time zone, to routes and background work. Tests replace it with a fixed time.
+\item[Rationale:] Many rules depend on the time: when the market is open, when a price is out of date (FR33, FR39), and which day is today in the user's time zone, so a daily total dated later is refused (SEC-24). Code is handed the clock instead of reading the system time (dependency injection), so tests can set any time and check each rule.
 \item[Implemented By:] \progname{} server, in \path{core/clock.py}, using the OS clock
 \item[Type of Module:] Library
 \end{description}
@@ -381,8 +392,19 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The market data provider's API.
 \item[Services:] Gets the latest quote for a stock through one interface that every provider follows, and picks the provider that \texttt{MARKET\_PROVIDER} names. The Finnhub provider turns Finnhub's replies and errors into \progname{}'s own quotes and errors. A fake provider makes up prices for development and tests.
+\item[Rationale:] The prices come from a third party, within its request limits (SC4), and the provider may change if its request limits or cost prevent the planned use (SRS LC3). Every provider follows one interface (strategy), Finnhub's API is wrapped to fit it (adapter), and a setting picks one (factory), so a new provider changes only this module and the request limit that \mref{mMarket}'s usage route reports. Its key stays on the server (SEC-33). The fake provider lets the team develop and test without a key or an open market.
 \item[Implemented By:] \progname{} server, in \path{market/providers/}, using Finnhub
 \item[Type of Module:] Abstract Data Type, with one interface and a Finnhub and a fake implementation
+\end{description}
+
+\subsubsection{Email Service Module (\mref{mEmail})}
+
+\begin{description}
+\item[Secrets:] The email delivery service's API.
+\item[Services:] Sends an email to a user's address, such as a password reset link. A fake records each email instead of sending it, for development and tests.
+\item[Rationale:] A user who forgets their password resets it through a link sent to their email address (FR6). The service is a third party the team may change, so, as in \mref{mProviders}, every service follows one interface (strategy), the chosen one is wrapped to fit it (adapter), and a fake lets tests run without sending email. It is sent only the email address and the link, nothing else about the user (SEC-11), and its credentials stay on the server (SEC-33).
+\item[Implemented By:] \progname{} server, at Revision~0
+\item[Type of Module:] Abstract Data Type, with one interface, an implementation for the chosen service and a fake
 \end{description}
 
 % M4 Health Service (app): #235
@@ -406,6 +428,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The set of modules that make up the running server.
 \item[Services:] Builds the server from the list of module plug-ins. It adds each module's routes, and starts and stops each module's background work with the server. It also serves the health check, which reports the database and each module's own health.
+\item[Rationale:] The server is a modular monolith: one process and one database, so a trade stays one transaction (FR37), split into modules that each own their tables. Control is the small kernel that builds it from plug-ins (the plug-in pattern), so adding a module changes only the list in \path{registry.py}, never the code that builds the server. The health check shows when background work, such as the price poller, has failed even though no request saw an error.
 \item[Implemented By:] \progname{} server, in \path{main.py}, \path{registry.py} and \path{core/routes.py}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -414,7 +437,8 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] The values of the SRS symbolic constants (SRS Appendix C).
-\item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit, so that a value changes in one place.
+\item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit.
+\item[Rationale:] The SRS names its tunable values as symbolic constants, such as the price staleness limit (SRS Appendix C), so a value can change without changing a requirement. One file on each side, server and app, with the same names, keeps each value easy to find and traceable back to the SRS.
 \item[Implemented By:] \progname{} server, in \path{core/constants.py}, and a matching file in the app
 \item[Type of Module:] Library, with exported constants only
 \end{description}
@@ -423,7 +447,8 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] How the server knows who is calling.
-\item[Services:] Gives every route that needs one the current user, so the phone never sends a user ID. In the proof of concept, a request that needs a user comes from the built-in demo user while a setting turns it on, and is refused otherwise. Sign-in later changes only how the current user is found. Also adds users and keeps each user's record, such as their time zone.
+\item[Services:] Gives every route that needs one the current user, so the phone never sends a user ID. In the proof of concept, a request that needs a user comes from the built-in demo user while a setting turns it on, and is refused otherwise. Also adds users and keeps each user's record, such as their time zone.
+\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (SEC-15, NFR7). Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow. Each sign-in starts a session that the server stores, and the phone keeps the session's random token in its secure storage (SEC-39) and sends it with every request. The server keeps only a hash of each token too, so a copy of the database can't be used to act as a user (SEC-16). Sessions are stored on the server, not in self-contained tokens, because the server must be able to end one at once: on sign-out, on ``sign out of all devices'', after a password reset, or after \texttt{SESSION\_TIMEOUT} without the user opening the app (FR5, FR6, SEC-17). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, and the server keeps only its hash, which limits who could use it to take over the account (HA H35). Repeated failed sign-ins are refused for a while (SEC-38).
 \item[Implemented By:] \progname{} server, in \path{users/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -433,6 +458,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] How a portfolio's currency balance changes safely.
 \item[Services:] Keeps each user's live portfolio and its balance, and records every change with its amount, reason and time. Changes a balance only through one call, which never takes it below zero and runs after the portfolio is locked, so that requests for one portfolio take turns. Gives other modules the balance and what a day's rewards have paid so far, and serves the balance to the phone.
+\item[Rationale:] The server alone decides balances (SEC-24), a purchase that costs more than the balance is refused (FR37), and every change is recorded with its reason (SEC-22). One call changes the balance and records the change in the same transaction, which keeps the balance equal to the sum of its changes, and its check never lets the balance go below zero, even if two buys run at once. Locking the portfolio first makes requests for it take turns, so what a request reads before it changes anything is still true when it does: whether its request ID was used (FR38), or what a day's rewards have already paid, so a repeat sync pays only the difference and a day never pays more than the daily cap (SEC-19, FR18). The call only accepts what the lock returns (a lock token), so skipping the lock is hard to do by accident. The live portfolio is kept apart from any market scenario's (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{wallet/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -441,7 +467,8 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
-\item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list and the provider's usage to the phone. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed.
+\item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list and the provider's usage to the phone.
+\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). A price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed.
 \item[Implemented By:] \progname{} server, in \path{market/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -452,7 +479,8 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
-\item[Services:] Buys and sells whole shares at the current price, and refuses a trade that is not allowed, such as one while the market is closed, on a price that is out of date, or without enough currency. Applies each trade request once, and values the user's holdings.
+\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
+\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0.
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -481,6 +509,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The shape of a module's plug-in.
 \item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it.
+\item[Rationale:] Control must be able to add any module without knowing anything else about it (the plug-in pattern). A plug-in is a small, read-only record of exactly what Control needs, so the code that builds the server depends on this shape and never on a module. Only the list in \path{registry.py} names the modules. A module with background work must include a health check, since that work can fail without any request noticing.
 \item[Implemented By:] \progname{} server, in \path{core/plugins.py}
 \item[Type of Module:] Record
 \end{description}
@@ -490,6 +519,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The JSON form of amounts and refusals.
 \item[Services:] Sends amounts to the phone as text with four decimals, so no precision is lost, and sends every refusal a module raises in the same shape: a code and a message. A request that does not fit a route is refused in the web framework's own shape, without the values it sent.
+\item[Rationale:] JSON numbers can lose exactness on the way, so amounts go as text with four decimals (NFR1). One refusal shape, with a code the phone acts on and a message it shows, keeps the phone's handling the same for every module. A request that does not fit a route is refused without sending back what it sent, since some values can't be written as JSON (SEC-25).
 \item[Implemented By:] \progname{} server, in \path{core/money.py} and \path{core/errors.py}
 \item[Type of Module:] Library
 \end{description}
@@ -592,7 +622,7 @@ built after the proof of concept.}
 \mref{mDevice} Device Service & None\\
 \mref{mControl} Control & \mref{mDB}, \mref{mUsers}, \mref{mWallet}, \mref{mMarket}, \mref{mActivity}, \mref{mTrading}, \mref{mGoals}, \mref{mLearning}, \mref{mSocial}, \mref{mScenarios}, \mref{mPrivacy}, \mref{mPlugins}, \mref{mJSON}\\
 \mref{mConstants} Constants & None\\
-\mref{mUsers} Users & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}\\
+\mref{mUsers} Users & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}, \mref{mEmail}\\
 \mref{mWallet} Wallet & \mref{mDB}, \mref{mUsers}, \mref{mPlugins}, \mref{mJSON}\\
 \mref{mMarket} Market & \mref{mDB}, \mref{mClock}, \mref{mProviders}, \mref{mConstants}, \mref{mPlugins}, \mref{mJSON}\\
 \mref{mActivity} Activity & \mref{mDB}, \mref{mClock}, \mref{mConstants}, \mref{mUsers}, \mref{mWallet}, \mref{mPlugins}, \mref{mJSON}\\
@@ -609,6 +639,7 @@ built after the proof of concept.}
 \mref{mPlugins} Plugins & None\\
 \mref{mJSON} JSON Format & None\\
 \mref{mAPI} API Service & \mref{mDevice}\\
+\mref{mEmail} Email Service & None\\
 \bottomrule
 \end{tabular}
 \caption{Modules each module uses}

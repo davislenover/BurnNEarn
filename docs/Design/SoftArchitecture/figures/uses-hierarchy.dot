@@ -71,6 +71,11 @@ digraph uses {
   M12 -> {M10 M9};
   M11 -> M9;
   M10 -> M3;
+  // Users sends password reset links. Email Service sits below the shared
+  // row, outside every group, since only Users uses it.
+  M25 [label="M25 Email Service", style="rounded,filled,dashed",
+       fillcolor="#E6F1FB", color="#185FA5"];
+  M8 -> M25;
   
   // App
   M18 -> M19;
