@@ -47,6 +47,9 @@ os.environ["MARKET_ALWAYS_OPEN"] = "false"
 os.environ["MARKET_POLLER_ENABLED"] = "false"
 # Routes refuse a request with no user, unless a test picks one.
 os.environ["DEMO_USER_ENABLED"] = "false"
+# A test that waits on a lock fails after 5 seconds, instead of hanging until
+# CI gives up. PostgreSQL reads this when each connection opens.
+os.environ["PGOPTIONS"] = "-c lock_timeout=5s"
 
 from app.core.clock import get_clock  # noqa: E402
 from app.core.db import SessionLocal, engine, get_db  # noqa: E402
@@ -115,8 +118,8 @@ def db_session(database: None) -> Iterator[Session]:
 
     Two things to watch for:
     - Code under test must use this session, not SessionLocal or engine.
-      Otherwise its rows are really saved, and it can wait forever on rows
-      this session holds.
+      Otherwise its rows are really saved, and it waits on rows this session
+      holds until the 5 second lock timeout fails the test.
     - now() stays the same for the whole test and ids are not reset, so don't
       check order by now() columns or exact id values.
     """
@@ -136,8 +139,9 @@ def client(db_session: Session) -> Iterator[TestClient]:
 
     Routes use db_session. Like the real get_db, each request ends by dropping
     whatever the route did not commit, so a forgotten commit fails the test.
-    Commit any rows you set up, or routes won't see them. Send requests one at
-    a time, since they share one session.
+    Commit any rows you set up. A request sees rows you didn't commit, but
+    drops them when it ends, so later requests won't. Send requests one at a
+    time, since they share one session.
     """
 
     def use_test_session() -> Iterator[Session]:
@@ -181,7 +185,7 @@ def add_price(db_session: Session) -> AddPrice:
         db_session.add(
             Price(asset_id=asset_id, price=Decimal(price), quoted_at=quoted_at)
         )
-        # Routes only see rows that were committed.
+        # Committed, so the price lasts past the first request.
         db_session.commit()
 
     return add

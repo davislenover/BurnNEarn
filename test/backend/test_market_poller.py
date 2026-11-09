@@ -5,6 +5,7 @@ from decimal import Decimal
 
 import pytest
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.market.models import Asset, Price, ProviderRequest, RequestOutcome
@@ -157,6 +158,17 @@ def test_every_call_is_recorded_at_the_poll_time(db_session: Session) -> None:
 
     times = set(db_session.scalars(select(ProviderRequest.requested_at)))
     assert times == {NOW}
+
+
+def test_a_call_is_recorded_only_with_a_known_outcome(
+    db_session: Session,
+) -> None:
+    db_session.add(
+        ProviderRequest(requested_at=NOW, symbol="AAPL", outcome="timeout")
+    )
+
+    with pytest.raises(IntegrityError, match="outcome_valid"):
+        db_session.flush()
 
 
 def test_a_quote_the_database_refuses_undoes_only_itself(

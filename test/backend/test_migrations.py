@@ -13,8 +13,8 @@ def test_migrations_have_one_head(alembic_config: Config) -> None:
 
     assert len(heads) == 1, (
         f"Found {len(heads)} newest migrations: {heads}. Two migrations "
-        "claim to come next. Point the newer one's down_revision at main's "
-        "newest migration and give it the next number."
+        "claim to come next. Point your migration's down_revision at main's "
+        "newest migration, and keep its name."
     )
 
 

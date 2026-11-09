@@ -246,6 +246,17 @@ def test_a_trades_payment_cannot_be_deleted_on_its_own(
         )
 
 
+def test_a_holding_needs_a_real_stock(connection: Connection) -> None:
+    with pytest.raises(IntegrityError, match="fk_holdings_asset_id_assets"):
+        connection.execute(
+            insert(Holding).values(
+                portfolio_id=new_portfolio(connection),
+                asset_id=uuid.uuid4(),
+                quantity=1,
+            )
+        )
+
+
 def test_a_holding_can_be_zero_but_never_below(connection: Connection) -> None:
     portfolio_id = new_portfolio(connection)
     add_holding(connection, portfolio_id, 0)
