@@ -8,12 +8,12 @@ import httpx2
 import pytest
 from pydantic import SecretStr
 
-from app.market.finnhub import FINNHUB_BASE_URL, FinnhubProvider
-from app.market.provider import (
+from app.market.providers.base import (
     MarketDataError,
     RateLimitedError,
     UnknownSymbolError,
 )
+from app.market.providers.finnhub import FINNHUB_BASE_URL, FinnhubProvider
 
 FAKE_KEY = "test-key-not-real"
 
@@ -80,6 +80,8 @@ def test_request_limit_is_reported() -> None:
         httpx2.Response(500),
         httpx2.Response(200, text="not json"),
         httpx2.Response(200, text='{"error": "no c or t"}'),
+        # A quote time too far in the future to convert.
+        httpx2.Response(200, text='{"c": 1.5, "t": 1e20}'),
     ],
 )
 def test_bad_responses_are_reported(response: httpx2.Response) -> None:
@@ -87,6 +89,32 @@ def test_bad_responses_are_reported(response: httpx2.Response) -> None:
 
     with pytest.raises(MarketDataError):
         provider.get_quote("AAPL")
+
+
+@pytest.mark.parametrize("price", ["NaN", "Infinity", "-Infinity"])
+def test_a_price_that_is_not_a_number_is_reported(price: str) -> None:
+    provider = provider_answering(
+        lambda request: httpx2.Response(
+            200, text=f'{{"c": {price}, "t": 1793040139}}'
+        )
+    )
+
+    with pytest.raises(MarketDataError) as caught:
+        provider.get_quote("AAPL")
+
+    # The reply is broken, which is not the same as an unknown stock.
+    assert type(caught.value) is MarketDataError
+
+
+def test_a_reply_that_cannot_be_read_is_reported() -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        # Marked as compressed, but it isn't.
+        return httpx2.Response(
+            200, headers={"Content-Encoding": "gzip"}, content=b"not gzip"
+        )
+
+    with pytest.raises(MarketDataError):
+        provider_answering(handler).get_quote("AAPL")
 
 
 def test_network_failure_is_reported_without_the_key() -> None:

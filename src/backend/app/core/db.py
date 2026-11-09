@@ -30,7 +30,8 @@ class Base(DeclarativeBase):
 
 
 engine = create_engine(get_settings().database_url, pool_pre_ping=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False)
+# Autoflush (the default) lets a query see rows this session added before it.
+SessionLocal = sessionmaker(bind=engine)
 
 
 def get_db() -> Iterator[Session]:

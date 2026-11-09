@@ -7,5 +7,13 @@ here once it has a plugin.py.
 
 from app.core.plugins import Plugin
 from app.market import plugin as market
+from app.trading import plugin as trading
+from app.users import plugin as users
+from app.wallet import plugin as wallet
 
-PLUGINS: tuple[Plugin, ...] = (market.PLUGIN,)
+PLUGINS: tuple[Plugin, ...] = (
+    users.PLUGIN,
+    wallet.PLUGIN,
+    market.PLUGIN,
+    trading.PLUGIN,
+)

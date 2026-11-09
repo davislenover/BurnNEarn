@@ -1,0 +1,75 @@
+@startuml core-data
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/core-data.puml
+!include style.iuml
+set separator none
+title Kernel: its records and errors
+
+package "plugins.py" {
+  class Plugin <<data>> {
+    + name: str
+    + router: APIRouter or None
+    + lifespan: Lifespan or None
+    + health: HealthCheck or None
+    .. it refuses ..
+    a lifespan without a health check
+  }
+  class ModuleHealth <<data>> {
+    + status: "ok" or "degraded"
+    + detail: str or None
+  }
+}
+
+package "routes.py" {
+  class Health <<data>> {
+    + status: "ok" or "degraded"
+    + database: "ok" or "unavailable"
+    + modules: dict[str, ModuleHealth]
+  }
+}
+
+package "errors.py" {
+  class DomainError <<error>> {
+    + code = "domain_error"
+    + message = "This request could not be completed."
+    + status = 400
+    + DomainError(message = None)
+  }
+}
+
+package "A module's types.py" as modtypes {
+  class "InsufficientFundsError (wallet)" as funds <<error>> {
+    + code = "insufficient_funds"
+    + message = "You don't have enough currency for this."
+    + status = 409
+  }
+}
+
+package "db.py" {
+  class Base <<kernel>> {
+    {field} + metadata: MetaData(NAMING_CONVENTION)
+    + type_annotation_map: datetime is timestamptz
+  }
+}
+
+package "settings.py" {
+  class Settings <<settings>> {
+    + database_url: str, from DATABASE_URL
+  }
+}
+
+Plugin ..> ModuleHealth : health() returns
+Health o-- ModuleHealth
+funds -up-|> DomainError
+
+Base -[hidden]down- Settings
+
+legend right
+  <color:#185FA5>■</color> Data: a record
+  <color:#A32D2D>■</color> Error: sent to the phone with its status
+  <color:#5F5E5A>■</color> Kernel
+  <color:#3B6D11>■</color> Settings
+  + anyone holding one may use it
+  A hollow arrowhead means "is a".
+  A diamond means "holds".
+endlegend
+@enduml

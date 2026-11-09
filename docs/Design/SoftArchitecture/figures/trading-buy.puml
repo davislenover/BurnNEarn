@@ -1,0 +1,54 @@
+@startuml trading-buy
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/trading-buy.puml
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam defaultFontSize 13
+skinparam sequenceMessageAlign center
+skinparam ParticipantBorderColor #888780
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #B4B2A9
+title A buy: POST /v1/me/trades
+
+actor "Phone" as phone
+participant "trading routes" as routes #FAEEDA
+participant "trading service\n(buy)" as service #EEEDFE
+participant "wallet" as wallet #E1F5EE
+participant "market" as market #E1F5EE
+database "PostgreSQL" as db #E6F1FB
+
+phone -> routes : request_id, symbol, quantity,\nexpected_price
+routes -> wallet : lock_live_portfolio(user)
+wallet -> db : lock the portfolio's row
+wallet --> routes : LockedPortfolio
+routes -> service : buy(locked, request, now)
+
+alt this request_id was used before
+  service -> db : find the trade
+  service --> routes : the first trade (or request_id_reused)
+else a new request
+  service -> market : is the market open? the newest price?
+  market --> service : CurrentPrice
+  note right of service
+    Refused here, changing nothing, if the market
+    is closed, the stock is unknown, its price is
+    out of date, or it isn't expected_price.
+  end note
+  service -> wallet : change_balance(-cost, trade_purchase)
+  wallet -> db : take the cost if the balance stays ≥ 0
+  wallet --> service : BalanceChangeReceipt (or insufficient_funds)
+  service -> db : add the shares, save the trade
+  service --> routes : the new trade
+end
+
+routes -> db : commit, once
+routes --> phone : 201 new, or 200 repeat:\nthe same TradeReceipt
+
+legend right
+  <color:#854F0B>■</color> Entry point
+  <color:#534AB7>■</color> Logic
+  <color:#0F6E56>■</color> Another module's public files
+  <color:#185FA5>■</color> Database
+  Nothing below the route commits, so a refusal
+  or an error saves nothing.
+endlegend
+@enduml

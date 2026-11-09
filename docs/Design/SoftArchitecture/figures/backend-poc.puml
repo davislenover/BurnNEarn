@@ -23,10 +23,10 @@ skinparam cloud {
   BorderColor #888780
 }
 
-component "Phone app\nHTTPS, JSON" as phone <<client>> #F1EFE8
+component "Phone app\nHTTPS, JSON" as phone <<client>> #FFFFFF;line:888780
 
 rectangle "FitFolio server (one FastAPI process)" as server {
-  component "Composition root\ncreate_app() adds each\nmodule's routes" as root #F1EFE8
+  component "Composition root\ncreate_app() adds each\nmodule's routes" as root #F1EFE8;line:5F5E5A
   rectangle "Modules (each owns its tables)" as modules {
     component "trading" as trading
     component "activity" as activity
@@ -34,11 +34,11 @@ rectangle "FitFolio server (one FastAPI process)" as server {
     component "wallet" as wallet
     component "users" as users
   }
-  component "Kernel (app/core)\nclock, money, database session" as core #E1F5EE;line:0F6E56
+  component "Kernel (app/core)\nclock, money, database session" as core #F1EFE8;line:5F5E5A
 }
 
-database "PostgreSQL" as pg
-cloud "Finnhub" as finnhub
+database "PostgreSQL" as pg #E6F1FB;line:185FA5
+cloud "Finnhub" as finnhub #FFFFFF
 
 phone -down-> root
 root -down-> modules
@@ -58,4 +58,13 @@ note right of modules
   A module is used only through its
   interface.py, queries.py and types.py.
 end note
+
+skinparam LegendBackgroundColor #FFFFFF
+skinparam LegendBorderColor #B4B2A9
+legend right
+  <color:#5F5E5A>■</color> Kernel
+  <color:#534AB7>■</color> Module
+  <color:#185FA5>■</color> Database
+  □ Outside the server
+endlegend
 @enduml

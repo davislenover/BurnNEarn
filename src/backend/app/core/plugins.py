@@ -7,13 +7,39 @@ create_app() then adds every module without knowing anything about it.
 from collections.abc import Callable
 from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
+from typing import Literal
 
 from fastapi import APIRouter, FastAPI
 
 # Work that starts with the app and stops with it, such as a background
-# thread. It is an async context manager: code before its yield runs at
-# startup, and code after it runs at shutdown.
+# thread. It is an async context manager. Start the work before its yield,
+# and stop it in a finally block after the yield, so it still stops if
+# another module fails to start:
+#
+#     @asynccontextmanager
+#     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+#         start()
+#         try:
+#             yield
+#         finally:
+#             stop()
 Lifespan = Callable[[FastAPI], AbstractAsyncContextManager[None]]
+
+
+@dataclass(frozen=True)
+class ModuleHealth:
+    """How one module is doing, shown in GET /v1/health."""
+
+    # "degraded" when part of the module is not working.
+    status: Literal["ok", "degraded"]
+    # A short fixed text for the team, such as "poller stopped". Never a
+    # secret or an error's own text, since GET /v1/health needs no user.
+    detail: str | None = None
+
+
+# A check of a module's own state. It reads only what the module keeps in
+# memory, with no database or network call, so it answers at once.
+HealthCheck = Callable[[], ModuleHealth]
 
 
 @dataclass(frozen=True)
@@ -26,3 +52,14 @@ class Plugin:
     router: APIRouter | None = None
     # Work that runs while the app runs. None if there is none.
     lifespan: Lifespan | None = None
+    # How the module reports its health in GET /v1/health. None if it has
+    # nothing to report. Required with a lifespan, see __post_init__.
+    health: HealthCheck | None = None
+
+    def __post_init__(self) -> None:
+        # Background work can fail without any request seeing it, so a
+        # module that has some must report its health.
+        if self.lifespan is not None and self.health is None:
+            raise ValueError(
+                f"The {self.name} plugin has a lifespan but no health check"
+            )

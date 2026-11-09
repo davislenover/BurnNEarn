@@ -3,10 +3,11 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import pytest
 from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
 
-from app.core.plugins import Plugin
+from app.core.plugins import ModuleHealth, Plugin
 from app.main import create_app
 from app.registry import PLUGINS
 
@@ -33,6 +34,19 @@ def test_a_plugin_without_routes_adds_none() -> None:
     assert paths == {"/v1/health"}
 
 
+def fine() -> ModuleHealth:
+    return ModuleHealth(status="ok")
+
+
+def test_a_lifespan_without_a_health_check_is_refused() -> None:
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        yield
+
+    with pytest.raises(ValueError, match="no health check"):
+        Plugin(name="silent", lifespan=lifespan)
+
+
 def test_lifespans_start_in_order_and_stop_in_reverse() -> None:
     events: list[str] = []
 
@@ -40,15 +54,17 @@ def test_lifespans_start_in_order_and_stop_in_reverse() -> None:
         @asynccontextmanager
         async def lifespan(_: FastAPI) -> AsyncIterator[None]:
             events.append(f"start {name}")
-            yield
-            events.append(f"stop {name}")
+            try:
+                yield
+            finally:
+                events.append(f"stop {name}")
 
         return lifespan
 
     app = create_app(
         [
-            Plugin(name="first", lifespan=tracked("first")),
-            Plugin(name="second", lifespan=tracked("second")),
+            Plugin(name="first", lifespan=tracked("first"), health=fine),
+            Plugin(name="second", lifespan=tracked("second"), health=fine),
         ]
     )
 

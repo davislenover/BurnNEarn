@@ -10,14 +10,18 @@ _test.
 """
 
 import os
-from collections.abc import Iterator
+import uuid
+from collections.abc import Callable, Iterator
+from dataclasses import dataclass
+from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
@@ -35,9 +39,28 @@ TEST_DATABASE_URL = _url
 os.environ["DATABASE_URL"] = TEST_DATABASE_URL.render_as_string(
     hide_password=False
 )
+# Every test gets made-up prices, the exchange's real hours and no poller,
+# whatever your own .env says. Environment variables win over .env.
+os.environ["MARKET_PROVIDER"] = "fake"
+os.environ["MARKET_ALWAYS_OPEN"] = "false"
+# A running poller would save real rows that the tests never undo.
+os.environ["MARKET_POLLER_ENABLED"] = "false"
+# Routes refuse a request with no user, unless a test picks one.
+os.environ["DEMO_USER_ENABLED"] = "false"
 
+from app.core.clock import get_clock  # noqa: E402
 from app.core.db import SessionLocal, engine, get_db  # noqa: E402
 from app.main import app  # noqa: E402
+from app.market.models import Asset, Price  # noqa: E402
+from app.users.interface import create_user, get_current_user  # noqa: E402
+from app.users.models import User  # noqa: E402
+from app.users.types import CurrentUser  # noqa: E402
+from app.wallet.interface import (  # noqa: E402
+    change_balance,
+    create_live_portfolio,
+    lock_live_portfolio,
+)
+from app.wallet.types import BalanceChangeReason  # noqa: E402
 
 # Stops the run if something imported the app before this file. The tests would
 # otherwise run on whatever database DATABASE_URL names.
@@ -127,3 +150,99 @@ def client(db_session: Session) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+
+
+# Set the time routes see, such as at_time(OPEN).
+SetTime = Callable[[datetime], None]
+
+
+@pytest.fixture
+def at_time(client: TestClient) -> SetTime:
+    """Set the time routes see: at_time(OPEN). The client undoes it."""
+
+    def set_time(now: datetime) -> None:
+        app.dependency_overrides[get_clock] = lambda: lambda: now
+
+    return set_time
+
+
+# Add a committed price: add_price("AAPL", "101.5", quoted_at).
+AddPrice = Callable[[str, str, datetime], None]
+
+
+@pytest.fixture
+def add_price(db_session: Session) -> AddPrice:
+    """Give an asset a price that routes can see."""
+
+    def add(symbol: str, price: str, quoted_at: datetime) -> None:
+        asset_id = db_session.scalar(
+            select(Asset.asset_id).where(Asset.symbol == symbol)
+        )
+        db_session.add(
+            Price(asset_id=asset_id, price=Decimal(price), quoted_at=quoted_at)
+        )
+        # Routes only see rows that were committed.
+        db_session.commit()
+
+    return add
+
+
+@dataclass(frozen=True)
+class Owner:
+    """A user and their live portfolio, from make_portfolio."""
+
+    user: CurrentUser
+    portfolio_id: uuid.UUID
+
+
+# A day no real activity is on, so the starting funds never count against
+# a real day's rewards.
+FUNDING_DAY = date(2000, 1, 1)
+
+MakePortfolio = Callable[..., Owner]
+
+
+@pytest.fixture
+def make_portfolio(db_session: Session) -> MakePortfolio:
+    """Make a user with a live portfolio: make_portfolio(Decimal("500")).
+
+    Makes a new user unless one is given, and makes that user if they
+    don't exist yet, such as the demo user. A balance above 0 comes from one
+    activity_reward on FUNDING_DAY. It commits, so routes see it.
+    """
+
+    def make(
+        balance: Decimal = Decimal("0"), user: CurrentUser | None = None
+    ) -> Owner:
+        if user is None:
+            user = CurrentUser(user_id=create_user(db_session))
+        elif db_session.get(User, user.user_id) is None:
+            create_user(db_session, user.user_id)
+        portfolio_id = create_live_portfolio(db_session, user.user_id)
+        if balance > 0:
+            locked = lock_live_portfolio(db_session, user.user_id)
+            change_balance(
+                db_session,
+                locked,
+                balance,
+                BalanceChangeReason.ACTIVITY_REWARD,
+                FUNDING_DAY,
+            )
+        db_session.commit()
+        return Owner(user=user, portfolio_id=portfolio_id)
+
+    return make
+
+
+AsUser = Callable[[CurrentUser], None]
+
+
+@pytest.fixture
+def as_user(client: TestClient) -> AsUser:
+    """Make the routes see this user: as_user(owner.user). The client
+    undoes it."""
+
+    def use(user: CurrentUser) -> None:
+        app.dependency_overrides[get_current_user] = lambda: user
+
+    return use

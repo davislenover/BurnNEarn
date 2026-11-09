@@ -47,7 +47,11 @@
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 Nov 5, 2026 & 1.0 & Davis Lenover: Revision $-1$. Sections 1 to 3, 5
-Module Hierarchy, and 9 Use Hierarchy Between Modules.\\
+Module Hierarchy, 7 Module Decomposition for the kernel, market and trading,
+and 9 Use Hierarchy Between Modules.\\
+Nov 9, 2026 & 1.1 & Davis Lenover: 7 Module Decomposition: Users and Wallet,
+and module health in Control and Plugins. Review fixes to Database, Market and
+JSON Format, and to 9 Use Hierarchy Between Modules.\\
 \bottomrule
 \end{tabularx}
 
@@ -359,7 +363,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \begin{description}
 \item[Secrets:] The database server and the connection to it.
 \item[Services:] Opens sessions to the database, gives each request its own session, and provides the base that every module's tables are defined on. Each module still owns its own tables.
-\item[Implemented By:] \progname{} server, in \path{core/db.py}, using SQLAlchemy and PostgreSQL
+\item[Implemented By:] \progname{} server, in \path{core/db.py}, with its settings in \path{core/settings.py}, using SQLAlchemy and PostgreSQL
 \item[Type of Module:] Abstract Object
 \end{description}
 
@@ -415,13 +419,29 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 \item[Type of Module:] Library, with exported constants only
 \end{description}
 
-% M8 Users and M9 Wallet: #234
+\subsubsection{Users Module (\mref{mUsers})}
+
+\begin{description}
+\item[Secrets:] How the server knows who is calling.
+\item[Services:] Gives every route that needs one the current user, so the phone never sends a user ID. In the proof of concept, a request that needs a user comes from the built-in demo user while a setting turns it on, and is refused otherwise. Sign-in later changes only how the current user is found. Also adds users and keeps each user's record, such as their time zone.
+\item[Implemented By:] \progname{} server, in \path{users/}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Wallet Module (\mref{mWallet})}
+
+\begin{description}
+\item[Secrets:] How a portfolio's currency balance changes safely.
+\item[Services:] Keeps each user's live portfolio and its balance, and records every change with its amount, reason and time. Changes a balance only through one call, which never takes it below zero and runs after the portfolio is locked, so that requests for one portfolio take turns. Gives other modules the balance and what a day's rewards have paid so far, and serves the balance to the phone.
+\item[Implemented By:] \progname{} server, in \path{wallet/}
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsubsection{Market Module (\mref{mMarket})}
 
 \begin{description}
 \item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
-\item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list and the provider's usage to the phone.
+\item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list and the provider's usage to the phone. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed.
 \item[Implemented By:] \progname{} server, in \path{market/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -469,7 +489,7 @@ to be implemented. Server paths under \emph{Implemented By} are relative to
 
 \begin{description}
 \item[Secrets:] The JSON form of amounts and refusals.
-\item[Services:] Sends amounts to the phone as text with four decimals, so no precision is lost, and sends every refusal in the same shape: a code and a message.
+\item[Services:] Sends amounts to the phone as text with four decimals, so no precision is lost, and sends every refusal a module raises in the same shape: a code and a message. A request that does not fit a route is refused in the web framework's own shape, without the values it sent.
 \item[Implemented By:] \progname{} server, in \path{core/money.py} and \path{core/errors.py}
 \item[Type of Module:] Library
 \end{description}
@@ -546,7 +566,7 @@ because they use modules from the lower levels.
 An arrow from module A to module B means that A uses B: the code of A imports
 B. To keep Figure~\ref{FigUH} readable, one arrow into a group stands for uses
 of the modules in that group. The shared group holds the modules that many
-others use. For example, every server module with routes uses \mref{mUsers}
+others use. For example, most server modules with routes use \mref{mUsers}
 Users to find the current user. Modules in the shared group can also use each
 other. Table~\ref{TblUses} lists every use.
 

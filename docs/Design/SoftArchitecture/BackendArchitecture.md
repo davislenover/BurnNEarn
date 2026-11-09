@@ -3,8 +3,12 @@
 | Date | Version | Author | Notes |
 |---|---|---|---|
 | Nov 5, 2026 | 1.0 | Davis Lenover | PoC version |
+| Nov 7, 2026 | 1.1 | Davis Lenover | Module health, users and wallet |
+| Nov 8, 2026 | 1.2 | Davis Lenover | Trading |
+| Nov 8, 2026 | 1.3 | Davis Lenover | One doc per module, access specifiers in the class diagrams |
 
-This covers only what the PoC needs. It grows as features are added.
+This is the high-level view. Each module is explained in its own doc, linked
+below. It covers only what the PoC needs, and grows as features are added.
 
 ## Architecture
 
@@ -33,15 +37,29 @@ rejects any import that breaks these rules.
 ![UML component diagram of the PoC backend](figures/backend-poc.png)
 
 The rows inside "Modules" show the stacking. Trading uses market and wallet,
-activity uses wallet, and wallet uses users. Every module with routes also uses users to
-get the current user.
+activity uses wallet, and wallet uses users. Every module with routes also
+uses users to get the current user.
 
-The diagram's source is `figures/backend-poc.puml`. After changing it, run
-this from the repository root to update the PNG:
+The diagram's source is `figures/backend-poc.puml`. After changing a diagram,
+run this from the repository root to update its PNG:
 
 ```bash
 plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 ```
+
+## Modules
+
+| Module | What it does | Owns these tables | Routes | Issue |
+|---|---|---|---|---|
+| [Kernel](modules/core.md) (`app/core/`) | What every module shares | none | `GET /v1/health` | #187 |
+| [Users](modules/users.md) | Who is calling | `users` | none | #279 |
+| [Wallet](modules/wallet.md) | Each portfolio's currency, and the one safe way to change it | `portfolios`, `balance_changes` | `GET /v1/me/balance` | #279, #189 |
+| [Market](modules/market.md) | Stocks and their prices | `assets`, `prices`, `provider_requests` | `GET /v1/assets`, `GET /v1/market/usage` | #187 |
+| [Trading](modules/trading.md) | Buying shares, and what a portfolio is worth | `trades`, `holdings` | `POST /v1/me/trades`, `GET /v1/me/portfolio` | #188 |
+| Activity | Step rewards | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190, not built yet |
+
+Each module's pull request adds or updates its doc in `modules/`, and its UML
+class diagram in `figures/`.
 
 ## A module's files
 
@@ -53,9 +71,30 @@ plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 | `service.py` | The rules. Never commits | No |
 | `models.py` | The tables | No |
 | `routes.py` | HTTP routes. Commits once | No |
-| `plugin.py` | Adds the module's routes to the app | No, only `app/registry.py` |
+| `plugin.py` | Adds the module to the app: its routes, background work and health check | No, only `app/registry.py` |
 
 Leave out any file a module doesn't need.
+
+## How to read the class diagrams
+
+Each kind of box has one color in every diagram, shown in its legend. For
+example, an entry point is orange, a public file green, logic purple, a table
+or record blue and an error red. An arrow means "uses", and a hollow
+arrowhead means "is a".
+
+Each member has an access specifier. In a box for a file, it follows the
+import rules below:
+- `+` **public:** other modules may use it, because it is in the module's
+  `interface.py`, `queries.py` or `types.py`. A route is `+` too, since the
+  phone uses it.
+- `~` **module:** only the module's own files may use it, such as everything
+  in `service.py` and `models.py`.
+- `-` **private:** only its own file uses it. In Python its name starts with
+  `_`.
+
+In a box for a class, such as a record, a table, an error or a provider, `+`
+is a member that anyone holding one may use, and `-` is one whose name starts
+with `_`. Which file the class is in says who may import it.
 
 ## Rules
 
@@ -64,37 +103,64 @@ Leave out any file a module doesn't need.
 2. Never import a module above yours in the diagram.
 3. Never use another module's tables. A foreign key into them is fine, such
    as `trades.asset_id` to `assets`.
-4. Only routes commit, and only once.
-5. Money only moves through wallet. Lock the portfolio first with
-   `wallet.interface.lock_live_portfolio()`. `change_balance` needs what it
-   returns. This way a buy and a step sync at the same time wait in turn
-   instead of deadlocking.
+4. Only routes commit, once per request. Market's poller thread is the one
+   exception: it commits once per poll.
+5. Money only moves through wallet. Lock the portfolio with
+   `wallet.interface.lock_live_portfolio()` before calling `change_balance`,
+   as [wallet](modules/wallet.md#changing-a-balance) shows.
 6. Take the time from `app/core/clock.py`, never from `datetime.now()`, so
    tests can set it.
 
-## What the PoC builds
+CI checks rules 1 and 2. import-linter (`uv run lint-imports`) refuses an
+import of a module above, or of any module from `app/core/`.
+`test_public_files.py` refuses an import of another module's other files.
 
-| Folder | Owns these tables | Routes | Issue |
-|---|---|---|---|
-| `app/core/`, `app/registry.py`, `app/main.py` | none | `GET /v1/health` | #187, first pull request |
-| `app/market/` | `assets`, `prices`, `provider_requests` | `GET /v1/assets`, `GET /v1/market/usage` | #187 |
-| `app/users/` | `users` | none (it provides the demo user) | #189 |
-| `app/wallet/` | `portfolios`, `balance_changes` | `GET /v1/me/balance` | #189 |
-| `app/activity/` | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190 |
-| `app/trading/` | `trades`, `holdings` | `POST /v1/me/trades`, `GET /v1/me/portfolio` | #188 |
+## Design patterns
 
-#187's first pull request sets up the shared pieces. It moves `Money` from
-`app/api/` into `app/core/`, and the health route into `app/core/routes.py`.
-It adds `app/core/clock.py` and `app/registry.py`, the list of modules. It also
-adds `create_app()` in `app/main.py`, which adds each module's routes, and
-`app = create_app()` keeps `uv run uvicorn app.main:app` working. The price
-poller is market's own background thread, which market's plugin starts and
-stops with the app.
+**Plug-in kernel.** The kernel (`app/core/` and `create_app()`) doesn't know
+which modules exist. Each module fills in a `Plugin` in its `plugin.py`, with
+its routes, any work that runs in the background, and a health check, and
+`app/registry.py` lists them. Adding a module never changes the kernel.
+See [the kernel](modules/core.md).
 
-#191 adds two checks to CI:
-- an import-linter rule: no module imports one above it, and `app/core/`
-  imports no module
-- a test: modules import each other only through their public files
+![UML class diagram of the plug-in kernel](figures/plugin-kernel.png)
+
+**Strategy, adapter and factory.** Market asks for prices through one
+interface, `MarketDataProvider`. `FinnhubProvider` adapts Finnhub's API to
+it, `FakeProvider` makes up prices, and `build_provider` picks one from
+`MARKET_PROVIDER`. See [market](modules/market.md).
+
+**Dependency injection.** Code is handed what it needs instead of fetching
+it. Routes get a database session and the clock from the kernel, through
+`Depends(get_db)` and `Depends(get_clock)`, and the current user from users,
+through `Depends(get_current_user)`. The poller is given its provider,
+clock and session factory. Tests hand in stand-ins, such as a fixed time or a
+stub provider.
+
+**Read-only records.** A module hands other modules frozen copies, such as
+market's `CurrentPrice` or wallet's `BalanceChangeReceipt`, never database
+rows. That way no module can change another module's tables by accident.
+
+**Lock token.** Wallet's `change_balance` only takes the `LockedPortfolio`
+that `lock_live_portfolio` returns, so changing a balance without locking it
+first is hard to do by accident. See [wallet](modules/wallet.md).
+
+**Idempotency key.** Each buy carries a `request_id` from the phone, so a
+retried request gets its first answer back instead of buying twice. See
+[trading](modules/trading.md).
+
+## How it runs
+
+When the app starts, the kernel adds each module's routes and starts each
+module's background work. For market, that is the poller thread, which saves
+a price for every stock once a minute while the market is open.
+
+![UML sequence diagram of startup and a price poll](figures/startup-and-poll.png)
+
+A request goes from the kernel to the module's route, which reads through the
+module's queries.
+
+![UML sequence diagram of a request for the asset list](figures/request-assets.png)
 
 ## Migrations
 

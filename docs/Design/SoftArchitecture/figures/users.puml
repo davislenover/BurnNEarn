@@ -1,0 +1,70 @@
+@startuml users
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/users.puml
+!include style.iuml
+set separator none
+title Users module: its files and classes
+
+class "plugin.py" as plugin <<entry point>> {
+  + PLUGIN: Plugin, with no routes
+}
+class "interface.py" as interface <<public>> {
+  + DEFAULT_TIME_ZONE = "America/Toronto"
+  + get_current_user(settings): CurrentUser
+  + create_user(session, user_id = None, time_zone = DEFAULT_TIME_ZONE): UUID
+}
+
+class "settings.py" as settings <<settings>> {
+  ~ UserSettings
+  ~ get_user_settings(): UserSettings
+}
+class "types.py" as types <<public>> {
+  + DEMO_USER_ID: UUID
+  + CurrentUser
+  + NotAuthenticatedError
+}
+class "models.py" as models <<table>> {
+  ~ User: the users table
+}
+
+class UserSettings <<settings>> {
+  + demo_user_enabled: bool = False
+}
+class CurrentUser <<public>> {
+  + user_id: UUID
+}
+class NotAuthenticatedError <<error>> {
+  + code = "not_authenticated"
+  + message = "Sign in to continue."
+  + status = 401
+}
+class "User (users)" as User <<table>> {
+  + user_id: UUID
+  + time_zone: str
+  + created_at: datetime
+  .. the database refuses ..
+  a user_id used twice
+  a time_zone over 64 characters
+}
+
+plugin --> models : registers
+interface --> settings
+interface --> types
+interface --> models
+
+settings +-- UserSettings
+types +-- CurrentUser
+types +-- NotAuthenticatedError
+models +-- User
+
+legend right
+  <color:#854F0B>■</color> Entry point: how the app reaches the module
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#3B6D11>■</color> Settings
+  <color:#185FA5>■</color> Tables
+  <color:#A32D2D>■</color> Error: a DomainError from the kernel
+  + other modules or the phone may use it
+  ~ only this module's files may use it
+  An arrow means "uses".
+  ⊕ marks the file a class is defined in.
+endlegend
+@enduml

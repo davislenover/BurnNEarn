@@ -1,0 +1,116 @@
+@startuml market-data
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market-data.puml
+!include style.iuml
+set separator none
+title Market module: its records, errors, settings and tables
+
+package "types.py" {
+  class UnknownAssetError <<error>> {
+    + code = "unknown_asset"
+    + status = 404
+  }
+  class CurrentPrice <<public>> {
+    + price: Decimal
+    + quoted_at: datetime
+    + obtained_at: datetime
+    + delayed: bool
+  }
+  class AssetInfo <<public>> {
+    + asset_id: UUID
+    + symbol: str
+    + name: str
+    + is_tradable: bool
+  }
+}
+
+package "routes.py" {
+  class AssetList <<data>> {
+    + market_open: bool
+    + assets: AssetPrice[]
+  }
+  class AssetPrice <<data>> {
+    + symbol: str
+    + name: str
+    + price: Money or null
+    + price_currency: str
+    + quoted_at: datetime or null
+    + obtained_at: datetime or null
+    + delayed: bool
+  }
+  class Usage <<data>> {
+    + calls_last_minute: int
+    + busiest_minute_today: int
+    + calls_today: int
+    + limit_per_minute: int
+  }
+}
+
+package "settings.py" {
+  class MarketSettings <<settings>> {
+    + market_always_open: bool = False
+    + market_poller_enabled: bool = False
+  }
+}
+
+package "models.py" {
+  class "Asset (assets)" as Asset <<table>> {
+    + asset_id: UUID
+    + symbol: str
+    + name: str
+    + asset_type: str
+    + price_currency: str
+    + is_tradable: bool
+    + created_at: datetime
+    .. the database refuses ..
+    a second row with one symbol
+    asset_type other than 'stock' or 'etf'
+    price_currency other than 'USD'
+  }
+  class "Price (prices)" as Price <<table>> {
+    + price_id: int
+    + asset_id: UUID
+    + price: Decimal
+    + price_currency: str
+    + quoted_at: datetime
+    + obtained_at: datetime
+    .. the database refuses ..
+    a second (asset_id, quoted_at)
+    an asset_id not in assets
+    price ≤ 0
+    price_currency other than 'USD'
+  }
+  class "ProviderRequest (provider_requests)" as ProviderRequest <<table>> {
+    + provider_request_id: int
+    + requested_at: datetime
+    + symbol: str
+    + outcome: str
+    .. the database refuses ..
+    an outcome not in RequestOutcome
+  }
+  enum RequestOutcome <<data>> {
+    + OK = "ok"
+    + RATE_LIMITED = "rate_limited"
+    + UNKNOWN_SYMBOL = "unknown_symbol"
+    + ERROR = "error"
+  }
+}
+
+AssetList o-- AssetPrice
+AssetPrice ..> CurrentPrice : price from
+AssetPrice ..> Asset : built from
+AssetInfo .right.> Asset : built\nfrom
+CurrentPrice ..> Price : built from the newest
+Usage ..> ProviderRequest : counts
+Price -up-> Asset : asset_id
+ProviderRequest --> RequestOutcome : values from
+AssetList -[hidden]right- MarketSettings
+
+legend right
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#3B6D11>■</color> Settings
+  <color:#185FA5>■</color> Data: a read-only record, or a table
+  <color:#A32D2D>■</color> Error: a DomainError
+  + anyone holding one may use it
+  A diamond means "holds".
+endlegend
+@enduml

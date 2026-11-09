@@ -1,0 +1,118 @@
+@startuml trading-data
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/trading-data.puml
+!include style.iuml
+set separator none
+title Trading module: its records, errors and tables
+
+package "service.py" {
+  class TradeRequest <<data>> {
+    + request_id: UUID
+    + symbol: str
+    + trade_type: "buy"
+    + quantity: int, above 0
+    + expected_price: Money
+  }
+  class PortfolioValue <<data>> {
+    + cash_balance: Money
+    + holdings: HoldingValue[]
+    + holdings_value: Money
+    + total_value: Money
+  }
+}
+
+package "routes.py" {
+  class TradeReceipt <<data>> {
+    + trade_id: UUID
+    + status: str
+    + unit_price: Money
+    + currency_amount: Money
+    + executed_at: datetime
+    + cash_balance: Money
+    + {static} of(trade): TradeReceipt
+  }
+  class PortfolioReply <<data>> {
+    + simulated: true
+  }
+}
+
+package "types.py" {
+  class HoldingValue <<public>> {
+    + symbol: str
+    + quantity: int
+    + price: Money
+    + quoted_at: datetime
+    + delayed: bool
+    + value: Money
+  }
+  class RequestIdReusedError <<error>> {
+    + code = "request_id_reused"
+  }
+  class MarketClosedError <<error>> {
+    + code = "market_closed"
+  }
+  class PriceOutOfDateError <<error>> {
+    + code = "price_out_of_date"
+  }
+  class PriceChangedError <<error>> {
+    + code = "price_changed"
+    + price: Decimal
+  }
+}
+
+package "models.py" {
+  class "Trade (trades)" as Trade <<table>> {
+    + trade_id: UUID
+    + request_id: UUID
+    + portfolio_id: UUID
+    + asset_id: UUID
+    + trade_type: str
+    + quantity: int
+    + unit_price: Decimal
+    + currency_amount: Decimal
+    + cash_balance_after: Decimal
+    + status: str
+    + balance_change_id: UUID
+    + created_at: datetime
+    .. the database refuses ..
+    a second (portfolio_id, request_id)
+    a balance_change_id used twice
+    currency_amount ≠ quantity × unit_price
+    quantity ≤ 0, unit_price ≤ 0
+    cash_balance_after < 0
+    trade_type other than 'buy'
+    status other than 'executed'
+  }
+  class "Holding (holdings)" as Holding <<table>> {
+    + portfolio_id: UUID
+    + asset_id: UUID
+    + quantity: int
+    .. the database refuses ..
+    a second row for one stock
+    quantity < 0
+  }
+}
+
+PortfolioReply -up-|> PortfolioValue
+PortfolioValue o-- HoldingValue
+TradeReceipt ..> Trade : built from
+
+HoldingValue -[hidden]down- RequestIdReusedError
+RequestIdReusedError -[hidden]right- MarketClosedError
+PriceOutOfDateError -[hidden]right- PriceChangedError
+RequestIdReusedError -[hidden]down- PriceOutOfDateError
+
+note bottom of Holding
+  Both tables are deleted with their portfolio.
+  Foreign keys are strings, such as "assets.asset_id",
+  so trading never imports another module's models.py.
+end note
+
+legend right
+  <color:#0F6E56>■</color> Public: what other modules may import
+  <color:#185FA5>■</color> Data: a read-only record, or a table
+  <color:#A32D2D>■</color> Error: a DomainError with status 409
+  + anyone holding one may use it
+  A hollow arrowhead means "is a".
+  A diamond means "holds".
+endlegend
+@enduml

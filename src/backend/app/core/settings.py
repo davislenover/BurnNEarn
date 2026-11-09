@@ -2,7 +2,6 @@
 
 from functools import lru_cache
 
-from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,8 +14,6 @@ class Settings(BaseSettings):
     database_url: str = (
         "postgresql+psycopg://fitfolio:fitfolio@localhost:5432/fitfolio"
     )
-    # Kept on the server only, never sent to the app (HA SEC-33).
-    finnhub_api_key: SecretStr | None = None
 
 
 @lru_cache

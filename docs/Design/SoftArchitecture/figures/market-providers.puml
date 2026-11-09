@@ -1,0 +1,80 @@
+@startuml market-providers
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/market-providers.puml
+!include style.iuml
+set separator none
+title Market: where prices come from
+
+class "poller.py" as poller <<logic>> {
+  ~ lifespan(app)
+  ~ poll_once(session, provider, now): bool
+}
+
+class "providers/__init__.py" as init <<provider>> <<factory>> {
+  ~ build_provider(settings): MarketDataProvider
+}
+
+package "providers/settings.py" {
+  class ProviderSettings <<settings>> {
+    + market_provider: "finnhub" or "fake" = "fake"
+    + finnhub_api_key: SecretStr or None
+    + check_finnhub_key()
+  }
+}
+
+package "providers/base.py" {
+  interface MarketDataProvider <<provider>> <<strategy>> {
+    + {abstract} get_quote(symbol): Quote
+  }
+  class Quote <<data>> {
+    + symbol: str
+    + price: Decimal
+    + quoted_at: datetime
+  }
+  class MarketDataError <<error>>
+  class RateLimitedError <<error>>
+  class UnknownSymbolError <<error>>
+}
+
+package "providers/finnhub.py" {
+  class FinnhubProvider <<provider>> <<adapter>> {
+    - _api_key: SecretStr
+    - _client: httpx2.Client
+    + get_quote(symbol): Quote
+  }
+}
+
+package "providers/fake.py" {
+  class FakeProvider <<provider>> {
+    - _clock: Clock
+    - _prices: dict[str, Decimal]
+    - _random: Random
+    + get_quote(symbol): Quote
+  }
+}
+
+poller --> init : 1. build one
+init --> ProviderSettings
+init --> MarketDataProvider : creates
+poller --> MarketDataProvider : 2. get_quote
+MarketDataProvider -right-> Quote : returns
+Quote -[hidden]right- MarketDataError
+MarketDataProvider --> MarketDataError : raises
+MarketDataError <|-- RateLimitedError
+MarketDataError <|-- UnknownSymbolError
+MarketDataProvider <|-- FinnhubProvider
+MarketDataProvider <|-- FakeProvider
+
+legend right
+  <color:#534AB7>■</color> Logic
+  <color:#993556>■</color> Provider: where prices come from
+  <color:#3B6D11>■</color> Settings
+  <color:#185FA5>■</color> Data: a read-only record
+  <color:#A32D2D>■</color> Error: a plain Exception, never sent to the phone
+  + anyone holding one may use it
+  ~ only market's files may use it
+  - only its own file uses it
+  «strategy», «adapter», «factory»: the design pattern
+  An arrow means "uses".
+  A hollow arrowhead means "is a".
+endlegend
+@enduml
