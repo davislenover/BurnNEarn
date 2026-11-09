@@ -1,7 +1,7 @@
 // MG uses hierarchy: an arrow from A to B means module A uses module B.
-// An arrow into a group stands for uses of the modules in it. Every server
-// module with routes uses M8 Users, so Users is in the shared group. The MG's
-// table lists every single use.
+// An arrow into a group stands for uses of the modules in it. Most server
+// modules with routes use M8 Users for the current user, so Users is in the
+// shared group. The MG's table lists every single use.
 // Render with: dot -Tpdf uses-hierarchy.dot -o uses-hierarchy.pdf
 digraph uses {
   graph [rankdir=TB, compound=true, newrank=true, nodesep=0.18, ranksep=0.3,

@@ -74,9 +74,10 @@ while the app runs.
 - **Saving a price:** once per stock and quote time. An exact repeat is
   skipped, and a corrected price replaces the old one. Each save has its own
   savepoint, so a price the database refuses undoes only itself.
-- **Committing:** each poll has its own session and commits once, the one
-  exception to [rule 4](../BackendArchitecture.md#rules). An error is logged
-  and the next poll tries again, so one bad minute never stops the thread.
+- **Committing:** each poll has its own session and commits once, since it
+  answers no request ([rule 4](../BackendArchitecture.md#rules)). An error is
+  logged and the next poll tries again, so one bad minute never stops the
+  thread.
 
 A poll fails if it raises an error or misses any stock's price, so a provider
 that is down, or a wrong key, shows up even though no request sees an error.
