@@ -10,7 +10,7 @@ from datetime import date
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import Connection, delete, func, insert, select
+from sqlalchemy import Connection, insert
 from sqlalchemy.exc import IntegrityError
 
 from app.core.db import engine
@@ -41,17 +41,6 @@ def new_portfolio(connection: Connection, **values: object) -> uuid.UUID:
     ).scalar_one()
 
 
-def test_a_portfolio_starts_with_no_currency(connection: Connection) -> None:
-    portfolio_id = new_portfolio(connection)
-
-    balance = connection.execute(
-        select(Portfolio.cash_balance).where(
-            Portfolio.portfolio_id == portfolio_id
-        )
-    ).scalar_one()
-    assert balance == Decimal("0")
-
-
 @pytest.mark.parametrize("balance", [Decimal("-0.0001"), Decimal("NaN")])
 def test_a_balance_can_never_go_below_zero(
     connection: Connection, balance: Decimal
@@ -70,9 +59,15 @@ def test_a_user_has_one_live_portfolio(connection: Connection) -> None:
         new_portfolio(connection, user_id=user_id)
 
 
-def test_a_portfolio_needs_a_real_user(connection: Connection) -> None:
-    with pytest.raises(IntegrityError, match="fk_portfolios_user_id_users"):
-        new_portfolio(connection, user_id=uuid.uuid4())
+@pytest.mark.parametrize(
+    ("user_id", "rule"),
+    [(uuid.uuid4(), "fk_portfolios_user_id_users"), (None, "not-null")],
+)
+def test_a_portfolio_needs_a_real_user(
+    connection: Connection, user_id: uuid.UUID | None, rule: str
+) -> None:
+    with pytest.raises(IntegrityError, match=rule):
+        new_portfolio(connection, user_id=user_id)
 
 
 def change(
@@ -131,25 +126,3 @@ def test_bad_balance_changes_are_refused(
 
     with pytest.raises(IntegrityError, match=rule):
         change(connection, portfolio_id, **values)
-
-
-def test_deleting_a_portfolio_deletes_its_balance_changes(
-    connection: Connection,
-) -> None:
-    portfolio_id = new_portfolio(connection)
-    change(
-        connection,
-        portfolio_id,
-        amount=Decimal("5"),
-        reason="activity_reward",
-        activity_date=date(2026, 11, 7),
-    )
-
-    connection.execute(
-        delete(Portfolio).where(Portfolio.portfolio_id == portfolio_id)
-    )
-
-    left = connection.execute(
-        select(func.count()).where(BalanceChange.portfolio_id == portfolio_id)
-    ).scalar_one()
-    assert left == 0

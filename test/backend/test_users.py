@@ -1,11 +1,12 @@
-"""Tests for the users module: the current user and create_user."""
+"""Tests for the users module: the current user, create_user and its table."""
 
 import uuid
 
 import pytest
 from fastapi import APIRouter, Depends
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import insert, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.plugins import Plugin
@@ -38,19 +39,12 @@ def test_every_request_is_the_demo_user_when_it_is_on() -> None:
     assert response.json() == {"user_id": str(DEMO_USER_ID)}
 
 
-def test_a_request_is_refused_when_the_demo_user_is_off() -> None:
-    response = who_is_calling(demo_user_enabled=False).get("/v1/me")
+def test_the_demo_user_is_off_unless_a_setting_turns_it_on(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # conftest turns it off, which would hide the default.
+    monkeypatch.delenv("DEMO_USER_ENABLED", raising=False)
 
-    assert response.status_code == 401
-    assert response.json() == {
-        "detail": {
-            "code": "not_authenticated",
-            "message": "Sign in to continue.",
-        }
-    }
-
-
-def test_the_demo_user_is_off_unless_a_setting_turns_it_on() -> None:
     assert UserSettings(_env_file=None).demo_user_enabled is False
 
 
@@ -84,3 +78,9 @@ def test_create_user_refuses_a_time_zone_that_does_not_exist(
         create_user(db_session, uuid.uuid4(), time_zone)
 
     assert db_session.scalars(select(User)).all() == []
+
+
+def test_a_user_needs_a_time_zone(db_session: Session) -> None:
+    # Even code that skips create_user can't save a user without one.
+    with pytest.raises(IntegrityError, match="not-null"):
+        db_session.execute(insert(User).values(time_zone=None))

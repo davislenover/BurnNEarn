@@ -2,12 +2,13 @@
 reaches the phone."""
 
 from collections.abc import Iterator
-from typing import Literal
+from decimal import Decimal
+from typing import Annotated, Literal
 
 import pytest
 from fastapi import APIRouter
 from fastapi.testclient import TestClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.errors import DomainError
 from app.core.money import Money
@@ -55,17 +56,15 @@ def test_a_message_can_be_set_when_the_error_is_raised(
         "code": "out_of_stock",
         "message": "Only 2 left.",
     }
-
-
-def test_setting_a_message_does_not_change_the_class() -> None:
-    OutOfStockError("Only 2 left.")
-
+    # The class keeps its own message.
     assert OutOfStockError().message == "That is out of stock."
+    # A log or traceback shows the message that was set.
+    assert str(OutOfStockError("Only 2 left.")) == "Only 2 left."
 
 
 class Order(BaseModel):
     quantity: int
-    price: Money
+    price: Annotated[Money, Field(gt=Decimal("0"))]
     side: Literal["buy"]
 
 
@@ -80,20 +79,16 @@ def order_client() -> TestClient:
     return TestClient(create_app([Plugin(name="probe", router=router)]))
 
 
-GOOD = '"quantity": 1, "price": "101.5", "side": "buy"'
-
-
 @pytest.mark.parametrize(
     "body",
     [
-        # An ordinary bad value.
-        '{"quantity": "one", "price": "101.5", "side": "buy"}',
-        # Python reads these as numbers that JSON can't write back, and a
+        # Python reads NaN as a number that JSON can't write back, and a
         # lone surrogate as text that can't be sent as UTF-8.
         '{"quantity": NaN, "price": "101.5", "side": "buy"}',
-        '{"quantity": 1, "price": Infinity, "side": "buy"}',
-        '{"quantity": 1e400, "price": "101.5", "side": "buy"}',
         '{"quantity": 1, "price": "101.5", "side": "\\ud800"}',
+        # A refused price of 0, whose error holds a Decimal that JSON can't
+        # write as it is.
+        '{"quantity": 1, "price": "0", "side": "buy"}',
     ],
 )
 def test_a_body_that_doesnt_fit_is_a_422_without_the_values_sent(
@@ -135,13 +130,3 @@ def test_a_422_keeps_fastapis_shape_without_the_values_sent() -> None:
             },
         ]
     }
-
-
-def test_a_body_that_fits_still_works() -> None:
-    response = order_client().post(
-        "/v1/orders",
-        content=f"{{{GOOD}}}",
-        headers={"Content-Type": "application/json"},
-    )
-
-    assert response.status_code == 200

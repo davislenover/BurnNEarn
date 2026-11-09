@@ -1,10 +1,15 @@
-"""Tests for the migration history itself. No database is needed."""
+"""Tests for the migration history, and that it builds the tables the
+models describe."""
 
 import pytest
 from alembic import command
+from alembic.autogenerate import compare_metadata
 from alembic.config import Config
+from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
+from sqlalchemy.orm import Session
 
+from app.core.db import Base
 from app.core.settings import Settings
 
 
@@ -32,3 +37,11 @@ def test_migrations_accept_a_password_with_special_characters(
     command.upgrade(config, "0001", sql=True)
 
     assert config.get_main_option("sqlalchemy.url") == url
+
+
+def test_migrations_match_the_models(db_session: Session) -> None:
+    context = MigrationContext.configure(db_session.connection())
+
+    # A difference would go into the next --autogenerate migration, such
+    # as one that drops every column's time zone.
+    assert compare_metadata(context, Base.metadata) == []

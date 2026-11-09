@@ -107,8 +107,8 @@ pay for one trade.
 
 | File | What it checks |
 |---|---|
-| `test_trading_request.py` | The request body and the four refusals |
+| `test_trading_request.py` | The request body, and the new price in `price_changed`'s message |
 | `test_trading_tables.py` | The rules the tables keep by themselves |
 | `test_trading_buy.py` | `buy`: exact costs, every refusal and its order, each `request_id` once |
-| `test_trading_routes.py` | `POST /v1/me/trades`: status codes, bodies, all or nothing |
+| `test_trading_routes.py` | `POST /v1/me/trades`: status codes, bodies, each refusal's code and message, all or nothing |
 | `test_trading_portfolio.py` | `portfolio_value` and `GET /v1/me/portfolio` |
