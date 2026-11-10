@@ -1533,7 +1533,8 @@ Database (M1), Clock (M2), Users (M8), Wallet (M9), Market (M10), Plugins
 409: RequestIdReusedError (code request\_id\_reused), MarketClosedError
 (market\_closed), PriceOutOfDateError (price\_out\_of\_date) and
 PriceChangedError (price\_changed). The local function buy says when each is
-raised.\par}
+raised. Status 409 says the request fits but conflicts with the market or an
+earlier trade, unlike Market's 404 for a stock that doesn't exist.\par}
 
 \medskip
 \noindent HoldingValue = tuple of (symbol: String, quantity: $\mathbb{Z}$,
@@ -1553,14 +1554,15 @@ None, health: None)
 \toprule
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \midrule
-POST /v1/me/trades & ID, String, String, $\mathbb{N}$, Money
+POST /v1/me/trades & ID, String, \{buy\}, $\mathbb{N}$, Money
   & tuple of (trade\_id: ID, status: String, unit\_price: Money,
   currency\_amount: Money, executed\_at: DateTime, cash\_balance: Money)
   & RequestIdReusedError, MarketClosedError, UnknownAssetError,
-  PriceOutOfDateError, PriceChangedError, InsufficientFundsError \\
+  PriceOutOfDateError, PriceChangedError, InsufficientFundsError,
+  NotAuthenticatedError \\
 GET /v1/me/portfolio & - & tuple of (cash\_balance: Money, holdings: seq of
   HoldingValue, holdings\_value: Money, total\_value: Money, simulated:
-  $\mathbb{B}$) & - \\
+  $\mathbb{B}$) & NotAuthenticatedError \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1574,13 +1576,20 @@ GET /v1/me/portfolio & - & tuple of (cash\_balance: Money, holdings: seq of
 trade\_type: String, quantity: $\mathbb{N}$, unit\_price: Decimal,
 currency\_amount: Decimal, cash\_balance\_after: Decimal, status: String,
 balance\_change\_id: ID, created\_at: DateTime). A request\_id appears at most
-once among a portfolio's trades. Every trade is a ``buy'' with status
-``executed''.
+once among a portfolio's trades. It is unique per portfolio, so the
+portfolio's lock is enough to check it, and no user gets back another's trade.
+Every trade is a ``buy'' with status ``executed'', and the database refuses
+any other. Selling (FR36), queued trades (FR40) and refusing a trade before the user
+accepts the simulation notice (FR34) come at Revision~0. A trade
+keeps cash\_balance\_after, so a repeat gets the same reply. It also keeps the
+balance\_change\_id of the one payment for it, so balances can be checked
+against trades (HA~H21).
 
 \medskip
 \noindent holdings: set of tuple of (portfolio\_id: ID, asset\_id: ID,
 quantity: $\mathbb{Z}$), the shares each portfolio holds, at most one entry per
-portfolio and stock, with quantity never below 0.
+portfolio and stock, with quantity never below 0, which the database checks,
+so a sale at Revision~0 can't sell more shares than are held (FR37, HA~H20).
 
 \medskip
 \noindent When Wallet deletes a portfolio, its trades and holdings go with it.
@@ -1591,15 +1600,15 @@ None
 
 \subsubsection{Assumptions}
 
-The lock from lock\_live\_portfolio lasts until the session commits or is
-closed, so requests that change one portfolio run one at a time. Every stock in
-holdings has at least one price.
+The lock from lock\_live\_portfolio lasts until the session's transaction ends,
+by a commit, a rollback or closing the session, so requests that change one
+portfolio run one at a time. Every stock in holdings has at least one price,
+since it was bought at one and no price is ever deleted.
 
 \subsubsection{Access Routine Semantics}
 
 \noindent Both routes take session from get\_db, now from get\_clock and $u :=$
-get\_current\_user(), which refuses with status 401 when there is no current
-user.
+get\_current\_user().
 
 \medskip
 \noindent POST /v1/me/trades(request\_id, symbol, trade\_type, quantity,
@@ -1608,56 +1617,73 @@ expected\_price):
 \item transition: the route locks the portfolio with locked $:=$
   lock\_live\_portfolio(session, $u$.user\_id), runs $(t, \mathit{new}) :=$
   buy(session, locked, request, now) on the request body, and commits once. So
-  the payment, the shares and the trade are saved together or not at all.
-  With the lock first, two copies of one request run one after the other, and
-  if the first made a trade, the second finds it.
-\item output: the status is 201 for a new trade and 200 for a repeat, and
-  $out :=$ ($t$.trade\_id, $t$.status, $t$.unit\_price,
-  $t$.currency\_amount, $t$.created\_at, $t$.cash\_balance\_after), so a
-  repeated request\_id gets the same body as the first answer.
-\item exception: $exc :=$ the exception buy raises, with status 404 for
+  the payment, the shares and the trade are saved together or not at all
+  (FR37). With the lock first, two copies of one request run one after the
+  other, and if the first made a trade, the second finds it (FR38).
+\item output: the status is 201 for a new trade, HTTP's status for something
+  made, and 200 for a repeat, which makes nothing. $out :=$ ($t$.trade\_id,
+  $t$.status, $t$.unit\_price, $t$.currency\_amount, $t$.created\_at in UTC,
+  $t$.cash\_balance\_after), so a repeated request\_id gets the same body as
+  the first answer, and a phone that lost that answer learns its trade went
+  through (HA~H46). UTC keeps the body the same, since a stored time may come
+  back in another time zone.
+\item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user,
+  with status 401, or else the exception buy raises, with status 404 for
   UnknownAssetError and 409 for the rest. A refused request saves nothing, so
-  sending it again runs every check again. A trade\_type other than ``buy'' gets status 422.
+  sending it again runs every check again. A trade\_type other than ``buy''
+  doesn't fit the body yet, so it gets JSON Format's 422.
 \end{itemize}
 
 \noindent GET /v1/me/portfolio():
 \begin{itemize}
 \item output: $out :=$ portfolio\_value(session, live\_portfolio\_id(session,
   $u$.user\_id), now) with simulated $=$ true, so the phone labels the values
-  as simulated.
-\item exception: None
+  as simulated (FR43). It doesn't lock, so showing the portfolio never waits
+  for a buy. A buy that commits while it runs can then make one reply off by
+  that buy, and the next is right.
+\item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user, with
+  status 401
 \end{itemize}
 
 \subsubsection{Local Functions}
 
 \noindent TradeRequest = tuple of (request\_id: ID, symbol: String,
-trade\_type: String, quantity: $\mathbb{N}$, expected\_price: Money), the body
-of POST /v1/me/trades.
+trade\_type: \{buy\}, quantity: $\mathbb{N}$, expected\_price: Money), the
+body of POST /v1/me/trades. request\_id is new for each buy the user confirms
+and the same for each retry of it (an idempotency key). expected\_price is the
+price the user confirmed, so the buy runs only at that price (SEC-29).
 
 \medskip
 \noindent buy(session: Session, locked: LockedPortfolio, request: TradeRequest,
 now: DateTime) $\rightarrow$ tuple of (t: Trade, new: $\mathbb{B}$) holds the
-trade rules and never commits. Here $p :=$ locked.portfolio\_id, and old is the
+trade rules and never commits, by the commit rule of Database (M1). Here
+$p :=$ locked.portfolio\_id, and old is the
 trade in trades with portfolio\_id $p$ and request\_id request.request\_id, or
 None. old matches request when it has the same symbol and quantity, and
 old.unit\_price $=$ request.expected\_price. For a new request (old $=$ None),
 $a :=$ get\_asset\_by\_symbol(session, request.symbol), $c :=$
 get\_current\_price(session, $a$.asset\_id, now) and cost $:=$
-request.quantity $\times$ $c$.price.
+request.quantity $\times$ $c$.price, exact, since it is a whole number times a
+price (NFR1). The one read $c$ gives the price checked, the cost and the
+trade's price, so they can't differ.
 \begin{itemize}
 \item transition: for a new request that passes every check, $b :=$
   change\_balance(session, locked, $-$cost, trade\_purchase) pays for it, $p$'s
   holding of $a$ gains request.quantity shares (from 0 if none), and trades
   $:=$ trades $\cup \{t\}$, where $t :=$ (a new ID, request.request\_id, $p$,
   $a$.asset\_id, ``buy'', request.quantity, $c$.price, cost,
-  get\_balance(session, $p$) after the payment, ``executed'',
-  $b$.balance\_change\_id, now).
+  $b$.cash\_balance\_after, ``executed'', $b$.balance\_change\_id, now).
+  It takes now, not the database's time, so the trade's time is the one its
+  market hours and price were checked at.
 \item output: $out :=$ (old matches request $\Rightarrow$ (old, false) $\mid$
   old $=$ None $\Rightarrow$ ($t$, true)), so a repeat gets its first trade
-  back, even after the market closes or the price moves.
+  back, even after the market closes or the price moves, since that trade
+  already went through.
 \item exception: for a repeat, $exc := ($old $\neq$ None $\land$ old does not
   match request $\Rightarrow$\\
   \hspace*{1em}RequestIdReusedError$)$.\\
+  A different trade with a used ID is refused, since it is not a retry, and
+  buying it too would give the ID two trades.\\
   For a new request the first of these
   that holds is raised, in this order:\\
   \hspace*{1em}$exc := (\neg$is\_market\_open(now) $\Rightarrow$
@@ -1670,7 +1696,14 @@ request.quantity $\times$ $c$.price.
     PriceChangedError\\
   \hspace*{1em}$\mid$ get\_balance(session, $p$) $<$ cost $\Rightarrow$
     InsufficientFundsError$)$\\
-  PriceChangedError's message gives the new price, $c$.price.
+  MarketClosedError refuses a buy while the market is closed, so it never
+  runs at an old price (HA~H19). Queueing it instead (FR40) comes at
+  Revision~0. PriceOutOfDateError refuses a delayed price (FR39), or no price yet, since
+  either way there is no current price to buy at. buy doesn't check
+  is\_tradable yet, since removing a stock (FR30) isn't built.
+  PriceChangedError's message gives the new price, $c$.price, so the phone can
+  show it and ask the user to confirm again (SEC-29). InsufficientFundsError
+  comes from change\_balance (FR37).
 \end{itemize}
 
 \noindent portfolio\_value(session: Session, portfolio\_id: ID, now: DateTime)
@@ -1679,10 +1712,16 @@ holdings\_value: Decimal, total\_value: Decimal) only reads.
 \begin{itemize}
 \item output: $out := (b, H, s, b + s)$, where $b :=$ get\_balance(session,
   portfolio\_id), $H$ has one entry per holding $h$ of portfolio\_id, in order
-  of symbol, and $s$ is the sum of their values. With $c :=$
+  of symbol, so every reply lists them in the same order, and $s$, the sum
+  of their values, is the portfolio value of FR42, which leaves the cash out.
+  With $c :=$
   get\_current\_price(session, $h$.asset\_id, now), $h$'s entry is (its symbol,
   $h$.quantity, $c$.price, $c$.quoted\_at, $c$.delayed, $h$.quantity $\times$
-  $c$.price). A delayed price is still used, and delayed flags it.
+  $c$.price). A delayed price is still used, since FR42 asks for each stock's
+  most recent price, and delayed flags it, so the phone marks it (FR33). A holding gives quoted\_at,
+  the time delayed is judged by, but not yet obtained\_at, the time FR33 asks
+  to show. No
+  amount needs rounding, since none comes from a division.
 \item exception: None
 \end{itemize}
 
