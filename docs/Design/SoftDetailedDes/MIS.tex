@@ -31,7 +31,6 @@ urlcolor=cyan          % color of external links
 
 \usepackage{array}
 
-\externaldocument{../../SRS/SRS}
 
 \input{../../Comments.text}
 \input{../../Common.text}
@@ -53,8 +52,12 @@ urlcolor=cyan          % color of external links
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 7, 2026 & 1.0 & Davis Lenover: Revision $-1$. 4 Notation, and the MIS of
+Database, Clock, Market Providers, Control, Constants, Market, Trading, Plugins
+and JSON Format.\\
+Nov 9, 2026 & 1.1 & Davis Lenover: the MIS of Users and Wallet, with the reason
+for each decision. 1 to 5: Revision History, Symbols, Introduction, Notation and
+Module Decomposition.\\
 \bottomrule
 \end{tabularx}
 
@@ -62,9 +65,41 @@ Date 2 & 1.1 & Notes\\
 
 \section{Symbols, Abbreviations and Acronyms}
 
-See SRS Documentation at \wss{give url}
+This document uses the terms and acronyms of the
+\href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/SRS-IEEE/SRS.pdf}{SRS}
+(SRS Section~1.4) and its symbolic constants, such as MAX\_DAILY\_CURRENCY
+(SRS Appendix~C). Constants (M7) gives the code their values, which must match
+the SRS. The abbreviations this document uses are:
 
-\wss{Also add any additional symbols, abbreviations or acronyms}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l l}
+\toprule
+\textbf{Symbol} & \textbf{Description}\\
+\midrule
+API & Application Programming Interface\\
+FR & Functional Requirement (SRS), by its printed number\\
+H & Hazard (HA), such as H51\\
+HA & Hazard Analysis\\
+HTTP & Hypertext Transfer Protocol\\
+IANA & Internet Assigned Numbers Authority, which names time zones\\
+ID & Identifier\\
+JSON & JavaScript Object Notation\\
+M & Module (MG), such as M8\\
+MG & Module Guide\\
+MIS & Module Interface Specification\\
+NaN & Not a Number, a Decimal value that is not a number\\
+NFR & Nonfunctional Requirement (SRS)\\
+SEC & Security Requirement (SRS and HA)\\
+SRS & Software Requirements Specification\\
+UC & Use Case (SRS)\\
+URL & Uniform Resource Locator\\
+USD & United States dollar\\
+UTC & Coordinated Universal Time\\
+UUID & Universally Unique Identifier\\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \newpage
 
@@ -76,66 +111,94 @@ See SRS Documentation at \wss{give url}
 
 \section{Introduction}
 
-The following document details the Module Interface Specifications for
-\wss{Fill in your project name and description}
+This document is the Module Interface Specification (MIS) for \progname{}, a
+phone app where physical activity earns virtual currency that the user invests
+in a simulated stock market. \progname{} is two programs: a server, written in
+Python with FastAPI and backed by PostgreSQL, and a phone app, written in React
+Native. The Development Plan (Section~10) gives the reason for each of these
+choices.
 
-Complementary documents include the System Requirement Specifications
-and Module Guide.  The full documentation and implementation can be
-found at \url{...}.  \wss{provide the url for your repo}
+The MIS gives each module's interface: the types, constants and access programs
+it exports, and what each access program does. The Module Guide (MG) says what
+each module hides and why the system is split this way. The Software
+Requirements Specification (SRS) and the Hazard Analysis (HA) say what the
+system must do. Next to each decision, a module's section gives its reason: the
+requirement or hazard it serves, or the design pattern it uses. A later change
+can then be checked against what the decision was for.
+
+This revision specifies the modules of the proof of concept. Modules marked
+\textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
+specified at Revision~0, so that every section describes an interface the code
+really has.
+
+The full documentation and implementation are in the project repository:
+\url{https://github.com/davislenover/BurnNEarn}.
+
+\newpage
 
 \section{Notation}
-
-\wss{You should describe your notation.  You can use what is below as
-  a starting point.}
 
 The structure of the MIS for modules comes from \citet{HoffmanAndStrooper1995},
 with the addition that template modules have been adapted from
 \cite{GhezziEtAl2003}.  The mathematical notation comes from Chapter 3 of
 \citet{HoffmanAndStrooper1995}.  For instance, the symbol := is used for a
 multiple assignment statement and conditional rules follow the form $(c_1
-\Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n )$.
-
-The following table summarizes the primitive data types used by \progname. 
+\Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n )$. The
+table below gives the primitive data types.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.2}
 \noindent 
-\begin{tabular}{l l p{7.5cm}} 
+\begin{tabular}{l l p{9.6cm}} 
 \toprule 
 \textbf{Data Type} & \textbf{Notation} & \textbf{Description}\\ 
 \midrule
-character & char & a single symbol or digit\\
 integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$) \\
 natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$) \\
 real & $\mathbb{R}$ & any number in (-$\infty$, $\infty$)\\
 boolean & $\mathbb{B}$ & a value that is either true or false\\
 string & String & a sequence of characters\\
-decimal & Decimal & an exact decimal number, such as a price or an amount of currency\\
+decimal & Decimal & an exact decimal number, such as a price, so money is never rounded by accident (NFR1)\\
 date & Date & a calendar day, without a time of day\\
-date and time & DateTime & a moment in time, with its time zone\\
+date and time & DateTime & a moment in time with its time zone, so the server, the phone and the market agree on it (FR33, SEC-24)\\
 duration & Duration & a length of time, such as 15 minutes\\
-identifier & ID & a universally unique identifier (UUID)\\
+identifier & ID & a UUID, which the phone can make without the database, such as a trade's request ID (FR38)\\
 \bottomrule
 \end{tabular} 
 \end{center}
 
-\noindent
-The specification of \progname \ uses some derived data types: sequences, strings, and
-tuples. Sequences are lists filled with elements of the same data type. Strings
-are sequences of characters. Tuples contain a list of values, potentially of
-different types. In addition, \progname \ uses functions, which
-are defined by the data types of their inputs and outputs. Local functions are
-described by giving their type signature followed by their specification.
+\noindent \progname{} also uses derived types. A sequence of values of one type
+T is ``seq of T'', a set is ``set of T'', and a tuple, whose values may have
+different types, is ``tuple of (name: T, ...)''. A string is a sequence of
+characters, and a value that may be missing is ``T or None''. A function from
+T1 to T2 is T1 $\rightarrow$ T2, and a local function is given by its type
+signature and then its specification. ``new X'' or X($v$, ...) makes a value
+of type X, $t$.f is the value of field f in tuple $t$, and $p$.f($x$) calls
+access program f of $p$, which the In column leaves out. A type or a constant
+is defined with $=$, a type written \{a, b\} has just the values a and b, and
+$:=$ gives a value in the semantics. There,
+transition says how the state changes, output gives $out$, the value returned,
+and exception gives $exc$, the exception raised. When no case of $exc$ holds,
+nothing is raised.
 
-The sections write these types as follows. A sequence of values of type T is
-``seq of T'', a set is ``set of T'', and a tuple is ``tuple of (name: T,
-...)''. A value that may be missing is ``T or None''. A function from T1 to T2
-is T1 $\rightarrow$ T2. ``new X'' makes a value of type X. A constant is
-defined with $=$, and $:=$ gives a value in the semantics.
+Types such as Session, Plugin and DomainError are exported by a module and
+defined in its section. ValueError is Python's, IntegrityError and
+NoResultFound are SQLAlchemy's, and ValidationError is Pydantic's. In
+an access program table, In gives each input's type in order, separated by
+commas, and - means none. A route is written as its HTTP method and path, such
+as GET /v1/me/balance. Its In column lists what the phone
+sends, and its Exceptions column the refusals it raises, besides the 422 that
+JSON Format (M23) describes for a request that doesn't fit the route's types
+(SEC-25).
+
+\newpage
 
 \section{Module Decomposition}
 
-The following table is taken directly from the Module Guide document for this project.
+The following table is taken directly from the MG. Each section of this
+document keeps its module's MG number, such as Users (M8), so a module can be
+traced between the two documents. Modules marked (app) are in the phone app,
+Constants is in both programs, and the rest are in the server.
 
 \begin{table}[h!]
 \centering
@@ -144,27 +207,44 @@ The following table is taken directly from the Module Guide document for this pr
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-{Hardware-Hiding} & ~ \\
+\multirow{6}{0.3\textwidth}{Hardware-Hiding Module} & M1 Database\\
+& M2 Clock\\
+& M3 Market Providers\\
+& M25 Email Service\textsuperscript{\dag}\\
+& M4 Health Service (app)\\
+& M5 Device Service (app)\\
 \midrule
 
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding} & Input Parameters\\
-& Output Format\\
-& Output Verification\\
-& Temperature ODEs\\
-& Energy Equations\\ 
-& Control Module\\
-& Specification Parameters Module\\
+\multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & M6 Control\\
+& M7 Constants (server and app)\\
+& M8 Users\\
+& M9 Wallet\\
+& M10 Market\\
+& M11 Activity\\
+& M12 Trading\\
+& M13 Goals\textsuperscript{\dag}\\
+& M14 Learning\textsuperscript{\dag}\\
+& M15 Social\textsuperscript{\dag}\\
+& M16 Scenarios\textsuperscript{\dag}\\
+& M17 Privacy\textsuperscript{\dag}\\
+& M18 Navigation (app)\\
+& M19 Screens (app)\\
+& M20 Sync Service (app)\\
+& M21 Reminder Service (app)\textsuperscript{\dag}\\
 \midrule
 
-\multirow{3}{0.3\textwidth}{Software Decision} & {Sequence Data Structure}\\
-& ODE Solver\\
-& Plotting\\
+\multirow{3}{0.3\textwidth}{Software Decision Module} & M22 Plugins\\
+& M23 JSON Format\\
+& M24 API Service (app)\\
 \bottomrule
 
 \end{tabular}
 \caption{Module Hierarchy}
 \label{TblMH}
 \end{table}
+
+\noindent Modules marked \textsuperscript{\dag} are built after the proof of
+concept and are specified at Revision~0.
 
 \newpage
 
