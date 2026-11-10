@@ -183,7 +183,8 @@ nothing is raised.
 
 Types such as Session, Plugin and DomainError are exported by a module and
 defined in its section. ValueError is Python's, IntegrityError and
-NoResultFound are SQLAlchemy's, and ValidationError is Pydantic's. In
+NoResultFound are SQLAlchemy's, ValidationError is Pydantic's, and
+RequestValidationError is FastAPI's. In
 an access program table, In gives each input's type in order, separated by
 commas, and - means none. A route is written as its HTTP method and path, such
 as GET /v1/me/balance. Its In column lists what the phone
@@ -268,7 +269,10 @@ dropped by rollback or close.
 \medskip
 
 \noindent Base: the type every module defines its own tables on. Every
-timestamp keeps its time zone.
+timestamp is stored as a moment (timestamptz), not as a time without a zone,
+so a stored time and the current time compare correctly, such as for a
+price's age (FR33). It may come back in a different time zone than it was
+saved in.
 
 \medskip
 \noindent A table holds one kind of thing, such as assets. It has a row for
@@ -356,27 +360,35 @@ module is first loaded.
 \medskip
 
 \noindent DATABASE\_URL: String, the database to connect to, read from the
-environment or .env.
+environment or .env, so tests can use their own database and a deployed
+server's password stays out of the repository (HA~H45). Without one, it is the
+local database that compose.yaml starts.
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
 \item The migrations are applied before the server starts.
 \item Each module owns its tables. It never reads or writes another module's
-  tables, though it may have a foreign key into them.
-\item Only routes commit, at most once per request. A route is the function in
-  a module's routes.py that answers one HTTP request, such as GET /v1/assets in
+  tables, though it may have a foreign key into them. So a module can change
+  its tables without changing any other, as long as it keeps the keys other
+  modules point to, and no other module can break their
+  rules by accident.
+\item A route commits at most once per request. A route is the function in a
+  module's routes.py that answers one HTTP request, such as GET /v1/assets in
   Market (M10). To commit is to save a session's changes to the database for
-  good.
+  good. Code that answers no request commits once per piece of work: the price
+  poller in Market once per poll, and the seed script
+  (app/scripts/seed\_demo.py) once per run.
 \end{itemize}
 
 \noindent The commit rule works like this. The code a route calls, in its own
-module or another, changes the session but never commits. The route commits
-once, after every step has succeeded. If a step refuses the request or fails,
-the route does not commit, so nothing is saved. So everything one request
-changes, such as a buy's payment and its new shares, is saved together or not
-at all. The price poller in Market (M10) is the one exception: it answers no
-request, so it commits once per poll.
+module or another, changes the session but never commits. A route that changes
+anything commits once, after every step has succeeded. If a step refuses the
+request or fails, the route does not commit, so nothing is saved. So everything
+one request changes, such as a buy's payment and its new shares, is saved
+together or not at all (FR37, NFR6). The poller and the seed script make their
+own session with SessionLocal, since no request gives them one, and the code
+they call never commits either.
 
 \subsubsection{Access Routine Semantics}
 
@@ -392,8 +404,8 @@ request, so it commits once per poll.
 \item transition: when the request ends, the session is closed and anything
   the route did not commit is dropped.
 \item output: $out :=$ SessionLocal(), a session for one request alone. Routes
-  ask for it as a dependency, so a test can replace get\_db with a session whose
-  changes are undone after the test.
+  ask for it by dependency injection, so a test can replace get\_db with a
+  session whose changes are undone after the test.
 \item exception: None. The session raises OperationalError, a kind of
   SQLAlchemyError, at its first use if the database cannot be reached.
 \end{itemize}
@@ -419,6 +431,10 @@ None
 \subsubsection{Exported Types}
 
 Clock = () $\rightarrow$ DateTime, a function that returns the current time.
+Routes and background work are handed a Clock instead of reading the system
+time (dependency injection), so a test can set the time for each rule that
+depends on it: market hours, when a price is delayed or too old to trade
+(FR33, FR39), and, once Activity (M11) is built, the user's date (SEC-24).
 
 \subsubsection{Exported Constants}
 
@@ -453,8 +469,7 @@ The server's operating system clock has these properties:
 \begin{itemize}
 \item It is synchronized to Coordinated Universal Time (UTC) by the Network
   Time Protocol, and stays within 1 second of UTC. That is close enough, since
-  market hours, the price staleness limit and the server's date (SEC-24 in the
-  SRS) all work in whole minutes or more.
+  every rule that depends on the time works in whole minutes or more.
 \item It is not monotonic. A sync can move it back slightly, so a later call
   can return an earlier time. That does no harm. Its times are stored and
   compared with other stored times and with market hours, and nothing uses it
@@ -465,15 +480,19 @@ The server's operating system clock has these properties:
 
 \noindent system\_clock():
 \begin{itemize}
-\item output: $out := $ osTime in UTC, to the microsecond
+\item output: $out := $ osTime in UTC, to the microsecond. UTC is the same
+  whatever zone the server is set to and has no daylight saving time, so
+  taking a Duration from it gives the time exactly that long ago. Market (M10)
+  turns it into New York time for market hours.
 \item exception: None
 \end{itemize}
 
 \noindent get\_clock():
 \begin{itemize}
 \item output: $out := $ system\_clock. The output is the function itself, not
-  a time. Routes call it to read the current time, so a test can replace
-  get\_clock with a Clock that always returns a fixed time.
+  a time. Routes ask for get\_clock as a dependency and call the Clock it
+  gives. A test replaces get\_clock so it gives a Clock that always returns a
+  fixed time.
 \item exception: None
 \end{itemize}
 
@@ -631,12 +650,12 @@ Control (M6 in the MG)
 
 \subsection{Uses}
 
-Database (M1), Users (M8), Wallet (M9), Market (M10), Activity (M11), Trading
-(M12), Plugins (M22), JSON Format (M23)
+Database (M1), Users (M8), Wallet (M9), Market (M10), Trading (M12), Plugins
+(M22), JSON Format (M23)
 
 \medskip
-\noindent For now PLUGINS holds only Market (M10). The others are added as they
-are built.
+\noindent The MG also lists Activity (M11) and Goals (M13) to Privacy (M17).
+Each is added to PLUGINS once it is built.
 
 \subsection{Syntax}
 
@@ -646,9 +665,12 @@ None
 
 \subsubsection{Exported Constants}
 
-\noindent PLUGINS: seq of Plugin $=$ $\langle$PLUGIN of Market (M10)$\rangle$,
-the PLUGIN of each module in the server, in the order their background work
-starts. Listing a module here is also how database migrations find its tables.
+\noindent PLUGINS: seq of Plugin $=$ $\langle$PLUGIN of Users (M8), PLUGIN of
+Wallet (M9), PLUGIN of Market (M10), PLUGIN of Trading (M12)$\rangle$, the
+PLUGIN of each module in the server, in the order their background work
+starts. Only this list, in app/registry.py, names the modules (the plug-in
+pattern), so adding a module never changes create\_app. Listing a module here
+is also how database migrations find its tables.
 
 \subsubsection{Exported Access Programs}
 
@@ -677,9 +699,9 @@ None
 
 \subsubsection{Assumptions}
 
-No two plug-ins in PLUGINS share a name, and no two routes share a method and
-path. Each plug-in's lifespan and health check follow the rules in Plugins
-(M22).
+No two plug-ins in PLUGINS share a name, since GET /v1/health shows each
+module's health by its name. No two routes share a method and path. Each
+plug-in's lifespan and health check follow the rules in Plugins (M22).
 
 \subsubsection{Access Routine Semantics}
 
@@ -688,28 +710,34 @@ path. Each plug-in's lifespan and health check follow the rules in Plugins
 \item output: $out :=$ a new App that serves GET /v1/health, which reports
   the health of each plug-in in \textit{plugins}, and the routes of
   each plug-in in \textit{plugins}, all under /v1, plus the API docs at /docs.
-  It answers any DomainError a route raises with handle\_domain\_error, and
-  runs lifespan when it starts and shuts down. \textit{plugins} is PLUGINS when
-  none are given.
+  The version in the path lets the phone app and the API change separately
+  later. It answers any DomainError a route raises with handle\_domain\_error,
+  and a request that doesn't fit a route's types with
+  handle\_validation\_error, both from JSON Format (M23). It runs lifespan
+  when it starts and shuts down. \textit{plugins} is PLUGINS when none are
+  given. A test passes its own to build a smaller app.
 \item exception: None
 \end{itemize}
 
-\noindent GET /v1/health():
+\noindent GET /v1/health() needs no signed-in user, so the team can check the server
+without an account.
 \begin{itemize}
 \item output: $out :=$ (status: $s$, database: $d$, modules: $m$), where
   \begin{itemize}
   \item $d :=$ (a query to the database succeeds $\Rightarrow$ ``ok'' $|$ it
     fails $\Rightarrow$ ``unavailable'')
   \item for each plug-in $p$ of the App with a health check, $m(p$.name$) :=$
-    ($p$.health() raises an error $\Rightarrow$ (\mbox{``degraded''}, ``health
-    check failed''), and the error is logged $|$ otherwise $\Rightarrow$
-    $p$.health()). A plug-in without a health check is left out of $m$.
+    ($p$.health() raises an error or does not return a ModuleHealth
+    with status ``ok'' or \mbox{``degraded''} $\Rightarrow$ (\mbox{``degraded''}, ``health check failed''), and the error
+    is logged $|$ otherwise $\Rightarrow$ $p$.health()), so one broken check
+    can't break the whole route. A plug-in without a health check is left out
+    of $m$.
   \item $s :=$ ($d =$ ``ok'' $\land$ every status in $m$ is ``ok''
     $\Rightarrow$ ``ok'' $|$ otherwise $\Rightarrow$ ``degraded'')
   \end{itemize}
   The reply has HTTP status 503 when $d$ is ``unavailable'', since nothing
-  works without the database, and 200 otherwise, even when a module is
-  degraded.
+  works without the database. It is 200 otherwise, even when a module is
+  degraded, since the rest of the API still works.
 \item exception: None
 \end{itemize}
 
@@ -726,18 +754,6 @@ builds, made from its \textit{plugins}.
   start, the ones already started still stop.
 \item exception: $exc :=$ (a lifespan raises an error $\mathit{err}$ while it
   starts $\Rightarrow$ $\mathit{err}$). $a$ does not start.
-\end{itemize}
-
-\medskip
-\noindent handle\_domain\_error: DomainError $\rightarrow$ tuple of (status:
-$\mathbb{N}$, body: Refusal), the reply sent when a route raises a DomainError.
-
-\medskip
-\noindent handle\_domain\_error($e$):
-\begin{itemize}
-\item output: $out :=$ (status: $e$.status, body: the Refusal of $e$ in JSON
-  Format (M23))
-\item exception: None
 \end{itemize}
 
 \newpage
@@ -759,14 +775,20 @@ None
 {\raggedright
 ActivityType = \{STEPS, WHEELCHAIR\_PUSHES, CYCLING, SWIMMING, OTHER\_WORKOUT\},
 the supported activity types (SUPPORTED\_ACTIVITY\_TYPES in SRS Appendix C).
-Each value is also a String, its name in lower case, such as ``steps''.\par}
+Each value is also a String, its name in lower case, such as ``steps'', so the
+daily totals the phone sends (SEC-24) can name their type in JSON and the
+database can store it as text, once Activity (M11) is built.\par}
 
 \subsubsection{Exported Constants}
 
-Names and values match SRS Appendix C. EARNING\_RATES($t$) is the amount of
-activity type $t$ that earns one unit of virtual currency ($u_t$ in SRS
-Section~6.7). Decimal amounts are in virtual currency. The phone app's copy,
-once written, must hold the same values.
+Names and values match SRS Appendix C. Each program keeps them in one file,
+on the server app/core/\allowbreak constants.py, so each value is easy to find and to
+trace back to the SRS. EARNING\_RATES($t$) is the amount of activity type $t$
+that earns one unit of virtual currency ($u_t$ in SRS Section~6.7). Decimal
+amounts are in virtual currency. The phone app's copy, once written, must hold
+the same values and ActivityType text, since the phone applies some of them
+itself, such as reading the last SYNC\_LOOKBACK\_PERIOD of activity on each
+sync (SEC-20).
 
 \begin{longtable}{p{6cm} p{3.4cm} >{\raggedright\arraybackslash}p{5.4cm}}
 \toprule
@@ -1610,7 +1632,9 @@ None
 
 \noindent Plugin = tuple of (name: String, router: Router or None, lifespan:
 Lifespan or None, health: HealthCheck or None), a record of what one module adds
-to the server. It cannot be changed once built.
+to the server. create\_app of Control (M6) depends on this record alone, never
+on a module (the plug-in pattern). It cannot be changed once built, so the
+check in new Plugin still holds when Control reads it.
 \begin{itemize}
 \item name: the module's folder name, such as ``market''.
 \item router: the module's routes, which Control (M6) adds under /v1.
@@ -1709,7 +1733,10 @@ None
 \subsubsection{Exported Types}
 
 \noindent Money = Decimal, an amount, such as a price. It is sent to the phone
-as a JSON string with exactly four decimals (see \_to\_text).
+as a JSON string with exactly four decimals (see \_to\_text), not as a JSON
+number, since the phone would read a number as a float, which can't hold most
+decimals exactly. Four decimals keep any rounding far below
+VALUE\_TOLERANCE (NFR1).
 
 \medskip
 \noindent DomainError = tuple of (code: String, message: String, status:
@@ -1722,15 +1749,20 @@ can also set its own message and status.
 
 \medskip
 \noindent Refusal = tuple of (detail: tuple of (code: String, message:
-String)), the JSON body Control (M6) sends, with HTTP status $e$.status, for
-every DomainError $e$ a route raises:
+String)), the JSON body handle\_domain\_error sends, with HTTP status
+$e$.status, for every DomainError $e$ a route raises, so the phone handles
+every module's refusals the same way:
 
 \begin{center}
 \verb|{"detail": {"code": e.code, "message": e.message}}|
 \end{center}
 
-\noindent FastAPI itself refuses a request that does not fit a route's types
-with status 422, in its own shape.
+\noindent A request that doesn't fit a route's types, such as an amount with
+over 4 decimals, never reaches the route. FastAPI raises a
+RequestValidationError, its own type, which holds a FieldError for each field
+that doesn't fit. A FieldError, in FastAPI's shape, says what is wrong (type and msg, plus ctx
+for some) and where (loc). FastAPI also keeps the value sent with each one
+(input), which handle\_validation\_error leaves out.
 
 \subsubsection{Exported Constants}
 
@@ -1739,13 +1771,24 @@ None
 \subsubsection{Exported Access Programs}
 
 \begin{center}
-\begin{tabular}{p{3.4cm} p{4.6cm} p{2.4cm} p{2.9cm}}
+% Small, with less space between columns, so the replies fit their column.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.0cm}
+  >{\raggedright\arraybackslash}p{4.1cm}
+  >{\raggedright\arraybackslash}p{4.8cm}
+  >{\raggedright\arraybackslash}p{2.7cm}}
 \toprule
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \midrule
-new Money & Decimal, $\mathbb{Z}$, $\mathbb{R}$ or String & Money &
+new Money & Decimal or $\mathbb{Z}$ or $\mathbb{R}$ or String & Money &
   ValidationError \\
 new DomainError & String or None & DomainError & - \\
+handle\_domain\_error & DomainError & tuple of (status: $\mathbb{N}$, body:
+  Refusal) & - \\
+handle\_validation\_error & RequestValidationError & tuple of (status:
+  $\mathbb{N}$, body: tuple of (detail: seq of FieldError, each without its
+  input)) & - \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1773,7 +1816,8 @@ in a Money field.
 \item output: $out := $ the Decimal that amount names
 \item exception: $exc := $ (amount is not a finite number, or cannot be
   written exactly with four decimals $\Rightarrow$ ValidationError). It is
-  refused, never rounded.
+  refused, never rounded, so no amount, such as the price a user confirmed,
+  is changed quietly.
 \end{itemize}
 
 \noindent new DomainError(message):
@@ -1781,7 +1825,24 @@ in a Money field.
 \item output: $out :=$ (code: $k$.code, message: (message $\neq$ None
   $\Rightarrow$ message $|$ message $=$ None $\Rightarrow$ $k$.message),
   status: $k$.status), where $k$ is the kind of DomainError being made and
-  message is None when left out
+  message is None when left out. A refusal is given a message when it needs
+  details, such as PriceChangedError of Trading (M12), which gives the new
+  price (SEC-29).
+\item exception: None
+\end{itemize}
+
+\noindent handle\_domain\_error($e$):
+\begin{itemize}
+\item output: $out :=$ (status: $e$.status, body: the Refusal of $e$)
+\item exception: None
+\end{itemize}
+
+\noindent handle\_validation\_error($e$):
+\begin{itemize}
+\item output: $out :=$ (status: 422, body: (detail: the FieldErrors of $e$,
+  each without its input)), the reply FastAPI's own handler sends, but without
+  the values the phone sent. Some can't be written as JSON, such as NaN in a
+  body, and sending one back would turn the 422 (SEC-25) into a 500.
 \item exception: None
 \end{itemize}
 
@@ -1791,7 +1852,7 @@ in a Money field.
 
 \noindent \_to\_text($m$) $:=$ $m$ with exactly four digits after the decimal
 point, such as ``84.0000'' for 84. A zero is always ``0.0000'', never
-``-0.0000''.
+``-0.0000'', since a minus sign marks a loss (FR44).
 
 \newpage
 
