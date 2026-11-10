@@ -3,6 +3,7 @@
 import json
 from datetime import UTC, datetime
 from decimal import Decimal
+from typing import ClassVar
 
 import httpx2
 from pydantic import SecretStr
@@ -16,8 +17,6 @@ from app.market.providers.base import (
 )
 
 FINNHUB_BASE_URL = "https://finnhub.io/api/v1"
-# The free plan allows this many calls a minute. More are refused with 429.
-FINNHUB_CALLS_PER_MINUTE = 60
 
 
 class FinnhubProvider(MarketDataProvider):
@@ -26,6 +25,10 @@ class FinnhubProvider(MarketDataProvider):
     The API key goes in a request header rather than the URL, so it never
     appears in logged URLs or error messages (HA SEC-33).
     """
+
+    # The free plan allows this many calls a minute. More are refused with
+    # 429.
+    calls_per_minute: ClassVar[int | None] = 60
 
     def __init__(
         self, api_key: SecretStr, client: httpx2.Client | None = None

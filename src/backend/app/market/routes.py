@@ -12,7 +12,11 @@ from app.core.db import get_db
 from app.core.money import Money
 from app.market.calendar import NEW_YORK
 from app.market.models import Asset, ProviderRequest
-from app.market.providers.finnhub import FINNHUB_CALLS_PER_MINUTE
+from app.market.providers import provider_type
+from app.market.providers.settings import (
+    ProviderSettings,
+    get_provider_settings,
+)
 from app.market.queries import get_current_price, is_market_open
 
 router = APIRouter(tags=["market"])
@@ -38,7 +42,8 @@ class Usage(BaseModel):
     calls_last_minute: int
     busiest_minute_today: int
     calls_today: int
-    limit_per_minute: int
+    # The chosen provider's limit, or None if it has none, such as the fake.
+    limit_per_minute: int | None
 
 
 @router.get("/assets")
@@ -69,10 +74,12 @@ def list_assets(
 
 @router.get("/market/usage")
 def provider_usage(
-    db: Session = Depends(get_db), clock: Clock = Depends(get_clock)
+    db: Session = Depends(get_db),
+    clock: Clock = Depends(get_clock),
+    settings: ProviderSettings = Depends(get_provider_settings),
 ) -> Usage:
     """How many calls the server made to the market data provider, to check
-    it stays under the free plan's limit (SC_MarketData)."""
+    it stays under the chosen provider's limit (SC_MarketData)."""
     now = clock()
     # "Today" is the New York calendar day, the market's day.
     start_of_day = datetime.combine(
@@ -99,5 +106,5 @@ def provider_usage(
         calls_last_minute=last_minute or 0,
         busiest_minute_today=busiest or 0,
         calls_today=calls_today or 0,
-        limit_per_minute=FINNHUB_CALLS_PER_MINUTE,
+        limit_per_minute=provider_type(settings).calls_per_minute,
     )
