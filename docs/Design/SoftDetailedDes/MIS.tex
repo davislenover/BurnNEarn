@@ -756,19 +756,23 @@ Users (M8 in the MG)
 
 \subsection{Uses}
 
-Database (M1), Plugins (M22), JSON Format (M23). The MG also lists Clock (M2)
-and Constants (M7), which sign-up uses at Revision~0.
+Database (M1), Plugins (M22), JSON Format (M23). The MG also lists Clock (M2),
+Constants (M7) and Email Service (M25), for sign-up, sign-in, sessions and the
+password reset link (FR6) at Revision~0.
 
 \subsection{Syntax}
 
 \subsubsection{Exported Types}
 
 \noindent CurrentUser = tuple of (user\_id: ID), a read-only copy of the user a
-request comes from.
+request comes from. Routes get it from get\_current\_user, never from the
+request, so the phone can't act as another user (SEC-15).
 
 \medskip
 \noindent NotAuthenticatedError, a DomainError with code
 ``not\_authenticated'', status 401 and the message ``Sign in to continue.''
+It refuses a request with no signed-in user (SEC-15). Status 401 is HTTP's
+status for that, so the phone can tell it apart from other refusals.
 
 \subsubsection{Exported Constants}
 
@@ -777,11 +781,15 @@ proof of concept's one built-in user. It is fixed, so the seed script and
 get\_current\_user always agree on who it is.
 
 \medskip
-\noindent DEFAULT\_TIME\_ZONE: String $=$ ``America/Toronto''
+\noindent DEFAULT\_TIME\_ZONE: String $=$ ``America/Toronto'', the team's own,
+for a user made without one, such as the demo user. At Revision~0, sign-up
+sends the phone's time zone instead.
 
 \medskip
 \noindent PLUGIN: Plugin $=$ (name: ``users'', router: None, lifespan: None,
-health: None). Users has no routes yet.
+health: None). Users has no routes yet. It is a plug-in anyway, so the sign-up
+and sign-in routes of Revision~0 (FR1, FR4) are added here without changing
+Control (M6).
 
 \subsubsection{Exported Access Programs}
 
@@ -805,44 +813,51 @@ create\_user & Session, ID or None, String & ID & ValueError, IntegrityError \\
 
 \noindent users: set of tuple of (user\_id: ID, time\_zone: String,
 created\_at: DateTime), every user, with each user\_id once. time\_zone is an
-IANA time zone name, such as America/Toronto. Nothing reads it yet. Activity
-(M11) counts each day in the time zone the phone sends with each sync.
+IANA time zone name. Nothing reads it yet. It is kept
+because the server needs the user's date to refuse a daily total dated in the
+future (SEC-24, HA~H51). The phone, not the server, puts each activity record
+on its day (SEC-23).
 
 \subsubsection{Environment Variables}
 
-\noindent DEMO\_USER\_ENABLED: $\mathbb{B}$, default false, makes every request
-that needs a user come from the demo user. It is read once per process.
+\noindent DEMO\_USER\_ENABLED: $\mathbb{B}$, read once per process, makes every
+request that needs a user come from the demo user. It is off by default, so a
+server not set up for the demo refuses them (SEC-15).
 
 \subsubsection{Assumptions}
 
 \begin{itemize}
 \item The seed script (app/scripts/seed\_demo.py) makes the demo user, and its
   live portfolio in Wallet (M9), before a route needs them. get\_current\_user
-  does not check that the user exists.
+  does not check that the user exists, so it needs no database query.
 \end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent get\_current\_user():
 \begin{itemize}
-\item output: $out :=$ CurrentUser(DEMO\_USER\_ID). Routes ask for it as a
-  dependency, so the phone never sends a user ID, and a test can replace it to
-  pick the user. Sign-in at Revision~0 only changes how it finds the user.
+\item output: $out :=$ CurrentUser(DEMO\_USER\_ID). Routes ask for it by
+  dependency injection, so the phone never sends a user ID, and a test can
+  replace it to pick the user. At Revision~0 it finds the user from the session
+  token instead, so no route changes.
 \item exception: $exc :=$ ($\neg$DEMO\_USER\_ENABLED $\Rightarrow$
   NotAuthenticatedError)
 \end{itemize}
 
 {\raggedright
 \noindent create\_user(session, user\_id, time\_zone). Unless they are given,
-user\_id is None and time\_zone is DEFAULT\_TIME\_ZONE.\par}
+user\_id is None and time\_zone is DEFAULT\_TIME\_ZONE. A caller can give
+user\_id so the seed script can make the demo user with DEMO\_USER\_ID.\par}
 \begin{itemize}
 \item transition: users $:=$ users $\cup \{(u$, time\_zone, the database's
-  time$)\}$, where $u :=$ user\_id if it is given, else a new ID. It flushes but
-  never commits.
+  time$)\}$, where $u :=$ user\_id if it is given, else a new ID. It flushes,
+  so the database makes the new ID, but never commits, so the caller can add
+  the user's live portfolio and commit both together.
 \item output: $out := u$
 \item exception: $exc :=$ (time\_zone is not an IANA time zone name
   $\Rightarrow$ ValueError $|$ some user already has user\_id $\Rightarrow$
-  IntegrityError). A ValueError is raised before anything changes.
+  IntegrityError). A bad time zone is refused before anything changes,
+  since it would break finding the user's date (SEC-24).
 \end{itemize}
 
 \subsubsection{Local Functions}
@@ -866,23 +881,32 @@ Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
 \subsubsection{Exported Types}
 
 \noindent BalanceChangeReason $=$ \{activity\_reward, trade\_purchase\}, why a
-balance changed.
+balance changed. Every change keeps its reason (SEC-22), and the database
+refuses any other. There is no reason for a sale yet, since the proof of
+concept only buys. Selling (FR36) comes at Revision~0. Nothing pays a reward
+yet either. That reason is there for Activity (M11), and tests use it to give
+a portfolio currency to spend.
 
 \medskip
+{\raggedright
 \noindent LockedPortfolio = tuple of (portfolio\_id: ID, user\_id: ID), the
-read-only proof that a portfolio is locked. Only lock\_live\_portfolio makes
-one, and change\_balance asks for one, so changing a balance without locking it
-first is hard to do by accident.
+read-only token that lock\_live\_portfolio returns (a lock token).
+change\_balance asks for one, so changing a balance without locking it first is
+hard to do by accident. Nothing checks where one came from.\par}
 
 \medskip
 {\raggedright
 \noindent BalanceChangeReceipt = tuple of (balance\_change\_id: ID, amount:
-Decimal, cash\_balance\_after: Decimal), a read-only copy of one change.\par}
+Decimal, cash\_balance\_after: Decimal), a read-only copy of one change, so a
+caller can't change the record through it (SEC-22). Trading (M12) keeps the change's ID with
+each trade, so each trade points at the payment for it.\par}
 
 \medskip
 \noindent InsufficientFundsError, a DomainError with code
 ``insufficient\_funds'', status 409 and the message ``You don't have enough
-currency for this.''
+currency for this.'' It refuses a purchase that costs more than the balance
+(FR37). Status 409 says the request was understood but conflicts with the
+balance now.
 
 \subsubsection{Exported Constants}
 
@@ -924,19 +948,22 @@ NotAuthenticatedError \\
 \noindent portfolios: set of tuple of (portfolio\_id: ID, user\_id: ID,
 cash\_balance: Decimal, scenario\_id: ID or None, created\_at: DateTime). A
 portfolio is live when its scenario\_id is None, and each user has at most one
-live portfolio. Every cash\_balance is 0 or more.
+live portfolio. Every cash\_balance is 0 or more (FR37).
 
 \medskip
 \noindent changes: set of tuple of (balance\_change\_id: ID, portfolio\_id: ID,
 amount: Decimal, reason: BalanceChangeReason, activity\_date: Date or None,
 created\_at: DateTime), every change to a balance, never edited. Each amount is
-not 0. It is above 0 exactly when the reason is activity\_reward, and the
+not 0, since a change of 0 would add a record without changing the balance. It
+is above 0 exactly when the reason is activity\_reward, so a missing
+minus sign can't turn a purchase into free currency, and the
 change has an activity\_date, the day of activity it pays for, exactly when the
 reason is activity\_reward.
 
 \medskip
 \noindent Every amount and balance has at most 4 decimals and 12 digits before
-the point. For every portfolio $p$, $p$.cash\_balance is the sum of the amounts
+the point. Four decimals match Money (M23) and keep rounding far below
+VALUE\_TOLERANCE (NFR1). For every portfolio $p$, $p$.cash\_balance is the sum of the amounts
 of its changes (SEC-22). The database does not check this sum. change\_balance
 keeps it true, since it is the only routine that changes a cash\_balance, and it
 adds the change in the same transaction. Deleting a portfolio deletes its
@@ -968,7 +995,9 @@ of user\_id:
 \begin{itemize}
 \item transition: $p$ is locked until session's transaction ends. Until
   then, a call for $p$ from another session waits, and it then sees what the
-  first one saved.
+  first one saved. Taking turns keeps what a request reads after the lock
+  true until it commits, such as whether its request ID was used
+  (FR38) or what a day's rewards have paid (SEC-19, FR18).
 \item output: $out :=$ LockedPortfolio($p$.portfolio\_id, user\_id)
 \item exception: $exc :=$ (user\_id has no live portfolio $\Rightarrow$
   NoResultFound)
@@ -980,7 +1009,9 @@ locked.portfolio\_id:
 \begin{itemize}
 \item transition: $p$.cash\_balance $:= p$.cash\_balance $+$ amount, and changes
   $:=$ changes $\cup \{(c$, $p$.portfolio\_id, amount, reason, activity\_date,
-  the database's time$)\}$ with $c$ a new ID. It flushes but never commits.
+  the database's time$)\}$ with $c$ a new ID. Adding the change with the new
+  balance keeps the balance equal to the sum of its changes (SEC-22). It
+  flushes, so the database makes $c$, but never commits.
 \item output: $out :=$ BalanceChangeReceipt($c$, amount, $p$.cash\_balance
   after the change)
 \item exception: the first of these that holds is raised, before anything
@@ -994,26 +1025,31 @@ locked.portfolio\_id:
   \hspace*{1em}$|$ activity\_date is a DateTime $\Rightarrow$ ValueError\\
   \hspace*{1em}$|$ $p$.cash\_balance $+$ amount $< 0$ $\Rightarrow$
   InsufficientFundsError$)$\\
-  A ValueError means the calling code is wrong. It is not a refusal the phone
-  sees. In Python a DateTime is also a Date, so one can arrive where a Date is
-  expected. A balance never goes below 0, even if the caller skipped the lock,
+  A ValueError means the calling code is wrong, not a refusal the phone sees.
+  An amount with over 4 decimals is refused, not rounded, since the database
+  would round it quietly. A DateTime, which Python also counts as a Date, is
+  refused, since its day depends on the time zone it is read in, so the same
+  activity could be paid on two days (SEC-19). A balance never goes below 0, even if the caller skipped the lock,
   since the change and the check are one database statement.
 \end{itemize}
 
 \noindent create\_live\_portfolio(session, user\_id):
 \begin{itemize}
 \item transition: portfolios $:=$ portfolios $\cup \{(q$, user\_id, 0, None, the
-  database's time$)\}$ with $q$ a new ID. It flushes but never commits.
+  database's time$)\}$ with $q$ a new ID. It starts at 0, since it has no
+  changes yet (SEC-22), and is kept apart from any scenario's (SEC-31). It flushes, so the database makes $q$, but never
+  commits.
 \item output: $out := q$
-\item exception: $exc :=$ (user\_id is not a user of Users (M8), or already has
-  a live portfolio $\Rightarrow$ IntegrityError)
+\item exception: $exc :=$ (user\_id is not in Users (M8) or already has a live
+  portfolio $\Rightarrow$ IntegrityError)
 \end{itemize}
 
 \noindent delete\_portfolio(session, portfolio\_id):
 \begin{itemize}
 \item transition: the portfolio with portfolio\_id, its changes, and other
-  modules' rows that point at it with ON DELETE CASCADE are removed, in one
-  statement. It never commits.
+  modules' rows that point at it with ON DELETE CASCADE are removed in one
+  statement, so nothing is left pointing at it. The seed script uses it to
+  restart the demo. It never commits.
 \item exception: None
 \end{itemize}
 
@@ -1027,7 +1063,8 @@ locked.portfolio\_id:
 \noindent get\_balance(session, portfolio\_id):
 \begin{itemize}
 \item output: $out :=$ the cash\_balance of the portfolio with portfolio\_id,
-  including changes session has made but not committed
+  including changes session has made but not committed, so a route sees its
+  own change before it commits
 \item exception: $exc :=$ (no portfolio has portfolio\_id $\Rightarrow$
   NoResultFound)
 \end{itemize}
@@ -1035,18 +1072,21 @@ locked.portfolio\_id:
 \noindent activity\_paid(session, portfolio\_id, activity\_date):
 \begin{itemize}
 \item output: $out :=$ the sum of the amounts of the changes with
-  portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0 if there
-  are none. A step sync uses it to pay only the difference.
+  portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0.
+  Nothing calls it yet. A step sync in Activity (M11) will use it to pay only
+  the difference, so no activity is paid twice (SEC-19) or past the daily cap
+  (FR18).
 \item exception: $exc :=$ (activity\_date is a DateTime $\Rightarrow$
-  ValueError)
+  ValueError), as in change\_balance
 \end{itemize}
 
 \noindent GET /v1/me/balance() takes session from get\_db of Database (M1)
 and the user $u :=$ get\_current\_user() of Users (M8).
 \begin{itemize}
 \item output: $out :=$ (cash\_balance: $b$), where $b$ is get\_balance(session,
-  $q$) as Money, and $q$ is live\_portfolio\_id(session, $u$.user\_id). It only
-  reads, so it does not lock or commit.
+  $q$) as Money, and $q$ is live\_portfolio\_id(session, $u$.user\_id). The
+  phone shows it, since rewards add to it (UC2) and a purchase can't cost more
+  (FR37). It only reads, so it doesn't lock or commit.
 \item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user, with
   status 401
 \end{itemize}
