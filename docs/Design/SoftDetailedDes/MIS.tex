@@ -31,7 +31,6 @@ urlcolor=cyan          % color of external links
 
 \usepackage{array}
 
-\externaldocument{../../SRS/SRS}
 
 \input{../../Comments.text}
 \input{../../Common.text}
@@ -53,8 +52,15 @@ urlcolor=cyan          % color of external links
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 7, 2026 & 1.0 & Davis Lenover: Revision $-1$. 4 Notation, and the MIS of
+Database, Clock, Market Providers, Control, Constants, Market, Trading, Plugins
+and JSON Format.\\
+Nov 9, 2026 & 1.1 & Davis Lenover: the MIS of Users and Wallet, with the reason
+for each decision. 1 to 5: Revision History, Symbols, Introduction, Notation and
+Module Decomposition.\\
+Nov 10, 2026 & 1.2 & Davis Lenover: the reason for each decision in every other
+server module, Market Providers as a template module, error handlers in JSON
+Format, and the 401 on both Trading routes.\\
 \bottomrule
 \end{tabularx}
 
@@ -62,9 +68,42 @@ Date 2 & 1.1 & Notes\\
 
 \section{Symbols, Abbreviations and Acronyms}
 
-See SRS Documentation at \wss{give url}
+This document uses the terms and acronyms of the
+\href{https://github.com/davislenover/BurnNEarn/blob/main/pdfs/SRS-IEEE/SRS.pdf}{SRS}
+(SRS Section~1.4) and its symbolic constants, such as MAX\_DAILY\_CURRENCY
+(SRS Appendix~C). Constants (M7) gives the code their values, which must match
+the SRS. The abbreviations this document uses are:
 
-\wss{Also add any additional symbols, abbreviations or acronyms}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l l}
+\toprule
+\textbf{Symbol} & \textbf{Description}\\
+\midrule
+API & Application Programming Interface\\
+FR & Functional Requirement (SRS), by its printed number\\
+H & Hazard (HA), such as H51\\
+HA & Hazard Analysis\\
+HTTP & Hypertext Transfer Protocol\\
+IANA & Internet Assigned Numbers Authority, which names time zones\\
+ID & Identifier\\
+JSON & JavaScript Object Notation\\
+LC & Likely Change (SRS), such as LC3\\
+M & Module (MG), such as M8\\
+MG & Module Guide\\
+MIS & Module Interface Specification\\
+NaN & Not a Number, a Decimal value that is not a number\\
+NFR & Nonfunctional Requirement (SRS)\\
+SC & System Constraint (SRS), such as SC4\\
+SEC & Security Requirement (SRS and HA)\\
+SRS & Software Requirements Specification\\
+URL & Uniform Resource Locator\\
+USD & United States dollar\\
+UTC & Coordinated Universal Time\\
+UUID & Universally Unique Identifier\\
+\bottomrule
+\end{tabular}
+\end{center}
 
 \newpage
 
@@ -76,54 +115,96 @@ See SRS Documentation at \wss{give url}
 
 \section{Introduction}
 
-The following document details the Module Interface Specifications for
-\wss{Fill in your project name and description}
+This document is the Module Interface Specification (MIS) for \progname{}, a
+phone app where physical activity earns virtual currency that the user invests
+in a simulated stock market. \progname{} is two programs: a server, written in
+Python with FastAPI and backed by PostgreSQL, and a phone app, written in React
+Native. The Development Plan (Section~10) gives the reason for each of these
+choices.
 
-Complementary documents include the System Requirement Specifications
-and Module Guide.  The full documentation and implementation can be
-found at \url{...}.  \wss{provide the url for your repo}
+The MIS gives each module's interface: the types, constants and access programs
+it exports, and what each access program does. The Module Guide (MG) says what
+each module hides and why the system is split this way. The Software
+Requirements Specification (SRS) and the Hazard Analysis (HA) say what the
+system must do. Next to each decision, a module's section gives its reason: the
+requirement or hazard it serves, or the design pattern it uses. A later change
+can then be checked against what the decision was for.
+
+This revision specifies the modules of the proof of concept. Modules marked
+\textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
+specified at Revision~0, so that every section describes an interface the code
+really has.
+
+The full documentation and implementation are in the project repository:
+\url{https://github.com/davislenover/BurnNEarn}.
+
+\newpage
 
 \section{Notation}
 
-\wss{You should describe your notation.  You can use what is below as
-  a starting point.}
-
 The structure of the MIS for modules comes from \citet{HoffmanAndStrooper1995},
 with the addition that template modules have been adapted from
-\cite{GhezziEtAl2003}.  The mathematical notation comes from Chapter 3 of
+\cite{GhezziEtAl2003}: a template module exports a type whose values are made
+with new, each with its own state. The mathematical notation comes from
+Chapter 3 of
 \citet{HoffmanAndStrooper1995}.  For instance, the symbol := is used for a
 multiple assignment statement and conditional rules follow the form $(c_1
-\Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n )$.
-
-The following table summarizes the primitive data types used by \progname. 
+\Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n )$. The
+table below gives the primitive data types.
 
 \begin{center}
-\renewcommand{\arraystretch}{1.2}
+\renewcommand{\arraystretch}{1.1}
 \noindent 
-\begin{tabular}{l l p{7.5cm}} 
+\begin{tabular}{l l p{9.6cm}} 
 \toprule 
 \textbf{Data Type} & \textbf{Notation} & \textbf{Description}\\ 
 \midrule
-character & char & a single symbol or digit\\
 integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$) \\
 natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$) \\
 real & $\mathbb{R}$ & any number in (-$\infty$, $\infty$)\\
-date and time & DateTime & a moment in time, with its time zone\\
+boolean & $\mathbb{B}$ & a value that is either true or false\\
+string & String & a sequence of characters\\
+decimal & Decimal & an exact decimal number, such as a price, so money is never rounded by accident (NFR1)\\
+date & Date & a calendar day, without a time of day\\
+date and time & DateTime & a moment in time with its time zone, so the server, the phone and the market agree on it (FR33, SEC-24)\\
+duration & Duration & a length of time, such as 15 minutes\\
+identifier & ID & a UUID, which the phone can make without the database, such as a trade's request ID (FR38)\\
 \bottomrule
 \end{tabular} 
 \end{center}
 
-\noindent
-The specification of \progname \ uses some derived data types: sequences, strings, and
-tuples. Sequences are lists filled with elements of the same data type. Strings
-are sequences of characters. Tuples contain a list of values, potentially of
-different types. In addition, \progname \ uses functions, which
-are defined by the data types of their inputs and outputs. Local functions are
-described by giving their type signature followed by their specification.
+\noindent \progname{} also uses derived types. A sequence of values of one type
+T is ``seq of T'', a set is ``set of T'', and a tuple, whose values may have
+different types, is ``tuple of (name: T, ...)''. A value that may be missing is
+``T or None''. A function from
+T1 to T2 is T1 $\rightarrow$ T2, and a local function is given by its type
+signature and then its specification. ``new X'' or X($v$, ...) makes a value
+of type X. $t$.f is field f of tuple $t$. $p$.f($x$) calls access program f of
+$p$, and the In column leaves $p$ out. A type or a constant
+is defined with $=$, a type written \{a, b\} has just the values a and b, and
+$:=$ gives a value in the semantics. There,
+transition says how the state changes, output gives $out$, the value returned,
+and exception gives $exc$, the exception raised. When no case of $exc$ holds,
+nothing is raised.
+
+Types such as Session, Plugin and DomainError are exported by a module and
+defined in its section. ValueError is Python's, IntegrityError,
+NoResultFound, OperationalError and SQLAlchemyError are SQLAlchemy's,
+ValidationError is Pydantic's, and RequestValidationError is FastAPI's. In
+an access program table, In gives each input's type in order, separated by
+commas, and - means none. A route is written as its HTTP method and path, such
+as GET /v1/me/balance. Its In column lists what the phone
+sends, and its Exceptions column the refusals it raises, besides JSON Format's 422
+for a request that doesn't fit (SEC-25).
+
+\newpage
 
 \section{Module Decomposition}
 
-The following table is taken directly from the Module Guide document for this project.
+The following table is taken directly from the MG. Each section of this
+document keeps its module's MG number, such as Users (M8), so a module can be
+traced between the two documents. Modules marked (app) are in the phone app,
+Constants is in both programs, and the rest are in the server.
 
 \begin{table}[h!]
 \centering
@@ -132,21 +213,35 @@ The following table is taken directly from the Module Guide document for this pr
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-{Hardware-Hiding} & ~ \\
+\multirow{6}{0.3\textwidth}{Hardware-Hiding Module} & M1 Database\\
+& M2 Clock\\
+& M3 Market Providers\\
+& M25 Email Service\textsuperscript{\dag}\\
+& M4 Health Service (app)\\
+& M5 Device Service (app)\\
 \midrule
 
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding} & Input Parameters\\
-& Output Format\\
-& Output Verification\\
-& Temperature ODEs\\
-& Energy Equations\\ 
-& Control Module\\
-& Specification Parameters Module\\
+\multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & M6 Control\\
+& M7 Constants (server and app)\\
+& M8 Users\\
+& M9 Wallet\\
+& M10 Market\\
+& M11 Activity\\
+& M12 Trading\\
+& M13 Goals\textsuperscript{\dag}\\
+& M14 Learning\textsuperscript{\dag}\\
+& M15 Social\textsuperscript{\dag}\\
+& M16 Scenarios\textsuperscript{\dag}\\
+& M17 Privacy\textsuperscript{\dag}\\
+& M18 Navigation (app)\\
+& M19 Screens (app)\\
+& M20 Sync Service (app)\\
+& M21 Reminder Service (app)\textsuperscript{\dag}\\
 \midrule
 
-\multirow{3}{0.3\textwidth}{Software Decision} & {Sequence Data Structure}\\
-& ODE Solver\\
-& Plotting\\
+\multirow{3}{0.3\textwidth}{Software Decision Module} & M22 Plugins\\
+& M23 JSON Format\\
+& M24 API Service (app)\\
 \bottomrule
 
 \end{tabular}
@@ -154,8 +249,177 @@ The following table is taken directly from the Module Guide document for this pr
 \label{TblMH}
 \end{table}
 
+\noindent Modules marked \textsuperscript{\dag} are built after the proof of
+concept and are specified at Revision~0.
+
 \newpage
-~\newpage
+
+\section{MIS of Database} \label{MisDB}
+
+\subsection{Module}
+
+Database (M1 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Session: one unit of work on the database, saved by commit and
+dropped by rollback or close.
+
+\medskip
+
+\noindent Base: the type every module defines its own tables on. Every
+timestamp is stored as a moment (timestamptz), not as a time without a zone,
+so a stored time and the current time compare correctly, such as for a
+price's age (FR33). It may come back in a different time zone than it was
+saved in.
+
+\medskip
+\noindent A table holds one kind of thing, such as assets. It has a row for
+each asset and a column for each fact about it, such as its symbol.
+
+\medskip
+\noindent A table can have constraints. A constraint is a rule the database
+itself checks every time a row is added, changed or deleted, and it refuses a
+change that breaks the rule. There are five kinds, shown here with examples
+from Market (M10):
+\begin{itemize}
+\item Not null: every row must have a value in this column. Every column in
+  Market is not null.
+\item Primary key: the column that tells each row apart, so no two rows have
+  the same value in it. A table has one. Each asset has its own asset\_id.
+\item Foreign key: a column that must hold the primary key of a row in another
+  table. Each price's asset\_id must be the asset\_id of an asset, so a price
+  can never belong to an asset that does not exist. For the same reason, an
+  asset that still has prices cannot be deleted.
+\item Unique: no two rows may have the same value in the columns it names. A
+  table can have several. No two assets share a symbol. With more than one
+  column, only the combination must differ: an asset has many prices, but at
+  most one for each quoted\_at (the time the price was set).
+\item Check: a condition every row must meet, such as a price being above 0.
+\end{itemize}
+Last, a table can have an index. Like the index of a book, it lets the
+database find rows by a column without reading every row. An index is not a
+rule. The table of calls to the market data provider, provider\_requests, has
+one on requested\_at, so counting the calls in the last minute stays fast. A
+primary key or unique comes with its own index, so it needs no second one.
+
+\medskip
+\noindent Base names every primary key, foreign key, unique, check and index
+that has no name of its own, from its table and columns, by the rules below,
+instead of letting the database choose. A migration (a script that changes the
+tables in the database) can then change or drop one by a name known when the
+migration is written:
+
+\begin{center}
+\begin{tabular}{p{2.4cm} p{5.6cm} p{6.6cm}}
+\toprule
+\textbf{Kind} & \textbf{Name} & \textbf{Example} \\
+\midrule
+Primary key & pk\_\textit{table} & pk\_assets \\
+Foreign key & fk\_\textit{table}\_\textit{first column}\_\textit{other table} & fk\_prices\_asset\_id\_assets \\
+Unique & uq\_\textit{table}\_\textit{each column} & uq\_prices\_asset\_id\_quoted\_at \\
+Check & ck\_\textit{table}\_\textit{check name} & ck\_prices\_price\_positive \\
+Index & ix\_\textit{table}\_\textit{first column} & ix\_provider\_requests\_requested\_at \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent A check is a condition, not a list of columns, so whoever writes it
+gives it a name, such as price\_positive, and Base adds the rest. A check
+without a name is an error.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2cm} p{3cm} p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+SessionLocal & - & Session & - \\
+get\_db & - & Session & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+engine: the connection to the database at DATABASE\_URL, made once when the
+module is first loaded.
+
+\subsubsection{Environment Variables}
+
+\noindent database: the PostgreSQL server that holds every module's tables.
+
+\medskip
+
+\noindent DATABASE\_URL: String, the database to connect to, read from the
+environment or .env, so tests can use their own database and a deployed
+server's password stays out of the repository (HA~H45). Without one, it is the
+local database that compose.yaml starts.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The migrations are applied before the server starts.
+\item Each module owns its tables. It never reads or writes another module's
+  tables, though it may have a foreign key into them. So a module can change
+  its tables without changing any other, as long as it keeps the keys other
+  modules point to, and no other module can break their
+  rules by accident.
+\item A route commits at most once per request. A route is the function in a
+  module's routes.py that answers one HTTP request, such as GET /v1/assets in
+  Market (M10). To commit is to save a session's changes to the database for
+  good. Code that answers no request commits once per piece of work: the price
+  poller in Market once per poll, and the seed script
+  (app/scripts/seed\_demo.py) once per run.
+\end{itemize}
+
+\noindent The commit rule works like this. The code a route calls, in its own
+module or another, changes the session but never commits. A route that changes
+anything commits once, after every step has succeeded. If a step refuses the
+request or fails, the route does not commit, so nothing is saved. So everything
+one request changes, such as a buy's payment and its new shares, is saved
+together or not at all (FR37, NFR6). The poller and the seed script make their
+own session with SessionLocal, since no request gives them one, and the code
+they call never commits either.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent SessionLocal():
+\begin{itemize}
+\item output: $out :=$ a new Session on engine. The caller closes it, and
+  commits only as the Assumptions allow.
+\item exception: None
+\end{itemize}
+
+\noindent get\_db():
+\begin{itemize}
+\item transition: when the request ends, the session is closed and anything
+  the route did not commit is dropped.
+\item output: $out :=$ SessionLocal(), a session for one request alone. Routes
+  ask for it by dependency injection, so a test can replace get\_db with a
+  session whose changes are undone after the test.
+\item exception: None. The session raises OperationalError, a kind of
+  SQLAlchemyError, at its first use if the database cannot be reached.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
 
 \section{MIS of Clock} \label{MisClock}
 
@@ -172,6 +436,10 @@ None
 \subsubsection{Exported Types}
 
 Clock = () $\rightarrow$ DateTime, a function that returns the current time.
+Routes and background work are handed a Clock instead of reading the system
+time (dependency injection), so a test can set the time for each rule that
+depends on it: market hours, when a price is delayed or too old to trade
+(FR33, FR39), and, once Activity (M11) is built, the user's date (SEC-24).
 
 \subsubsection{Exported Constants}
 
@@ -202,21 +470,34 @@ osTime: DateTime, the current time from the server's operating system clock.
 
 \subsubsection{Assumptions}
 
-The server's operating system clock is kept accurate.
+The server's operating system clock has these properties:
+\begin{itemize}
+\item It is synchronized to Coordinated Universal Time (UTC) by the Network
+  Time Protocol, and stays within 1 second of UTC. That is close enough, since
+  every rule that depends on the time works in whole minutes or more.
+\item It is not monotonic. A sync can move it back slightly, so a later call
+  can return an earlier time. That does no harm. Its times are stored and
+  compared with other stored times and with market hours, and nothing uses it
+  to time a wait.
+\end{itemize}
 
 \subsubsection{Access Routine Semantics}
 
 \noindent system\_clock():
 \begin{itemize}
-\item output: $out := $ osTime, in Coordinated Universal Time (UTC)
+\item output: $out := $ osTime in UTC, to the microsecond. UTC is the same
+  whatever zone the server is set to and has no daylight saving time, so
+  taking a Duration from it gives the time exactly that long ago. Market (M10)
+  turns it into New York time for market hours.
 \item exception: None
 \end{itemize}
 
 \noindent get\_clock():
 \begin{itemize}
 \item output: $out := $ system\_clock. The output is the function itself, not
-  a time. Routes call it to read the current time, so a test can replace
-  get\_clock with a Clock that always returns a fixed time.
+  a time. Routes ask for get\_clock as a dependency and call the Clock it
+  gives. A test replaces get\_clock so it gives a Clock that always returns a
+  fixed time.
 \item exception: None
 \end{itemize}
 
@@ -225,6 +506,1484 @@ The server's operating system clock is kept accurate.
 None
 
 \newpage
+
+% The sections follow the MG's module order, and each starts on a new page.
+\section{MIS of Market Providers} \label{MisProviders}
+
+\subsection{Template Module}
+
+MarketDataProvider (Market Providers, M3 in the MG), an abstract data type
+whose values are providers, each made with new FinnhubProvider or new
+FakeProvider. Prices come from a third-party provider (SC4), which may change
+if its request limits or cost prevent the planned use (LC3). So every provider
+has this one interface (the strategy pattern), and Market (M10) works the same
+with any of them.
+
+\subsection{Uses}
+
+Clock (M2)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Quote = tuple of (symbol: String, price: Decimal, quoted\_at:
+DateTime), a stock's latest price and when the provider set it (not when the
+server asked for it). Market (M10) marks a price delayed by this time,
+since a quote can already be old when the server gets it, and an old quote
+lags the real market (SEC-2).
+
+\medskip
+{\raggedright
+\noindent MarketDataProvider: the abstract type of every provider, with one
+access program, get\_quote. FinnhubProvider turns Finnhub's replies and errors
+into Quotes and MarketDataErrors (the adapter pattern). FakeProvider makes up
+prices, so the team can develop and test without a key or an open market.\par}
+
+\medskip
+\noindent ProviderSettings = tuple of (market\_provider: String,
+finnhub\_api\_key: String or None), the name of the provider to use,
+currently ``finnhub'' or ``fake'', and the key for Finnhub.
+
+\medskip
+\noindent MarketDataError, the error for no usable price, with its kinds
+RateLimitedError (the request limit was hit) and UnknownSymbolError (no price
+for the symbol). Market (M10) treats each kind differently. A RateLimitedError
+ends its poll, since more calls would be refused too. An UnknownSymbolError is
+recorded as ``unknown\_symbol'', not ``error'', so a symbol with no price is told
+apart from a provider that fails.
+
+\subsubsection{Exported Constants}
+
+{\raggedright
+FINNHUB\_CALLS\_PER\_MINUTE: $\mathbb{N}$ = 60, Finnhub's free plan limit.
+GET /v1/market/usage of Market (M10) reports it, so the team can check the
+server's calls stay within it (SC4).\par}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.95cm} p{3.05cm} p{3.75cm} p{4.05cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new FinnhubProvider & String & FinnhubProvider & - \\
+new FakeProvider & Clock & FakeProvider & - \\
+get\_quote & String & Quote & MarketDataError,\newline RateLimitedError,\newline
+UnknownSymbolError \\
+build\_provider & ProviderSettings & MarketDataProvider & ValueError \\
+get\_provider\_settings & - & ProviderSettings & ValidationError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent Each provider has its own state, which new sets up.
+
+\medskip
+\noindent key: String, a FinnhubProvider's API key. It prints as stars, and it
+is sent only to Finnhub, in the X-Finnhub-Token request header rather than the
+URL, so no logged URL or error message shows it. A leaked key would let others
+use up the request limit for every user (HA~H16). It is never sent to the
+phone (SEC-33).\\
+clock: Clock and prices: String $\rightarrow$ Decimal, a FakeProvider's clock
+and its last price for each symbol.
+
+\subsubsection{Environment Variables}
+
+\noindent finnhubApi: the Finnhub quote API, whose reply has a status, a price
+$c$ and its time $t$.
+
+\medskip
+\noindent MARKET\_PROVIDER, FINNHUB\_API\_KEY: String, the two fields of
+ProviderSettings, read from the environment or the .env file. Git ignores
+.env, so the key stays out of the repository (SEC-33).
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Every provider follows MarketDataProvider: its get\_quote returns a Quote
+  or raises a MarketDataError, never another error. After a MarketDataError,
+  Market (M10) still saves the poll's other prices, but any other error loses
+  the whole poll.
+\item build\_provider is only given settings from get\_provider\_settings, so
+  they hold all that the named provider needs.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new FinnhubProvider($k$), new FakeProvider($f$):
+\begin{itemize}
+\item output: $out :=$ FinnhubProvider(key $= k$) or FakeProvider(clock $= f$,
+  no prices)
+\item exception: None
+\end{itemize}
+
+\noindent $p$.get\_quote($s$), for a FinnhubProvider $p$:
+\begin{itemize}
+\item output: $out :=$ (symbol: $s$, price: $c$, quoted\_at: $t$ seconds after
+  1970-01-01 00:00 UTC), from one request to finnhubApi holding only $s$ and
+  key (SEC-11). It times out after 10 seconds, so a Finnhub that doesn't
+  answer gives a MarketDataError and the poll goes on to the next symbol.
+\item exception: $exc :=$ (the request fails or its reply cannot be read
+  $\Rightarrow$ \mbox{MarketDataError} $|$ status $= 429 \Rightarrow$ RateLimitedError
+  $|$ status $\neq 200$, or no finite $c$ or valid $t$ $\Rightarrow$
+  \mbox{MarketDataError} $|$ $c \leq 0 \lor t = 0 \Rightarrow$ UnknownSymbolError), in
+  that order. A $c$ of NaN or infinity is read as a number but is no price.
+  Finnhub answers a symbol it has no price for with status 200, $c = 0$ and
+  $t = 0$, not with an error, and no real price is 0 or below.
+\end{itemize}
+
+\noindent $p$.get\_quote($s$), for a FakeProvider $p$:
+\begin{itemize}
+\item transition: prices($s$) $:=$ (no price for $s$ yet $\Rightarrow$
+  start($s$) $|$ otherwise $\Rightarrow$ step(prices($s$)))
+\item output: $out :=$ (symbol: $s$, price: prices($s$), quoted\_at: clock())
+\item exception: None, even for a symbol no real stock has
+\end{itemize}
+
+\noindent build\_provider($v$):
+\begin{itemize}
+\item output: $out :=$ the provider that $v$ names. That is currently new
+  FinnhubProvider with $v$'s key for ``finnhub'', or new
+  FakeProvider(system\_clock) for ``fake''. Market (M10) gets its provider
+  only from here (the factory pattern), so a new provider changes only this
+  module and the limit that GET /v1/market/usage reports.
+\item exception: $exc :=$ ($v$.market\_provider names no provider
+  $\Rightarrow$ ValueError). It never falls back to FakeProvider, whose
+  made-up prices would be shown as real.
+\end{itemize}
+
+\noindent get\_provider\_settings():
+\begin{itemize}
+\item output: $out :=$ the settings in MARKET\_PROVIDER and FINNHUB\_API\_KEY,
+  read once, on the first call that succeeds, so every later call gets the
+  same settings, those checked when the server started. Unset, they give
+  ``fake'' and None.
+\item exception: $exc :=$ (MARKET\_PROVIDER names no provider, or names one
+  that needs a key, currently only Finnhub, and the key is unset or empty
+  $\Rightarrow$ ValidationError). Market (M10) calls it when the server
+  starts, so bad settings, such as a missing key, stop the server then, not
+  at its first price request.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent start: String $\rightarrow$ Decimal, start($s$) $:=$ a price from 20
+to 500 that depends only on $s$, so a symbol starts at the same price on every
+run and in every test\\
+step: Decimal $\rightarrow$ Decimal, step($x$) $:=$ $x$ moved up or down at
+random by at most 0.5\%, to four decimals, so a price moves a little on each
+call and never reaches 0, which Market (M10) refuses
+
+\newpage
+
+% M4 Health Service and M5 Device Service (app): #250
+\section{MIS of Control} \label{MisControl}
+
+\subsection{Module}
+
+Control (M6 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Users (M8), Wallet (M9), Market (M10), Trading (M12), Plugins
+(M22), JSON Format (M23)
+
+\medskip
+\noindent The MG also lists Activity (M11) and Goals (M13) to Privacy (M17).
+Each is added to PLUGINS once it is built.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+None
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGINS: seq of Plugin $=$ $\langle$PLUGIN of Users (M8), PLUGIN of
+Wallet (M9), PLUGIN of Market (M10), PLUGIN of Trading (M12)$\rangle$, the
+PLUGIN of each module in the server, in the order their background work
+starts. Only this list, in app/registry.py, names the modules (the plug-in
+pattern), so adding a module never changes create\_app. Listing a module here
+is also how database migrations find its tables.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2.4cm} >{\raggedright\arraybackslash}p{6.8cm} p{2.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+create\_app & seq of Plugin & App & - \\
+GET /v1/health & - & tuple of (status: String, database: String, modules:
+  String $\rightarrow$ ModuleHealth) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+app: App, the running server, built by create\_app(PLUGINS) when
+\texttt{uvicorn app.main:app} starts the server.
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+No two plug-ins in PLUGINS share a name, since GET /v1/health shows each
+module's health by its name. No two routes share a method and path. Each
+plug-in's lifespan and health check follow the rules in Plugins (M22).
+
+\subsubsection{Access Routine Semantics}
+
+\noindent create\_app(\textit{plugins}):
+\begin{itemize}
+\item output: $out :=$ a new App that serves GET /v1/health, which reports
+  the health of each plug-in in \textit{plugins}, and the routes of
+  each plug-in in \textit{plugins}, all under /v1, plus the API docs at /docs.
+  The version in the path lets the phone app and the API change separately
+  later. It answers any DomainError a route raises with handle\_domain\_error,
+  and a request that doesn't fit a route's types with
+  handle\_validation\_error, both from JSON Format (M23). It runs lifespan
+  when it starts and shuts down. \textit{plugins} is PLUGINS when none are
+  given. A test passes its own to build a smaller app.
+\item exception: None
+\end{itemize}
+
+\noindent GET /v1/health() needs no signed-in user, so the team can check the server
+without an account.
+\begin{itemize}
+\item output: $out :=$ (status: $s$, database: $d$, modules: $m$), where
+  \begin{itemize}
+  \item $d :=$ (a query to the database succeeds $\Rightarrow$ ``ok'' $|$ it
+    fails $\Rightarrow$ ``unavailable'')
+  \item for each plug-in $p$ of the App with a health check, $m(p$.name$) :=$
+    ($p$.health() raises an error or does not return a ModuleHealth
+    with status ``ok'' or \mbox{``degraded''} $\Rightarrow$ (\mbox{``degraded''}, ``health check failed''), and the error
+    is logged $|$ otherwise $\Rightarrow$ $p$.health()), so one broken check
+    can't break the whole route. A plug-in without a health check is left out
+    of $m$.
+  \item $s :=$ ($d =$ ``ok'' $\land$ every status in $m$ is ``ok''
+    $\Rightarrow$ ``ok'' $|$ otherwise $\Rightarrow$ ``degraded'')
+  \end{itemize}
+  The reply has HTTP status 503 when $d$ is ``unavailable'', since nothing
+  works without the database. It is 200 otherwise, even when a module is
+  degraded, since the rest of the API still works.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent lifespan: Lifespan, the background work of each App that create\_app
+builds, made from its \textit{plugins}.
+
+\medskip
+\noindent lifespan($a$):
+\begin{itemize}
+\item transition: the lifespans of \textit{plugins} start in order when $a$
+  starts and stop in reverse order when $a$ shuts down, and if one fails to
+  start, the ones already started still stop.
+\item exception: $exc :=$ (a lifespan raises an error $\mathit{err}$ while it
+  starts $\Rightarrow$ $\mathit{err}$). $a$ does not start.
+\end{itemize}
+
+\newpage
+
+\section{MIS of Constants} \label{MisConstants}
+
+\subsection{Module}
+
+Constants (M7 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+{\raggedright
+ActivityType = \{STEPS, WHEELCHAIR\_PUSHES, CYCLING, SWIMMING, OTHER\_WORKOUT\},
+the supported activity types (SUPPORTED\_ACTIVITY\_TYPES in SRS Appendix C).
+Each value is also a String, its name in lower case, such as ``steps'', so the
+daily totals the phone sends (SEC-24) can name their type in JSON and the
+database can store it as text, once Activity (M11) is built.\par}
+
+\subsubsection{Exported Constants}
+
+Names and values match SRS Appendix C. Each program keeps them in one file,
+on the server app/core/\allowbreak constants.py, so each value is easy to find and to
+trace back to the SRS. EARNING\_RATES($t$) is the amount of activity type $t$
+that earns one unit of virtual currency ($u_t$ in SRS Section~6.7). Decimal
+amounts are in virtual currency. The phone app's copy, once written, must hold
+the same values and ActivityType text, since the phone applies some of them
+itself, such as reading the last SYNC\_LOOKBACK\_PERIOD of activity on each
+sync (SEC-20).
+
+\begin{longtable}{p{6cm} p{3.4cm} >{\raggedright\arraybackslash}p{5.4cm}}
+\toprule
+\textbf{Name} & \textbf{Type} & \textbf{Value} \\
+\midrule
+\endhead
+\multicolumn{3}{l}{\textit{Activity and rewards}} \\
+EARNING\_RATES & ActivityType $\rightarrow \mathbb{N}$ & 100 steps for STEPS,
+  100 pushes for WHEELCHAIR\_PUSHES, 1 minute for each other type \\
+MAX\_DAILY\_CURRENCY & Decimal & 300 \\
+MAX\_DAILY\_STEPS & $\mathbb{N}$ & 150,000 \\
+MAX\_DAILY\_PUSHES & $\mathbb{N}$ & 100,000 \\
+MAX\_WORKOUT\_DURATION & Duration & 12 hours \\
+SYNC\_LOOKBACK\_PERIOD & Duration & 7 days \\
+\midrule
+\multicolumn{3}{l}{\textit{Simulated market}} \\
+QUOTE\_CURRENCY & String & ``USD'' (US dollars) \\
+QUOTE\_STALENESS\_LIMIT & Duration & 15 minutes \\
+MIN\_TRADABLE\_STOCKS & $\mathbb{N}$ & 50 \\
+SCENARIO\_START\_BALANCE & Decimal & 10,000 \\
+VALUE\_TOLERANCE & Decimal & 0.01 \\
+\midrule
+\multicolumn{3}{l}{\textit{Accounts and data}} \\
+MIN\_USER\_AGE & $\mathbb{N}$ & 18 years \\
+MIN\_PASSWORD\_LENGTH & $\mathbb{N}$ & 8 characters \\
+MAX\_FAILED\_SIGNINS & $\mathbb{N}$ & 5 \\
+SIGNIN\_LOCKOUT\_PERIOD & Duration & 15 minutes \\
+SESSION\_TIMEOUT & Duration & 14 days \\
+DATA\_DELETION\_PERIOD & Duration & 30 days \\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Exported Access Programs}
+
+None
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+None
+
+\subsubsection{Access Routine Semantics}
+
+None
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
+% M8 Users and M9 Wallet: #248
+\section{MIS of Users} \label{MisUsers}
+
+\subsection{Module}
+
+Users (M8 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Plugins (M22), JSON Format (M23). The MG also lists Clock (M2),
+Constants (M7) and Email Service (M25), for sign-up, sign-in, sessions and the
+password reset link (FR6) at Revision~0.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent CurrentUser = tuple of (user\_id: ID), a read-only copy of the user a
+request comes from. Routes get it from get\_current\_user, never from the
+request, so the phone can't act as another user (SEC-15).
+
+\medskip
+\noindent NotAuthenticatedError, a DomainError with code
+``not\_authenticated'', status 401 and the message ``Sign in to continue.''
+It refuses a request with no signed-in user (SEC-15). Status 401 is HTTP's
+status for that, so the phone can tell it apart from other refusals.
+
+\subsubsection{Exported Constants}
+
+\noindent DEMO\_USER\_ID: ID $=$ 00000000-0000-4000-8000-000000000001, the
+proof of concept's one built-in user. It is fixed, so the seed script and
+get\_current\_user always agree on who it is.
+
+\medskip
+\noindent DEFAULT\_TIME\_ZONE: String $=$ ``America/Toronto'', the team's own,
+for a user made without one, such as the demo user. At Revision~0, sign-up
+sends the phone's time zone instead.
+
+\medskip
+\noindent PLUGIN: Plugin $=$ (name: ``users'', router: None, lifespan: None,
+health: None). Users has no routes yet. It is a plug-in anyway, so the sign-up
+and sign-in routes of Revision~0 (FR1, FR4) are added here without changing
+Control (M6).
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.6cm}
+  >{\raggedright\arraybackslash}p{4.4cm}
+  >{\raggedright\arraybackslash}p{2.4cm}
+  >{\raggedright\arraybackslash}p{4.4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+get\_current\_user & - & CurrentUser & NotAuthenticatedError \\
+create\_user & Session, ID or None, String & ID & ValueError, IntegrityError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent users: set of tuple of (user\_id: ID, time\_zone: String,
+created\_at: DateTime), every user, with each user\_id once. time\_zone is an
+IANA time zone name. Nothing reads it yet. It is kept
+because the server needs the user's date to refuse a daily total dated in the
+future (SEC-24, HA~H51). The phone, not the server, puts each activity record
+on its day (SEC-23).
+
+\subsubsection{Environment Variables}
+
+\noindent DEMO\_USER\_ENABLED: $\mathbb{B}$, read once per process, makes every
+request that needs a user come from the demo user. It is off by default, so a
+server not set up for the demo refuses them (SEC-15).
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The seed script (app/scripts/seed\_demo.py) makes the demo user, and its
+  live portfolio in Wallet (M9), before a route needs them. get\_current\_user
+  does not check that the user exists, so it needs no database query.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent get\_current\_user():
+\begin{itemize}
+\item output: $out :=$ CurrentUser(DEMO\_USER\_ID). Routes ask for it by
+  dependency injection, so the phone never sends a user ID, and a test can
+  replace it to pick the user. At Revision~0 it finds the user from the session
+  token instead, so no route changes.
+\item exception: $exc :=$ ($\neg$DEMO\_USER\_ENABLED $\Rightarrow$
+  NotAuthenticatedError)
+\end{itemize}
+
+{\raggedright
+\noindent create\_user(session, user\_id, time\_zone). Unless they are given,
+user\_id is None and time\_zone is DEFAULT\_TIME\_ZONE. A caller can give
+user\_id so the seed script can make the demo user with DEMO\_USER\_ID.\par}
+\begin{itemize}
+\item transition: users $:=$ users $\cup \{(u$, time\_zone, the database's
+  time$)\}$, where $u :=$ user\_id if it is given, else a new ID. It flushes,
+  so the database makes the new ID, but never commits, so the caller can add
+  the user's live portfolio and commit both together.
+\item output: $out := u$
+\item exception: $exc :=$ (time\_zone is not an IANA time zone name
+  $\Rightarrow$ ValueError $|$ some user already has user\_id $\Rightarrow$
+  IntegrityError). A bad time zone is refused before anything changes,
+  since it would break finding the user's date (SEC-24).
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
+\section{MIS of Wallet} \label{MisWallet}
+
+\subsection{Module}
+
+Wallet (M9 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent BalanceChangeReason $=$ \{activity\_reward, trade\_purchase\}, why a
+balance changed. Every change keeps its reason (SEC-22), and the database
+refuses any other. There is no reason for a sale yet, since the proof of
+concept only buys. Selling (FR36) comes at Revision~0. Nothing pays a reward
+yet either. That reason is there for Activity (M11), and tests use it to give
+a portfolio currency to spend.
+
+\medskip
+{\raggedright
+\noindent LockedPortfolio = tuple of (portfolio\_id: ID, user\_id: ID), the
+read-only token that lock\_live\_portfolio returns (a lock token).
+change\_balance asks for one, so changing a balance without locking it first is
+hard to do by accident. Nothing checks where one came from.\par}
+
+\medskip
+{\raggedright
+\noindent BalanceChangeReceipt = tuple of (balance\_change\_id: ID, amount:
+Decimal, cash\_balance\_after: Decimal), a read-only copy of one change, so a
+caller can't change the record through it (SEC-22). Trading (M12) keeps the change's ID with
+each trade, so each trade points at the payment for it.\par}
+
+\medskip
+\noindent InsufficientFundsError, a DomainError with code
+``insufficient\_funds'', status 409 and the message ``You don't have enough
+currency for this.'' It refuses a purchase that costs more than the balance
+(FR37). Status 409 says the request was understood but conflicts with the
+balance now.
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``wallet'', router: the route below,
+lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so names like
+% NotAuthenticatedError fit their columns.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.95cm}
+  >{\raggedright\arraybackslash}p{4.0cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+lock\_live\_portfolio & Session, ID & LockedPortfolio & NoResultFound \\
+change\_balance & Session, LockedPortfolio, Decimal, BalanceChangeReason, Date
+or None & BalanceChangeReceipt & ValueError, InsufficientFundsError \\
+create\_live\_portfolio & Session, ID & ID & IntegrityError \\
+delete\_portfolio & Session, ID & - & - \\
+live\_portfolio\_id & Session, ID & ID & NoResultFound \\
+get\_balance & Session, ID & Decimal & NoResultFound \\
+activity\_paid & Session, ID, Date & Decimal & ValueError \\
+GET /v1/me/balance & - & tuple of (cash\_balance: Money) &
+NotAuthenticatedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent portfolios: set of tuple of (portfolio\_id: ID, user\_id: ID,
+cash\_balance: Decimal, scenario\_id: ID or None, created\_at: DateTime). A
+portfolio is live when its scenario\_id is None, and each user has at most one
+live portfolio. Every cash\_balance is 0 or more (FR37).
+
+\medskip
+\noindent changes: set of tuple of (balance\_change\_id: ID, portfolio\_id: ID,
+amount: Decimal, reason: BalanceChangeReason, activity\_date: Date or None,
+created\_at: DateTime), every change to a balance, never edited. Each amount is
+not 0, since a change of 0 would add a record without changing the balance. It
+is above 0 exactly when the reason is activity\_reward, so a missing
+minus sign can't turn a purchase into free currency. A change has an
+activity\_date, the day of activity it pays for, exactly when the reason is
+activity\_reward, so a day's rewards can be added up (SEC-19).
+
+\medskip
+{\raggedright
+\noindent Every amount and balance has at most 4 decimals and 12 digits before
+the point. Four decimals match Money of JSON Format (M23) and keep rounding far
+below VALUE\_TOLERANCE (NFR1). For every portfolio $p$, $p$.cash\_balance is
+the sum of the amounts of its changes (SEC-22). The database does not check this sum. change\_balance
+keeps it true, since it is the only routine that changes a cash\_balance, and it
+adds the change in the same transaction. Deleting a portfolio deletes its
+changes, and other modules' rows that point at it with ON DELETE CASCADE, such
+as the trades and holdings of Trading (M12).\par}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item A route that changes money calls lock\_live\_portfolio, then
+  change\_balance, then commits once, by the commit rule of Database (M1). The
+  lock lasts until the session's transaction ends, by a commit, a rollback or
+  closing the session.
+\item Every amount, and every balance a change leads to, is below $10^{12}$,
+  the most the columns hold. A reward is at most the daily cap, so in practice
+  none comes near it.
+\item Every user a route acts for has a live portfolio. The seed script makes
+  the demo user's.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent lock\_live\_portfolio(session, user\_id), with $p$ the live portfolio
+of user\_id:
+\begin{itemize}
+\item transition: $p$ is locked until session's transaction ends. Until
+  then, a call for $p$ from another session waits, and it then sees what the
+  first one saved. Taking turns keeps what a request reads after the lock
+  true until it commits, such as whether its request ID was used
+  (FR38) or what a day's rewards have paid (SEC-19, FR18).
+\item output: $out :=$ LockedPortfolio($p$.portfolio\_id, user\_id)
+\item exception: $exc :=$ (user\_id has no live portfolio $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent change\_balance(session, locked, amount, reason, activity\_date),
+with activity\_date None by default and $p$ the portfolio with portfolio\_id
+locked.portfolio\_id:
+\begin{itemize}
+\item transition: $p$.cash\_balance $:= p$.cash\_balance $+$ amount, and changes
+  $:=$ changes $\cup \{(c$, $p$.portfolio\_id, amount, reason, activity\_date,
+  the database's time$)\}$ with $c$ a new ID. Adding the change with the new
+  balance keeps the balance equal to the sum of its changes (SEC-22). It
+  flushes, so the database makes $c$, but never commits.
+\item output: $out :=$ BalanceChangeReceipt($c$, amount, $p$.cash\_balance
+  after the change)
+\item exception: the first of these that holds is raised, before anything
+  changes:\\
+  \hspace*{1em}$exc :=$ (amount is 0, NaN or infinite, or has over 4 decimals
+  $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ (reason $=$ activity\_reward) $\neq$ (amount $> 0$)
+  $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ (reason $=$ activity\_reward) $\neq$ (activity\_date $\neq$
+  None) $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ activity\_date is a DateTime $\Rightarrow$ ValueError\\
+  \hspace*{1em}$|$ $p$.cash\_balance $+$ amount $< 0$ $\Rightarrow$
+  InsufficientFundsError$)$\\
+  A ValueError means the calling code is wrong, not a refusal the phone sees.
+  An amount with over 4 decimals is refused, not rounded, since the database
+  would round it quietly. A DateTime, which Python also counts as a Date, is
+  refused, since its day depends on the time zone it is read in, so the same
+  activity could be paid on two days (SEC-19). A balance never goes below 0, even if the caller skipped the lock,
+  since the change and the check are one database statement.
+\end{itemize}
+
+\noindent create\_live\_portfolio(session, user\_id):
+\begin{itemize}
+\item transition: portfolios $:=$ portfolios $\cup \{(q$, user\_id, 0, None, the
+  database's time$)\}$ with $q$ a new ID. It starts at 0, since it has no
+  changes yet (SEC-22), and is kept apart from any scenario's (SEC-31). It flushes, so the database makes $q$, but never
+  commits.
+\item output: $out := q$
+\item exception: $exc :=$ (user\_id is not in Users (M8) or already has a live
+  portfolio $\Rightarrow$ IntegrityError)
+\end{itemize}
+
+\noindent delete\_portfolio(session, portfolio\_id):
+\begin{itemize}
+\item transition: the portfolio with portfolio\_id, its changes, and other
+  modules' rows that point at it with ON DELETE CASCADE are removed in one
+  statement, so nothing is left pointing at it. The seed script uses it to
+  restart the demo. It never commits.
+\item exception: None
+\end{itemize}
+
+\noindent live\_portfolio\_id(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the portfolio\_id of user\_id's live portfolio
+\item exception: $exc :=$ (user\_id has no live portfolio $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent get\_balance(session, portfolio\_id):
+\begin{itemize}
+\item output: $out :=$ the cash\_balance of the portfolio with portfolio\_id,
+  including changes session has made but not committed, so a route sees its
+  own change before it commits
+\item exception: $exc :=$ (no portfolio has portfolio\_id $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent activity\_paid(session, portfolio\_id, activity\_date):
+\begin{itemize}
+\item output: $out :=$ the sum of the amounts of the changes with
+  portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0.
+  Nothing calls it yet. A step sync in Activity (M11) will use it to pay only
+  the difference, so no activity is paid twice (SEC-19) or past the daily cap
+  (FR18).
+\item exception: $exc :=$ (activity\_date is a DateTime $\Rightarrow$
+  ValueError), as in change\_balance
+\end{itemize}
+
+\noindent GET /v1/me/balance() takes session from get\_db of Database (M1)
+and the user $u :=$ get\_current\_user() of Users (M8).
+\begin{itemize}
+\item output: $out :=$ (cash\_balance: $b$), where $b$ is get\_balance(session,
+  $q$) as Money, and $q$ is live\_portfolio\_id(session, $u$.user\_id). The
+  phone shows it, since rewards add to it (SRS use case UC2) and a purchase can't cost more
+  (FR37). It only reads, so it doesn't lock or commit.
+\item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user, with
+  status 401
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
+\section{MIS of Market} \label{MisMarket}
+
+\subsection{Module}
+
+Market (M10 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Market Providers (M3), Constants (M7), Plugins (M22),
+JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent AssetInfo = tuple of (asset\_id: ID, symbol: String, name: String,
+is\_tradable: $\mathbb{B}$), a read-only copy of one asset, such as a stock.
+Market hands out copies, never its rows, so no other module can change an
+asset or a price by accident. is\_tradable is false once the asset is removed
+from the live market. Its row stays, since its prices and the trades and
+holdings of Trading (M12) point at it.
+
+\medskip
+\noindent CurrentPrice = tuple of (price: Decimal, quoted\_at: DateTime,
+obtained\_at: DateTime, delayed: $\mathbb{B}$), a read-only copy of an asset's
+newest price. quoted\_at is when the provider set the price, and obtained\_at
+is when the server got it, the time FR33 asks to show with the price.
+
+\medskip
+\noindent UnknownAssetError, a DomainError with code ``unknown\_asset'', status
+404 and the message ``There is no asset with that symbol.'' Status 404 is
+HTTP's status for something that doesn't exist, so the phone can tell it apart
+from Trading's refusals (409).
+
+\subsubsection{Exported Constants}
+
+PLUGIN: Plugin $=$ (name: ``market'', router: the two routes below, lifespan:
+lifespan, health: health). Both of Market's routes need no signed-in user.
+What they send is the same for everyone and is no user's data, so SEC-15
+doesn't ask for one. They take now from get\_clock of Clock (M2) and session
+from get\_db of Database (M1).
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.6cm}
+  >{\raggedright\arraybackslash}p{2.4cm}
+  >{\raggedright\arraybackslash}p{5.1cm} p{3.7cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+get\_asset\_by\_symbol & Session, String & AssetInfo & UnknownAssetError \\
+get\_asset & Session, ID & AssetInfo & UnknownAssetError \\
+get\_current\_price & Session, ID, DateTime & CurrentPrice or None & - \\
+is\_delayed & DateTime, DateTime & $\mathbb{B}$ & - \\
+is\_market\_open & DateTime & $\mathbb{B}$ & - \\
+GET /v1/assets & - & tuple of (market\_open: $\mathbb{B}$, assets: seq of
+tuple of (symbol: String, name: String, price: Money or None, price\_currency:
+String, quoted\_at: DateTime or None, obtained\_at: DateTime or None, delayed:
+$\mathbb{B}$)) & - \\
+GET /v1/market/usage & - & tuple of (calls\_last\_minute: $\mathbb{Z}$,
+busiest\_minute\_today: $\mathbb{Z}$, calls\_today: $\mathbb{Z}$,
+limit\_per\_minute: $\mathbb{N}$) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent assets: set of tuple of (asset\_id: ID, symbol: String, name: String,
+asset\_type: String, price\_currency: String, is\_tradable: $\mathbb{B}$), every
+asset, with each symbol once.
+
+\medskip
+\noindent prices: set of tuple of (asset\_id: ID, price: Decimal,
+price\_currency: String, quoted\_at: DateTime, obtained\_at: DateTime), every
+price saved, at most one per asset and quoted\_at, so a quote the provider
+repeats while nothing trades is stored once. An asset's current price is the
+one with the latest quoted\_at (FR32). Every price\_currency, here and in
+assets, is QUOTE\_CURRENCY from Constants (M7), and the database refuses any
+other. A Quote carries no currency, so prices stay in one currency because
+every asset is quoted in QUOTE\_CURRENCY (FR29, SEC-27).
+
+\medskip
+\noindent requests: seq of tuple of (requested\_at: DateTime, symbol: String,
+outcome: String), one per call to the provider in a committed poll (see
+poll\_once). GET /v1/market/usage counts them, so the team can check the calls
+stay within the provider's request limits (SC4).
+
+\medskip
+\noindent poller: \{off, running, stopped\}, the state of the price poller's
+thread. It is off until lifespan starts the thread and again once the server
+stops, running while the thread runs, and stopped if the thread ends while the
+server runs.
+
+\medskip
+\noindent lastPollFailed: $\mathbb{B}$, whether the latest poll failed (see
+run\_poller). It is false when lifespan starts the poller.
+
+\subsubsection{Environment Variables}
+
+\noindent MARKET\_ALWAYS\_OPEN: $\mathbb{B}$, default false, treats the market as
+always open, so the team can develop in the evening.
+
+\noindent MARKET\_POLLER\_ENABLED: $\mathbb{B}$, default false, starts the price
+poller with the server. The default keeps tests, and any server not set up to
+poll, from calling the provider.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The database migrations add the assets. Market never adds or removes one.
+  Doing that without a new release (FR30) isn't built yet.
+\item At most one running server has MARKET\_POLLER\_ENABLED on, so prices are
+  fetched once for all users, within the provider's request limits (SC4).
+\item Every time given to Market has a time zone.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent get\_asset\_by\_symbol(session, symbol):
+\begin{itemize}
+\item output: $out := $ the AssetInfo of $a \in$ assets with $a$.symbol $=$
+  symbol, even if not tradable
+\item exception: $exc := $ (no $a \in$ assets has $a$.symbol $=$ symbol
+  $\Rightarrow$ UnknownAssetError)
+\end{itemize}
+
+\noindent get\_asset(session, asset\_id):
+\begin{itemize}
+\item output: $out := $ the AssetInfo of $a \in$ assets with $a$.asset\_id $=$
+  asset\_id
+\item exception: $exc := $ (no $a \in$ assets has $a$.asset\_id $=$ asset\_id
+  $\Rightarrow$ UnknownAssetError)
+\end{itemize}
+
+\noindent get\_current\_price(session, asset\_id, now):
+\begin{itemize}
+\item output: $out := $ None if the asset has no price yet, else (price,
+  quoted\_at and obtained\_at of its current price $p$, delayed:
+  is\_delayed($p$.quoted\_at, now))
+\item exception: None
+\end{itemize}
+
+\noindent is\_delayed(quoted\_at, now):
+\begin{itemize}
+\item output: $out := $ is\_market\_open(now) $\land$ now $-$ quoted\_at $>$
+  limit, where limit is QUOTE\_STALENESS\_LIMIT from Constants (M7). It goes
+  by quoted\_at, since an old quote lags the real market (SEC-2) even if the
+  server only just got it. While the market is closed, no price is delayed
+  (FR33), since the last price then stays the same until the open.
+\item exception: None
+\end{itemize}
+
+\noindent is\_market\_open(now):
+\begin{itemize}
+\item output: $out := $ MARKET\_ALWAYS\_OPEN $\lor$ is\_trading\_time(now).
+  Polling, delayed prices and Trading (M12) all use it, so they agree on when
+  the market is open.
+\item exception: None
+\end{itemize}
+
+\noindent GET /v1/assets():
+\begin{itemize}
+\item output: $out := $ (market\_open: is\_market\_open(now), assets: for each
+  tradable $a \in$ assets by symbol, its symbol, name and price\_currency, with
+  the price (as Money), quoted\_at, obtained\_at and delayed from
+  get\_current\_price, or None, None, None and false before its first price).
+  Only tradable assets are listed, since a removed one may no longer be bought
+  (FR30). market\_open lets the phone tell the user the market is closed, so a
+  refused buy is explained (HA~H19).
+\item exception: None
+\end{itemize}
+
+\noindent GET /v1/market/usage():
+\begin{itemize}
+\item output: $out := $ (calls\_last\_minute: $|R(\text{now} - 1 \text{
+  minute})|$, busiest\_minute\_today: the most entries of $R(\text{start})$ in
+  one clock minute, or 0 if there are none, calls\_today:
+  $|R(\text{start})|$, limit\_per\_minute: FINNHUB\_CALLS\_PER\_MINUTE of
+  Market Providers (M3)), where $R(t)$ is the entries of requests from $t$ to
+  now, and start is the midnight that begins now's New York day, the
+  market's day
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent HOLIDAYS: set of Date, the weekdays in 2026 and 2027 that the New
+York Stock Exchange closes for a holiday.\\
+EARLY\_CLOSES: set of Date = \{2026-11-27, 2026-12-24, 2027-11-26\}, its early
+closes. Both are copied from the exchange's published calendar. After 2027,
+every weekday counts as a full trading day, so the next year's dates are added
+each December.
+
+\smallskip
+\noindent is\_trading\_time: DateTime $\rightarrow \mathbb{B}$\\
+is\_trading\_time(now) $:= d$ is a weekday not in HOLIDAYS $\land\ 9{:}30 \leq
+t < c$, where $d$ and $t$ are now's day and time in New York (NEW\_YORK, the
+America/New\_York time zone), and $c$ is 13:00 if $d \in$ EARLY\_CLOSES, else
+16:00. These are the New York Stock Exchange's hours,
+which every US exchange shares, since every asset is a US stock. Reading now in New York time handles daylight saving time.
+
+\smallskip
+\noindent POLL\_INTERVAL: Duration = 60 seconds, the wait after each check of
+should\_poll. A poll makes one call per tradable asset.
+Polling once a minute stays within the provider's limit while it allows at
+least that many calls a minute (SC4).\\
+POLL\_AFTER\_CLOSE: Duration = 15 minutes, how long polling goes on after the
+close, since the provider's closing price can arrive a few minutes late.\\
+STOP\_TIMEOUT: Duration = 15 seconds, how long the server waits for the poller
+to stop, so a poll under way can finish but a provider that doesn't answer
+can't keep the server from stopping.
+
+\smallskip
+\noindent should\_poll: DateTime $\rightarrow \mathbb{B}$\\
+should\_poll(now) $:=$ is\_market\_open(now) $\lor$ is\_market\_open(now $-$
+POLL\_AFTER\_CLOSE)
+
+\smallskip
+\noindent poll\_once(session: Session, provider: MarketDataProvider, now:
+DateTime) $\rightarrow \mathbb{B}$: for each tradable asset, it gets a quote from provider.get\_quote,
+saves it with save\_quote and adds (now, symbol, outcome) to requests. outcome
+is ``ok'' for a quote. A RateLimitedError gives ``rate\_limited'' and ends the
+poll, so the poller doesn't keep calling past the provider's request limits
+(SC4). An UnknownSymbolError gives ``unknown\_symbol'' and any other
+MarketDataError gives ``error''. A price the database refuses is logged and
+undoes only its own save. It does not commit. It returns true only if it
+saved a quote for every tradable asset.
+
+\smallskip
+\noindent save\_quote(session: Session, asset\_id: ID, $q$: Quote) adds $q$ to
+prices with obtained\_at the database's time. If the asset has a price at
+$q$.quoted\_at already, an equal price is kept and a different one is replaced,
+with a new obtained\_at, since the provider has corrected it.
+
+\smallskip
+\noindent run\_poller(stop: $\mathbb{B}$, provider: MarketDataProvider): until
+stop is true, if should\_poll(now) with now $:=$ system\_clock(), it runs
+poll\_once at now in a new SessionLocal session and commits. Either way, it
+then waits POLL\_INTERVAL. A test can pass its own clock, session factory and
+interval instead (dependency injection). A poll that raises an error is logged
+and rolled back, so one bad minute never stops the thread. After
+each poll, lastPollFailed $:=$ (the poll raised an error, or poll\_once
+returned false). So a rate limit, a provider that is down, a wrong key or a
+single symbol without a price all count as a failed poll.
+
+\smallskip
+{\raggedright
+\noindent lifespan: Lifespan. At start it reads the two environment variables
+and get\_provider\_settings of Market Providers (M3) and runs
+check\_always\_open, and a ValidationError or ValueError stops the server, so
+bad settings are found at once, even with the poller off. If
+MARKET\_POLLER\_ENABLED, run\_poller runs on its own thread with the provider
+from build\_provider until the server stops, which waits up to STOP\_TIMEOUT.
+It sets poller and lastPollFailed as their descriptions say.\par}
+
+\smallskip
+\noindent health: HealthCheck\\
+health() $:=$ (poller $=$ off $\Rightarrow$ (``ok'', ``poller off'') $|$
+poller $=$ stopped $\Rightarrow$ (\mbox{``degraded''}, ``poller stopped'') $|$
+poller $=$ running $\land$ lastPollFailed $\Rightarrow$ (\mbox{``degraded''},
+``last poll failed'') $|$ poller $=$ running $\land \neg$lastPollFailed
+$\Rightarrow$ (``ok'', None)). A failed poll counts as \mbox{``degraded''},
+since prices may then stop updating while no request sees an error (HA~H13).
+It shows until the next poll, which may be the next trading day. The poller
+being off is ``ok'', since only one server polls.
+
+\smallskip
+\noindent check\_always\_open(market: tuple of (market\_always\_open: $\mathbb{B}$,
+market\_poller\_enabled: $\mathbb{B}$), providers: ProviderSettings) raises
+ValueError if market has MARKET\_ALWAYS\_OPEN on and providers.market\_provider
+$\neq$ ``fake'', so real prices are never shown as live while the market is
+closed.
+
+\newpage
+
+% M11 Activity: #249
+\section{MIS of Trading} \label{MisTrading}
+
+\subsection{Module}
+
+Trading (M12 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Users (M8), Wallet (M9), Market (M10), Plugins
+(M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+{\raggedright\noindent Trading's errors are DomainErrors with HTTP status
+409, each with its code and message:
+\begin{itemize}
+\item RequestIdReusedError, ``request\_id\_reused'', ``This request ID was
+  already used for a different trade.''
+\item MarketClosedError, ``market\_closed'', ``The market is closed. Try again
+  when it opens.''
+\item PriceOutOfDateError, ``price\_out\_of\_date'', ``This stock's price is
+  out of date, so it can't be bought right now.''
+\item PriceChangedError, ``price\_changed'', ``The price is now $x$. Check it
+  and confirm again.'', with $x$ the new price to four decimals.
+\end{itemize}
+The local function buy says when each is raised. Status 409 says the request fits but conflicts with the market or an
+earlier trade, unlike Market's 404 for a stock that doesn't exist.\par}
+
+\medskip
+\noindent HoldingValue = tuple of (symbol: String, quantity: $\mathbb{Z}$,
+price: Money, quoted\_at: DateTime, delayed: $\mathbb{B}$, value: Money), one
+holding in the reply to GET /v1/me/portfolio.
+
+\subsubsection{Exported Constants}
+
+PLUGIN: Plugin $=$ (name: ``trading'', router: the two routes below, lifespan:
+None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{>{\raggedright}p{3.2cm} >{\raggedright}p{2.1cm}
+  >{\raggedright}p{5.2cm} >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+POST /v1/me/trades & ID, String, \{buy\}, $\mathbb{N}$, Money
+  & tuple of (trade\_id: ID, status: String, unit\_price: Money,
+  currency\_amount: Money, executed\_at: DateTime, cash\_balance: Money)
+  & RequestIdReusedError, MarketClosedError, UnknownAssetError,
+  PriceOutOfDateError, PriceChangedError, InsufficientFundsError,
+  NotAuthenticatedError \\
+GET /v1/me/portfolio & - & tuple of (cash\_balance: Money, holdings: seq of
+  HoldingValue, holdings\_value: Money, total\_value: Money, simulated:
+  $\mathbb{B}$) & NotAuthenticatedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent trades: set of Trade, every trade made, where Trade = tuple of
+(trade\_id: ID, request\_id: ID, portfolio\_id: ID, asset\_id: ID,
+trade\_type: String, quantity: $\mathbb{N}$, unit\_price: Decimal,
+currency\_amount: Decimal, cash\_balance\_after: Decimal, status: String,
+balance\_change\_id: ID, created\_at: DateTime). A request\_id appears at most
+once among a portfolio's trades. It is unique per portfolio, so the
+portfolio's lock is enough to check it, and no user gets back another's trade.
+Every trade is a ``buy'' with status ``executed'', and the database refuses
+any other. Selling (FR36), queued trades (FR40) and refusing a trade before the user
+accepts the simulation notice (FR34) come at Revision~0. A trade
+keeps cash\_balance\_after, so a repeat gets the same reply. It also keeps the
+balance\_change\_id of the one payment for it, so balances can be checked
+against trades (HA~H21).
+
+\medskip
+\noindent holdings: set of tuple of (portfolio\_id: ID, asset\_id: ID,
+quantity: $\mathbb{Z}$), the shares each portfolio holds, at most one entry per
+portfolio and stock, with quantity never below 0, which the database checks,
+so a sale at Revision~0 can't sell more shares than are held (FR37, HA~H20).
+
+\medskip
+\noindent When Wallet deletes a portfolio, its trades and holdings go with it.
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+The lock from lock\_live\_portfolio lasts until the session's transaction ends,
+by a commit, a rollback or closing the session, so requests that change one
+portfolio run one at a time. Every stock in holdings has at least one price,
+since it was bought at one and no price is ever deleted.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent Both routes take session from get\_db, now from get\_clock and $u :=$
+get\_current\_user().
+
+\medskip
+\noindent POST /v1/me/trades(request\_id, symbol, trade\_type, quantity,
+expected\_price):
+\begin{itemize}
+\item transition: the route locks the portfolio with locked $:=$
+  lock\_live\_portfolio(session, $u$.user\_id), runs $(t, \mathit{new}) :=$
+  buy(session, locked, request, now) on the request body, and commits once. So
+  the payment, the shares and the trade are saved together or not at all
+  (FR37). With the lock first, two copies of one request run one after the
+  other, and if the first made a trade, the second finds it (FR38).
+\item output: the status is 201 for a new trade, HTTP's status for something
+  made, and 200 for a repeat, which makes nothing. $out :=$ ($t$.trade\_id,
+  $t$.status, $t$.unit\_price, $t$.currency\_amount, $t$.created\_at in UTC,
+  $t$.cash\_balance\_after), so a repeated request\_id gets the same body as
+  the first answer, and a phone that lost that answer learns its trade went
+  through (HA~H46). UTC keeps the body the same, since a stored time may come
+  back in another time zone.
+\item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user,
+  with status 401, or else the exception buy raises, with status 404 for
+  UnknownAssetError and 409 for the rest. A refused request saves nothing, so
+  sending it again runs every check again. A trade\_type other than ``buy''
+  doesn't fit the body yet, so it gets JSON Format's 422.
+\end{itemize}
+
+\noindent GET /v1/me/portfolio():
+\begin{itemize}
+\item output: $out :=$ portfolio\_value(session, live\_portfolio\_id(session,
+  $u$.user\_id), now) with simulated $=$ true, so the phone labels the values
+  as simulated (FR43). It doesn't lock, so showing the portfolio never waits
+  for a buy. A buy that commits while it runs can then make one reply off by
+  that buy, and the next is right.
+\item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user, with
+  status 401
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent TradeRequest = tuple of (request\_id: ID, symbol: String,
+trade\_type: \{buy\}, quantity: $\mathbb{N}$, expected\_price: Money), the
+body of POST /v1/me/trades. request\_id is new for each buy the user confirms
+and the same for each retry of it (an idempotency key). expected\_price is the
+price the user confirmed, so the buy runs only at that price (SEC-29).
+
+\medskip
+\noindent buy(session: Session, locked: LockedPortfolio, request: TradeRequest,
+now: DateTime) $\rightarrow$ tuple of (t: Trade, new: $\mathbb{B}$) holds the
+trade rules and never commits, by the commit rule of Database (M1). Here
+$p :=$ locked.portfolio\_id, and old is the
+trade in trades with portfolio\_id $p$ and request\_id request.request\_id, or
+None. old matches request when it has the same symbol and quantity, and
+old.unit\_price $=$ request.expected\_price. For a new request (old $=$ None),
+$a :=$ get\_asset\_by\_symbol(session, request.symbol), $c :=$
+get\_current\_price(session, $a$.asset\_id, now) and cost $:=$
+request.quantity $\times$ $c$.price, exact, since it is a whole number times a
+price (NFR1). The one read $c$ gives the price checked, the cost and the
+trade's price, so they can't differ.
+\begin{itemize}
+\item transition: for a new request that passes every check, $b :=$
+  change\_balance(session, locked, $-$cost, trade\_purchase) pays for it, $p$'s
+  holding of $a$ gains request.quantity shares (from 0 if none), and trades
+  $:=$ trades $\cup \{t\}$, where $t :=$ (a new ID, request.request\_id, $p$,
+  $a$.asset\_id, ``buy'', request.quantity, $c$.price, cost,
+  $b$.cash\_balance\_after, ``executed'', $b$.balance\_change\_id, now).
+  It takes now, not the database's time, so the trade's time is the one its
+  market hours and price were checked at.
+\item output: $out :=$ (old matches request $\Rightarrow$ (old, false) $\mid$
+  old $=$ None $\Rightarrow$ ($t$, true)), so a repeat gets its first trade
+  back, even after the market closes or the price moves, since that trade
+  already went through.
+\item exception: for a repeat, $exc := ($old $\neq$ None $\land$ old does not
+  match request $\Rightarrow$\\
+  \hspace*{1em}RequestIdReusedError$)$.\\
+  A different trade with a used ID is refused, since it is not a retry, and
+  buying it too would give the ID two trades.\\
+  For a new request the first of these
+  that holds is raised, in this order:\\
+  \hspace*{1em}$exc := (\neg$is\_market\_open(now) $\Rightarrow$
+    MarketClosedError\\
+  \hspace*{1em}$\mid$ no asset has symbol request.symbol $\Rightarrow$
+    UnknownAssetError\\
+  \hspace*{1em}$\mid c =$ None $\lor$ $c$.delayed $\Rightarrow$
+    PriceOutOfDateError\\
+  \hspace*{1em}$\mid c$.price $\neq$ request.expected\_price $\Rightarrow$
+    PriceChangedError\\
+  \hspace*{1em}$\mid$ get\_balance(session, $p$) $<$ cost $\Rightarrow$
+    InsufficientFundsError$)$\\
+  MarketClosedError refuses a buy while the market is closed, so it never
+  runs at an old price (HA~H19). Queueing it instead (FR40) comes at
+  Revision~0. PriceOutOfDateError refuses a delayed price (FR39), or no price yet, since
+  either way there is no current price to buy at. buy doesn't check
+  is\_tradable yet, since removing a stock (FR30) isn't built.
+  PriceChangedError's message gives the new price, $c$.price, so the phone can
+  show it and ask the user to confirm again (SEC-29). InsufficientFundsError
+  comes from change\_balance (FR37).
+\end{itemize}
+
+\noindent portfolio\_value(session: Session, portfolio\_id: ID, now: DateTime)
+$\rightarrow$ tuple of (cash\_balance: Decimal, holdings: seq of HoldingValue,
+holdings\_value: Decimal, total\_value: Decimal) only reads.
+\begin{itemize}
+\item output: $out := (b, H, s, b + s)$, where $b :=$ get\_balance(session,
+  portfolio\_id), $H$ has one entry per holding $h$ of portfolio\_id, in order
+  of symbol, so every reply lists them in the same order, and $s$, the sum
+  of their values, is the portfolio value of FR42, which leaves the cash out.
+  With $c :=$
+  get\_current\_price(session, $h$.asset\_id, now), $h$'s entry is (its symbol,
+  $h$.quantity, $c$.price, $c$.quoted\_at, $c$.delayed, $h$.quantity $\times$
+  $c$.price). A delayed price is still used, since FR42 asks for each stock's
+  most recent price, and delayed flags it, so the phone marks it (FR33). A holding gives quoted\_at,
+  the time delayed is judged by, but not yet obtained\_at, the time FR33 asks
+  to show. No
+  amount needs rounding, since none comes from a division.
+\item exception: None
+\end{itemize}
+
+\newpage
+
+% M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
+% M18 Navigation, M19 Screens and M20 Sync Service (app): #250
+\section{MIS of Plugins} \label{MisPlugins}
+
+\subsection{Module}
+
+Plugins (M22 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Plugin = tuple of (name: String, router: Router or None, lifespan:
+Lifespan or None, health: HealthCheck or None), a record of what one module adds
+to the server. create\_app of Control (M6) depends on this record alone, never
+on a module (the plug-in pattern). It cannot be changed once built, so the
+check in new Plugin still holds when Control reads it.
+\begin{itemize}
+\item name: the module's folder name, such as ``market''.
+\item router: the module's routes, which Control (M6) adds under /v1.
+\item lifespan: the module's background work, which runs while the server runs.
+\item health: the module's health check, which Control (M6) shows in
+  GET~/v1/health.
+\end{itemize}
+
+\noindent Lifespan = App $\rightarrow$ work that starts with the server and
+stops when it shuts down, such as the price poller of Market (M10). A Lifespan
+stops its work in a finally block, so the work still stops if another module
+fails to start.
+
+\medskip
+\noindent HealthCheck = () $\rightarrow$ ModuleHealth, a check of the
+module's own state.
+
+\medskip
+\noindent ModuleHealth = tuple of (status: String, detail: String or None), a
+module's health. Its status is ``ok'' or \mbox{``degraded''}, and its detail is a
+short fixed text for the team, such as ``poller stopped''.
+
+\medskip
+\noindent Router: a group of HTTP routes (a FastAPI APIRouter).
+
+\medskip
+\noindent App: the web app that serves the routes (a FastAPI app).
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{2.4cm} p{6.4cm} p{2cm} p{2.6cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new Plugin & String, Router or None, Lifespan or None, HealthCheck or None &
+  Plugin & ValueError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Every Lifespan follows the start and stop rule in its type above.
+\item A HealthCheck reads only its module's own state in memory, with no
+  database or network call, so it answers at once. Its detail never holds a
+  secret or an error's own text, because GET /v1/health needs no signed-in
+  user.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new Plugin(name, router, lifespan, health):
+\begin{itemize}
+\item output: $out :=$ (name: name, router: router, lifespan: lifespan, health:
+  health). Each of router, lifespan and health is None when the module leaves
+  it out.
+\item exception: $exc :=$ (lifespan $\neq$ None $\land$ health $=$ None
+  $\Rightarrow$ ValueError). A module with background work must report its
+  health, because that work can fail without any request seeing it.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\newpage
+
+\section{MIS of JSON Format} \label{MisJSON}
+
+\subsection{Module}
+
+JSON Format (M23 in the MG)
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Money = Decimal, an amount, such as a price. It is sent to the phone
+as a JSON string with exactly four decimals (see \_to\_text), not as a JSON
+number, since the phone would read a number as a float, which can't hold most
+decimals exactly. Four decimals keep any rounding far below
+VALUE\_TOLERANCE (NFR1).
+
+\medskip
+\noindent DomainError = tuple of (code: String, message: String, status:
+$\mathbb{N}$), an error a route raises to refuse a request it understood. The
+code names the kind of refusal, the message says why in words a user can read,
+and the status is the HTTP status of the reply. The defaults are code
+``domain\_error'', message ``This request could not be completed.'' and status
+400. Each kind of refusal is a subtype of DomainError with its own code, and it
+can also set its own message and status.
+
+\medskip
+\noindent Refusal = tuple of (detail: tuple of (code: String, message:
+String)), the JSON body handle\_domain\_error sends, with HTTP status
+$e$.status, for every DomainError $e$ a route raises, so the phone handles
+every module's refusals the same way:
+
+\begin{center}
+\verb|{"detail": {"code": e.code, "message": e.message}}|
+\end{center}
+
+\noindent A request that doesn't fit a route's types, such as an amount with
+over 4 decimals, never reaches the route. FastAPI raises a
+RequestValidationError, its own type, which holds a FieldError for each field
+that doesn't fit. A FieldError, in FastAPI's shape, says what is wrong (type and msg, plus ctx
+for some) and where (loc). FastAPI also keeps the value sent with each one
+(input), which handle\_validation\_error leaves out.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so the replies fit their column.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.0cm}
+  >{\raggedright\arraybackslash}p{4.1cm}
+  >{\raggedright\arraybackslash}p{4.8cm}
+  >{\raggedright\arraybackslash}p{2.7cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new Money & Decimal or $\mathbb{Z}$ or $\mathbb{R}$ or String & Money &
+  ValidationError \\
+new DomainError & String or None & DomainError & - \\
+handle\_domain\_error & DomainError & tuple of (status: $\mathbb{N}$, body:
+  Refusal) & - \\
+handle\_validation\_error & RequestValidationError & tuple of (status:
+  $\mathbb{N}$, body: tuple of (detail: seq of FieldError, each without its
+  input)) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+Every amount a route sends to the phone has the type Money. An amount that
+comes from a division or an average is rounded to four decimals before it goes
+in a Money field.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new Money(amount):
+\begin{itemize}
+\item output: $out := $ the Decimal that amount names
+\item exception: $exc := $ (amount is not a finite number, or cannot be
+  written exactly with four decimals $\Rightarrow$ ValidationError). It is
+  refused, never rounded, so no amount, such as the price a user confirmed,
+  is changed quietly.
+\end{itemize}
+
+\noindent new DomainError(message):
+\begin{itemize}
+\item output: $out :=$ (code: $k$.code, message: (message $\neq$ None
+  $\Rightarrow$ message $|$ message $=$ None $\Rightarrow$ $k$.message),
+  status: $k$.status), where $k$ is the kind of DomainError being made and
+  message is None when left out. A refusal is given a message when it needs
+  details, such as PriceChangedError of Trading (M12), which gives the new
+  price (SEC-29).
+\item exception: None
+\end{itemize}
+
+\noindent handle\_domain\_error($e$):
+\begin{itemize}
+\item output: $out :=$ (status: $e$.status, body: the Refusal of $e$)
+\item exception: None
+\end{itemize}
+
+\noindent handle\_validation\_error($e$):
+\begin{itemize}
+\item output: $out :=$ (status: 422, body: (detail: the FieldErrors of $e$,
+  each without its input)), the reply FastAPI's own handler sends, but without
+  the values the phone sent. Some can't be written as JSON, such as NaN in a
+  body, and sending one back would turn the 422 (SEC-25) into a 500.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent \_to\_text: Money $\rightarrow$ String
+
+\noindent \_to\_text($m$) $:=$ $m$ with exactly four digits after the decimal
+point, such as ``84.0000'' for 84. A zero is always ``0.0000'', never
+``-0.0000'', since a minus sign marks a loss (FR44).
+
+\newpage
+
+% M24 API Service (app): #250
 
 \bibliographystyle {plainnat}
 \bibliography {../../../refs/References}
