@@ -71,9 +71,11 @@ user and returns their ID. It flushes but never commits.
   the seed script adds the demo user in a savepoint, which undoes only that
   insert when the demo user already exists, such as after a failed run.
 - It refuses a time zone that doesn't exist with `ValueError`, before adding
-  anything. A user's activity is counted by the calendar day in their time
-  zone (SEC-23), so a wrong one would break that later. The `users` table
-  doesn't check it.
+  anything, so a stored zone always works. The `users` table doesn't check
+  it.
+- Nothing reads the stored zone yet. Activity (#190) counts each day in the
+  zone the phone sends with each sync, since a day follows where the user is
+  (SEC-23).
 - The default, `DEFAULT_TIME_ZONE`, is `America/Toronto`, since the team and
   its first users are in Ontario.
 
@@ -98,5 +100,5 @@ user and returns their ID. It flushes but never commits.
 
 | File | What it checks |
 |---|---|
-| `test_users.py` | The demo user on and off, off by default, and `create_user` with its time zone check |
+| `test_users.py` | The demo user when it is on, that it is off by default, `create_user` with its time zone check, and the table refusing a user with no time zone |
 | `test_seed_demo.py` | The seed script: the demo user with a portfolio at 0, running it twice, a user with no portfolio, and `reset` |

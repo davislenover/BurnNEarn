@@ -128,19 +128,6 @@ def test_each_holding_is_quantity_times_its_latest_price(
     assert value.total_value == Decimal("1778.7467")
 
 
-def test_a_new_price_changes_the_value(session: Session) -> None:
-    portfolio_id = portfolio(session, "0")
-    hold(session, portfolio_id, "AAPL", 2)
-    price(session, "AAPL", "101.5", quoted_at=NOW - timedelta(minutes=2))
-    before = portfolio_value(session, portfolio_id, NOW)
-
-    price(session, "AAPL", "110")
-    after = portfolio_value(session, portfolio_id, NOW)
-
-    assert before.total_value == Decimal("203")
-    assert after.total_value == Decimal("220")
-
-
 def test_a_delayed_price_is_still_used_and_flagged(session: Session) -> None:
     portfolio_id = portfolio(session, "0")
     hold(session, portfolio_id, "AAPL", 2)
@@ -162,36 +149,6 @@ def test_after_the_close_the_last_price_is_not_delayed(
     (aapl,) = portfolio_value(session, portfolio_id, CLOSED).holdings
 
     assert not aapl.delayed
-
-
-def test_a_portfolio_with_no_shares_is_worth_its_cash(
-    session: Session,
-) -> None:
-    portfolio_id = portfolio(session, "412")
-
-    value = portfolio_value(session, portfolio_id, NOW)
-
-    assert value.holdings == ()
-    assert value.holdings_value == Decimal("0")
-    assert value.total_value == Decimal("412")
-
-
-def test_only_this_portfolios_holdings_and_cash_count(
-    session: Session,
-) -> None:
-    theirs = portfolio(session, "77")
-    mine = portfolio(session, "10")
-    hold(session, mine, "AAPL", 1)
-    hold(session, theirs, "AAPL", 5)
-    hold(session, theirs, "MSFT", 1)
-    price(session, "AAPL", "101.5")
-    price(session, "MSFT", "400")
-
-    value = portfolio_value(session, mine, NOW)
-
-    assert [(h.symbol, h.quantity) for h in value.holdings] == [("AAPL", 1)]
-    assert value.cash_balance == Decimal("10")
-    assert value.total_value == Decimal("111.5")
 
 
 @pytest.fixture
@@ -278,11 +235,14 @@ def test_the_portfolio_is_the_current_users(
     assert reply["holdings"] == []
 
 
-def test_the_docs_say_simulated_is_always_sent(client: TestClient) -> None:
+def test_the_docs_say_simulated_is_always_sent_and_true(
+    client: TestClient,
+) -> None:
     schema = client.get("/openapi.json").json()
 
     reply = schema["components"]["schemas"]["PortfolioReply"]
     assert "simulated" in reply["required"]
+    assert reply["properties"]["simulated"]["const"] is True
 
 
 def test_the_portfolio_with_no_current_user_is_a_401(

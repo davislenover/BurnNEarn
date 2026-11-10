@@ -58,6 +58,9 @@ and JSON Format.\\
 Nov 9, 2026 & 1.1 & Davis Lenover: the MIS of Users and Wallet, with the reason
 for each decision. 1 to 5: Revision History, Symbols, Introduction, Notation and
 Module Decomposition.\\
+Nov 10, 2026 & 1.2 & Davis Lenover: the reason for each decision in every other
+server module, Market Providers as a template module, error handlers in JSON
+Format, and the 401 on both Trading routes.\\
 \bottomrule
 \end{tabularx}
 
@@ -85,14 +88,15 @@ HTTP & Hypertext Transfer Protocol\\
 IANA & Internet Assigned Numbers Authority, which names time zones\\
 ID & Identifier\\
 JSON & JavaScript Object Notation\\
+LC & Likely Change (SRS), such as LC3\\
 M & Module (MG), such as M8\\
 MG & Module Guide\\
 MIS & Module Interface Specification\\
 NaN & Not a Number, a Decimal value that is not a number\\
 NFR & Nonfunctional Requirement (SRS)\\
+SC & System Constraint (SRS), such as SC4\\
 SEC & Security Requirement (SRS and HA)\\
 SRS & Software Requirements Specification\\
-UC & Use Case (SRS)\\
 URL & Uniform Resource Locator\\
 USD & United States dollar\\
 UTC & Coordinated Universal Time\\
@@ -149,7 +153,7 @@ multiple assignment statement and conditional rules follow the form $(c_1
 table below gives the primitive data types.
 
 \begin{center}
-\renewcommand{\arraystretch}{1.2}
+\renewcommand{\arraystretch}{1.1}
 \noindent 
 \begin{tabular}{l l p{9.6cm}} 
 \toprule 
@@ -171,12 +175,12 @@ identifier & ID & a UUID, which the phone can make without the database, such as
 
 \noindent \progname{} also uses derived types. A sequence of values of one type
 T is ``seq of T'', a set is ``set of T'', and a tuple, whose values may have
-different types, is ``tuple of (name: T, ...)''. A string is a sequence of
-characters, and a value that may be missing is ``T or None''. A function from
+different types, is ``tuple of (name: T, ...)''. A value that may be missing is
+``T or None''. A function from
 T1 to T2 is T1 $\rightarrow$ T2, and a local function is given by its type
 signature and then its specification. ``new X'' or X($v$, ...) makes a value
-of type X, $t$.f is the value of field f in tuple $t$, and $p$.f($x$) calls
-access program f of $p$, which the In column leaves out. A type or a constant
+of type X. $t$.f is field f of tuple $t$. $p$.f($x$) calls access program f of
+$p$, and the In column leaves $p$ out. A type or a constant
 is defined with $=$, a type written \{a, b\} has just the values a and b, and
 $:=$ gives a value in the semantics. There,
 transition says how the state changes, output gives $out$, the value returned,
@@ -184,9 +188,9 @@ and exception gives $exc$, the exception raised. When no case of $exc$ holds,
 nothing is raised.
 
 Types such as Session, Plugin and DomainError are exported by a module and
-defined in its section. ValueError is Python's, IntegrityError and
-NoResultFound are SQLAlchemy's, ValidationError is Pydantic's, and
-RequestValidationError is FastAPI's. In
+defined in its section. ValueError is Python's, IntegrityError,
+NoResultFound, OperationalError and SQLAlchemyError are SQLAlchemy's,
+ValidationError is Pydantic's, and RequestValidationError is FastAPI's. In
 an access program table, In gives each input's type in order, separated by
 commas, and - means none. A route is written as its HTTP method and path, such
 as GET /v1/me/balance. Its In column lists what the phone
@@ -546,7 +550,7 @@ currently ``finnhub'' or ``fake'', and the key for Finnhub.
 RateLimitedError (the request limit was hit) and UnknownSymbolError (no price
 for the symbol). Market (M10) treats each kind differently. A RateLimitedError
 ends its poll, since more calls would be refused too. An UnknownSymbolError is
-recorded as unknown\_symbol, not error, so a symbol with no price is told
+recorded as ``unknown\_symbol'', not ``error'', so a symbol with no price is told
 apart from a provider that fails.
 
 \subsubsection{Exported Constants}
@@ -1094,19 +1098,20 @@ amount: Decimal, reason: BalanceChangeReason, activity\_date: Date or None,
 created\_at: DateTime), every change to a balance, never edited. Each amount is
 not 0, since a change of 0 would add a record without changing the balance. It
 is above 0 exactly when the reason is activity\_reward, so a missing
-minus sign can't turn a purchase into free currency, and the
-change has an activity\_date, the day of activity it pays for, exactly when the
-reason is activity\_reward.
+minus sign can't turn a purchase into free currency. A change has an
+activity\_date, the day of activity it pays for, exactly when the reason is
+activity\_reward, so a day's rewards can be added up (SEC-19).
 
 \medskip
+{\raggedright
 \noindent Every amount and balance has at most 4 decimals and 12 digits before
-the point. Four decimals match Money (M23) and keep rounding far below
-VALUE\_TOLERANCE (NFR1). For every portfolio $p$, $p$.cash\_balance is the sum of the amounts
-of its changes (SEC-22). The database does not check this sum. change\_balance
+the point. Four decimals match Money of JSON Format (M23) and keep rounding far
+below VALUE\_TOLERANCE (NFR1). For every portfolio $p$, $p$.cash\_balance is
+the sum of the amounts of its changes (SEC-22). The database does not check this sum. change\_balance
 keeps it true, since it is the only routine that changes a cash\_balance, and it
 adds the change in the same transaction. Deleting a portfolio deletes its
 changes, and other modules' rows that point at it with ON DELETE CASCADE, such
-as the trades and holdings of Trading (M12).
+as the trades and holdings of Trading (M12).\par}
 
 \subsubsection{Environment Variables}
 
@@ -1223,7 +1228,7 @@ and the user $u :=$ get\_current\_user() of Users (M8).
 \begin{itemize}
 \item output: $out :=$ (cash\_balance: $b$), where $b$ is get\_balance(session,
   $q$) as Money, and $q$ is live\_portfolio\_id(session, $u$.user\_id). The
-  phone shows it, since rewards add to it (UC2) and a purchase can't cost more
+  phone shows it, since rewards add to it (SRS use case UC2) and a purchase can't cost more
   (FR37). It only reads, so it doesn't lock or commit.
 \item exception: $exc :=$ the NotAuthenticatedError of get\_current\_user, with
   status 401
@@ -1442,9 +1447,9 @@ which every US exchange shares, since every asset is a US stock. Reading now in 
 
 \smallskip
 \noindent POLL\_INTERVAL: Duration = 60 seconds, the wait after each check of
-should\_poll. Once a minute keeps a poll's calls, one per tradable asset, within the
-provider's request limits while there are no more tradable assets than its
-calls a minute (SC4).\\
+should\_poll. A poll makes one call per tradable asset.
+Polling once a minute stays within the provider's limit while it allows at
+least that many calls a minute (SC4).\\
 POLL\_AFTER\_CLOSE: Duration = 15 minutes, how long polling goes on after the
 close, since the provider's closing price can arrive a few minutes late.\\
 STOP\_TIMEOUT: Duration = 15 seconds, how long the server waits for the poller
@@ -1458,7 +1463,7 @@ POLL\_AFTER\_CLOSE)
 
 \smallskip
 \noindent poll\_once(session: Session, provider: MarketDataProvider, now:
-DateTime): for each tradable asset, it gets a quote from provider.get\_quote,
+DateTime) $\rightarrow \mathbb{B}$: for each tradable asset, it gets a quote from provider.get\_quote,
 saves it with save\_quote and adds (now, symbol, outcome) to requests. outcome
 is ``ok'' for a quote. A RateLimitedError gives ``rate\_limited'' and ends the
 poll, so the poller doesn't keep calling past the provider's request limits
@@ -1506,7 +1511,8 @@ It shows until the next poll, which may be the next trading day. The poller
 being off is ``ok'', since only one server polls.
 
 \smallskip
-\noindent check\_always\_open(market, providers: ProviderSettings) raises
+\noindent check\_always\_open(market: tuple of (market\_always\_open: $\mathbb{B}$,
+market\_poller\_enabled: $\mathbb{B}$), providers: ProviderSettings) raises
 ValueError if market has MARKET\_ALWAYS\_OPEN on and providers.market\_provider
 $\neq$ ``fake'', so real prices are never shown as live while the market is
 closed.
@@ -1530,10 +1536,18 @@ Database (M1), Clock (M2), Users (M8), Wallet (M9), Market (M10), Plugins
 \subsubsection{Exported Types}
 
 {\raggedright\noindent Trading's errors are DomainErrors with HTTP status
-409: RequestIdReusedError (code request\_id\_reused), MarketClosedError
-(market\_closed), PriceOutOfDateError (price\_out\_of\_date) and
-PriceChangedError (price\_changed). The local function buy says when each is
-raised. Status 409 says the request fits but conflicts with the market or an
+409, each with its code and message:
+\begin{itemize}
+\item RequestIdReusedError, ``request\_id\_reused'', ``This request ID was
+  already used for a different trade.''
+\item MarketClosedError, ``market\_closed'', ``The market is closed. Try again
+  when it opens.''
+\item PriceOutOfDateError, ``price\_out\_of\_date'', ``This stock's price is
+  out of date, so it can't be bought right now.''
+\item PriceChangedError, ``price\_changed'', ``The price is now $x$. Check it
+  and confirm again.'', with $x$ the new price to four decimals.
+\end{itemize}
+The local function buy says when each is raised. Status 409 says the request fits but conflicts with the market or an
 earlier trade, unlike Market's 404 for a stock that doesn't exist.\par}
 
 \medskip

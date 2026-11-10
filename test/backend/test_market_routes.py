@@ -4,10 +4,10 @@ from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from app.market.models import Asset, ProviderRequest, RequestOutcome
+from app.market.models import Asset, Price, ProviderRequest, RequestOutcome
 
 # Tuesday Nov 10, 2026 at 10:00 in New York: the market is open.
 OPEN = datetime(2026, 11, 10, 15, 0, tzinfo=UTC)
@@ -45,7 +45,10 @@ def test_assets_have_no_price_before_the_first_quote(
 
 
 def test_an_asset_shows_its_newest_price(
-    client: TestClient, add_price: AddPrice, at_time: SetTime
+    client: TestClient,
+    db_session: Session,
+    add_price: AddPrice,
+    at_time: SetTime,
 ) -> None:
     at_time(OPEN)
     add_price("AAPL", "101.5", OPEN - timedelta(seconds=20))
@@ -56,7 +59,9 @@ def test_an_asset_shows_its_newest_price(
     assert datetime.fromisoformat(aapl["quoted_at"]) == OPEN - timedelta(
         seconds=20
     )
-    assert aapl["obtained_at"] is not None
+    # When the database saved it, not the quote time.
+    obtained_at = db_session.scalars(select(Price.obtained_at)).one()
+    assert datetime.fromisoformat(aapl["obtained_at"]) == obtained_at
     assert aapl["delayed"] is False
 
 
@@ -99,6 +104,8 @@ def test_usage_counts_the_calls_to_the_provider(
         # 2 in the last minute
         OPEN - timedelta(seconds=10),
         OPEN - timedelta(seconds=30),
+        # 1 just before it
+        OPEN - timedelta(seconds=90),
         # 3 in one minute earlier today
         OPEN - timedelta(hours=1, seconds=1),
         OPEN - timedelta(hours=1, seconds=2),
@@ -119,7 +126,7 @@ def test_usage_counts_the_calls_to_the_provider(
     assert usage == {
         "calls_last_minute": 2,
         "busiest_minute_today": 3,
-        "calls_today": 5,
+        "calls_today": 6,
         "limit_per_minute": 60,
     }
 

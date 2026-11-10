@@ -88,7 +88,7 @@ class InsufficientFundsError(DomainError):
     status = 409
 ```
 
-`handle_domain_error` in `main.py` sends any of them in one shape, with its
+`handle_domain_error` in `errors.py` sends any of them in one shape, with its
 status:
 
 ```json
@@ -143,10 +143,11 @@ time in UTC.
 point it at a database ending in `_test` before that.
 - `get_db` gives each request its own session, through `Depends(get_db)`. The
   session closes when the request ends, which drops whatever the route didn't
-  commit. Only routes commit, once per request
+  commit. A route commits once per request
   ([rule 4](../BackendArchitecture.md#rules)).
 - `SessionLocal` makes a session outside a request, such as for each of
-  market's polls and for `seed_demo`.
+  market's polls and for `seed_demo`. That code commits once for each piece
+  of work, such as one poll.
 - `Base` is every table's base class. Alembic reads its metadata.
 - `NAMING_CONVENTION` gives each index and constraint a name you can predict,
   such as `uq_prices_asset_id_quoted_at`, so a migration can refer to it.
@@ -186,11 +187,11 @@ there and in the SRS together. Market uses `QUOTE_CURRENCY` and
 
 | File | What it checks |
 |---|---|
-| `test_create_app.py` | Routes under `/v1`, a lifespan without a health check refused, lifespans started in order and stopped in reverse, unique module names |
-| `test_health.py` | `GET /v1/health`: 200 or 503, degraded modules, and a check that raises or returns the wrong thing, shown without its error |
-| `test_errors.py` | A `DomainError`'s JSON and status, and a 422 without the values sent, even `NaN` |
+| `test_create_app.py` | A lifespan without a health check refused, lifespans started in order and stopped in reverse, unique module names |
+| `test_health.py` | `GET /v1/health`: 200 with a degraded module, 503 without the database, a module without a check left out, and a check that raises or returns the wrong thing, shown without its error |
+| `test_errors.py` | A `DomainError`'s JSON and status, a message set when it is raised, and a 422 in FastAPI's shape without the values sent, even ones JSON can't write, such as `NaN` |
 | `test_money.py` | `Money` as text with 4 decimals, a `Decimal` in Python, more than 4 decimals refused |
-| `test_clock.py` | The real clock is in UTC, and a test can set the time a route sees |
-| `test_migrations.py` | One newest migration, and a database password with special characters |
+| `test_clock.py` | The real clock is in UTC, and `get_clock` gives routes that clock |
+| `test_migrations.py` | One newest migration, a database password with special characters, and migrations that match the models |
 | `test_public_files.py` | Modules import each other only through their public files, and only `registry.py` imports a `plugin.py` |
-| `test_test_setup.py` | The shared test setup: a database ending in `_test`, each test's rows undone, a route keeps a row only if it commits, the real `get_db` |
+| `test_test_setup.py` | The shared test setup: each test's rows undone, a route keeps a row only if it commits, the real `get_db` through a healthy `GET /v1/health`, and `make_portfolio`'s funding |

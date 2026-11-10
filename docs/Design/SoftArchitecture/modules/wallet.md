@@ -125,8 +125,8 @@ change a balance.
 
 | File | What it checks |
 |---|---|
-| `test_wallet_money.py` | The lock, `change_balance` and the queries: exact amounts, every refusal changes nothing, the balance is the sum of its changes, a second transaction waits for the lock, wallet never commits |
-| `test_wallet_tables.py` | The rules the tables keep by themselves |
+| `test_wallet_money.py` | The lock, `change_balance`, `delete_portfolio` and the queries: exact amounts, every refusal changes nothing, the balance is the sum of its changes, a second transaction waits for the lock, wallet never commits |
+| `test_wallet_tables.py` | The rules the tables keep by themselves: a balance of 0 or more, one live portfolio per user, a real user, and each balance change's amount, reason and activity date |
 | `test_wallet_balance.py` | `GET /v1/me/balance`: the balance as text, 0 for a new portfolio, 401 without a user |
 | `test_seed_demo.py` | `seed` and `reset`: one demo user, a live portfolio at 0, a second run changes nothing, no old changes left |
-| `test_test_setup.py` | Its `make_portfolio` tests: a live portfolio funded by one old reward and committed, and one for the demo user |
+| `test_test_setup.py` | Its `make_portfolio` test: a live portfolio funded by one old reward and committed |

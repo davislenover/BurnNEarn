@@ -37,8 +37,8 @@ rejects any import that breaks these rules.
 ![UML component diagram of the PoC backend](figures/backend-poc.png)
 
 The rows inside "Modules" show the stacking. Trading uses market and wallet,
-activity uses wallet, and wallet uses users. Every module with routes also
-uses users to get the current user.
+activity uses wallet, and wallet uses users. Wallet and trading also use users
+to get the current user. Market's routes need no user.
 
 The diagram's source is `figures/backend-poc.puml`. After changing a diagram,
 run this from the repository root to update its PNG:
@@ -103,8 +103,9 @@ with `_`. Which file the class is in says who may import it.
 2. Never import a module above yours in the diagram.
 3. Never use another module's tables. A foreign key into them is fine, such
    as `trades.asset_id` to `assets`.
-4. Only routes commit, once per request. Market's poller thread is the one
-   exception: it commits once per poll.
+4. A route commits once per request. Code that answers no request commits
+   once for each piece of work, in its own session, such as each of market's
+   polls or one run of `seed_demo`. Nothing below them commits.
 5. Money only moves through wallet. Lock the portfolio with
    `wallet.interface.lock_live_portfolio()` before calling `change_balance`,
    as [wallet](modules/wallet.md#changing-a-balance) shows.
@@ -164,12 +165,9 @@ module's queries.
 
 ## Migrations
 
-There is still one chain, and 0001 to 0003 don't change. Name each new
-migration after its module:
-
-```bash
-uv run alembic revision --autogenerate --rev-id market_0001 -m "provider requests"
-```
-
-If `main` gets a new migration while you work, set your migration's
-`down_revision` to it before you merge. The backend README shows how.
+There is still one chain, and 0001 to 0003 don't change. Each new migration
+is named after its module and numbered within it, such as `market_0002`. If
+`main` gets a new migration while you work, set your migration's
+`down_revision` to it before you merge, and keep its name. The
+[backend README](../../../src/backend/README.md#change-the-database) shows the
+commands.

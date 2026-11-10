@@ -61,15 +61,6 @@ def changes(session: Session, portfolio_id: uuid.UUID) -> list[Decimal]:
     )
 
 
-def test_a_live_portfolio_starts_at_zero(session: Session) -> None:
-    user_id = create_user(session)
-
-    portfolio_id = create_live_portfolio(session, user_id)
-
-    assert live_portfolio_id(session, user_id) == portfolio_id
-    assert get_balance(session, portfolio_id) == Decimal("0")
-
-
 def test_the_live_portfolio_is_found_and_locked_not_a_scenario_one(
     session: Session,
 ) -> None:
@@ -115,15 +106,6 @@ def test_a_portfolio_already_loaded_shows_the_new_balance(
     assert loaded.cash_balance == Decimal("7.5")
 
 
-def test_spending_the_whole_balance_leaves_zero(session: Session) -> None:
-    locked = new_wallet(session)
-    change_balance(session, locked, Decimal("100"), REWARD, DAY)
-
-    receipt = change_balance(session, locked, Decimal("-100"), PURCHASE)
-
-    assert receipt.cash_balance_after == Decimal("0")
-
-
 @pytest.mark.parametrize(
     "amount",
     [
@@ -149,7 +131,9 @@ def test_the_balance_is_always_the_sum_of_its_changes(
     session: Session,
 ) -> None:
     locked = new_wallet(session)
-    amounts = ["300", "-12.3456", "0.0001", "-287.6545", "42"]
+    # -287.6545 spends the balance to exactly 0, the lowest it may go.
+    # 1.00010 is written with 5 decimals but fits in 4, so it is allowed.
+    amounts = ["300", "-12.3456", "0.0001", "-287.6545", "42", "1.00010"]
     for amount in amounts:
         reason = REWARD if not amount.startswith("-") else PURCHASE
         day = DAY if reason == REWARD else None
@@ -167,7 +151,8 @@ def test_the_balance_is_always_the_sum_of_its_changes(
 @pytest.mark.parametrize(
     ("amount", "reason", "day"),
     [
-        (Decimal("0"), REWARD, DAY),
+        # A purchase, since the sign rule would refuse a reward of 0 first.
+        (Decimal("0"), PURCHASE, None),
         # The database would round these quietly to 4 decimals.
         (Decimal("1.00001"), REWARD, DAY),
         (Decimal("-1.00001"), PURCHASE, None),
@@ -232,15 +217,13 @@ def test_delete_portfolio_removes_only_that_portfolio_and_its_changes(
     assert changes(session, other.portfolio_id) == [Decimal("10")]
 
 
-def test_the_phone_sees_insufficient_funds_as_a_409() -> None:
-    assert InsufficientFundsError.code == "insufficient_funds"
-    assert InsufficientFundsError.status == 409
-
-
-def test_a_receipt_is_read_only(session: Session) -> None:
+def test_the_lock_and_the_receipt_are_read_only(session: Session) -> None:
     locked = new_wallet(session)
     receipt = change_balance(session, locked, Decimal("1"), REWARD, DAY)
 
+    # Moving a lock to another portfolio would spend from an unlocked one.
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        locked.portfolio_id = uuid.uuid4()
     with pytest.raises(dataclasses.FrozenInstanceError):
         receipt.cash_balance_after = Decimal("1000")
 

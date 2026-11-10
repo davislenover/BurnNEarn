@@ -7,8 +7,6 @@ title Kernel: its files
 class "main.py" as main <<kernel>> {
   {field} ~ app = create_app()
   ~ create_app(plugins = PLUGINS): FastAPI
-  ~ handle_domain_error(request, error): JSONResponse
-  ~ handle_validation_error(request, error): JSONResponse
 }
 class "registry.py" as registry <<kernel>> {
   ~ PLUGINS: tuple[Plugin, ...]
@@ -35,6 +33,8 @@ package "app/core" as core {
   }
   class "errors.py" as errors <<kernel>> {
     + DomainError
+    + handle_domain_error(request, error): JSONResponse
+    + handle_validation_error(request, error): JSONResponse
   }
   class "db.py" as db <<kernel>> {
     + Base
@@ -68,7 +68,7 @@ main -left-> registry
 registry --> modplugin : lists
 modplugin -right-> plugins : fills in
 main --> routes : adds
-main --> errors : sends to the phone
+main --> errors : adds its handlers
 routes --> plugins : asks for health
 routes --> db
 db --> settings

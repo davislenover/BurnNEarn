@@ -74,9 +74,10 @@ while the app runs.
 - **Saving a price:** once per stock and quote time. An exact repeat is
   skipped, and a corrected price replaces the old one. Each save has its own
   savepoint, so a price the database refuses undoes only itself.
-- **Committing:** each poll has its own session and commits once, the one
-  exception to [rule 4](../BackendArchitecture.md#rules). An error is logged
-  and the next poll tries again, so one bad minute never stops the thread.
+- **Committing:** each poll has its own session and commits once, since it
+  answers no request ([rule 4](../BackendArchitecture.md#rules)). An error is
+  logged and the next poll tries again, so one bad minute never stops the
+  thread.
 
 A poll fails if it raises an error or misses any stock's price, so a provider
 that is down, or a wrong key, shows up even though no request sees an error.
@@ -166,12 +167,12 @@ The database sets `obtained_at` when it saves a price.
 
 | File | What it checks |
 |---|---|
-| `test_market_calendar.py` | The exchange's hours, holidays and early closes, time zones, and `MARKET_ALWAYS_OPEN` only with the fake provider |
+| `test_market_calendar.py` | The exchange's hours, holidays and early closes, time zones, `MARKET_ALWAYS_OPEN` opening the market for other modules too, and the settings `check_always_open` allows |
 | `test_market_providers.py` | `build_provider`, the Finnhub key setting, a provider without `get_quote`, and the fake provider's prices |
 | `test_finnhub.py` | The Finnhub adapter against a fake Finnhub: exact prices, the key kept out of the URL, and each error |
-| `test_market_poller.py` | `poll_once`: a price for each tradable stock, failures, the request limit, repeats and corrections, the call log |
-| `test_market_poller_thread.py` | When it polls, the app starting and stopping the thread, bad settings, and `health` |
-| `test_market_queries.py` | The queries: read-only copies, unknown stocks, the newest price, and when a price is delayed |
+| `test_market_poller.py` | `poll_once`: a price for each tradable stock, failures, the request limit, repeats skipped and corrections saved, the call log |
+| `test_market_poller_thread.py` | When it polls, each poll committing, the app starting and stopping the thread, the settings' defaults, bad settings, and `health` |
+| `test_market_queries.py` | The queries: read-only copies, unknown stocks, stocks that are not tradable, the newest price, and when a price is delayed |
 | `test_market_routes.py` | `GET /v1/assets` and `GET /v1/market/usage` |
 | `test_assets_table.py` | The 15 starting stocks, and the rows the `assets` table refuses |
 | `test_prices_table.py` | Prices saved exactly with both times, the rows the `prices` table refuses, each quote once |

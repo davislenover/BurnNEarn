@@ -4,7 +4,8 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
-from sqlalchemy import func, select, update
+from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.market.models import Asset, Price, ProviderRequest, RequestOutcome
@@ -74,6 +75,10 @@ def outcomes(session: Session) -> dict[str, str]:
     return {symbol: outcome for symbol, outcome in rows}
 
 
+def obtained_times(session: Session) -> set[datetime]:
+    return set(session.scalars(select(Price.obtained_at)))
+
+
 def test_the_fake_provider_gives_every_tradable_asset_a_price(
     db_session: Session,
 ) -> None:
@@ -99,25 +104,26 @@ def test_an_asset_that_is_not_tradable_is_not_asked_for(
     assert "AAPL" not in saved_symbols(db_session)
 
 
+@pytest.mark.parametrize(
+    ("error", "outcome"),
+    [
+        (MarketDataError("timeout"), RequestOutcome.ERROR),
+        (UnknownSymbolError("no price"), RequestOutcome.UNKNOWN_SYMBOL),
+    ],
+)
 def test_one_failing_asset_does_not_stop_the_others(
-    db_session: Session,
+    db_session: Session, error: Exception, outcome: RequestOutcome
 ) -> None:
-    provider = StubProvider(
-        errors={
-            "AAPL": MarketDataError("timeout"),
-            "MSFT": UnknownSymbolError("no price"),
-        }
-    )
+    # One failing asset per case, so only it can fail the poll. A provider
+    # that is down, or a wrong key, fails every symbol like this.
+    provider = StubProvider(errors={"AAPL": error})
 
     saved_all = poll_once(db_session, provider, NOW)
 
     assert saved_all is False
-    others = [
-        s for s in tradable_symbols(db_session) if s not in {"AAPL", "MSFT"}
-    ]
+    others = [s for s in tradable_symbols(db_session) if s != "AAPL"]
     assert saved_symbols(db_session) == others
-    assert outcomes(db_session)["AAPL"] == RequestOutcome.ERROR
-    assert outcomes(db_session)["MSFT"] == RequestOutcome.UNKNOWN_SYMBOL
+    assert outcomes(db_session)["AAPL"] == outcome
 
 
 def test_the_request_limit_stops_the_poll(db_session: Session) -> None:
@@ -134,22 +140,23 @@ def test_the_request_limit_stops_the_poll(db_session: Session) -> None:
     )
 
 
-def test_the_same_quote_is_saved_once(db_session: Session) -> None:
-    poll_once(db_session, StubProvider(), NOW)
-    poll_once(db_session, StubProvider(), NOW + timedelta(minutes=1))
-
-    count = db_session.scalar(select(func.count()).select_from(Price))
-    assert count == len(tradable_symbols(db_session))
-
-
-def test_a_corrected_price_replaces_the_stored_one(
+def test_a_repeat_is_skipped_and_a_corrected_price_replaces_it(
     db_session: Session,
 ) -> None:
     poll_once(db_session, StubProvider(price=Decimal("100")), NOW)
+    first = obtained_times(db_session)
+
+    # The provider repeats a quote while nothing trades. Saving it again
+    # would move obtained_at.
+    poll_once(db_session, StubProvider(price=Decimal("100")), NOW)
+    assert obtained_times(db_session) == first
+
     poll_once(db_session, StubProvider(price=Decimal("101.5")), NOW)
 
     prices = set(db_session.scalars(select(Price.price)))
     assert prices == {Decimal("101.5")}
+    # The server got the correction just now.
+    assert min(obtained_times(db_session)) > max(first)
 
 
 def test_every_call_is_recorded_at_the_poll_time(db_session: Session) -> None:
@@ -157,6 +164,17 @@ def test_every_call_is_recorded_at_the_poll_time(db_session: Session) -> None:
 
     times = set(db_session.scalars(select(ProviderRequest.requested_at)))
     assert times == {NOW}
+
+
+def test_a_call_is_recorded_only_with_a_known_outcome(
+    db_session: Session,
+) -> None:
+    db_session.add(
+        ProviderRequest(requested_at=NOW, symbol="AAPL", outcome="timeout")
+    )
+
+    with pytest.raises(IntegrityError, match="outcome_valid"):
+        db_session.flush()
 
 
 def test_a_quote_the_database_refuses_undoes_only_itself(
@@ -176,15 +194,3 @@ def test_a_quote_the_database_refuses_undoes_only_itself(
     others = [s for s in tradable_symbols(db_session) if s != "AAPL"]
     assert saved_symbols(db_session) == others
     assert outcomes(db_session)["AAPL"] == RequestOutcome.OK
-
-
-@pytest.mark.parametrize(
-    "error", [MarketDataError("down"), UnknownSymbolError("no price")]
-)
-def test_one_missed_price_fails_the_poll(
-    db_session: Session, error: Exception
-) -> None:
-    # A provider that is down, or a wrong key, fails every symbol like this.
-    provider = StubProvider(errors={"AAPL": error})
-
-    assert poll_once(db_session, provider, NOW) is False
