@@ -207,17 +207,43 @@ require changing the one module that hides the associated decision. The approach
 adapted here is called design for
 change.
 
+The list covers every likely change in the SRS (SRS LC1 to LC5) and adds the
+design and implementation choices the team expects to revisit. Each anticipated
+change is the secret of one module, which Table~\ref{TblACT} names. SRS LC3
+names three things that may change, so it is split here into the provider
+(\acref{acProviders}), the update frequency and asset list (\acref{acMarket})
+and the limits that go with them (\acref{acConstants}).
+
 \begin{description}
-\item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
-  hardware on which the software is running.
-\item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
-  initial input data.
-\item ...
+\item[\refstepcounter{acnum} \actheacnum \label{acDB}:] The database server
+  that stores \progname{}'s data, and how the server connects to it, such as a
+  move to a different hosted database.
+\item[\refstepcounter{acnum} \actheacnum \label{acClock}:] The source of the
+  current time, such as a fixed time in tests instead of the server's clock.
+\item[\refstepcounter{acnum} \actheacnum \label{acProviders}:] The market data
+  provider and the form of its replies and errors. The provider may change if
+  its request limits or cost prevent the planned use (SRS LC3).
+\item[\refstepcounter{acnum} \actheacnum \label{acHealth}:] The source of
+  recorded activity and its interface: Apple HealthKit, Health Connect, and
+  later a wearable device read directly, with the extra data it gives, such as
+  workout duration and calories burned (SRS LC2).
+\item[\refstepcounter{acnum} \actheacnum \label{acDevice}:] The phone operating
+  system's services that the app relies on, such as secure storage,
+  notifications and background work, which differ between iOS and Android and
+  change with new versions of each.
 \end{description}
 
-\wss{Anticipated changes relate to changes that would be made in requirements,
-design or implementation choices.  They are not related to changes that are made
-at run-time, like the values of parameters.}
+% \begin{description}
+% \item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
+%   hardware on which the software is running.
+% \item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
+%   initial input data.
+% \item ...
+% \end{description}
+
+% \wss{Anticipated changes relate to changes that would be made in requirements,
+% design or implementation choices.  They are not related to changes that are made
+% at run-time, like the values of parameters.}
 
 \subsection{Unlikely Changes} \label{SecUchange}
 
