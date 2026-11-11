@@ -503,6 +503,32 @@ Section~\ref{SecMD} gives the detail.
   (FR38, NFR6). So the app makes an ID for each trade request, and
   \mref{mTrading} Trading answers a repeated ID with the first result. A retry
   over a bad connection is then safe.
+
+\item[The server fetches prices on a schedule.] Prices come from a third
+  party, within its request limits (FR32, SC4). So \mref{mMarket} Market
+  fetches each price once for all users, instead of each phone asking the
+  provider. It keeps the time each price was obtained, marks a price that is
+  too old (FR33), and \mref{mTrading} Trading refuses to trade on one while the
+  market is open (FR39). The provider's key never leaves the server (SEC-33).
+
+\item[Each outside service has one interface.] The market data provider may
+  change (SRS LC3), activity is read only through each phone's health platform
+  (SC2, SC3), and a password reset needs an email service (FR6). So each of
+  these is hidden by its own module: \mref{mProviders} Market Providers,
+  \mref{mHealth} Health Service and \mref{mEmail} Email Service.
+  \mref{mDevice} Device Service does the same for the phone's operating system,
+  so the rest of the app is the same on Android and iOS (NFR4). A change of
+  service then stays inside one module (NFR3).
+
+\item[Sessions are stored on the server.] Every request that reads or changes a
+  user's data needs an authenticated session (SEC-15, NFR7). Users sign in with
+  an email address and a password (FR1, FR4), and the server must be able to
+  end a session on sign-out, on a password reset or after
+  \texttt{SESSION\_TIMEOUT} (FR5, FR6, SEC-17). So \mref{mUsers} Users stores
+  sessions on the server instead of issuing self-contained tokens, limits
+  sign-in attempts (SEC-38), and gives every route the current user. The phone
+  never sends a user ID. \mref{mAPI} API Service keeps the session token in the
+  phone's secure storage, through \mref{mDevice} Device Service (SEC-39).
 \end{description}
 
 \section{Module Decomposition} \label{SecMD}
