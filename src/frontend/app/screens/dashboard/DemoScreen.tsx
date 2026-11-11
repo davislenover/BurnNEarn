@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function DemoScreen() {
+  // Starting balance in cents: 100000 = $1,000
+  const [balance, setBalance] = useState(100000);
+
+  // Start with no shares
+  const [sharesHeld, setSharesHeld] = useState(0);
+
   // Store the quantity entered in the input
   const [quantity, setQuantity] = useState('1');
 
@@ -17,7 +23,7 @@ export default function DemoScreen() {
       <Text style={styles.title}>FitFolio</Text>
 
       <View style={styles.summary}>
-        {/* Steps box — sample value */}
+        {/* Steps box sample value */}
         <View style={styles.card}>
           <Text style={styles.label}>Today's steps</Text>
           <Text style={styles.number}>6,840</Text>
@@ -33,11 +39,11 @@ export default function DemoScreen() {
         </View>
       </View>
 
-      {/* Stock box — sample price */}
+      {/* Stock box sample price */}
       <View style={styles.stockCard}>
         <Text style={styles.symbol}>AAPL</Text>
         <Text style={styles.caption}>Apple Inc. · Sample price per share</Text>
-        <Text style={styles.price}>$230.23</Text>
+        <Text style={styles.price}>$240.23</Text>
 
         <Text style={styles.label}>Quantity</Text>
 
