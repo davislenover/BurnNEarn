@@ -95,14 +95,30 @@ rest were chosen while building the PoC. In short:
   SQL. Each module defines its tables as typed classes on one `Base`, which
   names every constraint and index the same way. A session saves a request's
   changes in one commit (rule 4).
-- **Alembic** is SQLAlchemy's migration tool. A migration is a small script
-  that changes the database's tables, such as adding a column or a check, and
-  can undo that change. Alembic keeps them in one chain, each naming the one
-  before it, and `alembic upgrade head` runs the ones a database hasn't had
-  yet. So a database that holds data, such as a deployed one, changes
-  without being rebuilt, and every developer's database ends up like CI's.
-  CI checks there is one chain, that it upgrades and downgrades, and that it
-  matches the models (`alembic check`).
+- **Alembic** is SQLAlchemy's migration tool. A migration is a small Python
+  script that changes the database's tables, such as adding a column or a
+  check, and can undo that change.
+  - **We rarely write SQL.** A migration calls functions such as
+    `op.create_table` or `op.add_column`, and Alembic turns them into the
+    SQL PostgreSQL needs (`CREATE TABLE`, `ALTER TABLE`). Only small pieces
+    are SQL text, such as a check's condition (`price > 0`).
+  - **It drafts each migration for us.** `alembic revision --autogenerate`
+    compares the classes in each module's `models.py` with the database, and
+    writes a migration for the difference. We read it and fix what it can't
+    see, such as a renamed column, which it takes for one dropped and one
+    added.
+  - **It knows what each database has had.** Each migration names the one
+    before it, so they form one chain, and a database keeps the newest one it
+    has had in a table called `alembic_version`. `alembic upgrade head` runs
+    only the ones that database hasn't had, in order.
+  - **Why:** a database that holds data, such as a deployed one, changes
+    without being rebuilt or losing rows, and every developer's database ends
+    up like CI's. Without it, each change would be SQL that everyone runs by
+    hand, with nothing to say which databases have had it. CI checks there is
+    one chain, that it upgrades and downgrades, and that it matches the
+    models (`alembic check`). [Migrations](#migrations) and the
+    [backend README](../../../src/backend/README.md#change-the-database) show
+    how to make one.
 - **httpx2** is a library for making HTTP requests from Python. It calls
   Finnhub with a 10 second timeout, and lets tests answer in Finnhub's place
   (`MockTransport`).
