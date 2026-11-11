@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Sample share price stored in cents: 12023 = $120.23
 const sharePrice = 12023;
@@ -66,6 +66,9 @@ export default function DemoScreen() {
     setBalance(balance - orderTotal);
     setSharesHeld(sharesHeld + shareCount);
     setError('');
+    
+    //hide the keyboard after a successful purchase
+    Keyboard.dismiss();
   }
 
   // Clear the previous error when the quantity changes
@@ -101,7 +104,7 @@ export default function DemoScreen() {
         <View style={styles.row}>
           <View>
             <Text style={styles.symbol}>AAPL</Text>
-            <Text style={styles.caption}>Apple Inc. Sample price</Text>
+            <Text style={styles.caption}>Apple Inc. Sample price per share</Text>
           </View>
           <Text style={styles.currency}>USD</Text>
         </View>
