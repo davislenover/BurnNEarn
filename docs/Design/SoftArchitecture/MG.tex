@@ -94,6 +94,7 @@ This section records information for easy reference.
   SEC & Security Requirement (SRS and HA)\\
   SRS & Software Requirements Specification\\
   UC & Unlikely Change\\
+  ULC & Unlikely Change (SRS)\\
   \bottomrule
 \end{tabular}\\
 
@@ -315,11 +316,50 @@ these decision should later need to be changed, then many parts of the design
 will potentially need to be modified. Hence, it is not intended that these
 decisions will be changed.
 
+The first three are the unlikely changes of the SRS (SRS Section~13), numbered
+there ULC1 to ULC3. The rest are decisions fixed at the architecture stage.
+
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
-  (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
-\item ...
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucNoRealMoney}:] The currency
+  is virtual and the investing is simulated, with no real money and no link to
+  a bank or brokerage account (SRS ULC1, SC5). Real money would change the
+  purpose of \progname{} and add payment, identity and regulatory modules.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucActivityEarns}:] Physical
+  activity is the way a user earns currency (SRS ULC2). Activity, Wallet and
+  Trading are all built around rewards that arrive from activity.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucSharingControl}:] Users
+  control what they share and with which friends, and a balance or raw health
+  data is never shared (SRS ULC3).
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucClientServer}:] \progname{}
+  is two programs, a phone app and one server, and trading, market prices and
+  the social feed need a connection to the server (SRS SC7). Moving this work
+  onto the phone would change almost every module.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucOneDatabase}:] The server is
+  one process with one relational database. A buy changes the balance and the
+  shares, which two modules own, in one transaction (FR37). Splitting the
+  server into separate services would mean redesigning how Wallet and Trading
+  work together.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucServerDecides}:] The server
+  alone decides balances, rewards and trades (SEC-24). The phone only reports
+  activity and asks for trades, so no module in the app holds these rules.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucPlatform}:] The app runs on
+  Android phones and iPhones (SRS SC1) and is written once in React Native.
+  A web or desktop version, or a separate native app for each platform, would
+  replace every app module.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucHealthPlatform}:] Activity
+  recorded by the phone is read only through its health platform (SRS SC2).
+  The app does not count steps itself or accept activity typed in by the user.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucProtocol}:] The app and the
+  server communicate over HTTPS with JSON. The form of single values may change
+  (\acref{acJSON}), but a different protocol would change every route and the
+  API Service.
 \end{description}
+
+% \begin{description}
+% \item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
+%   (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
+% \item ...
+% \end{description}
 
 \section{Module Hierarchy} \label{SecMH}
 
