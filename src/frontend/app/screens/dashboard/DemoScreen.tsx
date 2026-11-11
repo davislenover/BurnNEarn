@@ -20,7 +20,7 @@ export default function DemoScreen() {
   const [sharesHeld, setSharesHeld] = useState(0);
 
   // Store the quantity entered in the input
-  const [quantity, setQuantity] = useState('0');
+  const [quantity, setQuantity] = useState('');
 
   // Store a message when a purchase cannot proceed
   const [error, setError] = useState('');
@@ -129,7 +129,7 @@ export default function DemoScreen() {
         <View style={styles.orderTotal}>
           <Text style={styles.caption}>Order total</Text>
           <Text style={styles.totalText}>
-            {validQuantity ? `$${formatMoney(orderTotal)}` : '—'}
+            ${formatMoney(orderTotal)} //display the total cost of the order in dollars as $0.00
           </Text>
         </View>
 
