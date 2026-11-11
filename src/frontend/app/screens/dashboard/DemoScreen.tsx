@@ -5,6 +5,13 @@ export default function DemoScreen() {
     /*Screen container with the title at the top*/
     <View style={styles.screen}>
       <Text style={styles.title}>FitFolio</Text>
+      
+      {/* Today's steps box — fake data for now */}
+      <View style={styles.stepsCard}>
+        <Text style={styles.stepsLabel}>Today's steps</Text>
+        <Text style={styles.stepsNumber}>6,840</Text>
+        <Text style={styles.stepsCaption}>steps today</Text>
+        </View>
     </View>
   );
 }
@@ -22,4 +29,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#171D22',
   },
+  stepsCard: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 24,
+  },
+
+  stepsLabel: {
+    fontSize: 14,
+    color: '#69737E',
+  },
+
+  stepsNumber: {
+    fontSize: 32,
+    fontWeight: '600',
+    color: '#171D22',
+    marginTop: 16,
+  },
+
+  stepsCaption: {
+    fontSize: 12,
+    color: '#69737E',
+    marginTop: 6,
+  },
+
+
 });
