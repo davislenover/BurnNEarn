@@ -128,8 +128,9 @@ export default function DemoScreen() {
         {/* Total cost for the entered quantity */}
         <View style={styles.orderTotal}>
           <Text style={styles.caption}>Order total</Text>
+          {/* display the total cost of the order in dollars as $0.00 */}
           <Text style={styles.totalText}>
-            ${formatMoney(orderTotal)} //display the total cost of the order in dollars as $0.00
+            ${formatMoney(orderTotal)}
           </Text>
         </View>
 
