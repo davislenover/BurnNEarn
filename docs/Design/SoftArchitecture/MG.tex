@@ -529,6 +529,37 @@ Section~\ref{SecMD} gives the detail.
   sign-in attempts (SEC-38), and gives every route the current user. The phone
   never sends a user ID. \mref{mAPI} API Service keeps the session token in the
   phone's secure storage, through \mref{mDevice} Device Service (SEC-39).
+
+\item[Amounts are exact decimals.] Every balance and portfolio value must be
+  accurate to within the tolerance the SRS sets, \texttt{VALUE\_TOLERANCE}
+  (NFR1, SEC-30). So every amount is an exact decimal with four decimal places
+  on the server, and \mref{mJSON} JSON Format sends it to the phone as text, so
+  that no precision is lost on the way.
+
+\item[Requests are checked before a route runs.] A request with a missing,
+  wrongly typed or out-of-range input is rejected (SEC-25). So each route
+  declares its inputs, and a request that does not fit them is refused before
+  the route runs, without sending back the values it sent. Every refusal a
+  module raises itself has one shape, a code and a message, which
+  \mref{mJSON} JSON Format defines. \mref{mAPI} API Service and
+  \mref{mScreens} Screens then handle a refusal the same way for every module.
+
+\item[The tunable values are in one module.] The SRS names its limits as
+  symbolic constants (SRS Appendix~C), so that a value can change without
+  changing a requirement. \mref{mConstants} Constants holds them under the same
+  names on the server and in the app, which keeps such a change small (NFR3).
+
+\item[Time is handed to the code.] Many rules depend on the time: whether the
+  market is open, whether a price is too old (FR33, FR39), and which calendar
+  day an activity total belongs to in the user's time zone (SEC-23). So no
+  module reads the system time. Each is handed \mref{mClock} Clock, and
+  \mref{mUsers} Users keeps each user's time zone.
+
+\item[Features are added as plug-ins.] The system is built in stages, and the
+  effort of a likely change is limited (NFR3). So \mref{mControl} Control
+  builds the server from a list of modules, each described by a record that
+  \mref{mPlugins} Plugins defines. Adding a feature, such as Goals or Social,
+  adds a module to the list and changes no existing module.
 \end{description}
 
 \section{Module Decomposition} \label{SecMD}
