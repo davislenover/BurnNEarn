@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useTodaySteps } from '../../services/health/useTodaySteps';
 
 // Sample share price stored in cents: 12023 = $120.23
 const sharePrice = 12023;
@@ -14,6 +15,9 @@ function formatMoney(cents: number) {
 }
 
 export default function DemoScreen() {
+  // Today's steps from the phone. null while loading or if steps can't be read.
+  const { steps, loading } = useTodaySteps();
+
   // Starting balance in cents: 100000 = $1,000
   const [balance, setBalance] = useState(100000);
 
@@ -85,7 +89,9 @@ export default function DemoScreen() {
         {/* Steps box sample value */}
         <View style={styles.card}>
           <Text style={styles.label}>Today's steps</Text>
-          <Text style={styles.number}>6,840</Text>
+          <Text style={[styles.number, (loading || steps === null) && styles.label]}>
+            {loading ? 'Loading…' : steps === null ? 'Unavailable' : steps.toLocaleString('en-US')}
+          </Text>
           <Text style={styles.caption}>steps today</Text>
         </View>
 
