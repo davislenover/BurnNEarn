@@ -6,6 +6,7 @@
 | Nov 7, 2026 | 1.1 | Davis Lenover | Module health, users and wallet |
 | Nov 8, 2026 | 1.2 | Davis Lenover | Trading |
 | Nov 8, 2026 | 1.3 | Davis Lenover | One doc per module, access specifiers in the class diagrams |
+| Nov 10, 2026 | 1.4 | Davis Lenover | Technology, and why each was chosen |
 
 This is the high-level view. Each module is explained in its own doc, linked
 below. It covers only what the PoC needs, and grows as features are added.
@@ -46,6 +47,59 @@ run this from the repository root to update its PNG:
 ```bash
 plantuml -tpng docs/Design/SoftArchitecture/figures/backend-poc.puml
 ```
+
+## Technology
+
+The Development Plan (Section 10, Expected Technology) gives the reasons for
+Python, FastAPI, PostgreSQL, pytest and Ruff, and their alternatives. The
+rest were chosen while building the PoC. In short:
+
+- **Python 3.14** is the server's language. Its libraries cover each of the
+  server's jobs: calling Finnhub, serving the API, and later NumPy and pandas
+  for market scenarios (FR_MktScenario). TypeScript would have matched the
+  app, but Python's numerical libraries suit the simulation better.
+- **FastAPI** turns each route into an HTTP endpoint, run by Uvicorn.
+  - It checks every request against the route's types before our code runs,
+    so a malformed request is refused (SEC-25).
+  - Its `Depends` hands each route its session, clock and user, so a test can
+    swap them (dependency injection).
+  - It writes the API's docs at `/docs` from the same types, so the app and
+    the server agree on what is sent.
+  - Django with Django REST Framework was the alternative, but Django brings
+    much the project doesn't need, such as server-rendered pages.
+- **Pydantic** checks data at the edges. `Money` refuses an amount with over 4
+  decimals (NFR_Accuracy), and pydantic-settings reads `.env`, keeping the
+  Finnhub key a `SecretStr` that prints as stars (SEC-33).
+- **PostgreSQL 18** holds every module's tables.
+  - The data is relational (users, portfolios, trades), and one transaction
+    saves a buy's payment and shares together or not at all
+    (FR_MktAtomicTrade).
+  - It stores money as exact `NUMERIC` (NFR_Accuracy), and locks a
+    portfolio's row so requests for it take turns (rule 5).
+  - It checks each table's constraints, such as a balance never below 0, on
+    every write, even for code that skips a module's own checks.
+  - MongoDB was the alternative, but this data is relational.
+- **Docker** runs PostgreSQL on your computer. `docker compose up -d` in
+  `src/backend/` starts the same `postgres:18` image that CI tests against,
+  so your database matches CI's, with nothing to install but Docker. Its
+  credentials are for local use only.
+- **SQLAlchemy 2** is how code talks to the database. Each module defines its
+  tables as typed classes on one `Base`, which names every constraint and
+  index the same way. A session saves a request's changes in one commit
+  (rule 4).
+- **Alembic** changes the tables through migration scripts in one chain, each
+  naming the one before it, run in order by `alembic upgrade head`. So a
+  database that holds data, such as a deployed one, changes without being
+  rebuilt, and every developer's database ends up like CI's. CI checks there
+  is one chain of migrations, that it upgrades and downgrades, and that it
+  matches the models (`alembic check`).
+- **httpx2** calls Finnhub with a 10 second timeout, and lets tests answer
+  in Finnhub's place (`MockTransport`).
+- **uv** installs the packages from `uv.lock`, so everyone and CI get the
+  same versions (`uv sync --locked`).
+- **pytest** runs the tests with little boilerplate, **Ruff** lints and
+  formats in one fast tool, and **import-linter** fails CI when a module
+  imports one above it (rule 2).
 
 ## Modules
 
