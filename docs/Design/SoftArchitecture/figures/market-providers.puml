@@ -9,7 +9,13 @@ class "poller.py" as poller <<logic>> {
   ~ poll_once(session, provider, now): bool
 }
 
+class "routes.py" as routes <<entry point>> {
+  + GET /v1/market/usage
+}
+
 class "providers/__init__.py" as init <<provider>> <<factory>> {
+  ~ PROVIDERS: dict[str, type of MarketDataProvider]
+  ~ provider_type(settings): type of MarketDataProvider
   ~ build_provider(settings): MarketDataProvider
 }
 
@@ -23,6 +29,7 @@ package "providers/settings.py" {
 
 package "providers/base.py" {
   interface MarketDataProvider <<provider>> <<strategy>> {
+    + {static} calls_per_minute: int or None
     + {abstract} get_quote(symbol): Quote
   }
   class Quote <<data>> {
@@ -37,6 +44,7 @@ package "providers/base.py" {
 
 package "providers/finnhub.py" {
   class FinnhubProvider <<provider>> <<adapter>> {
+    + {static} calls_per_minute = 60
     - _api_key: SecretStr
     - _client: httpx2.Client
     + get_quote(symbol): Quote
@@ -45,6 +53,7 @@ package "providers/finnhub.py" {
 
 package "providers/fake.py" {
   class FakeProvider <<provider>> {
+    + {static} calls_per_minute = None
     - _clock: Clock
     - _prices: dict[str, Decimal]
     - _random: Random
@@ -53,6 +62,7 @@ package "providers/fake.py" {
 }
 
 poller --> init : 1. build one
+routes --> init : read the chosen\none's limit
 init --> ProviderSettings
 init --> MarketDataProvider : creates
 poller --> MarketDataProvider : 2. get_quote
@@ -65,6 +75,7 @@ MarketDataProvider <|-- FinnhubProvider
 MarketDataProvider <|-- FakeProvider
 
 legend right
+  <color:#854F0B>■</color> Entry point
   <color:#534AB7>■</color> Logic
   <color:#993556>■</color> Provider: where prices come from
   <color:#3B6D11>■</color> Settings
@@ -73,6 +84,7 @@ legend right
   + anyone holding one may use it
   ~ only market's files may use it
   - only its own file uses it
+  underlined: belongs to the class, not to each one made
   «strategy», «adapter», «factory»: the design pattern
   An arrow means "uses".
   A hollow arrowhead means "is a".

@@ -54,6 +54,9 @@ Hierarchy. 7 Module Decomposition: Users, Wallet and Email Service, a rationale
 for each module, and module health in Control and Plugins. Review fixes to Database, Market,
 Trading (queued trades and the simulation notice at Revision~0) and JSON
 Format, and to 9 Use Hierarchy Between Modules.\\
+Nov 10, 2026 & 1.2 & Davis Lenover: 2.1 Abbreviations and Acronyms, and review
+fixes to 7 Module Decomposition. Each market data provider gives its own
+request limit, so a new one changes only Market Providers.\\
 \bottomrule
 \end{tabularx}
 
@@ -396,7 +399,7 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \begin{description}
 \item[Secrets:] The market data provider's API.
 \item[Services:] Gets the latest quote for a stock through one interface that every provider follows, and picks the provider that \texttt{MARKET\_PROVIDER} names. The Finnhub provider turns Finnhub's replies and errors into \progname{}'s own quotes and errors. A fake provider makes up prices for development and tests.
-\item[Rationale:] The prices come from a third party, within its request limits (SC4), and the provider may change if its request limits or cost prevent the planned use (SRS LC3). Every provider follows one interface (strategy), Finnhub's API is wrapped to fit it (adapter), and a setting picks one (factory), so a new provider changes only this module and the request limit that \mref{mMarket}'s usage route reports. Its key stays on the server (SEC-33). The fake provider lets the team develop and test without a key or an open market.
+\item[Rationale:] The prices come from a third party, within its request limits (SC4), and the provider may change if its request limits or cost prevent the planned use (SRS LC3). Every provider follows one interface (strategy), Finnhub's API is wrapped to fit it (adapter), and a setting picks one (factory), so a new provider, with its own request limit, changes only this module. Its key stays on the server (SEC-33). The fake provider lets the team develop and test without a key or an open market.
 \item[Implemented By:] \progname{} server, in \path{market/providers/}, using Finnhub
 \item[Type of Module:] Abstract Data Type, with one interface and a Finnhub and a fake implementation
 \end{description}

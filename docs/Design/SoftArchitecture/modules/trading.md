@@ -65,7 +65,9 @@ What the phone must do:
 
 `GET /v1/me/portfolio` sends each holding at its quantity × its stock's
 latest price, sorted by symbol. A delayed price is still used, and its holding
-is marked `delayed`.
+is marked `delayed`. Each holding gives both times of its price: `obtained_at`,
+when the server got it, which the phone shows with it (FR_MktPriceAge), and
+`quoted_at`, when the provider set it, which `delayed` goes by.
 - `holdings_value` is the sum of the holdings, the SRS's portfolio value
   (FR_MktPortfolioValue). It leaves the cash out.
 - `total_value` is `cash_balance` + `holdings_value`.
@@ -111,4 +113,4 @@ pay for one trade.
 | `test_trading_tables.py` | The rules the tables keep by themselves |
 | `test_trading_buy.py` | `buy`: exact costs, every refusal and its order, each `request_id` once |
 | `test_trading_routes.py` | `POST /v1/me/trades`: status codes, bodies, each refusal's code and message, all or nothing |
-| `test_trading_portfolio.py` | `portfolio_value` and `GET /v1/me/portfolio` |
+| `test_trading_portfolio.py` | `portfolio_value` and `GET /v1/me/portfolio`, with each holding's two times |

@@ -11,8 +11,7 @@ provider_type says which one without making it. To add a provider:
    with get_quote(symbol) and calls_per_minute.
 2. Add its name to MARKET_PROVIDER in settings.py in this folder, and to
    .env.example.
-3. Add it to PROVIDERS below, and to build_provider if it needs settings to
-   be made.
+3. Add it to PROVIDERS below, and to build_provider.
 """
 
 from app.market.providers.base import MarketDataProvider
