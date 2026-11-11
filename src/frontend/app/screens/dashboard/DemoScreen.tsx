@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-// Sample share price stored in cents: 24023 = $240.23
-const sharePrice = 24023;
+// Sample share price stored in cents: 12023 = $120.23
+const sharePrice = 12023;
 
 // Convert cents into a readable amount with two decimal places
 function formatMoney(cents: number) {
