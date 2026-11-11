@@ -169,40 +169,48 @@ export default function DemoScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Screen spacing and background
+    // ----- Screen -----
+
+  // Whole screen: fills the phone, light grey background
   screen: {
     flex: 1,
     backgroundColor: '#F3F4F6',
   },
+  // Space around and between all the boxes on the screen
   content: {
     paddingHorizontal: 20,
     paddingTop: 80,
     paddingBottom: 40,
     gap: 24,
   },
+  // "FitFolio" title at the top
   title: {
     fontSize: 28,
     fontWeight: '600',
     color: '#171D22',
   },
 
-  // Two equal boxes beside each other
+  // ----- Steps and balance boxes -----
+
+  // Row that holds the steps box and the balance box side by side
   summary: {
     flexDirection: 'row',
     gap: 12,
   },
+  
+  // White box used for the steps box and the balance box
   card: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 16,
   },
-
-  // Text shared by the steps and balance boxes
+  // Small grey heading, e.g. "Today's steps", "Balance", "Quantity"
   label: {
     fontSize: 14,
     color: '#69737E',
   },
+  // Large number in the steps and balance boxes, e.g. "6,840"
   number: {
     fontSize: 30,
     fontWeight: '600',
@@ -210,22 +218,28 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 6,
   },
+  // Smallest grey text, e.g. "steps today", "Order total"
   caption: {
     fontSize: 12,
     color: '#69737E',
   },
-  // Stock box and purchase controls
+
+  // ----- Stock box -----
+
+  // White box that holds the stock, quantity and Buy button
   stockCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 20,
   },
+  // Stock symbol, "AAPL"
   symbol: {
     fontSize: 17,
     fontWeight: '600',
     color: '#171D22',
     marginBottom: 5,
   },
+  // Large share price, e.g. "$120.23"
   price: {
     fontSize: 36,
     fontWeight: '600',
@@ -233,11 +247,13 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 24,
   },
+  // Row that holds the quantity box and the Buy button side by side
   orderRow: {
     flexDirection: 'row',
     gap: 10,
     marginTop: 10,
   },
+  // Quantity box where the user types the number of shares
   input: {
     flex: 1,
     minWidth: 0,
@@ -249,6 +265,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#171D22',
   },
+  // Green Buy button
   buyButton: {
     backgroundColor: '#087B51',
     borderRadius: 11,
@@ -257,33 +274,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     minHeight: 48,
   },
+  // White "Buy" text inside the button
   buyButtonText: {
     fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  // Portfolio box and its values
+
+  // ----- Portfolio box -----
+
+  // White box that holds the portfolio values
   portfolioCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 20,
   },
+  // "Your portfolio" heading
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#171D22',
   },
+  // Row with "AAPL shares held" on the left and the number on the right
   holdingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 22,
   },
+  // Number of shares held, e.g. "0"
   shareCount: {
     fontSize: 17,
     fontWeight: '500',
     color: '#171D22',
   },
+  // Row with "Holdings value" and the amount, with a thin line above it
   valueRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -293,17 +318,22 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     marginTop: 16,
   },
+  // Large holdings amount, e.g. "$0.00"
   holdingsValue: {
     fontSize: 25,
     fontWeight: '600',
     color: '#171D22',
   },
+  // Small note under the holdings value
   portfolioNote: {
     fontSize: 11,
     color: '#69737E',
     marginTop: 12,
   },
-  // Order total below the quantity input
+
+  // ----- Stock box more -----
+
+  // Row with "Order total" on the left and the amount on the right
   orderTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -312,19 +342,21 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 16,
   },
+  // Order total amount, e.g. "$0.00"
   totalText: {
     fontSize: 13,
     fontWeight: '500',
     color: '#171D22',
     fontVariant: ['tabular-nums'],
   },
-  // Shared layout for labels on the same row
+  // Row with text on the left and right, e.g. "AAPL" and the "USD" badge
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 8,
   },
+  // Small "USD" badge with a border
   currency: {
     fontSize: 11,
     color: '#69737E',
@@ -334,8 +366,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 4,
   },
-
-  // Purchase error message
+  // Red message shown when a purchase fails
   error: {
     backgroundColor: '#FFF0ED',
     color: '#A82D22',
@@ -345,11 +376,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
+
+  // ----- Bottom of the screen -----
+
+  // "No real money is used." note at the bottom
   footer: {
     textAlign: 'center',
     fontSize: 12,
     color: '#69737E',
-    marginTop: 4,
-    marginBottom: 16,
+    marginTop: 30,
+    marginBottom: 12,
   },
 });
