@@ -58,6 +58,8 @@ Nov 10, 2026 & 1.2 & Farid Bastoros: 4 Anticipated and Unlikely Changes.\\
 Nov 10, 2026 & 1.3 & Davis Lenover: 2.1 Abbreviations and Acronyms, and review
 fixes to 7 Module Decomposition. Each market data provider gives its own
 request limit, so a new one changes only Market Providers.\\
+Nov 10, 2026 & 1.4 & Farid Bastoros: 6 Connection Between Requirements and
+Design.\\
 \bottomrule
 \end{tabularx}
 
@@ -465,12 +467,144 @@ The design of the system is intended to satisfy the requirements developed in
 the SRS. In this stage, the system is decomposed into modules. The connection
 between requirements and modules is listed in Table~\ref{TblRT}.
 
-\wss{The intention of this section is to document decisions that are made
-  ``between'' the requirements and the design.  To satisfy some requirements,
-  design decisions need to be made.  Rather than make these decisions implicit,
-  they are explicitly recorded here.  For instance, if a program has security
-  requirements, a specific design decision may be made to satisfy those
-  requirements with a password.}
+% \wss{The intention of this section is to document decisions that are made
+%   ``between'' the requirements and the design.  To satisfy some requirements,
+%   design decisions need to be made.  Rather than make these decisions implicit,
+%   they are explicitly recorded here.  For instance, if a program has security
+%   requirements, a specific design decision may be made to satisfy those
+%   requirements with a password.}
+
+Some requirements can only be met by a decision that the SRS leaves to the
+design. This section records those decisions, so that none of them is implicit.
+Each one names the requirements it serves, by their number in the SRS, and the
+modules that carry it out. The \emph{Rationale} field of each module in
+Section~\ref{SecMD} gives the detail.
+
+\begin{description}
+\item[One server with one database.] A trade must update the balance and the
+  holdings together or not at all (FR37, NFR6), and two modules own that data.
+  So the server is one process with one database, split into modules, and not
+  separate services. \mref{mTrading} Trading pays through \mref{mWallet} Wallet
+  in the same transaction of \mref{mDB} Database, and only the route commits
+  it, so a refused or interrupted trade saves nothing.
+
+\item[The server holds every rule about currency.] Rewards, balances and
+  holdings are calculated only on the server (SEC-24). The app sends daily
+  totals for each activity type and nothing else (SEC-10), through
+  \mref{mSync} Sync Service. \mref{mActivity} Activity turns the totals into
+  currency, with the plausibility limits and the daily cap (FR13, FR17, FR18).
+  No app module holds a reward or trade rule, so a changed app cannot give
+  itself currency.
+
+\item[One way to change a balance.] Every change to a balance is recorded with
+  its amount, time and reason, and the balance equals the sum of its changes
+  (SEC-22). So \mref{mWallet} Wallet offers one call that changes a balance and
+  records the change together, and refuses a change that would take the balance
+  below zero (FR37). The caller must lock the portfolio first, so that two
+  requests for one user take turns. That is how a repeated sync pays each day's
+  activity once (SEC-19) and never more than the daily cap (FR18).
+
+\item[Each trade request has an ID.] A trade submitted twice is recorded once
+  (FR38, NFR6). So the app makes an ID for each trade request, and
+  \mref{mTrading} Trading answers a repeated ID with the first result. A retry
+  over a bad connection is then safe.
+
+\item[The server fetches prices on a schedule.] Prices come from a third
+  party, within its request limits (FR32, SC4). So \mref{mMarket} Market
+  fetches each price once for all users, instead of each phone asking the
+  provider. It keeps the time each price was obtained, marks a price that is
+  too old (FR33), and \mref{mTrading} Trading refuses to trade on one while the
+  market is open (FR39). The provider's key never leaves the server (SEC-33).
+
+\item[Each outside service has one interface.] The market data provider may
+  change (SRS LC3), activity is read only through each phone's health platform
+  (SC2, SC3), and a password reset needs an email service (FR6). So each of
+  these is hidden by its own module: \mref{mProviders} Market Providers,
+  \mref{mHealth} Health Service and \mref{mEmail} Email Service.
+  \mref{mDevice} Device Service does the same for the phone's operating system,
+  so the rest of the app is the same on Android and iOS (NFR4). A change of
+  service then stays inside one module (NFR3).
+
+\item[Sessions are stored on the server.] Every request that reads or changes a
+  user's data needs an authenticated session (SEC-15, NFR7). Users sign in with
+  an email address and a password (FR1, FR4), and the server must be able to
+  end a session on sign-out, on a password reset or after
+  \texttt{SESSION\_TIMEOUT} (FR5, FR6, SEC-17). So \mref{mUsers} Users stores
+  sessions on the server instead of issuing self-contained tokens, limits
+  sign-in attempts (SEC-38), and gives every route the current user. The phone
+  never sends a user ID. \mref{mAPI} API Service keeps the session token in the
+  phone's secure storage, through \mref{mDevice} Device Service (SEC-39).
+
+\item[Amounts are exact decimals.] Every balance and portfolio value must be
+  accurate to within the tolerance the SRS sets, \texttt{VALUE\_TOLERANCE}
+  (NFR1, SEC-30). So every amount is an exact decimal with four decimal places
+  on the server, and \mref{mJSON} JSON Format sends it to the phone as text, so
+  that no precision is lost on the way.
+
+\item[Requests are checked before a route runs.] A request with a missing,
+  wrongly typed or out-of-range input is rejected (SEC-25). So each route
+  declares its inputs, and a request that does not fit them is refused before
+  the route runs, without sending back the values it sent. Every refusal a
+  module raises itself has one shape, a code and a message, which
+  \mref{mJSON} JSON Format defines. \mref{mAPI} API Service and
+  \mref{mScreens} Screens then handle a refusal the same way for every module.
+
+\item[The tunable values are in one module.] The SRS names its limits as
+  symbolic constants (SRS Appendix~C), so that a value can change without
+  changing a requirement. \mref{mConstants} Constants holds them under the same
+  names on the server and in the app, which keeps such a change small (NFR3).
+
+\item[Time is handed to the code.] Many rules depend on the time: whether the
+  market is open, whether a price is too old (FR33, FR39), and whether a daily
+  total is dated after today in the user's time zone, in which case it is
+  refused (SEC-24). So no module reads the system time. Each is handed
+  \mref{mClock} Clock, and \mref{mUsers} Users keeps each user's time zone. The
+  phone puts each activity record on its calendar day before it sends the
+  totals (SEC-23).
+
+\item[Features are added as plug-ins.] The system is built in stages, and the
+  effort of a likely change is limited (NFR3). So \mref{mControl} Control
+  builds the server from a list of modules, each described by a record that
+  \mref{mPlugins} Plugins defines. Adding a feature, such as Goals or Social,
+  adds a module to the list and changes no existing module.
+
+\item[A scenario has its own portfolio.] A market scenario starts with its own
+  balance and no holdings, and must not affect the live portfolio (FR45, FR46,
+  SEC-31). So \mref{mWallet} Wallet keeps a separate portfolio for each
+  scenario, and \mref{mScenarios} Scenarios trades in it through
+  \mref{mTrading} Trading. The live balance is never read or changed by a
+  scenario.
+
+\item[The social feed cannot reach a balance.] Only the kinds of update the
+  SRS lists can be shared, and a currency balance or a portfolio value is not
+  one of them (FR65). So \mref{mSocial} Social uses Activity, Goals and
+  Learning for what may be shared, and does not use Wallet or Trading
+  (Section~\ref{SecUse}). A balance or a portfolio value cannot appear in an
+  update, because Social has no way to read one. An individual activity record
+  cannot appear either, since the app sends the server only daily totals
+  (SEC-10, FR68). Social also offers no ranking of users (FR71).
+
+\item[Privacy rules are in one module.] The user can download their data,
+  delete their account and withdraw consent to read health data (FR9 to FR11,
+  FR76, SEC-9, SEC-18). These rules change with the law and the app stores'
+  policies (SC6), so \mref{mPrivacy} Privacy holds them, apart from the
+  features whose data they act on.
+
+\item[What the user sees is in Screens alone.] Several requirements are about
+  display: every return and portfolio value is labelled as simulated (FR43), a
+  gain or loss is shown by a sign or a text label and not by colour alone
+  (FR44), and the core features stay usable at \texttt{MAX\_TEXT\_SCALE} text
+  size (NFR8). So layout and wording are in \mref{mScreens} Screens and
+  \mref{mNavigation} Navigation, and the app's services hold none. Results of
+  usability testing (NFR2) can then change a screen without changing a
+  service.
+
+\item[Reminders are scheduled on the phone.] Reminders are sent only in the
+  periods the user chose, and contain no health data, balance or portfolio
+  value by default (FR72 to FR75, SEC-34). So \mref{mReminders} Reminder
+  Service schedules them on the phone, through \mref{mDevice} Device Service,
+  with the user's settings.
+\end{description}
 
 \section{Module Decomposition} \label{SecMD}
 
