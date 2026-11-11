@@ -37,11 +37,30 @@ export default function DemoScreen() {
             keyboardType="number-pad"
             accessibilityLabel="Number of shares to buy" />
 
-          {/* Enable Buy when purchase logic is added */}
+          {/* Enable buy when purchase logic is added */}
           <TouchableOpacity style={styles.buyButton} disabled accessibilityRole="button" accessibilityState={{ disabled: true }}>
             <Text style={styles.buyButtonText}>Buy</Text>
           </TouchableOpacity>
         </View>
+      </View>
+
+      {/* Portfolio box — sample values until purchases are connected */}
+      <View style={styles.portfolioCard}>
+        <Text style={styles.sectionTitle}>Your portfolio</Text>
+
+        <View style={styles.holdingRow}>
+          <Text style={styles.label}>AAPL shares held</Text>
+          <Text style={styles.shareCount}>0</Text>
+        </View>
+
+        <View style={styles.valueRow}>
+          <Text style={styles.label}>Holdings value</Text>
+          <Text style={styles.holdingsValue}>$0.00</Text>
+        </View>
+
+        <Text style={styles.portfolioNote}>
+          Shares x current price. Excludes cash.
+        </Text>
       </View>
     </ScrollView>
   );
@@ -140,5 +159,46 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  // Portfolio box and its values
+  portfolioCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#171D22',
+  },
+  holdingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  shareCount: {
+    fontSize: 17,
+    fontWeight: '500',
+    color: '#171D22',
+  },
+  valueRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#E8EBEE',
+    paddingTop: 16,
+    marginTop: 16,
+  },
+  holdingsValue: {
+    fontSize: 25,
+    fontWeight: '600',
+    color: '#171D22',
+  },
+  portfolioNote: {
+    fontSize: 11,
+    color: '#69737E',
+    marginTop: 12,
   },
 });
