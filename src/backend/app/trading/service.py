@@ -165,6 +165,7 @@ def portfolio_value(
                 quantity=quantity,
                 price=current.price,
                 quoted_at=current.quoted_at,
+                obtained_at=current.obtained_at,
                 delayed=current.delayed,
                 value=quantity * current.price,
             )

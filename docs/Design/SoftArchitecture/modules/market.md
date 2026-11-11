@@ -39,6 +39,13 @@ Other modules read market only through `queries.py`, which never writes, and
 - **Factory:** `build_provider(settings)` returns the provider that
   `MARKET_PROVIDER` names, `fake` by default. An unknown name is refused,
   never replaced by made-up prices, which would be shown as real.
+  `provider_type(settings)` gives the chosen provider's class without making
+  one, so its request limit can be read.
+
+Each provider gives its own request limit, `calls_per_minute`:
+`FinnhubProvider` 60, Finnhub's free plan, and `FakeProvider` `None`, since it
+calls no one. So a new provider brings its own limit, and no code outside
+`providers/` changes.
 
 **The Finnhub key stays on the server (SEC-33).** It is `FINNHUB_API_KEY` in
 the server's `.env`, which git ignores. `ProviderSettings` keeps it as a
@@ -49,11 +56,11 @@ symbol (SEC-11).
 
 To add a provider, without changing any code outside `providers/`:
 1. Write a class in `app/market/providers/` that names `MarketDataProvider` as
-   its base and has `get_quote(symbol)`. One without `get_quote` fails as soon
-   as it is created.
+   its base, with `get_quote(symbol)` and `calls_per_minute`. One without
+   `get_quote` fails as soon as it is created.
 2. Add its name to `MARKET_PROVIDER` in `providers/settings.py` and to
    `.env.example`.
-3. Add it to `build_provider`.
+3. Add it to `PROVIDERS` in `providers/__init__.py`, and to `build_provider`.
 
 ## The poller
 
@@ -129,7 +136,9 @@ are null.
 **`GET /v1/market/usage`** counts the server's calls to the provider, to
 check they stay within its request limit (SC_MarketData). It gives the calls
 in the last minute, in the busiest minute today and in all of today, a New
-York calendar day. `limit_per_minute` is 60, Finnhub's free plan. A poll
+York calendar day. `limit_per_minute` is the chosen provider's limit, 60 for
+Finnhub's free plan, or null for the fake provider, which has none. It reads
+the settings through `Depends`, so a test can choose the provider. A poll
 makes one call per tradable stock, so the 15 stocks take 15 a minute.
 
 ## Records, errors, settings and tables
@@ -146,9 +155,9 @@ The database sets `obtained_at` when it saves a price.
 - **Plug-in:** `plugin.py` adds market's routes, the poller's `lifespan` and
   its `health`. The kernel doesn't change.
 - **Strategy, adapter and factory:** `MarketDataProvider`, `FinnhubProvider`
-  and `build_provider`, as above.
+  and `build_provider` with `provider_type`, as above.
 - **Dependency injection:** the routes get the session and the clock through
-  `Depends`. `run_poller` is given its provider, clock and session factory,
+  `Depends`, and the usage route gets the provider settings too. `run_poller` is given its provider, clock and session factory,
   `FakeProvider` its clock and `FinnhubProvider` its HTTP client, so tests
   hand in stand-ins.
 - **Read-only records:** `AssetInfo` and `CurrentPrice` are frozen copies,
@@ -168,11 +177,11 @@ The database sets `obtained_at` when it saves a price.
 | File | What it checks |
 |---|---|
 | `test_market_calendar.py` | The exchange's hours, holidays and early closes, time zones, `MARKET_ALWAYS_OPEN` opening the market for other modules too, and the settings `check_always_open` allows |
-| `test_market_providers.py` | `build_provider`, the Finnhub key setting, a provider without `get_quote`, and the fake provider's prices |
+| `test_market_providers.py` | `build_provider` and `provider_type`, each provider's request limit, the Finnhub key setting, a provider without `get_quote`, and the fake provider's prices |
 | `test_finnhub.py` | The Finnhub adapter against a fake Finnhub: exact prices, the key kept out of the URL, and each error |
 | `test_market_poller.py` | `poll_once`: a price for each tradable stock, failures, the request limit, repeats skipped and corrections saved, the call log |
 | `test_market_poller_thread.py` | When it polls, each poll committing, the app starting and stopping the thread, the settings' defaults, bad settings, and `health` |
 | `test_market_queries.py` | The queries: read-only copies, unknown stocks, stocks that are not tradable, the newest price, and when a price is delayed |
-| `test_market_routes.py` | `GET /v1/assets` and `GET /v1/market/usage` |
+| `test_market_routes.py` | `GET /v1/assets`, and `GET /v1/market/usage` with the chosen provider's limit |
 | `test_assets_table.py` | The 15 starting stocks, and the rows the `assets` table refuses |
 | `test_prices_table.py` | Prices saved exactly with both times, the rows the `prices` table refuses, each quote once |

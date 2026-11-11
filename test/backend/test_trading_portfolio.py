@@ -76,12 +76,15 @@ def price(
     symbol: str,
     value: str,
     quoted_at: datetime = A_MINUTE_AGO,
+    obtained_at: datetime | None = None,
 ) -> None:
+    """A price for symbol. Without obtained_at, the database sets it."""
+    times = {"quoted_at": quoted_at}
+    if obtained_at is not None:
+        times["obtained_at"] = obtained_at
     session.add(
         Price(
-            asset_id=asset_id(session, symbol),
-            price=Decimal(value),
-            quoted_at=quoted_at,
+            asset_id=asset_id(session, symbol), price=Decimal(value), **times
         )
     )
     session.flush()
@@ -110,7 +113,8 @@ def test_each_holding_is_quantity_times_its_latest_price(
     hold(session, portfolio_id, "AAPL", 3)
     price(session, "MSFT", "40.1234")
     price(session, "AAPL", "30", quoted_at=NOW - timedelta(minutes=5))
-    price(session, "AAPL", "433.3333")
+    # Got a little after the provider set it, so the two times differ.
+    price(session, "AAPL", "433.3333", obtained_at=NOW - timedelta(seconds=10))
 
     value = portfolio_value(session, portfolio_id, NOW)
 
@@ -119,6 +123,7 @@ def test_each_holding_is_quantity_times_its_latest_price(
     assert aapl.quantity == 3
     assert aapl.price == Decimal("433.3333")
     assert aapl.quoted_at == A_MINUTE_AGO
+    assert aapl.obtained_at == NOW - timedelta(seconds=10)
     assert not aapl.delayed
     assert aapl.value == Decimal("1299.9999")
     assert msft.value == Decimal("80.2468")
@@ -167,7 +172,9 @@ def owner(
     return made
 
 
-def test_a_buy_shows_in_the_portfolio(client: TestClient, owner: Any) -> None:
+def test_a_buy_shows_in_the_portfolio(
+    client: TestClient, db_session: Session, owner: Any
+) -> None:
     client.post(
         "/v1/me/trades",
         json={
@@ -185,6 +192,11 @@ def test_a_buy_shows_in_the_portfolio(client: TestClient, owner: Any) -> None:
     reply = response.json()
     (aapl,) = reply["holdings"]
     assert datetime.fromisoformat(aapl.pop("quoted_at")) == A_MINUTE_AGO
+    # The database set obtained_at when owner added the price.
+    obtained = db_session.scalar(
+        select(Price.obtained_at).join(Asset).where(Asset.symbol == "AAPL")
+    )
+    assert datetime.fromisoformat(aapl.pop("obtained_at")) == obtained
     assert aapl == {
         "symbol": "AAPL",
         "quantity": 2,

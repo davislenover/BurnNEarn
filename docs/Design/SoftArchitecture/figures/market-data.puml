@@ -41,7 +41,7 @@ package "routes.py" {
     + calls_last_minute: int
     + busiest_minute_today: int
     + calls_today: int
-    + limit_per_minute: int
+    + limit_per_minute: int or null
   }
 }
 

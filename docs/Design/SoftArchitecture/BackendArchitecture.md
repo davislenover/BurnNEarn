@@ -129,7 +129,8 @@ See [the kernel](modules/core.md).
 **Strategy, adapter and factory.** Market asks for prices through one
 interface, `MarketDataProvider`. `FinnhubProvider` adapts Finnhub's API to
 it, `FakeProvider` makes up prices, and `build_provider` picks one from
-`MARKET_PROVIDER`. See [market](modules/market.md).
+`MARKET_PROVIDER`. Each provider gives its own request limit, so a new one
+changes no code outside `market/providers/`. See [market](modules/market.md).
 
 **Dependency injection.** Code is handed what it needs instead of fetching
 it. Routes get a database session and the clock from the kernel, through

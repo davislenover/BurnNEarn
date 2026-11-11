@@ -41,6 +41,7 @@ package "types.py" {
     + quantity: int
     + price: Money
     + quoted_at: datetime
+    + obtained_at: datetime
     + delayed: bool
     + value: Money
   }

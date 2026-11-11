@@ -18,7 +18,8 @@ class User(Base):
         primary_key=True, server_default=func.gen_random_uuid()
     )
     # An IANA time zone name, such as "America/Toronto". Nothing reads it
-    # yet. Activity (#190) counts each day in the zone the phone sends with
-    # each sync, since a day follows where the user is (SEC-23).
+    # yet. The phone puts each activity record on its day (SEC-23, HA H51),
+    # so the server will use this zone only to find the user's date, to
+    # refuse a daily total dated in the future (SEC-24).
     time_zone: Mapped[str] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

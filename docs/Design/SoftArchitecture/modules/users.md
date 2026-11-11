@@ -73,9 +73,9 @@ user and returns their ID. It flushes but never commits.
 - It refuses a time zone that doesn't exist with `ValueError`, before adding
   anything, so a stored zone always works. The `users` table doesn't check
   it.
-- Nothing reads the stored zone yet. Activity (#190) counts each day in the
-  zone the phone sends with each sync, since a day follows where the user is
-  (SEC-23).
+- Nothing reads the stored zone yet. The phone puts each activity record on
+  its day (SEC-23, HA H51), so the server will use this zone only to find the
+  user's date, to refuse a daily total dated in the future (SEC-24).
 - The default, `DEFAULT_TIME_ZONE`, is `America/Toronto`, since the team and
   its first users are in Ontario.
 

@@ -52,9 +52,9 @@ class "settings.py" as settings <<settings>> {
 }
 class "providers/" as providers <<provider>> {
   ~ build_provider(settings): MarketDataProvider
+  ~ provider_type(settings): type of MarketDataProvider
   ~ MarketDataProvider, Quote, MarketDataError
   ~ get_provider_settings(): ProviderSettings
-  ~ FINNHUB_CALLS_PER_MINUTE = 60
 }
 class "models.py" as models <<table>> {
   ~ Asset: the assets table

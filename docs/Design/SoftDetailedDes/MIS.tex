@@ -61,6 +61,9 @@ Module Decomposition.\\
 Nov 10, 2026 & 1.2 & Davis Lenover: the reason for each decision in every other
 server module, Market Providers as a template module, error handlers in JSON
 Format, and the 401 on both Trading routes.\\
+Nov 10, 2026 & 1.3 & Davis Lenover: each provider's request limit in Market
+Providers, with provider\_type, the chosen provider's limit in Market's usage
+route, and obtained\_at in each holding of Trading.\\
 \bottomrule
 \end{tabularx}
 
@@ -536,9 +539,19 @@ lags the real market (SEC-2).
 \medskip
 {\raggedright
 \noindent MarketDataProvider: the abstract type of every provider, with one
-access program, get\_quote. FinnhubProvider turns Finnhub's replies and errors
+access program, get\_quote, and calls\_per\_minute: $\mathbb{N}$ or None, the
+most calls a minute it allows, or None if it has no limit. Each provider type,
+such as FinnhubProvider, gives its own: 60 for FinnhubProvider, Finnhub's free plan, and None for
+FakeProvider, which calls no one. So GET /v1/market/usage of Market (M10)
+reports the chosen provider's limit, and the team can check the server stays
+within it (SC4). FinnhubProvider turns Finnhub's replies and errors
 into Quotes and MarketDataErrors (the adapter pattern). FakeProvider makes up
 prices, so the team can develop and test without a key or an open market.\par}
+
+\medskip
+{\raggedright
+\noindent ProviderType $=$ \{FinnhubProvider, FakeProvider\}, the type of a
+provider, whose calls\_per\_minute can be read without making one.\par}
 
 \medskip
 \noindent ProviderSettings = tuple of (market\_provider: String,
@@ -555,10 +568,9 @@ apart from a provider that fails.
 
 \subsubsection{Exported Constants}
 
-{\raggedright
-FINNHUB\_CALLS\_PER\_MINUTE: $\mathbb{N}$ = 60, Finnhub's free plan limit.
-GET /v1/market/usage of Market (M10) reports it, so the team can check the
-server's calls stay within it (SC4).\par}
+\noindent PROVIDERS: String $\rightarrow$ ProviderType $=$ \{``finnhub''
+$\mapsto$ FinnhubProvider, ``fake'' $\mapsto$ FakeProvider\}, each provider type
+by its MARKET\_PROVIDER name. A new provider is added here.
 
 \subsubsection{Exported Access Programs}
 
@@ -571,6 +583,7 @@ new FinnhubProvider & String & FinnhubProvider & - \\
 new FakeProvider & Clock & FakeProvider & - \\
 get\_quote & String & Quote & MarketDataError,\newline RateLimitedError,\newline
 UnknownSymbolError \\
+provider\_type & ProviderSettings & ProviderType & ValueError \\
 build\_provider & ProviderSettings & MarketDataProvider & ValueError \\
 get\_provider\_settings & - & ProviderSettings & ValidationError \\
 \bottomrule
@@ -581,7 +594,8 @@ get\_provider\_settings & - & ProviderSettings & ValidationError \\
 
 \subsubsection{State Variables}
 
-\noindent Each provider has its own state, which new sets up.
+\noindent Each provider has its own state, which new sets up. Its
+calls\_per\_minute belongs to its type, not to each one made.
 
 \medskip
 \noindent key: String, a FinnhubProvider's API key. It prints as stars, and it
@@ -645,16 +659,26 @@ ProviderSettings, read from the environment or the .env file. Git ignores
 \item exception: None, even for a symbol no real stock has
 \end{itemize}
 
+\noindent provider\_type($v$):
+\begin{itemize}
+\item output: $out :=$ PROVIDERS($v$.market\_provider), the type of the
+  provider $v$ names, without making one. Market (M10) reads its
+  calls\_per\_minute this way for its usage route, so no provider, with its
+  HTTP client, is made on each request.
+\item exception: $exc :=$ ($v$.market\_provider names no provider
+  $\Rightarrow$ ValueError)
+\end{itemize}
+
 \noindent build\_provider($v$):
 \begin{itemize}
-\item output: $out :=$ the provider that $v$ names. That is currently new
-  FinnhubProvider with $v$'s key for ``finnhub'', or new
-  FakeProvider(system\_clock) for ``fake''. Market (M10) gets its provider
-  only from here (the factory pattern), so a new provider changes only this
-  module and the limit that GET /v1/market/usage reports.
-\item exception: $exc :=$ ($v$.market\_provider names no provider
-  $\Rightarrow$ ValueError). It never falls back to FakeProvider, whose
-  made-up prices would be shown as real.
+\item output: $out :=$ the provider that $v$ names, of type
+  provider\_type($v$). That is currently new FinnhubProvider with $v$'s key
+  for ``finnhub'', or new FakeProvider(system\_clock) for ``fake''. Market
+  (M10) gets its provider only from here (the factory pattern), so a new
+  provider changes only this module.
+\item exception: $exc :=$ ($v$.market\_provider names no provider, or one
+  that build\_provider can't make yet $\Rightarrow$ ValueError). It never falls
+  back to FakeProvider, whose made-up prices would be shown as real.
 \end{itemize}
 
 \noindent get\_provider\_settings():
@@ -1280,7 +1304,9 @@ PLUGIN: Plugin $=$ (name: ``market'', router: the two routes below, lifespan:
 lifespan, health: health). Both of Market's routes need no signed-in user.
 What they send is the same for everyone and is no user's data, so SEC-15
 doesn't ask for one. They take now from get\_clock of Clock (M2) and session
-from get\_db of Database (M1).
+from get\_db of Database (M1). GET /v1/market/usage also takes settings from
+get\_provider\_settings of Market Providers (M3), so a test can choose the
+provider.
 
 \subsubsection{Exported Access Programs}
 
@@ -1302,7 +1328,7 @@ String, quoted\_at: DateTime or None, obtained\_at: DateTime or None, delayed:
 $\mathbb{B}$)) & - \\
 GET /v1/market/usage & - & tuple of (calls\_last\_minute: $\mathbb{Z}$,
 busiest\_minute\_today: $\mathbb{Z}$, calls\_today: $\mathbb{Z}$,
-limit\_per\_minute: $\mathbb{N}$) & - \\
+limit\_per\_minute: $\mathbb{N}$ or None) & - \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1421,8 +1447,9 @@ poll, from calling the provider.
 \item output: $out := $ (calls\_last\_minute: $|R(\text{now} - 1 \text{
   minute})|$, busiest\_minute\_today: the most entries of $R(\text{start})$ in
   one clock minute, or 0 if there are none, calls\_today:
-  $|R(\text{start})|$, limit\_per\_minute: FINNHUB\_CALLS\_PER\_MINUTE of
-  Market Providers (M3)), where $R(t)$ is the entries of requests from $t$ to
+  $|R(\text{start})|$, limit\_per\_minute: the
+  calls\_per\_minute of provider\_type(settings) in Market Providers (M3), None
+  for the fake provider), where $R(t)$ is the entries of requests from $t$ to
   now, and start is the midnight that begins now's New York day, the
   market's day
 \item exception: None
@@ -1552,8 +1579,8 @@ earlier trade, unlike Market's 404 for a stock that doesn't exist.\par}
 
 \medskip
 \noindent HoldingValue = tuple of (symbol: String, quantity: $\mathbb{Z}$,
-price: Money, quoted\_at: DateTime, delayed: $\mathbb{B}$, value: Money), one
-holding in the reply to GET /v1/me/portfolio.
+price: Money, quoted\_at: DateTime, obtained\_at: DateTime, delayed: $\mathbb{B}$,
+value: Money), one holding in the reply to GET /v1/me/portfolio.
 
 \subsubsection{Exported Constants}
 
@@ -1730,12 +1757,12 @@ holdings\_value: Decimal, total\_value: Decimal) only reads.
   of their values, is the portfolio value of FR42, which leaves the cash out.
   With $c :=$
   get\_current\_price(session, $h$.asset\_id, now), $h$'s entry is (its symbol,
-  $h$.quantity, $c$.price, $c$.quoted\_at, $c$.delayed, $h$.quantity $\times$
+  $h$.quantity, $c$.price, $c$.quoted\_at, $c$.obtained\_at, $c$.delayed,
+  $h$.quantity $\times$
   $c$.price). A delayed price is still used, since FR42 asks for each stock's
-  most recent price, and delayed flags it, so the phone marks it (FR33). A holding gives quoted\_at,
-  the time delayed is judged by, but not yet obtained\_at, the time FR33 asks
-  to show. No
-  amount needs rounding, since none comes from a division.
+  most recent price, and delayed flags it, so the phone marks it (FR33). A holding gives
+  obtained\_at, the time FR33 asks to show with its price, and quoted\_at,
+  the time delayed goes by. No amount needs rounding, since none comes from a division.
 \item exception: None
 \end{itemize}
 

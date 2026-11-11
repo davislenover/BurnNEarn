@@ -23,8 +23,11 @@ class HoldingValue(BaseModel):
     symbol: str
     quantity: int
     price: Money
-    # When the provider set the price.
+    # When the provider set the price. Whether it is delayed goes by this.
     quoted_at: datetime
+    # When the server got the price, the time the phone shows with it
+    # (FR_MktPriceAge).
+    obtained_at: datetime
     # True when the market is open and the price is out of date. It is
     # still used, and the phone shows it as delayed.
     delayed: bool
