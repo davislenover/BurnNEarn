@@ -54,11 +54,13 @@ The Development Plan (Section 10, Expected Technology) gives the reasons for
 Python, FastAPI, PostgreSQL, pytest and Ruff, and their alternatives. The
 rest were chosen while building the PoC. In short:
 
-- **Python 3.14** is the server's language. Its libraries cover each of the
-  server's jobs: calling Finnhub, serving the API, and later NumPy and pandas
-  for market scenarios (FR_MktScenario). TypeScript would have matched the
-  app, but Python's numerical libraries suit the simulation better.
-- **FastAPI** turns each route into an HTTP endpoint, run by Uvicorn.
+- **Python 3.14** is the programming language the server is written in. Its
+  libraries cover each of the server's jobs: calling Finnhub, serving the
+  API, and later NumPy and pandas for market scenarios (FR_MktScenario).
+  TypeScript would have matched the app, but Python's numerical libraries
+  suit the simulation better.
+- **FastAPI** is a Python web framework, a library for writing the routes of
+  an API. **Uvicorn** is the web server that runs it.
   - It checks every request against the route's types before our code runs,
     so a malformed request is refused (SEC-25).
   - Its `Depends` hands each route its session, clock and user, so a test can
@@ -67,10 +69,14 @@ rest were chosen while building the PoC. In short:
     the server agree on what is sent.
   - Django with Django REST Framework was the alternative, but Django brings
     much the project doesn't need, such as server-rendered pages.
-- **Pydantic** checks data at the edges. `Money` refuses an amount with over 4
-  decimals (NFR_Accuracy), and pydantic-settings reads `.env`, keeping the
-  Finnhub key a `SecretStr` that prints as stars (SEC-33).
-- **PostgreSQL 18** holds every module's tables.
+- **Pydantic** is a library that checks data against declared types, such as
+  a field that must be a decimal. `Money` uses it to refuse an amount with
+  over 4 decimals (NFR_Accuracy). pydantic-settings, its add-on for
+  settings, reads `.env` and keeps the Finnhub key a `SecretStr`, which
+  prints as stars (SEC-33).
+- **PostgreSQL 18** is a relational database: data lives in tables of rows
+  and columns, and a row can point at a row in another table. It holds every
+  module's tables.
   - The data is relational (users, portfolios, trades), and one transaction
     saves a buy's payment and shares together or not at all
     (FR_MktAtomicTrade).
@@ -79,27 +85,34 @@ rest were chosen while building the PoC. In short:
   - It checks each table's constraints, such as a balance never below 0, on
     every write, even for code that skips a module's own checks.
   - MongoDB was the alternative, but this data is relational.
-- **Docker** runs PostgreSQL on your computer. `docker compose up -d` in
-  `src/backend/` starts the same `postgres:18` image that CI tests against,
-  so your database matches CI's, with nothing to install but Docker. Its
-  credentials are for local use only.
-- **SQLAlchemy 2** is how code talks to the database. Each module defines its
-  tables as typed classes on one `Base`, which names every constraint and
-  index the same way. A session saves a request's changes in one commit
-  (rule 4).
-- **Alembic** changes the tables through migration scripts in one chain, each
-  naming the one before it, run in order by `alembic upgrade head`. So a
-  database that holds data, such as a deployed one, changes without being
-  rebuilt, and every developer's database ends up like CI's. CI checks there
-  is one chain of migrations, that it upgrades and downgrades, and that it
+- **Docker** runs a program in a container: a packaged copy of the program
+  with everything it needs, kept apart from the rest of your computer. Here
+  it runs PostgreSQL. `docker compose up -d` in `src/backend/` starts the same
+  `postgres:18` image that CI tests against, so your database matches CI's,
+  with nothing to install but Docker. Its credentials are for local use only.
+- **SQLAlchemy 2** is a library for using a SQL database from Python. Each
+  table is a Python class, and queries are Python code rather than strings of
+  SQL. Each module defines its tables as typed classes on one `Base`, which
+  names every constraint and index the same way. A session saves a request's
+  changes in one commit (rule 4).
+- **Alembic** is SQLAlchemy's migration tool. A migration is a small script
+  that changes the database's tables, such as adding a column or a check, and
+  can undo that change. Alembic keeps them in one chain, each naming the one
+  before it, and `alembic upgrade head` runs the ones a database hasn't had
+  yet. So a database that holds data, such as a deployed one, changes
+  without being rebuilt, and every developer's database ends up like CI's.
+  CI checks there is one chain, that it upgrades and downgrades, and that it
   matches the models (`alembic check`).
-- **httpx2** calls Finnhub with a 10 second timeout, and lets tests answer
-  in Finnhub's place (`MockTransport`).
-- **uv** installs the packages from `uv.lock`, so everyone and CI get the
-  same versions (`uv sync --locked`).
-- **pytest** runs the tests with little boilerplate, **Ruff** lints and
-  formats in one fast tool, and **import-linter** fails CI when a module
-  imports one above it (rule 2).
+- **httpx2** is a library for making HTTP requests from Python. It calls
+  Finnhub with a 10 second timeout, and lets tests answer in Finnhub's place
+  (`MockTransport`).
+- **uv** is a tool that installs Python and a project's packages. It installs
+  them from `uv.lock`, the list of exact versions, so everyone and CI get the
+  same ones (`uv sync --locked`).
+- **pytest** is a framework for writing and running tests, with little
+  boilerplate. **Ruff** checks code for mistakes and style (a linter) and
+  formats it, in one fast tool. **import-linter** checks which packages may
+  import which, and fails CI when a module imports one above it (rule 2).
 
 ## Modules
 
