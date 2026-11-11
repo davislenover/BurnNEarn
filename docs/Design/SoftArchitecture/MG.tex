@@ -54,6 +54,7 @@ Hierarchy. 7 Module Decomposition: Users, Wallet and Email Service, a rationale
 for each module, and module health in Control and Plugins. Review fixes to Database, Market,
 Trading (queued trades and the simulation notice at Revision~0) and JSON
 Format, and to 9 Use Hierarchy Between Modules.\\
+Nov 10, 2026 & 1.0 & Farid Bastoros: 4 Anticipated and Unlikely Changes.\\
 Nov 10, 2026 & 1.2 & Davis Lenover: 2.1 Abbreviations and Acronyms, and review
 fixes to 7 Module Decomposition. Each market data provider gives its own
 request limit, so a new one changes only Market Providers.\\
@@ -97,6 +98,7 @@ This section records information for easy reference.
   SEC & Security Requirement (SRS and HA)\\
   SRS & Software Requirements Specification\\
   UC & Unlikely Change\\
+  ULC & Unlikely Change (SRS)\\
   \bottomrule
 \end{tabular}\\
 
@@ -210,17 +212,104 @@ require changing the one module that hides the associated decision. The approach
 adapted here is called design for
 change.
 
+The list covers every likely change in the SRS (SRS LC1 to LC5) and adds the
+design and implementation choices the team expects to revisit. Each anticipated
+change is the secret of one module, which Table~\ref{TblACT} names. SRS LC3
+names three things that may change, so it is split here into the provider
+(\acref{acProviders}), the update frequency and asset list (\acref{acMarket})
+and the limits that go with them (\acref{acConstants}).
+
 \begin{description}
-\item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
-  hardware on which the software is running.
-\item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
-  initial input data.
-\item ...
+\item[\refstepcounter{acnum} \actheacnum \label{acDB}:] The database server
+  that stores \progname{}'s data, and how the server connects to it, such as a
+  move to a different hosted database.
+\item[\refstepcounter{acnum} \actheacnum \label{acClock}:] The source of the
+  current time, such as a fixed time in tests instead of the server's clock.
+\item[\refstepcounter{acnum} \actheacnum \label{acProviders}:] The market data
+  provider and the form of its replies and errors. The provider may change if
+  its request limits or cost prevent the planned use (SRS LC3).
+\item[\refstepcounter{acnum} \actheacnum \label{acHealth}:] The source of
+  recorded activity and its interface: Apple HealthKit, Health Connect, and
+  later a wearable device read directly, with the extra data it gives, such as
+  workout duration and calories burned (SRS LC2).
+\item[\refstepcounter{acnum} \actheacnum \label{acDevice}:] The phone operating
+  system's services that the app relies on, such as secure storage,
+  notifications and background work, which differ between iOS and Android and
+  change with new versions of each.
+\item[\refstepcounter{acnum} \actheacnum \label{acControl}:] The set of modules
+  that make up the running server. Each stage, from the proof of concept to
+  Revision~1, adds modules.
+\item[\refstepcounter{acnum} \actheacnum \label{acConstants}:] The values of
+  the SRS symbolic constants (SRS Appendix~C), such as the earning rates, the
+  daily currency cap and the price staleness limit. The staleness limit would
+  change with the price update frequency (SRS LC3).
+\item[\refstepcounter{acnum} \actheacnum \label{acUsers}:] How the server knows
+  who is calling: the built-in demo user in the proof of concept, an email
+  address and a password at Revision~0, and possibly other ways to sign in
+  later.
+\item[\refstepcounter{acnum} \actheacnum \label{acWallet}:] How a balance is
+  stored, changed and recorded, such as a new reason for a change when selling
+  is added.
+\item[\refstepcounter{acnum} \actheacnum \label{acMarket}:] How often prices
+  are fetched, which assets can be traded, and when the market counts as open.
+  The update frequency and the asset list may change with the provider's
+  request limits (SRS LC3).
+\item[\refstepcounter{acnum} \actheacnum \label{acActivity}:] The rules that
+  turn recorded activity into currency, such as which activity types earn, how
+  an implausible total is refused, and how the daily cap is applied.
+\item[\refstepcounter{acnum} \actheacnum \label{acTrading}:] The trade rules.
+  The proof of concept only buys while the market is open. Selling, queuing a
+  trade while the market is closed, and the simulation notice check come at
+  Revision~0.
+\item[\refstepcounter{acnum} \actheacnum \label{acGoals}:] The rules for goals,
+  streaks, rest days and milestones.
+\item[\refstepcounter{acnum} \actheacnum \label{acLearning}:] The learning
+  content, the knowledge checks and the rules that decide when investment
+  feedback is given.
+\item[\refstepcounter{acnum} \actheacnum \label{acSocial}:] What a user can
+  share and with whom. Fitness challenges and opt-in leaderboards are a stretch
+  goal, and would first need an agreed change to the SRS, which now prohibits
+  ranking users (SRS LC5).
+\item[\refstepcounter{acnum} \actheacnum \label{acScenarios}:] The number and
+  selection of historical market scenarios, and where their past prices come
+  from, which depend on the availability and cost of historical data (SRS LC4).
+\item[\refstepcounter{acnum} \actheacnum \label{acPrivacy}:] How consent, data
+  export and account deletion are carried out, which may change with the law or
+  with the app stores' health-data policies (SRS SC6).
+\item[\refstepcounter{acnum} \actheacnum \label{acNavigation}:] The order of
+  the app's screens and how the user moves between them.
+\item[\refstepcounter{acnum} \actheacnum \label{acScreens}:] The layout and
+  appearance of each screen, which will change with the results of usability
+  testing.
+\item[\refstepcounter{acnum} \actheacnum \label{acSync}:] When and how the app
+  sends activity data to the server. If the health platforms prevent reliable
+  background updates, the app will update when the user opens it instead (SRS
+  LC1).
+\item[\refstepcounter{acnum} \actheacnum \label{acReminders}:] When reminders
+  are scheduled and how they are delivered.
+\item[\refstepcounter{acnum} \actheacnum \label{acPlugins}:] What a server
+  module hands to Control, such as a new kind of background work or health
+  check.
+\item[\refstepcounter{acnum} \actheacnum \label{acJSON}:] The form in which
+  amounts and refusals are sent to the phone.
+\item[\refstepcounter{acnum} \actheacnum \label{acAPI}:] How the app calls the
+  server, such as its address, the session token it sends with each request,
+  and when it retries.
+\item[\refstepcounter{acnum} \actheacnum \label{acEmail}:] The email delivery
+  service and its interface.
 \end{description}
 
-\wss{Anticipated changes relate to changes that would be made in requirements,
-design or implementation choices.  They are not related to changes that are made
-at run-time, like the values of parameters.}
+% \begin{description}
+% \item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
+%   hardware on which the software is running.
+% \item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
+%   initial input data.
+% \item ...
+% \end{description}
+
+% \wss{Anticipated changes relate to changes that would be made in requirements,
+% design or implementation choices.  They are not related to changes that are made
+% at run-time, like the values of parameters.}
 
 \subsection{Unlikely Changes} \label{SecUchange}
 
@@ -231,11 +320,50 @@ these decision should later need to be changed, then many parts of the design
 will potentially need to be modified. Hence, it is not intended that these
 decisions will be changed.
 
+The first three are the unlikely changes of the SRS (SRS Section~13), numbered
+there ULC1 to ULC3. The rest are decisions fixed at the architecture stage.
+
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
-  (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
-\item ...
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucNoRealMoney}:] The currency
+  is virtual and the investing is simulated, with no real money and no link to
+  a bank or brokerage account (SRS ULC1, SC5). Real money would change the
+  purpose of \progname{} and add payment, identity and regulatory modules.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucActivityEarns}:] Physical
+  activity is the way a user earns currency (SRS ULC2). Activity, Wallet and
+  Trading are all built around rewards that arrive from activity.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucSharingControl}:] Users
+  control what they share and with which friends, and a balance or raw health
+  data is never shared (SRS ULC3).
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucClientServer}:] \progname{}
+  is two programs, a phone app and one server, and trading, market prices and
+  the social feed need a connection to the server (SRS SC7). Moving this work
+  onto the phone would change almost every module.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucOneDatabase}:] The server is
+  one process with one relational database. A buy changes the balance and the
+  shares, which two modules own, in one transaction (FR37). Splitting the
+  server into separate services would mean redesigning how Wallet and Trading
+  work together.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucServerDecides}:] The server
+  alone decides balances, rewards and trades (SEC-24). The phone only reports
+  activity and asks for trades, so no module in the app holds these rules.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucPlatform}:] The app runs on
+  Android phones and iPhones (SRS SC1) and is written once in React Native.
+  A web or desktop version, or a separate native app for each platform, would
+  replace every app module.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucHealthPlatform}:] Activity
+  recorded by the phone is read only through its health platform (SRS SC2).
+  The app does not count steps itself or accept activity typed in by the user.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucProtocol}:] The app and the
+  server communicate over HTTPS with JSON. The form of single values may change
+  (\acref{acJSON}), but a different protocol would change every route and the
+  API Service.
 \end{description}
+
+% \begin{description}
+% \item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
+%   (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
+% \item ...
+% \end{description}
 
 \section{Module Hierarchy} \label{SecMH}
 
@@ -581,18 +709,43 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \toprule
 \textbf{AC} & \textbf{Modules}\\
 \midrule
-\acref{acHardware} & \mref{mHH}\\
-\acref{acInput} & \mref{mInput}\\
-\acref{acParams} & \mref{mParams}\\
-\acref{acVerify} & \mref{mVerify}\\
-\acref{acOutput} & \mref{mOutput}\\
-\acref{acVerifyOut} & \mref{mVerifyOut}\\
-\acref{acODEs} & \mref{mODEs}\\
-\acref{acEnergy} & \mref{mEnergy}\\
+% \acref{acHardware} & \mref{mHH}\\
+% \acref{acInput} & \mref{mInput}\\
+% \acref{acParams} & \mref{mParams}\\
+% \acref{acVerify} & \mref{mVerify}\\
+% \acref{acOutput} & \mref{mOutput}\\
+% \acref{acVerifyOut} & \mref{mVerifyOut}\\
+% \acref{acODEs} & \mref{mODEs}\\
+% \acref{acEnergy} & \mref{mEnergy}\\
+% \acref{acControl} & \mref{mControl}\\
+% \acref{acSeqDS} & \mref{mSeqDS}\\
+% \acref{acSolver} & \mref{mSolver}\\
+% \acref{acPlot} & \mref{mPlot}\\
+\acref{acDB} & \mref{mDB}\\
+\acref{acClock} & \mref{mClock}\\
+\acref{acProviders} & \mref{mProviders}\\
+\acref{acHealth} & \mref{mHealth}\\
+\acref{acDevice} & \mref{mDevice}\\
 \acref{acControl} & \mref{mControl}\\
-\acref{acSeqDS} & \mref{mSeqDS}\\
-\acref{acSolver} & \mref{mSolver}\\
-\acref{acPlot} & \mref{mPlot}\\
+\acref{acConstants} & \mref{mConstants}\\
+\acref{acUsers} & \mref{mUsers}\\
+\acref{acWallet} & \mref{mWallet}\\
+\acref{acMarket} & \mref{mMarket}\\
+\acref{acActivity} & \mref{mActivity}\\
+\acref{acTrading} & \mref{mTrading}\\
+\acref{acGoals} & \mref{mGoals}\\
+\acref{acLearning} & \mref{mLearning}\\
+\acref{acSocial} & \mref{mSocial}\\
+\acref{acScenarios} & \mref{mScenarios}\\
+\acref{acPrivacy} & \mref{mPrivacy}\\
+\acref{acNavigation} & \mref{mNavigation}\\
+\acref{acScreens} & \mref{mScreens}\\
+\acref{acSync} & \mref{mSync}\\
+\acref{acReminders} & \mref{mReminders}\\
+\acref{acPlugins} & \mref{mPlugins}\\
+\acref{acJSON} & \mref{mJSON}\\
+\acref{acAPI} & \mref{mAPI}\\
+\acref{acEmail} & \mref{mEmail}\\
 \bottomrule
 \end{tabular}
 \caption{Trace Between Anticipated Changes and Modules}
