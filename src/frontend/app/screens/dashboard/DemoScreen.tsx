@@ -110,7 +110,7 @@ export default function DemoScreen() {
             value={quantity}
             onChangeText={changeQuantity}
             keyboardType="number-pad"
-            placeholder="1"
+            placeholder="Enter shares"
             placeholderTextColor="#69737E"
             accessibilityLabel="Number of shares to buy" />
 
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 18,
+    fontSize: 16,
     color: '#171D22',
   },
   buyButton: {
