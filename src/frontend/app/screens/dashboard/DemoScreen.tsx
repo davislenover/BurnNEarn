@@ -20,7 +20,7 @@ export default function DemoScreen() {
   const [sharesHeld, setSharesHeld] = useState(0);
 
   // Store the quantity entered in the input
-  const [quantity, setQuantity] = useState('1');
+  const [quantity, setQuantity] = useState('0');
 
   // Store a message when a purchase cannot proceed
   const [error, setError] = useState('');
@@ -61,8 +61,14 @@ export default function DemoScreen() {
     setError('');
   }
 
+  // Clear the previous error when the quantity changes
+  function changeQuantity(value: string) {
+    setQuantity(value);
+    setError('');
+  }
+
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>FitFolio</Text>
 
       <View style={styles.summary}>
@@ -73,7 +79,7 @@ export default function DemoScreen() {
           <Text style={styles.caption}>steps today</Text>
         </View>
 
-        {/* Balance box sample value */}
+        {/* Balance updates after a purchase */}
         <View style={styles.card}>
           <Text style={styles.label}>Balance</Text>
           <Text style={styles.number} numberOfLines={1} adjustsFontSizeToFit>
@@ -83,24 +89,38 @@ export default function DemoScreen() {
         </View>
       </View>
 
-      {/* Stock box sample price */}
+      {/* Stock price and purchase controls */}
       <View style={styles.stockCard}>
-        <Text style={styles.symbol}>AAPL</Text>
-        <Text style={styles.caption}>Apple Inc. · Sample price per share</Text>
+        <View style={styles.row}>
+          <View>
+            <Text style={styles.symbol}>AAPL</Text>
+            <Text style={styles.caption}>Apple Inc. Sample price</Text>
+          </View>
+          <Text style={styles.currency}>USD</Text>
+        </View>
         <Text style={styles.price}>${formatMoney(sharePrice)}</Text>
 
-        <Text style={styles.label}>Quantity</Text>
+        <View style={styles.row}>
+          <Text style={styles.label}>Quantity</Text>
+        </View>
 
         <View style={styles.orderRow}>
           <TextInput
             style={styles.input}
             value={quantity}
-            onChangeText={setQuantity}
+            onChangeText={changeQuantity}
             keyboardType="number-pad"
+            placeholder="1"
+            placeholderTextColor="#69737E"
             accessibilityLabel="Number of shares to buy" />
 
-          {/* Enable buy when purchase logic is added */}
-          <TouchableOpacity style={styles.buyButton} disabled accessibilityRole="button" accessibilityState={{ disabled: true }}>
+          {/* Run the existing purchase checks when Buy is pressed */}
+          <TouchableOpacity
+            style={styles.buyButton}
+            onPress={buyShares}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Buy AAPL shares">
             <Text style={styles.buyButtonText}>Buy</Text>
           </TouchableOpacity>
         </View>
@@ -112,11 +132,20 @@ export default function DemoScreen() {
             {validQuantity ? `$${formatMoney(orderTotal)}` : '—'}
           </Text>
         </View>
+
+        {/* Show a message only when a purchase fails */}
+        {error !== '' && (
+          <Text style={styles.error} accessibilityRole="alert">
+            {error}
+          </Text>
+        )}
       </View>
 
-      {/* Portfolio box — sample values until purchases are connected */}
+      {/* Portfolio updates after a purchase */}
       <View style={styles.portfolioCard}>
-        <Text style={styles.sectionTitle}>Your portfolio</Text>
+        <View style={styles.row}>
+          <Text style={styles.sectionTitle}>Your portfolio</Text>
+        </View>
 
         <View style={styles.holdingRow}>
           <Text style={styles.label}>AAPL shares held</Text>
@@ -128,10 +157,12 @@ export default function DemoScreen() {
           <Text style={styles.holdingsValue}>${formatMoney(holdingsValue)}</Text>
         </View>
 
-        <Text style={styles.portfolioNote}> Your share value. Balance not included.
-        
+        <Text style={styles.portfolioNote}>
+          Your share value. Balance not included.
         </Text>
       </View>
+
+      <Text style={styles.footer}>No real money is used.</Text>
     </ScrollView>
   );
 }
@@ -223,7 +254,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
     justifyContent: 'center',
     alignItems: 'center',
-    opacity: 0.5,
+    minHeight: 48,
   },
   buyButtonText: {
     fontSize: 17,
@@ -285,5 +316,39 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#171D22',
     fontVariant: ['tabular-nums'],
+  },
+  // Shared layout for labels on the same row
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+  },
+  currency: {
+    fontSize: 11,
+    color: '#69737E',
+    borderWidth: 1,
+    borderColor: '#E8EBEE',
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+  },
+
+  // Purchase error message
+  error: {
+    backgroundColor: '#FFF0ED',
+    color: '#A82D22',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 14,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  footer: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#69737E',
+    marginTop: 4,
+    marginBottom: 16,
   },
 });
