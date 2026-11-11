@@ -121,7 +121,7 @@ export default function DemoScreen() {
             placeholderTextColor="#69737E"
             accessibilityLabel="Number of shares to buy" />
 
-          {/* Run the existing purchase checks when Buy is pressed */}
+          {/* Run the existing purchase checks when Buy button is pressed */}
           <TouchableOpacity
             style={styles.buyButton}
             onPress={buyShares}
