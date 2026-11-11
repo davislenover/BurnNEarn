@@ -555,10 +555,12 @@ Section~\ref{SecMD} gives the detail.
   names on the server and in the app, which keeps such a change small (NFR3).
 
 \item[Time is handed to the code.] Many rules depend on the time: whether the
-  market is open, whether a price is too old (FR33, FR39), and which calendar
-  day an activity total belongs to in the user's time zone (SEC-23). So no
-  module reads the system time. Each is handed \mref{mClock} Clock, and
-  \mref{mUsers} Users keeps each user's time zone.
+  market is open, whether a price is too old (FR33, FR39), and whether a daily
+  total is dated after today in the user's time zone, in which case it is
+  refused (SEC-24). So no module reads the system time. Each is handed
+  \mref{mClock} Clock, and \mref{mUsers} Users keeps each user's time zone. The
+  phone puts each activity record on its calendar day before it sends the
+  totals (SEC-23).
 
 \item[Features are added as plug-ins.] The system is built in stages, and the
   effort of a likely change is limited (NFR3). So \mref{mControl} Control
