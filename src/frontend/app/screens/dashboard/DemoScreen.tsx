@@ -1,6 +1,17 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function DemoScreen() {
+  // Store the quantity entered in the input
+  const [quantity, setQuantity] = useState('1');
+
+  // Check that the quantity contains digits and is a positive whole number
+  const shareCount = Number(quantity);
+  const validQuantity =
+    /^\d+$/.test(quantity) &&
+    Number.isSafeInteger(shareCount) &&
+    shareCount > 0;
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Text style={styles.title}>FitFolio</Text>
@@ -33,7 +44,8 @@ export default function DemoScreen() {
         <View style={styles.orderRow}>
           <TextInput
             style={styles.input}
-            defaultValue="1"
+            value={quantity}
+            onChangeText={setQuantity}
             keyboardType="number-pad"
             accessibilityLabel="Number of shares to buy" />
 
