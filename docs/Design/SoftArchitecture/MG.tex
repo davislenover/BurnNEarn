@@ -231,6 +231,46 @@ and the limits that go with them (\acref{acConstants}).
   system's services that the app relies on, such as secure storage,
   notifications and background work, which differ between iOS and Android and
   change with new versions of each.
+\item[\refstepcounter{acnum} \actheacnum \label{acControl}:] The set of modules
+  that make up the running server. Each stage, from the proof of concept to
+  Revision~1, adds modules.
+\item[\refstepcounter{acnum} \actheacnum \label{acConstants}:] The values of
+  the SRS symbolic constants (SRS Appendix~C), such as the earning rates, the
+  daily currency cap and the price staleness limit. The staleness limit would
+  change with the price update frequency (SRS LC3).
+\item[\refstepcounter{acnum} \actheacnum \label{acUsers}:] How the server knows
+  who is calling: the built-in demo user in the proof of concept, an email
+  address and a password at Revision~0, and possibly other ways to sign in
+  later.
+\item[\refstepcounter{acnum} \actheacnum \label{acWallet}:] How a balance is
+  stored, changed and recorded, such as a new reason for a change when selling
+  is added.
+\item[\refstepcounter{acnum} \actheacnum \label{acMarket}:] How often prices
+  are fetched, which assets can be traded, and when the market counts as open.
+  The update frequency and the asset list may change with the provider's
+  request limits (SRS LC3).
+\item[\refstepcounter{acnum} \actheacnum \label{acActivity}:] The rules that
+  turn recorded activity into currency, such as which activity types earn, how
+  an implausible total is refused, and how the daily cap is applied.
+\item[\refstepcounter{acnum} \actheacnum \label{acTrading}:] The trade rules.
+  The proof of concept only buys while the market is open. Selling, queuing a
+  trade while the market is closed, and the simulation notice check come at
+  Revision~0.
+\item[\refstepcounter{acnum} \actheacnum \label{acGoals}:] The rules for goals,
+  streaks, rest days and milestones.
+\item[\refstepcounter{acnum} \actheacnum \label{acLearning}:] The learning
+  content, the knowledge checks and the rules that decide when investment
+  feedback is given.
+\item[\refstepcounter{acnum} \actheacnum \label{acSocial}:] What a user can
+  share and with whom. Fitness challenges and opt-in leaderboards are a stretch
+  goal, and would first need an agreed change to the SRS, which now prohibits
+  ranking users (SRS LC5).
+\item[\refstepcounter{acnum} \actheacnum \label{acScenarios}:] The number and
+  selection of historical market scenarios, and where their past prices come
+  from, which depend on the availability and cost of historical data (SRS LC4).
+\item[\refstepcounter{acnum} \actheacnum \label{acPrivacy}:] How consent, data
+  export and account deletion are carried out, which may change with the law or
+  with the app stores' health-data policies (SRS SC6).
 \end{description}
 
 % \begin{description}
