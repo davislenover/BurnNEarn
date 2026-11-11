@@ -15,7 +15,7 @@ function formatMoney(cents: number) {
 }
 
 export default function DemoScreen() {
-  // Today's steps from the phone. null while loading or if steps can't be read.
+   // Today's steps from the phone (null if not read yet or unavailable), and whether it is still loading.
   const { steps, loading } = useTodaySteps();
 
   // Starting balance in cents: 100000 = $1,000
@@ -86,7 +86,7 @@ export default function DemoScreen() {
       <Text style={styles.title}>FitFolio</Text>
 
       <View style={styles.summary}>
-        {/* Steps box sample value */}
+        {/* Steps box: today's steps from the phone, "Loading…" or "Unavailable" */}
         <View style={styles.card}>
           <Text style={styles.label}>Today's steps</Text>
           <Text style={[styles.number, (loading || steps === null) && styles.label]}>
