@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+// Sample share price stored in cents: 24023 = $240.23
+const sharePrice = 24023;
+
+// Convert cents into a readable amount with two decimal places
+function formatMoney(cents: number) {
+  return (cents / 100).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export default function DemoScreen() {
   // Starting balance in cents: 100000 = $1,000
   const [balance, setBalance] = useState(100000);
@@ -17,6 +28,9 @@ export default function DemoScreen() {
     /^\d+$/.test(quantity) &&
     Number.isSafeInteger(shareCount) &&
     shareCount > 0;
+
+  // Calculate the total in cents when the quantity is valid
+  const orderTotal = validQuantity ? shareCount * sharePrice : 0;
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -43,7 +57,7 @@ export default function DemoScreen() {
       <View style={styles.stockCard}>
         <Text style={styles.symbol}>AAPL</Text>
         <Text style={styles.caption}>Apple Inc. · Sample price per share</Text>
-        <Text style={styles.price}>$240.23</Text>
+        <Text style={styles.price}>${formatMoney(sharePrice)}</Text>
 
         <Text style={styles.label}>Quantity</Text>
 
@@ -59,6 +73,14 @@ export default function DemoScreen() {
           <TouchableOpacity style={styles.buyButton} disabled accessibilityRole="button" accessibilityState={{ disabled: true }}>
             <Text style={styles.buyButtonText}>Buy</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Total cost for the entered quantity */}
+        <View style={styles.orderTotal}>
+          <Text style={styles.caption}>Order total</Text>
+          <Text style={styles.totalText}>
+            {validQuantity ? `$${formatMoney(orderTotal)}` : '—'}
+          </Text>
         </View>
       </View>
 
@@ -218,5 +240,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#69737E',
     marginTop: 12,
+  },
+  // Order total below the quantity input
+  orderTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 16,
+  },
+  totalText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#171D22',
+    fontVariant: ['tabular-nums'],
   },
 });
