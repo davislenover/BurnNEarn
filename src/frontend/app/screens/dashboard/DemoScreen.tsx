@@ -27,6 +27,11 @@ export default function DemoScreen() {
 
   // Check that the quantity contains digits and is a positive whole number
   const shareCount = Number(quantity);
+
+  // The quantity is valid only if it is:
+  //digits only (no letters, decimals, spaces or minus sign)
+  //small enough for JavaScript to store exactly
+  //at least 1
   const validQuantity =
     /^\d+$/.test(quantity) &&
     Number.isSafeInteger(shareCount) &&
@@ -35,27 +40,28 @@ export default function DemoScreen() {
   // Calculate the total in cents when the quantity is valid
   const orderTotal = validQuantity ? shareCount * sharePrice : 0;
 
-  // Calculate the value of the shares held, excluding cash
+  // Value of the shares owned in cents (shares × price). Does not include the balance.
   const holdingsValue = sharesHeld * sharePrice;
 
-  // Check the order before changing the balance or shares
+  // Runs when Buy is pressed. Checks the order first, then completes it.
+  // Each check stops the purchase and shows a message if it fails.
   function buyShares() {
+    // Stop if the quantity is empty, not a whole number, or 0
     if (!validQuantity) {
       setError('Enter a positive whole number of shares.');
       return;
     }
-
+    // Stop if the total is too big to calculate exactly
     if (!Number.isSafeInteger(orderTotal)) {
       setError('The quantity is too large.');
       return;
     }
-
+    // Stop if the order costs more than the current balance
     if (orderTotal > balance) {
       setError('Not enough balance for this purchase.');
       return;
     }
-
-    // Complete the simulated purchase
+    // All checks passed: pay for the shares, add them, and clear any old message
     setBalance(balance - orderTotal);
     setSharesHeld(sharesHeld + shareCount);
     setError('');
