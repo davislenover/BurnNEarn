@@ -4,7 +4,8 @@ import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 
 // Sample share price stored in cents: 12023 = $120.23
 const sharePrice = 12023;
 
-// Convert cents into a readable amount with two decimal places
+// Turns cents into dollars for display. 100000 -> "1,000.00"
+// show the 2 decimal places even if they are 0, and use commas for thousands
 function formatMoney(cents: number) {
   return (cents / 100).toLocaleString('en-US', {
     minimumFractionDigits: 2,
