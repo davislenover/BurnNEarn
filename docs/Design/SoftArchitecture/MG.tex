@@ -560,6 +560,28 @@ Section~\ref{SecMD} gives the detail.
   builds the server from a list of modules, each described by a record that
   \mref{mPlugins} Plugins defines. Adding a feature, such as Goals or Social,
   adds a module to the list and changes no existing module.
+
+\item[A scenario has its own portfolio.] A market scenario starts with its own
+  balance and no holdings, and must not affect the live portfolio (FR45, FR46,
+  SEC-31). So \mref{mWallet} Wallet keeps a separate portfolio for each
+  scenario, and \mref{mScenarios} Scenarios trades in it through
+  \mref{mTrading} Trading. The live balance is never read or changed by a
+  scenario.
+
+\item[The social feed cannot reach a balance.] Only the kinds of update the
+  SRS lists can be shared, and a currency balance or a portfolio value is not
+  one of them (FR65). So \mref{mSocial} Social uses Activity, Goals and
+  Learning for what may be shared, and does not use Wallet or Trading
+  (Section~\ref{SecUse}). A balance or a portfolio value cannot appear in an
+  update, because Social has no way to read one. An individual activity record
+  cannot appear either, since the app sends the server only daily totals
+  (SEC-10, FR68). Social also offers no ranking of users (FR71).
+
+\item[Privacy rules are in one module.] The user can download their data,
+  delete their account and withdraw consent to read health data (FR9 to FR11,
+  FR76, SEC-9, SEC-18). These rules change with the law and the app stores'
+  policies (SC6), so \mref{mPrivacy} Privacy holds them, apart from the
+  features whose data they act on.
 \end{description}
 
 \section{Module Decomposition} \label{SecMD}
