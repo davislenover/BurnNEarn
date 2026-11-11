@@ -582,6 +582,21 @@ Section~\ref{SecMD} gives the detail.
   FR76, SEC-9, SEC-18). These rules change with the law and the app stores'
   policies (SC6), so \mref{mPrivacy} Privacy holds them, apart from the
   features whose data they act on.
+
+\item[What the user sees is in Screens alone.] Several requirements are about
+  display: every return and portfolio value is labelled as simulated (FR43), a
+  gain or loss is shown by a sign or a text label and not by colour alone
+  (FR44), and the core features stay usable at \texttt{MAX\_TEXT\_SCALE} text
+  size (NFR8). So layout and wording are in \mref{mScreens} Screens and
+  \mref{mNavigation} Navigation, and the app's services hold none. Results of
+  usability testing (NFR2) can then change a screen without changing a
+  service.
+
+\item[Reminders are scheduled on the phone.] Reminders are sent only in the
+  periods the user chose, and contain no health data, balance or portfolio
+  value by default (FR72 to FR75, SEC-34). So \mref{mReminders} Reminder
+  Service schedules them on the phone, through \mref{mDevice} Device Service,
+  with the user's settings.
 \end{description}
 
 \section{Module Decomposition} \label{SecMD}
