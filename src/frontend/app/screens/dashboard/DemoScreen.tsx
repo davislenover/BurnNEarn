@@ -22,6 +22,9 @@ export default function DemoScreen() {
   // Store the quantity entered in the input
   const [quantity, setQuantity] = useState('1');
 
+  // Store a message when a purchase cannot proceed
+  const [error, setError] = useState('');
+
   // Check that the quantity contains digits and is a positive whole number
   const shareCount = Number(quantity);
   const validQuantity =
@@ -31,6 +34,32 @@ export default function DemoScreen() {
 
   // Calculate the total in cents when the quantity is valid
   const orderTotal = validQuantity ? shareCount * sharePrice : 0;
+
+  // Calculate the value of the shares held, excluding cash
+  const holdingsValue = sharesHeld * sharePrice;
+
+  // Check the order before changing the balance or shares
+  function buyShares() {
+    if (!validQuantity) {
+      setError('Enter a positive whole number of shares.');
+      return;
+    }
+
+    if (!Number.isSafeInteger(orderTotal)) {
+      setError('The quantity is too large.');
+      return;
+    }
+
+    if (orderTotal > balance) {
+      setError('Not enough balance for this purchase.');
+      return;
+    }
+
+    // Complete the simulated purchase
+    setBalance(balance - orderTotal);
+    setSharesHeld(sharesHeld + shareCount);
+    setError('');
+  }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -47,7 +76,8 @@ export default function DemoScreen() {
         {/* Balance box sample value */}
         <View style={styles.card}>
           <Text style={styles.label}>Balance</Text>
-          <Text style={styles.number} numberOfLines={1} adjustsFontSizeToFit>$1,000
+          <Text style={styles.number} numberOfLines={1} adjustsFontSizeToFit>
+            ${formatMoney(balance)}
           </Text>
           <Text style={styles.caption}>virtual credits</Text>
         </View>
@@ -90,16 +120,16 @@ export default function DemoScreen() {
 
         <View style={styles.holdingRow}>
           <Text style={styles.label}>AAPL shares held</Text>
-          <Text style={styles.shareCount}>0</Text>
+          <Text style={styles.shareCount}>{sharesHeld}</Text>
         </View>
 
         <View style={styles.valueRow}>
           <Text style={styles.label}>Holdings value</Text>
-          <Text style={styles.holdingsValue}>$0.00</Text>
+          <Text style={styles.holdingsValue}>${formatMoney(holdingsValue)}</Text>
         </View>
 
-        <Text style={styles.portfolioNote}>
-          Shares x current price. Excludes cash.
+        <Text style={styles.portfolioNote}> Your share value. Balance not included.
+        
         </Text>
       </View>
     </ScrollView>
