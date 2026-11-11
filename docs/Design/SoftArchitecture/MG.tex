@@ -462,12 +462,48 @@ The design of the system is intended to satisfy the requirements developed in
 the SRS. In this stage, the system is decomposed into modules. The connection
 between requirements and modules is listed in Table~\ref{TblRT}.
 
-\wss{The intention of this section is to document decisions that are made
-  ``between'' the requirements and the design.  To satisfy some requirements,
-  design decisions need to be made.  Rather than make these decisions implicit,
-  they are explicitly recorded here.  For instance, if a program has security
-  requirements, a specific design decision may be made to satisfy those
-  requirements with a password.}
+% \wss{The intention of this section is to document decisions that are made
+%   ``between'' the requirements and the design.  To satisfy some requirements,
+%   design decisions need to be made.  Rather than make these decisions implicit,
+%   they are explicitly recorded here.  For instance, if a program has security
+%   requirements, a specific design decision may be made to satisfy those
+%   requirements with a password.}
+
+Some requirements can only be met by a decision that the SRS leaves to the
+design. This section records those decisions, so that none of them is implicit.
+Each one names the requirements it serves, by their number in the SRS, and the
+modules that carry it out. The \emph{Rationale} field of each module in
+Section~\ref{SecMD} gives the detail.
+
+\begin{description}
+\item[One server with one database.] A trade must update the balance and the
+  holdings together or not at all (FR37, NFR6), and two modules own that data.
+  So the server is one process with one database, split into modules, and not
+  separate services. \mref{mTrading} Trading pays through \mref{mWallet} Wallet
+  in the same transaction of \mref{mDB} Database, and only the route commits
+  it, so a refused or interrupted trade saves nothing.
+
+\item[The server holds every rule about currency.] Rewards, balances and
+  holdings are calculated only on the server (SEC-24). The app sends daily
+  totals for each activity type and nothing else (SEC-10), through
+  \mref{mSync} Sync Service. \mref{mActivity} Activity turns the totals into
+  currency, with the plausibility limits and the daily cap (FR13, FR17, FR18).
+  No app module holds a reward or trade rule, so a changed app cannot give
+  itself currency.
+
+\item[One way to change a balance.] Every change to a balance is recorded with
+  its amount, time and reason, and the balance equals the sum of its changes
+  (SEC-22). So \mref{mWallet} Wallet offers one call that changes a balance and
+  records the change together, and refuses a change that would take the balance
+  below zero (FR37). The caller must lock the portfolio first, so that two
+  requests for one user take turns. That is how a repeated sync pays each day's
+  activity once (SEC-19) and never more than the daily cap (FR18).
+
+\item[Each trade request has an ID.] A trade submitted twice is recorded once
+  (FR38, NFR6). So the app makes an ID for each trade request, and
+  \mref{mTrading} Trading answers a repeated ID with the first result. A retry
+  over a bad connection is then safe.
+\end{description}
 
 \section{Module Decomposition} \label{SecMD}
 
