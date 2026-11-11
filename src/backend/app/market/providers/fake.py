@@ -3,6 +3,7 @@
 import random
 import zlib
 from decimal import Decimal
+from typing import ClassVar
 
 from app.core.clock import Clock, system_clock
 from app.market.providers.base import MarketDataProvider, Quote
@@ -14,6 +15,9 @@ MAX_STEP = Decimal("0.005")
 class FakeProvider(MarketDataProvider):
     """Gives each symbol a made-up price that moves a little on every call,
     quoted at the current time."""
+
+    # It calls no one, so it has no limit.
+    calls_per_minute: ClassVar[int | None] = None
 
     def __init__(self, clock: Clock = system_clock) -> None:
         self._clock = clock

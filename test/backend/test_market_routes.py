@@ -7,7 +7,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.main import app
 from app.market.models import Asset, Price, ProviderRequest, RequestOutcome
+from app.market.providers.settings import (
+    ProviderSettings,
+    get_provider_settings,
+)
 
 # Tuesday Nov 10, 2026 at 10:00 in New York: the market is open.
 OPEN = datetime(2026, 11, 10, 15, 0, tzinfo=UTC)
@@ -96,10 +101,18 @@ def test_an_asset_that_is_not_tradable_is_not_listed(
     assert "AAPL" not in by_symbol(client.get("/v1/assets").json())
 
 
+def use_provider(**values: object) -> None:
+    """Make the routes see these provider settings. The client undoes it."""
+    app.dependency_overrides[get_provider_settings] = lambda: ProviderSettings(
+        _env_file=None, **values
+    )
+
+
 def test_usage_counts_the_calls_to_the_provider(
     client: TestClient, db_session: Session, at_time: SetTime
 ) -> None:
     at_time(OPEN)
+    use_provider(market_provider="finnhub", finnhub_api_key="not-real")
     times = [
         # 2 in the last minute
         OPEN - timedelta(seconds=10),
@@ -127,6 +140,7 @@ def test_usage_counts_the_calls_to_the_provider(
         "calls_last_minute": 2,
         "busiest_minute_today": 3,
         "calls_today": 6,
+        # Finnhub's limit, since it is the chosen provider.
         "limit_per_minute": 60,
     }
 
@@ -141,3 +155,5 @@ def test_usage_is_zero_before_any_call(
     assert usage["calls_last_minute"] == 0
     assert usage["busiest_minute_today"] == 0
     assert usage["calls_today"] == 0
+    # conftest.py chooses the fake provider, which has no limit.
+    assert usage["limit_per_minute"] is None

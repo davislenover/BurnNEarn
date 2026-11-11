@@ -9,7 +9,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
-from typing import Protocol
+from typing import ClassVar, Protocol
 
 
 @dataclass(frozen=True)
@@ -39,6 +39,11 @@ class MarketDataProvider(Protocol):
     """What every provider must do. Each provider class names this as its
     base class, so one that forgets get_quote fails as soon as it is
     created."""
+
+    # The most calls a minute the provider allows, or None if it has no
+    # limit. GET /v1/market/usage reports it for the chosen provider, so
+    # the team can check the server stays within it (SC_MarketData).
+    calls_per_minute: ClassVar[int | None]
 
     @abstractmethod
     def get_quote(self, symbol: str) -> Quote:

@@ -2,11 +2,12 @@
 
 from datetime import UTC, datetime
 from decimal import Decimal
+from typing import get_args
 
 import pytest
 from pydantic import SecretStr, ValidationError
 
-from app.market.providers import build_provider
+from app.market.providers import PROVIDERS, build_provider, provider_type
 from app.market.providers.base import MarketDataProvider
 from app.market.providers.fake import MAX_STEP, FakeProvider
 from app.market.providers.finnhub import FinnhubProvider
@@ -46,6 +47,23 @@ def test_an_unknown_provider_name_is_refused() -> None:
 
     with pytest.raises(ValueError, match="alpaca"):
         build_provider(unknown)
+
+
+def test_every_provider_name_has_a_provider_with_its_request_limit() -> None:
+    names = get_args(
+        ProviderSettings.model_fields["market_provider"].annotation
+    )
+
+    assert set(names) == set(PROVIDERS)
+    assert FinnhubProvider.calls_per_minute == 60
+    assert FakeProvider.calls_per_minute is None
+
+
+def test_the_chosen_providers_type_is_found_without_making_one() -> None:
+    finnhub = settings(market_provider="finnhub", finnhub_api_key="not-real")
+
+    assert provider_type(finnhub) is FinnhubProvider
+    assert provider_type(settings(market_provider="fake")) is FakeProvider
 
 
 def test_a_provider_without_get_quote_fails_when_created() -> None:
