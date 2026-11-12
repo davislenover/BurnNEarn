@@ -1,11 +1,11 @@
-import type { DailyStepTotal, DailyTotalsRequest, DailyTotalsResponse } from "../../types/activity";
+import type { DailyStepTotal, DailyTotalsRequest } from "../../types/activity";
 
 /** Sends one recorded daily total. The server calculates and saves the reward. */
 export async function sendTodaysSteps(
     total: DailyStepTotal,
     timeZone: string,
     signal?: AbortSignal,
-): Promise<DailyTotalsResponse> {
+): Promise<void> {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, "");
     if (!apiUrl) {
         throw new Error("Set EXPO_PUBLIC_API_URL in the frontend .env file to sync steps.");
@@ -33,22 +33,14 @@ export async function sendTodaysSteps(
             body: JSON.stringify(request),
             signal: controller.signal,
         });
-        const data: unknown = await response.json().catch(() => null);
-
         if (!response.ok) {
+            const data: unknown = await response.json().catch(() => null);
             // Our backend uses detail.message for domain errors; validation errors may differ.
             const detail = data && typeof data === "object" && "detail" in data ? data.detail : null;
             const message = detail && typeof detail === "object" && "message" in detail
                 && typeof detail.message === "string" ? detail.message : null;
             throw new Error(message ?? `Could not sync steps (HTTP ${response.status}).`);
         }
-
-        if (!data || typeof data !== "object" || Array.isArray(data)
-            || !("cash_balance" in data) || typeof data.cash_balance !== "string") {
-            throw new Error("The server returned an invalid step-sync response.");
-        }
-
-        return data as DailyTotalsResponse;
     } catch (cause) {
         if (timedOut) {
             throw new Error("Sending steps timed out. Refresh to try again.");

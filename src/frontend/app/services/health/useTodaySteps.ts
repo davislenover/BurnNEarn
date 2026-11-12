@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AppState } from "react-native";
-import type { DailyTotalsResponse } from "../../types/activity";
 import { sendTodaysSteps } from "../api/activity";
 import { getTodaysSteps } from "./steps";
 
@@ -14,7 +13,6 @@ export function useTodaySteps(enabled = true) {
     const [error, setError] = useState<Error | null>(null);
     const [syncing, setSyncing] = useState(false);
     const [syncError, setSyncError] = useState<Error | null>(null);
-    const [syncResult, setSyncResult] = useState<DailyTotalsResponse | null>(null);
     const refreshRef = useRef<() => Promise<void>>(async () => {});
 
     // Keep one stable refresh function for buttons and other UI callers.
@@ -27,7 +25,6 @@ export function useTodaySteps(enabled = true) {
             setError(null);
             setSyncing(false);
             setSyncError(null);
-            setSyncResult(null);
             return;
         }
 
@@ -39,7 +36,6 @@ export function useTodaySteps(enabled = true) {
             setLoading(true);
             setError(null);
             setSyncError(null);
-            setSyncResult(null);
             let total: number;
             let activityDate: string;
             let timeZone: string;
@@ -69,14 +65,11 @@ export function useTodaySteps(enabled = true) {
             setSyncing(true);
             activeRequest = new AbortController();
             try {
-                const result = await sendTodaysSteps({
+                await sendTodaysSteps({
                     activity_date: activityDate,
                     activity_type: "steps",
                     step_count: total,
                 }, timeZone, activeRequest.signal);
-                if (!cancelled) {
-                    setSyncResult(result);
-                }
             } catch (cause) {
                 if (!cancelled) {
                     setSyncError(cause instanceof Error ? cause : new Error("Could not sync today's steps."));
@@ -119,5 +112,5 @@ export function useTodaySteps(enabled = true) {
         };
     }, [enabled]);
 
-    return { steps, loading, error, refresh, syncing, syncError, syncResult };
+    return { steps, loading, error, refresh, syncing, syncError };
 }

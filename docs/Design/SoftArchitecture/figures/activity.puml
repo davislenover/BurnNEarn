@@ -1,0 +1,96 @@
+@startuml activity
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/activity.puml
+!include style.iuml
+!pragma layout smetana
+set separator none
+
+title Activity module: daily step totals and rewards
+
+package "activity" {
+  class "routes.py" as routes <<entry point>> {
+    + PUT /v1/me/activity/daily-totals: 204, no body
+  }
+  class "service.py" as service <<logic>> {
+    ~ sync_daily_totals(session, locked, request, now): None
+  }
+  class "rewards.py" as rewards <<logic>> {
+    ~ daily_reward(step_count): Decimal
+    ~ top_up(reward, already_paid): Decimal
+    ~ allowed_dates(today): frozenset[date]
+  }
+  package "schemas.py" {
+    class DailyTotalsRequest <<data>> {
+      + time_zone: str
+      + totals: list[DailyTotal]
+      .. request checks ..
+      real zone, at most 7 totals, each date once
+      unknown fields refused
+    }
+    class DailyTotal <<data>> {
+      + activity_date: date
+      + activity_type: "steps"
+      + step_count: int
+      .. request checks ..
+      whole count from 0 to BIGINT maximum
+      unknown fields refused
+    }
+  }
+  package "models.py" {
+    class "ActivityDailyTotal (activity_daily_totals)" as table <<table>> {
+      + user_id: UUID {PK, FK users}
+      + activity_date: date {PK}
+      + activity_type: str {PK}
+      + step_count: BIGINT
+      + counted: bool
+      + updated_at: datetime with time zone
+      .. the database refuses ..
+      negative counts, other types, duplicate keys
+      counted that disagrees with plausibility
+    }
+  }
+  package "types.py" {
+    class ActivityDateOutOfRangeError <<error>> {
+      + code = "activity_date_out_of_range"
+      + status = 422
+    }
+  }
+}
+
+class "wallet.interface" as wallet <<public>> {
+  + lock_live_portfolio(session, user_id): LockedPortfolio
+  + change_balance(session, locked, amount, reason, activity_date)
+}
+class "wallet.queries" as queries <<public>> {
+  + activity_paid(session, portfolio_id, activity_date): Decimal
+}
+class "users.interface" as users <<public>> {
+  + get_current_user(): CurrentUser
+}
+class "core" as core <<kernel>> {
+  + get_db(), get_clock(), constants
+}
+
+routes --> users
+routes --> wallet : 1. lock
+routes --> service : 2. sync
+routes --> core
+routes --> DailyTotalsRequest
+DailyTotalsRequest *-- DailyTotal
+service --> rewards
+service --> queries : already paid
+service --> wallet : credit top-up
+service --> table : insert or update
+service --> ActivityDateOutOfRangeError
+rewards --> core
+
+note bottom of service
+  Validate all dates before writing.
+  Save totals and pay only positive top-ups.
+  Never commits; route commits once (3).
+end note
+
+legend bottom
+  Orange: HTTP entry point | Green: public interface
+  Purple: rules | Blue: data or table | Red: error | Grey: kernel
+endlegend
+@enduml

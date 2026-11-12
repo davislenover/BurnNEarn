@@ -5,6 +5,7 @@ imports every module's tables, which is how Alembic finds them. Add a module
 here once it has a plugin.py.
 """
 
+from app.activity import plugin as activity
 from app.core.plugins import Plugin
 from app.market import plugin as market
 from app.trading import plugin as trading
@@ -16,4 +17,5 @@ PLUGINS: tuple[Plugin, ...] = (
     wallet.PLUGIN,
     market.PLUGIN,
     trading.PLUGIN,
+    activity.PLUGIN,
 )
