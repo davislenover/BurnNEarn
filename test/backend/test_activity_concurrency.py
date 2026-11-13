@@ -44,7 +44,7 @@ def test_concurrent_syncs_lock_before_reading_rewards(
     calls = 0
     sync = routes.sync_daily_totals
 
-    def hold_first(*args: Any, **kwargs: Any) -> None:
+    def hold_first(*args: Any, **kwargs: Any) -> Any:
         nonlocal calls
         with guard:
             calls += 1
@@ -52,7 +52,7 @@ def test_concurrent_syncs_lock_before_reading_rewards(
         if first:
             entered.set()
             assert release.wait(5), "first sync was never released"
-        sync(*args, **kwargs)
+        return sync(*args, **kwargs)
 
     monkeypatch.setattr(routes, "sync_daily_totals", hold_first)
     sent = {
@@ -66,11 +66,11 @@ def test_concurrent_syncs_lock_before_reading_rewards(
         ],
     }
 
-    def put() -> int:
+    def put() -> dict[str, Any]:
         with TestClient(app) as client:
-            return client.put(
-                "/v1/me/activity/daily-totals", json=sent
-            ).status_code
+            response = client.put("/v1/me/activity/daily-totals", json=sent)
+            assert response.status_code == 200
+            return response.json()
 
     try:
         with ThreadPoolExecutor(max_workers=2) as workers:
@@ -102,8 +102,12 @@ def test_concurrent_syncs_lock_before_reading_rewards(
                 assert calls == 1
             finally:
                 release.set()
-            assert first.result(timeout=5) == 204
-            assert second.result(timeout=5) == 204
+            first_reply = first.result(timeout=5)
+            second_reply = second.result(timeout=5)
+            assert first_reply["totals"][0]["credited_now"] == "84.0000"
+            assert second_reply["totals"][0]["credited_now"] == "0.0000"
+            assert first_reply["cash_balance"] == "84.0000"
+            assert second_reply["cash_balance"] == "84.0000"
         with SessionLocal() as session:
             assert get_balance(session, portfolio_id) == 84
             assert (

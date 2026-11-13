@@ -1,4 +1,4 @@
-"""The body of PUT /v1/me/activity/daily-totals."""
+"""The request and reply of PUT /v1/me/activity/daily-totals."""
 
 from datetime import date
 from typing import Literal, Self
@@ -13,6 +13,7 @@ from pydantic import (
 )
 
 from app.core.constants import SYNC_LOOKBACK_PERIOD
+from app.core.money import Money
 
 # PostgreSQL BIGINT's largest value. Implausible totals are still stored,
 # but values the column cannot hold must be refused before any write.
@@ -52,3 +53,23 @@ class DailyTotalsRequest(BaseModel):
         if len(dates) != len(set(dates)):
             raise ValueError("Each activity date may appear only once")
         return self
+
+
+class DailyTotalResult(BaseModel):
+    """One submitted day's total, reward and payment from this sync."""
+
+    model_config = ConfigDict(frozen=True)
+
+    activity_date: date
+    activity_type: Literal["steps"]
+    step_count: int
+    counted: bool
+    reward: Money
+    credited_now: Money
+
+
+class DailyTotalsResponse(BaseModel):
+    """Results in request order, and the balance after all top-ups."""
+
+    totals: list[DailyTotalResult]
+    cash_balance: Money

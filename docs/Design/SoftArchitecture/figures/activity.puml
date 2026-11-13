@@ -8,10 +8,10 @@ title Activity module: daily step totals and rewards
 
 package "activity" {
   class "routes.py" as routes <<entry point>> {
-    + PUT /v1/me/activity/daily-totals: 204, no body
+    + PUT /v1/me/activity/daily-totals: 200, DailyTotalsResponse
   }
   class "service.py" as service <<logic>> {
-    ~ sync_daily_totals(session, locked, request, now): None
+    ~ sync_daily_totals(session, locked, request, now): list[DailyTotalResult]
   }
   class "rewards.py" as rewards <<logic>> {
     ~ daily_reward(step_count): Decimal
@@ -33,6 +33,18 @@ package "activity" {
       .. request checks ..
       whole count from 0 to BIGINT maximum
       unknown fields refused
+    }
+    class DailyTotalResult <<data>> {
+      + activity_date: date
+      + activity_type: "steps"
+      + step_count: int
+      + counted: bool
+      + reward: Money
+      + credited_now: Money
+    }
+    class DailyTotalsResponse <<data>> {
+      + totals: list[DailyTotalResult]
+      + cash_balance: Money
     }
   }
   package "models.py" {
@@ -62,6 +74,7 @@ class "wallet.interface" as wallet <<public>> {
 }
 class "wallet.queries" as queries <<public>> {
   + activity_paid(session, portfolio_id, activity_date): Decimal
+  + get_balance(session, portfolio_id): Decimal
 }
 class "users.interface" as users <<public>> {
   + get_current_user(): CurrentUser
@@ -75,7 +88,11 @@ routes --> wallet : 1. lock
 routes --> service : 2. sync
 routes --> core
 routes --> DailyTotalsRequest
+routes --> DailyTotalsResponse
+routes --> queries : resulting balance
 DailyTotalsRequest *-- DailyTotal
+DailyTotalsResponse *-- DailyTotalResult
+service --> DailyTotalResult
 service --> rewards
 service --> queries : already paid
 service --> wallet : credit top-up

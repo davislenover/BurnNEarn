@@ -17,8 +17,8 @@ currency. The phone sends a total for a date, not an increment to add.
 ![UML class diagram of activity's files and table](../figures/activity.png)
 
 `rewards.py` holds the reward calculations without using a database.
-`schemas.py` checks the request. `service.py` saves the totals and asks wallet
-to pay what is still owed. It never commits. `routes.py` locks the portfolio
+`schemas.py` defines the request and reply. `service.py` saves the totals and
+asks wallet to pay what is still owed. It never commits. `routes.py` locks the portfolio
 first and commits once at the end. `plugin.py` adds the route and registers
 the table through `app/registry.py`.
 
@@ -57,10 +57,30 @@ older date refuses the whole batch with 422 and
 the app's existing 422 validation response. An unauthenticated request gets
 401.
 
-A successful request returns **204 No Content**, including for a repeat or
-an empty list. This replaces the response body originally described in
-#190. Step sync does not return daily results or a balance, and the phone
-does not need to parse a success body.
+A successful request returns **200 OK**, with each submitted day's result
+in request order and the balance after all top-ups:
+
+```json
+{
+  "totals": [
+    {
+      "activity_date": "2026-11-12",
+      "activity_type": "steps",
+      "step_count": 8421,
+      "counted": true,
+      "reward": "84.0000",
+      "credited_now": "84.0000"
+    }
+  ],
+  "cash_balance": "84.0000"
+}
+```
+
+`reward` is what the submitted count earns for that day. `credited_now` is
+the amount this request actually added after subtracting previous payments.
+A repeat still reports the daily reward, but credits zero. An empty list
+returns `totals: []` and the unchanged balance. Money is sent as text with
+four decimals, following the existing wallet API.
 
 ## Rewards and repeat syncs
 
@@ -96,7 +116,9 @@ The route follows [wallet's three steps](wallet.md#changing-a-balance):
 1. Lock the user's live portfolio with `lock_live_portfolio`.
 2. Save each total, read that date's payments, and call `change_balance`
    only for a positive top-up, with reason `activity_reward` and its date.
-3. Commit once, saving all totals and payments together.
+3. Build the reply with the resulting balance, then commit once, saving all
+   totals and payments together. The reply contains plain values, so sending
+   it after the commit cannot reload a newer balance from another request.
 
 A second request for the same portfolio waits for that lock. When it
 continues, it sees the preceding request's payments, so it cannot pay a day
@@ -136,5 +158,5 @@ notice before reading or syncing steps.
 To check a week through `/docs`, seed the demo user and enable demo mode as
 described in the backend README. Submit seven distinct dates in the current
 allowed week, each with 8,421 steps. A previously unpaid week adds 588
-currency. Sending it again adds zero. Check the saved payments or use the
-existing wallet balance route separately; step sync itself has no body.
+currency. Sending it again adds zero. Check the reply's `cash_balance` and
+each day's `credited_now` to see the result.

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.activity.models import ActivityDailyTotal
 from app.activity.rewards import allowed_dates, daily_reward, top_up
-from app.activity.schemas import DailyTotalsRequest
+from app.activity.schemas import DailyTotalResult, DailyTotalsRequest
 from app.activity.types import ActivityDateOutOfRangeError
 from app.core.constants import MAX_DAILY_STEPS
 from app.wallet.interface import change_balance
@@ -21,7 +21,7 @@ def sync_daily_totals(
     locked: LockedPortfolio,
     request: DailyTotalsRequest,
     now: datetime,
-) -> None:
+) -> list[DailyTotalResult]:
     """Apply totals to the locked user's live portfolio (FR_ActEarn).
 
     The route locks first, so concurrent syncs read the preceding sync's
@@ -32,10 +32,12 @@ def sync_daily_totals(
     if any(total.activity_date not in allowed for total in request.totals):
         raise ActivityDateOutOfRangeError()
 
+    results = []
     for total in request.totals:
+        counted = total.step_count <= MAX_DAILY_STEPS
         values = {
             "step_count": total.step_count,
-            "counted": total.step_count <= MAX_DAILY_STEPS,
+            "counted": counted,
             "updated_at": now,
         }
         statement = insert(ActivityDailyTotal).values(
@@ -50,8 +52,9 @@ def sync_daily_totals(
                 set_=values,
             )
         )
+        reward = daily_reward(total.step_count)
         owed = top_up(
-            daily_reward(total.step_count),
+            reward,
             activity_paid(session, locked.portfolio_id, total.activity_date),
         )
         if owed > 0:
@@ -62,3 +65,14 @@ def sync_daily_totals(
                 BalanceChangeReason.ACTIVITY_REWARD,
                 total.activity_date,
             )
+        results.append(
+            DailyTotalResult(
+                activity_date=total.activity_date,
+                activity_type=total.activity_type,
+                step_count=total.step_count,
+                counted=counted,
+                reward=reward,
+                credited_now=owed,
+            )
+        )
+    return results

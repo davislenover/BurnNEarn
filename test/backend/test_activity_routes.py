@@ -64,21 +64,31 @@ def stored(
 def test_a_repeat_only_pays_the_difference_and_never_takes_money_back(
     client: TestClient, db_session: Session, owner: Any, at_time: SetTime
 ) -> None:
-    for index, (steps, balance) in enumerate(
+    for index, (steps, reward, credited, balance) in enumerate(
         [
-            (8421, 84),
-            (8421, 84),
-            (8500, 85),
-            (8000, 85),
-            (200_000, 85),
-            (8600, 86),
+            (8421, 84, 84, 84),
+            (8421, 84, 0, 84),
+            (8500, 85, 1, 85),
+            (8000, 80, 0, 85),
+            (200_000, 0, 0, 85),
+            (8600, 86, 1, 86),
         ]
     ):
         now = NOW + timedelta(minutes=index)
         at_time(now)
         response = client.put(PATH, json=body(total(steps)))
-        assert response.status_code == 204
-        assert response.content == b""
+        assert response.status_code == 200
+        assert response.json() == {
+            "totals": [
+                {
+                    **total(steps),
+                    "counted": steps <= 150_000,
+                    "reward": f"{reward:.4f}",
+                    "credited_now": f"{credited:.4f}",
+                }
+            ],
+            "cash_balance": f"{balance:.4f}",
+        }
         assert get_balance(db_session, owner.portfolio_id) == balance
         row = stored(db_session, owner)
         assert row.step_count == steps
@@ -118,7 +128,19 @@ def test_reward_boundaries_are_saved(
     paid: int,
     counted: bool,
 ) -> None:
-    assert client.put(PATH, json=body(total(steps))).status_code == 204
+    response = client.put(PATH, json=body(total(steps)))
+    assert response.status_code == 200
+    assert response.json() == {
+        "totals": [
+            {
+                **total(steps),
+                "counted": counted,
+                "reward": f"{paid:.4f}",
+                "credited_now": f"{paid:.4f}",
+            }
+        ],
+        "cash_balance": f"{paid:.4f}",
+    }
     assert activity_paid(db_session, owner.portfolio_id, DAY) == paid
     assert stored(db_session, owner).counted is counted
 
@@ -127,7 +149,20 @@ def test_a_week_is_paid_per_date_and_committed(
     client: TestClient, db_session: Session, owner: Any
 ) -> None:
     totals = [total(8421, DAY - timedelta(days=i)) for i in range(7)]
-    assert client.put(PATH, json=body(*totals)).status_code == 204
+    response = client.put(PATH, json=body(*totals))
+    assert response.status_code == 200
+    assert response.json() == {
+        "totals": [
+            {
+                **sent,
+                "counted": True,
+                "reward": "84.0000",
+                "credited_now": "84.0000",
+            }
+            for sent in totals
+        ],
+        "cash_balance": "588.0000",
+    }
     assert get_balance(db_session, owner.portfolio_id) == 7 * 84
     for i in range(7):
         assert (
@@ -142,6 +177,48 @@ def test_a_week_is_paid_per_date_and_committed(
         db_session.scalar(select(func.count()).select_from(ActivityDailyTotal))
         == 7
     )
+
+
+def test_mixed_days_report_their_own_rewards_and_keep_request_order(
+    client: TestClient,
+    db_session: Session,
+    make_portfolio: MakePortfolio,
+    as_user: AsUser,
+    at_time: SetTime,
+) -> None:
+    owner = make_portfolio(Decimal("50.1234"))
+    as_user(owner.user)
+    at_time(NOW)
+    totals = [
+        total(40_000, DAY - timedelta(days=2)),
+        total(200_000, DAY),
+        total(8421, DAY - timedelta(days=1)),
+        total(99, DAY - timedelta(days=6)),
+    ]
+    for retry in [False, True]:
+        response = client.put(PATH, json=body(*totals))
+        assert response.status_code == 200
+        assert response.json() == {
+            "totals": [
+                {
+                    **sent,
+                    "counted": counted,
+                    "reward": reward,
+                    "credited_now": "0.0000" if retry else reward,
+                }
+                for sent, counted, reward in zip(
+                    totals,
+                    [True, False, True, True],
+                    ["300.0000", "0.0000", "84.0000", "0.0000"],
+                    strict=True,
+                )
+            ],
+            "cash_balance": "434.1234",
+        }
+    empty = client.put(PATH, json=body())
+    assert empty.status_code == 200
+    assert empty.json() == {"totals": [], "cash_balance": "434.1234"}
+    assert get_balance(db_session, owner.portfolio_id) == Decimal("434.1234")
 
 
 @pytest.mark.parametrize("offset", [-8, -7, 1])
@@ -180,7 +257,7 @@ def test_allowed_days_use_the_sent_zone_at_utc_midnight(
 ) -> None:
     at_time(datetime(2026, 11, 12, 0, 30, tzinfo=UTC))
     response = client.put(PATH, json=body(total(day=day), time_zone=zone))
-    assert response.status_code == (204 if accepted else 422)
+    assert response.status_code == (200 if accepted else 422)
 
 
 @pytest.mark.parametrize(
@@ -225,8 +302,8 @@ def test_an_empty_batch_is_a_successful_no_op(
     client: TestClient, db_session: Session, owner: Any
 ) -> None:
     response = client.put(PATH, json=body())
-    assert response.status_code == 204
-    assert response.content == b""
+    assert response.status_code == 200
+    assert response.json() == {"totals": [], "cash_balance": "0.0000"}
     assert get_balance(db_session, owner.portfolio_id) == 0
 
 
@@ -242,9 +319,9 @@ def test_users_get_separate_totals_and_payments(
     as_user: AsUser,
 ) -> None:
     other = make_portfolio()
-    assert client.put(PATH, json=body(total())).status_code == 204
+    assert client.put(PATH, json=body(total())).status_code == 200
     as_user(other.user)
-    assert client.put(PATH, json=body(total(8500))).status_code == 204
+    assert client.put(PATH, json=body(total(8500))).status_code == 200
     assert stored(db_session, owner).step_count == 8421
     assert stored(db_session, other).step_count == 8500
     assert get_balance(db_session, owner.portfolio_id) == 84
@@ -310,10 +387,15 @@ def test_a_demo_week_is_persisted_and_retry_does_not_pay_twice(
     try:
         sent = body(*(total(day=DAY - timedelta(days=i)) for i in range(7)))
         with TestClient(app) as demo:
-            for _ in range(2):
+            for credited in ["84.0000", "0.0000"]:
                 response = demo.put(PATH, json=sent)
-                assert response.status_code == 204
-                assert response.content == b""
+                assert response.status_code == 200
+                reply = response.json()
+                assert reply["cash_balance"] == "588.0000"
+                assert len(reply["totals"]) == 7
+                assert all(
+                    day["credited_now"] == credited for day in reply["totals"]
+                )
         with SessionLocal() as session:
             assert get_balance(session, portfolio_id) == Decimal(588)
             assert (

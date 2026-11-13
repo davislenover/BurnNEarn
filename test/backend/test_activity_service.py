@@ -38,9 +38,12 @@ def test_the_service_never_commits_and_its_work_can_be_rolled_back(
         }
     )
     locked = lock_live_portfolio(db_session, owner.user.user_id)
-    sync_daily_totals(
+    results = sync_daily_totals(
         db_session, locked, request, datetime(2026, 11, 12, 15, tzinfo=UTC)
     )
+    assert len(results) == 1
+    assert results[0].reward == 84
+    assert results[0].credited_now == 84
     assert get_balance(db_session, owner.portfolio_id) == 84
     db_session.rollback()
     assert get_balance(db_session, owner.portfolio_id) == 0
