@@ -1,23 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import { useTodaySteps } from "./services/health/useTodaySteps";
-
 export default function App() {
-  const { steps } = useTodaySteps();
-
-  return (
-    <View style={styles.container}>
-      <Text>Today's steps: {steps ?? '—'}</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
