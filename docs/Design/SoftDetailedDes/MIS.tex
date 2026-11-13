@@ -16,7 +16,7 @@
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage[section]{placeins}
+\IfFileExists{placeins.sty}{\usepackage[section]{placeins}}{}
 \usepackage{caption}
 \usepackage{fullpage}
 
@@ -64,6 +64,9 @@ Format, and the 401 on both Trading routes.\\
 Nov 10, 2026 & 1.3 & Davis Lenover: each provider's request limit in Market
 Providers, with provider\_type, the chosen provider's limit in Market's usage
 route, and obtained\_at in each holding of Trading.\\
+Nov 12, 2026 & 1.4 & Preston Grewal: Activity (M11) interface and semantics
+matched to PR \#313, including its 200 reply and steps\_per\_coin
+(\#249, \#190).\\
 \bottomrule
 \end{tabularx}
 
@@ -135,8 +138,9 @@ can then be checked against what the decision was for.
 
 This revision specifies the modules of the proof of concept. Modules marked
 \textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
-specified at Revision~0, so that every section describes an interface the code
-really has.
+specified at Revision~0. Activity (M11) follows the implementation in
+\href{https://github.com/davislenover/BurnNEarn/pull/313}{PR \#313}, which is
+not yet merged into this checkout.
 
 The full documentation and implementation are in the project repository:
 \url{https://github.com/davislenover/BurnNEarn}.
@@ -442,7 +446,7 @@ Clock = () $\rightarrow$ DateTime, a function that returns the current time.
 Routes and background work are handed a Clock instead of reading the system
 time (dependency injection), so a test can set the time for each rule that
 depends on it: market hours, when a price is delayed or too old to trade
-(FR33, FR39), and, once Activity (M11) is built, the user's date (SEC-24).
+(FR33, FR39), and the date used by Activity (M11) in PR \#313 (SEC-24).
 
 \subsubsection{Exported Constants}
 
@@ -714,12 +718,12 @@ Control (M6 in the MG)
 
 \subsection{Uses}
 
-Database (M1), Users (M8), Wallet (M9), Market (M10), Trading (M12), Plugins
-(M22), JSON Format (M23)
+Database (M1), Users (M8), Wallet (M9), Market (M10), Activity (M11),
+Trading (M12), Plugins (M22), JSON Format (M23)
 
 \medskip
-\noindent The MG also lists Activity (M11) and Goals (M13) to Privacy (M17).
-Each is added to PLUGINS once it is built.
+\noindent PR \#313 adds Activity to PLUGINS. The MG also lists Goals (M13)
+to Privacy (M17), each added once it is built.
 
 \subsection{Syntax}
 
@@ -841,7 +845,7 @@ ActivityType = \{STEPS, WHEELCHAIR\_PUSHES, CYCLING, SWIMMING, OTHER\_WORKOUT\},
 the supported activity types (SUPPORTED\_ACTIVITY\_TYPES in SRS Appendix C).
 Each value is also a String, its name in lower case, such as ``steps'', so the
 daily totals the phone sends (SEC-24) can name their type in JSON and the
-database can store it as text, once Activity (M11) is built.\par}
+database can store it as text. PR \#313 supports steps only.\par}
 
 \subsubsection{Exported Constants}
 
@@ -979,10 +983,10 @@ create\_user & Session, ID or None, String & ID & ValueError, IntegrityError \\
 
 \noindent users: set of tuple of (user\_id: ID, time\_zone: String,
 created\_at: DateTime), every user, with each user\_id once. time\_zone is an
-IANA time zone name. Nothing reads it yet. It is kept
-because the server needs the user's date to refuse a daily total dated in the
-future (SEC-24, HA~H51). The phone, not the server, puts each activity record
-on its day (SEC-23).
+IANA time zone name. Activity in PR \#313 uses the time zone in the request
+to check dates, and does not read or update this stored value (SEC-24,
+HA~H51). The phone, not the server, puts each activity record on its day
+(SEC-23).
 
 \subsubsection{Environment Variables}
 
@@ -1049,8 +1053,8 @@ Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
 \noindent BalanceChangeReason $=$ \{activity\_reward, trade\_purchase\}, why a
 balance changed. Every change keeps its reason (SEC-22), and the database
 refuses any other. There is no reason for a sale yet, since the proof of
-concept only buys. Selling (FR36) comes at Revision~0. Nothing pays a reward
-yet either. That reason is there for Activity (M11), and tests use it to give
+concept only buys. Selling (FR36) comes at Revision~0. Activity (M11) in
+PR \#313 uses activity\_reward for step payments; tests also use it to give
 a portfolio currency to spend.
 
 \medskip
@@ -1240,7 +1244,7 @@ locked.portfolio\_id:
 \begin{itemize}
 \item output: $out :=$ the sum of the amounts of the changes with
   portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0.
-  Nothing calls it yet. A step sync in Activity (M11) will use it to pay only
+  A step sync in Activity (M11), implemented in PR \#313, uses it to pay only
   the difference, so no activity is paid twice (SEC-19) or past the daily cap
   (FR18).
 \item exception: $exc :=$ (activity\_date is a DateTime $\Rightarrow$
@@ -1546,7 +1550,213 @@ closed.
 
 \newpage
 
-% M11 Activity: #249
+\section{MIS of Activity} \label{MisActivity}
+
+\subsection{Module}
+
+Activity (M11 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Constants (M7), Users (M8), Wallet (M9), Plugins
+(M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\begin{itemize}
+\raggedright
+\item \textbf{DailyTotal:} One day's step data:
+  \texttt{activity\_date}: Date (calendar date),
+  \texttt{activity\_type}: \{steps\}, and \texttt{step\_count}:
+  $\mathbb{Z}$ (integer). The count is the full total for that day.
+\item \textbf{DailyTotalsRequest:} The data sent to the server. It contains
+  \texttt{time\_zone}: String (text) and \texttt{totals}: seq of DailyTotal
+  (a list of daily step totals for up to seven different days). Each date
+  can appear only once.
+\item \textbf{DailyTotalResult:} One day's result. It has the same date,
+  type and count fields as DailyTotal, plus \texttt{counted}: $\mathbb{B}$
+  (Boolean, true or false). \texttt{reward} and \texttt{credited\_now} are
+  Money (exact decimals sent as text with four decimal places).
+  \texttt{reward} is what the day earns; \texttt{credited\_now} is only the
+  amount added by this sync after earlier payments.
+\item \textbf{DailyTotalsResponse:} The server's reply. It contains the
+  daily results in \texttt{totals}: seq of DailyTotalResult (a list), the
+  updated \texttt{cash\_balance}: Money (exact decimal text with four decimal
+  places), and \texttt{steps\_per\_coin}: $\mathbb{N}$ (positive integer),
+  the number of steps needed to earn one coin.
+\item \textbf{ActivityDateOutOfRangeError:} Raised when a date is in the
+  future or more than six days before today. The server returns HTTP 422.
+\end{itemize}
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``activity'', router: the route below,
+lifespan: None, health: None).
+
+\medskip
+{\raggedright\noindent EARNING\_RATES, MAX\_DAILY\_CURRENCY,
+MAX\_DAILY\_STEPS and SYNC\_LOOKBACK\_PERIOD come from Constants (M7).\par}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.5cm}
+  >{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{5.1cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+PUT /v1/me/activity/\allowbreak daily-totals & DailyTotalsRequest &
+DailyTotalsResponse & ActivityDateOutOfRangeError, NotAuthenticatedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent This is Activity's only public operation. It returns 200 with the
+daily results, updated balance and earning rate. The helpers below are local.
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent \texttt{daily\_totals} stores one row per user, date and activity type:
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.5cm}
+  >{\raggedright\arraybackslash}p{4.4cm}
+  >{\raggedright\arraybackslash}p{6.6cm}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Meaning} \\
+\midrule
+\texttt{user\_id} & ID (UUID) & The user who owns the total. \\
+\texttt{activity\_date} & Date (calendar date) & The day the activity belongs to. \\
+\texttt{activity\_type} & \{steps\} & The supported activity type. \\
+\texttt{step\_count} & $\mathbb{Z}$ (integer) & The full step count for that day. \\
+\texttt{counted} & $\mathbb{B}$ (Boolean) & Whether the count is within the plausibility limit. \\
+\texttt{updated\_at} & DateTime (date and time with a time zone) & The server time of the last sync. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\medskip
+\noindent Wallet keeps the payment history (SEC-19, SEC-22), Activity stores
+daily totals, individual health records stay on the phone (SEC-10).
+The reply exposes \texttt{counted} through \texttt{syncResult}.
+
+
+\subsubsection{Environment Variables}
+
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The demo user and live portfolio exist. \texttt{get\_current\_user} identifies
+  the user; the phone cannot choose a user ID (SEC-15).
+\item Every request that changes a portfolio locks it until the transaction
+  ends, so requests for that portfolio run one at a time.
+\item The phone assigns activity to days using the time zone at the time of
+  the activity. Travel does not change an old record's day (SEC-23).
+% The MG still describes using the stored user zone. PR #313 uses the
+% submitted zone instead; this MIS records the implementation, not a new rule.
+\item The server finds today using Clock and the request's \texttt{time\_zone}. It
+  trusts that zone and leaves the stored Users zone unchanged (SEC-24, HA~H51).
+
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \textbf{PUT /v1/me/activity/daily-totals}
+
+\medskip
+\noindent \textbf{Inputs:} \texttt{request}: DailyTotalsRequest,
+\texttt{session}: Session, \texttt{now}: DateTime (date and time with a time zone),
+and \texttt{user}: CurrentUser.
+The phone sends the request; Database, Clock and Users supply the other inputs.
+
+\begin{itemize}
+\raggedright
+\item \textbf{Transition:} Lock the live portfolio, run
+  \texttt{sync\_daily\_totals}, and build the reply with its results,
+  the updated balance and EARNING\_RATES(STEPS). Commit once, saving totals
+  and payments together. The lock prevents duplicate payments (SEC-19).
+\item \textbf{Output:} DailyTotalsResponse with HTTP 200, returned after
+  the commit. The balance is captured while locked. Repeated totals have
+  \texttt{credited\_now} 0; empty totals return an empty list and the
+  unchanged balance. Both include \texttt{steps\_per\_coin}.
+\item \textbf{Errors:} NotAuthenticatedError (401) or
+  ActivityDateOutOfRangeError (422). Invalid fields, time zones, counts,
+  repeated dates, or sending daily step totals for more than seven days in
+  one request also return 422 (SEC-24, SEC-25).
+  A failed request saves no totals or payments.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent \textbf{\texttt{daily\_reward}}
+
+{\raggedright\noindent \textbf{Input:} \texttt{step\_count}: $\mathbb{Z}$ (integer), nonnegative.
+\textbf{Output:} Decimal (exact decimal).
+Returns 0 above MAX\_DAILY\_STEPS. Otherwise, divide by EARNING\_RATES(STEPS),
+round down, and cap at MAX\_DAILY\_CURRENCY (FR13, FR17, FR18).\par}
+
+\medskip
+\noindent \textbf{\texttt{top\_up}}
+
+\noindent \textbf{Inputs:} \texttt{reward}: Decimal (exact decimal) and
+\texttt{already\_paid}: Decimal (exact decimal), both nonnegative.
+\textbf{Output:} Decimal (exact decimal).
+Subtracts what was already paid from the reward, with a minimum of 0.
+A lower total never takes currency back (SEC-19, issue \#190).
+
+\medskip
+\noindent \textbf{\texttt{allowed\_dates}}
+
+\noindent \textbf{Input:} \texttt{today}: Date (calendar date).
+\textbf{Output:} set of Date (calendar dates).
+Returns the last SYNC\_LOOKBACK\_PERIOD calendar days, including today:
+currently today through six days ago (SEC-20).
+
+\medskip
+\noindent \textbf{\texttt{sync\_daily\_totals}}\\*
+\textbf{Inputs:} \texttt{session}: Session,
+\texttt{locked}: LockedPortfolio, \texttt{request}: DailyTotalsRequest,
+and \texttt{now}: DateTime (date and time with a time zone).
+\texttt{locked} identifies the user and portfolio.
+\begin{itemize}
+\raggedright
+\item \textbf{Transition:} Check every date using \texttt{now} and the
+  request's \texttt{time\_zone} before writing anything. For each total,
+  in request order:
+  \begin{enumerate}
+  \item Save its step count, \texttt{counted} flag and
+    \texttt{updated\_at}: now in the user's daily row.
+  \item Calculate \texttt{reward} with \texttt{daily\_reward}. Read earlier
+    payments with Wallet's \texttt{activity\_paid}, then use
+    \texttt{top\_up} to find what is still owed.
+  \item If anything is owed, call Wallet's \texttt{change\_balance} with
+    reason \texttt{activity\_reward} and the activity date. Otherwise, make
+    no payment.
+  \end{enumerate}
+\item \textbf{Output:} seq of DailyTotalResult (a list), one per submitted total in
+  request order. \texttt{credited\_now} is the amount added. Empty totals
+  return an empty list.
+\item \textbf{Error:} ActivityDateOutOfRangeError for a date outside
+  \texttt{allowed\_dates} (SEC-24).
+\end{itemize}
+
+\noindent This function never commits; the route commits once at the end.
+
+\noindent For the same day, totals of 8,421, 8,500 and 8,000 earn rewards
+of 84, 85 and 80, but add only 84, 1 and 0. The user keeps the 85 already paid.
+
+\newpage
+
 \section{MIS of Trading} \label{MisTrading}
 
 \subsection{Module}
