@@ -8,3 +8,14 @@ export type DailyTotalsRequest = {
     time_zone: string;
     totals: DailyStepTotal[];
 };
+
+export type DailyTotalResult = DailyStepTotal & {
+    counted: boolean;
+    reward: string;
+    credited_now: string;
+};
+
+export type DailyTotalsResponse = {
+    totals: DailyTotalResult[];
+    cash_balance: string;
+};

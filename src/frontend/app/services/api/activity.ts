@@ -1,11 +1,11 @@
-import type { DailyStepTotal, DailyTotalsRequest } from "../../types/activity";
+import type { DailyStepTotal, DailyTotalsRequest, DailyTotalsResponse } from "../../types/activity";
 
 /** Sends one recorded daily total. The server calculates and saves the reward. */
 export async function sendTodaysSteps(
     total: DailyStepTotal,
     timeZone: string,
     signal?: AbortSignal,
-): Promise<void> {
+): Promise<DailyTotalsResponse> {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, "");
     if (!apiUrl) {
         throw new Error("Set EXPO_PUBLIC_API_URL in the frontend .env file to sync steps.");
@@ -33,14 +33,18 @@ export async function sendTodaysSteps(
             body: JSON.stringify(request),
             signal: controller.signal,
         });
+        const data: unknown = await response.json().catch(() => null);
         if (!response.ok) {
-            const data: unknown = await response.json().catch(() => null);
             // Our backend uses detail.message for domain errors; validation errors may differ.
             const detail = data && typeof data === "object" && "detail" in data ? data.detail : null;
             const message = detail && typeof detail === "object" && "message" in detail
                 && typeof detail.message === "string" ? detail.message : null;
             throw new Error(message ?? `Could not sync steps (HTTP ${response.status}).`);
         }
+        if (!isDailyTotalsResponse(data)) {
+            throw new Error("The server returned an invalid step-sync response.");
+        }
+        return data;
     } catch (cause) {
         if (timedOut) {
             throw new Error("Sending steps timed out. Refresh to try again.");
@@ -50,4 +54,28 @@ export async function sendTodaysSteps(
         clearTimeout(timeout);
         signal?.removeEventListener("abort", abort);
     }
+}
+
+function isMoney(value: unknown): value is string {
+    return typeof value === "string" && /^\d+\.\d{4}$/.test(value);
+}
+
+function isDailyTotalsResponse(data: unknown): data is DailyTotalsResponse {
+    if (!data || typeof data !== "object" || Array.isArray(data)
+        || !("cash_balance" in data) || !isMoney(data.cash_balance)
+        || !("totals" in data) || !Array.isArray(data.totals)) {
+        return false;
+    }
+    return data.totals.every((total: unknown) => {
+        if (!total || typeof total !== "object" || Array.isArray(total)) {
+            return false;
+        }
+        return "activity_date" in total && typeof total.activity_date === "string"
+            && "activity_type" in total && total.activity_type === "steps"
+            && "step_count" in total && typeof total.step_count === "number"
+            && Number.isInteger(total.step_count) && total.step_count >= 0
+            && "counted" in total && typeof total.counted === "boolean"
+            && "reward" in total && isMoney(total.reward)
+            && "credited_now" in total && isMoney(total.credited_now);
+    });
 }

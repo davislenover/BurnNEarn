@@ -82,6 +82,10 @@ A repeat still reports the daily reward, but credits zero. An empty list
 returns `totals: []` and the unchanged balance. Money is sent as text with
 four decimals, following the existing wallet API.
 
+The frontend's `sendTodaysSteps` checks and returns this reply.
+`useTodaySteps` exposes it as `syncResult`, clears it when a new read starts,
+and keeps read errors separate from sync errors.
+
 ## Rewards and repeat syncs
 
 `daily_reward` uses the constants in `app/core/constants.py`:
