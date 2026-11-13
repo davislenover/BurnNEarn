@@ -60,6 +60,9 @@ fixes to 7 Module Decomposition. Each market data provider gives its own
 request limit, so a new one changes only Market Providers.\\
 Nov 10, 2026 & 1.4 & Farid Bastoros: 6 Connection Between Requirements and
 Design.\\
+Nov 12, 2026 & 1.5 & Preston Grewal: Health Service (M4) and Activity (M11)
+in Module Decomposition (\#235). The activity date
+check follows the supplied time zone used in PR \#313.\\
 \bottomrule
 \end{tabularx}
 
@@ -557,10 +560,11 @@ Section~\ref{SecMD} gives the detail.
 \item[Time is handed to the code.] Many rules depend on the time: whether the
   market is open, whether a price is too old (FR33, FR39), and whether a daily
   total is dated after today in the user's time zone, in which case it is
-  refused (SEC-24). So no module reads the system time. Each is handed
-  \mref{mClock} Clock, and \mref{mUsers} Users keeps each user's time zone. The
-  phone puts each activity record on its calendar day before it sends the
-  totals (SEC-23).
+  refused (SEC-24). Server code is handed \mref{mClock} Clock.
+  \mref{mActivity} Activity finds today in the time zone sent with the totals;
+  the PoC does not read or update the stored Users time zone for this check.
+  The phone puts each record on its calendar day before sending totals
+  (SEC-23).
 
 \item[Features are added as plug-ins.] The system is built in stages, and the
   effort of a likely change is limited (NFR3). So \mref{mControl} Control
@@ -676,7 +680,21 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \item[Type of Module:] Abstract Data Type, with one interface, an implementation for the chosen service and a fake
 \end{description}
 
-% M4 Health Service (app): #235
+\subsubsection{Health Service Module (\mref{mHealth})}
+
+\begin{description}
+\item[Secrets:] The phone's activity-data interface.
+\item[Services:] Reads steps taken. Checks or
+  requests read permission and reports permission or device errors. 
+\item[Rationale:] Android and iOS expose activity differently. Keeping those
+  calls here lets Sync use the same reader on both platforms (NFR4), and
+  keeps a change of data source in one module (SRS LC2). Steps are read
+  from today's local midnight to the reading time. Android uses
+  Health Connect and iPhone uses Expo Pedometer. 
+\item[Implemented By:] \progname{} app, in
+  \path{app/services/health/steps.ts}
+\item[Type of Module:] Library
+\end{description}
 
 % M5 Device Service (app): #237
 
@@ -754,7 +772,23 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M11 Activity: #235
+\subsubsection{Activity Module (\mref{mActivity})}
+
+\begin{description}
+\item[Secrets:] The rules for turning daily activity into currency.
+\item[Services:] Accepts daily totals, checks their dates and plausibility,
+  and credits the unpaid reward through Wallet. Returns each day's result,
+  the updated balance and the earning rate.
+\item[Rationale:] Rewards are calculated on the server (SEC-24), using the
+  earning rate, plausibility limit and daily cap from Constants (FR13, FR17,
+  FR18). Activity locks the live portfolio before reading earlier payments,
+  pays only the difference, and commits totals and payments together
+  (SEC-19, SEC-22). The reply
+  includes whether a total counted, so Screens can show an excluded day
+  (FR17). 
+\item[Implemented By:] \progname{} server, in \path{activity/}
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsubsection{Trading Module (\mref{mTrading})}
 
