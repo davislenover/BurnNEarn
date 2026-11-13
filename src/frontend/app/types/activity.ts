@@ -18,4 +18,5 @@ export type DailyTotalResult = DailyStepTotal & {
 export type DailyTotalsResponse = {
     totals: DailyTotalResult[];
     cash_balance: string;
+    steps_per_coin: number;
 };

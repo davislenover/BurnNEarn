@@ -58,7 +58,7 @@ the app's existing 422 validation response. An unauthenticated request gets
 401.
 
 A successful request returns **200 OK**, with each submitted day's result
-in request order and the balance after all top-ups:
+in request order, the balance after all top-ups, and the earning rate:
 
 ```json
 {
@@ -72,7 +72,8 @@ in request order and the balance after all top-ups:
       "credited_now": "84.0000"
     }
   ],
-  "cash_balance": "84.0000"
+  "cash_balance": "84.0000",
+  "steps_per_coin": 100
 }
 ```
 
@@ -82,9 +83,15 @@ A repeat still reports the daily reward, but credits zero. An empty list
 returns `totals: []` and the unchanged balance. Money is sent as text with
 four decimals, following the existing wallet API.
 
+`steps_per_coin` is the number of steps that earns one coin, currently 100.
+It comes from `EARNING_RATES[ActivityType.STEPS]`, the same constant used by
+the reward calculation. It is included even for an empty list or a repeat,
+so the phone can show the current rate without hard-coding it.
+
 The frontend's `sendTodaysSteps` checks and returns this reply.
 `useTodaySteps` exposes it as `syncResult`, clears it when a new read starts,
-and keeps read errors separate from sync errors.
+and keeps read errors separate from sync errors. The phone can read the rate
+from `syncResult.steps_per_coin` after a successful sync.
 
 ## Rewards and repeat syncs
 

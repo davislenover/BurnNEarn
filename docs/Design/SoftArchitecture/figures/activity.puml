@@ -45,6 +45,7 @@ package "activity" {
     class DailyTotalsResponse <<data>> {
       + totals: list[DailyTotalResult]
       + cash_balance: Money
+      + steps_per_coin: int
     }
   }
   package "models.py" {

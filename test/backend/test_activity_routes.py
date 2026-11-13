@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.activity.models import ActivityDailyTotal
 from app.activity.schemas import MAX_STORED_STEPS
+from app.core.constants import EARNING_RATES, ActivityType
 from app.core.db import SessionLocal
 from app.main import app
 from app.users.types import DEMO_USER_ID, CurrentUser
@@ -88,6 +89,7 @@ def test_a_repeat_only_pays_the_difference_and_never_takes_money_back(
                 }
             ],
             "cash_balance": f"{balance:.4f}",
+            "steps_per_coin": 100,
         }
         assert get_balance(db_session, owner.portfolio_id) == balance
         row = stored(db_session, owner)
@@ -140,6 +142,7 @@ def test_reward_boundaries_are_saved(
             }
         ],
         "cash_balance": f"{paid:.4f}",
+        "steps_per_coin": 100,
     }
     assert activity_paid(db_session, owner.portfolio_id, DAY) == paid
     assert stored(db_session, owner).counted is counted
@@ -162,6 +165,7 @@ def test_a_week_is_paid_per_date_and_committed(
             for sent in totals
         ],
         "cash_balance": "588.0000",
+        "steps_per_coin": 100,
     }
     assert get_balance(db_session, owner.portfolio_id) == 7 * 84
     for i in range(7):
@@ -214,11 +218,35 @@ def test_mixed_days_report_their_own_rewards_and_keep_request_order(
                 )
             ],
             "cash_balance": "434.1234",
+            "steps_per_coin": 100,
         }
     empty = client.put(PATH, json=body())
     assert empty.status_code == 200
-    assert empty.json() == {"totals": [], "cash_balance": "434.1234"}
+    assert empty.json() == {
+        "totals": [],
+        "cash_balance": "434.1234",
+        "steps_per_coin": 100,
+    }
     assert get_balance(db_session, owner.portfolio_id) == Decimal("434.1234")
+
+
+def test_the_reported_rate_matches_the_reward_calculation(
+    client: TestClient, owner: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setitem(EARNING_RATES, ActivityType.STEPS, 200)
+    response = client.put(PATH, json=body(total(8421)))
+    assert response.status_code == 200
+    reply = response.json()
+    assert reply["steps_per_coin"] == 200
+    assert reply["totals"][0]["reward"] == "42.0000"
+    assert reply["totals"][0]["credited_now"] == "42.0000"
+    assert reply["cash_balance"] == "42.0000"
+    empty = client.put(PATH, json=body())
+    assert empty.json() == {
+        "totals": [],
+        "cash_balance": "42.0000",
+        "steps_per_coin": 200,
+    }
 
 
 @pytest.mark.parametrize("offset", [-8, -7, 1])
@@ -303,7 +331,11 @@ def test_an_empty_batch_is_a_successful_no_op(
 ) -> None:
     response = client.put(PATH, json=body())
     assert response.status_code == 200
-    assert response.json() == {"totals": [], "cash_balance": "0.0000"}
+    assert response.json() == {
+        "totals": [],
+        "cash_balance": "0.0000",
+        "steps_per_coin": 100,
+    }
     assert get_balance(db_session, owner.portfolio_id) == 0
 
 
@@ -392,6 +424,7 @@ def test_a_demo_week_is_persisted_and_retry_does_not_pay_twice(
                 assert response.status_code == 200
                 reply = response.json()
                 assert reply["cash_balance"] == "588.0000"
+                assert reply["steps_per_coin"] == 100
                 assert len(reply["totals"]) == 7
                 assert all(
                     day["credited_now"] == credited for day in reply["totals"]

@@ -63,6 +63,8 @@ function isMoney(value: unknown): value is string {
 function isDailyTotalsResponse(data: unknown): data is DailyTotalsResponse {
     if (!data || typeof data !== "object" || Array.isArray(data)
         || !("cash_balance" in data) || !isMoney(data.cash_balance)
+        || !("steps_per_coin" in data) || typeof data.steps_per_coin !== "number"
+        || !Number.isInteger(data.steps_per_coin) || data.steps_per_coin <= 0
         || !("totals" in data) || !Array.isArray(data.totals)) {
         return false;
     }

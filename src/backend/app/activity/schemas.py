@@ -69,7 +69,8 @@ class DailyTotalResult(BaseModel):
 
 
 class DailyTotalsResponse(BaseModel):
-    """Results in request order, and the balance after all top-ups."""
+    """Results in request order, the earning rate, and the new balance."""
 
     totals: list[DailyTotalResult]
     cash_balance: Money
+    steps_per_coin: int
