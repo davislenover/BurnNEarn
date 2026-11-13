@@ -139,7 +139,7 @@ rest were chosen while building the PoC. In short:
 | [Wallet](modules/wallet.md) | Each portfolio's currency, and the one safe way to change it | `portfolios`, `balance_changes` | `GET /v1/me/balance` | #279, #189 |
 | [Market](modules/market.md) | Stocks and their prices | `assets`, `prices`, `provider_requests` | `GET /v1/assets`, `GET /v1/market/usage` | #187 |
 | [Trading](modules/trading.md) | Buying shares, and what a portfolio is worth | `trades`, `holdings` | `POST /v1/me/trades`, `GET /v1/me/portfolio` | #188 |
-| Activity | Step rewards | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190, not built yet |
+| [Activity](modules/activity.md) | Step rewards | `activity_daily_totals` | `PUT /v1/me/activity/daily-totals` | #190 |
 
 Each module's pull request adds or updates its doc in `modules/`, and its UML
 class diagram in `figures/`.
