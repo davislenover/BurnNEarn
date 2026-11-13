@@ -60,6 +60,10 @@
     "docs/Design/SoftArchitecture/MG.tex",
     "docs/Design/SoftArchitecture/figures/uses-hierarchy.pdf"
   ],
+  "docs/Design/SoftArchitecture/modules/activity.md": [
+    "docs/Design/SoftArchitecture/figures/activity.png",
+    "docs/Design/SoftArchitecture/modules/activity.md"
+  ],
   "docs/Design/SoftArchitecture/modules/core.md": [
     "docs/Design/SoftArchitecture/figures/core-data.png",
     "docs/Design/SoftArchitecture/figures/core.png",
