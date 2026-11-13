@@ -63,6 +63,8 @@ Design.\\
 Nov 12, 2026 & 1.5 & Preston Grewal: Health Service (M4) and Activity (M11)
 in Module Decomposition (\#235). The activity date
 check follows the supplied time zone used in PR \#313.\\
+Nov 12, 2026 & 1.6 & Preston Grewal: Phone activity access in 11 Design of
+Communication Protocols.\\
 \bottomrule
 \end{tabularx}
 
@@ -995,9 +997,27 @@ needed. Drawings, Sketches, Figma}
 
 \section{Design of Communication Protocols}
 
-\wss{If there is communication between hardware and software, it may be necessary 
-to explain the design of the communication protocol.  This section should be filled 
-in with NA if it is not appropriate for a given project.}
+\subsection{Activity Data from the Phone}
+
+\mref{mHealth} Health Service reads recorded steps through the phone's
+platform APIs. These calls run locally on the phone.
+
+\begin{itemize}
+\item \textbf{Android:} The app connects to Health Connect through
+  \texttt{react-native-health-connect}. It checks for step-read permission,
+  requests it if needed, then asks for the total steps in the selected time
+  range.
+\item \textbf{iPhone:} The app uses Expo Pedometer from
+  \texttt{expo-sensors}. It checks motion and fitness permission and whether
+  a step counter is available, then requests the recorded step count.
+\end{itemize}
+
+Both paths read from today's local midnight to the time the read started.
+\texttt{getTodaysSteps} returns one number: the total steps for that range.
+A successful read with no steps returns zero. If permission is denied,
+the service is unavailable or the read fails, the app shows a read error
+instead of treating the failure as zero steps. Individual health records
+remain on the phone (SEC-10).
 
 \section{Database Design}
 
