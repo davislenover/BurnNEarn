@@ -1259,6 +1259,39 @@ a row that breaks one.
 \item Every foreign key points at a row that exists.
 \end{itemize}
 
+
+\subsection{From the SRS Data Entities to Tables}
+
+Table~\ref{TblDBEntities} traces each major data entity of the SRS (SRS
+Section~7.1) to the tables that hold it.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{SRS entity} & \textbf{Tables} & \textbf{Owner} & \textbf{State}\\
+\midrule
+User Data & users & \mref{mUsers} Users & The proof of concept has one demo
+  user. Sign-in, profile, consent and settings come at Revision~0.\\
+Activity Record & activity\_daily\_totals & \mref{mActivity} Activity & Built
+  for steps. The other activity types come at Revision~0.\\
+Portfolio & portfolios, balance\_changes, holdings & \mref{mWallet} Wallet,
+  \mref{mTrading} Trading & Built. Scenario portfolios come at Revision~0.\\
+Market Data & assets, prices & \mref{mMarket} Market & Built.\\
+Trade & trades & \mref{mTrading} Trading & Built for buying. Selling and queued
+  trades come at Revision~0.\\
+Social Data & At Revision~0 & \mref{mSocial} Social & Not built.\\
+\bottomrule
+\end{tabularx}
+\caption{The major data entities of the SRS and the tables that hold them}
+\label{TblDBEntities}
+\end{table}
+
+The tables of the modules built after the proof of concept are designed with
+those modules at Revision~0. One decision is already made for
+\mref{mUsers} Users: the server will store only a hash of each password,
+session token and password reset token, never the value itself (HA~H45).
+
 \section{Timeline}
 
 \wss{Schedule of tasks and who is responsible}
