@@ -69,6 +69,10 @@ Communication Protocols.\\
 Nov 15, 2026 & 1.8 & Preston Grewal: 8 Traceability Matrices. Replaced the
 template requirements with SRS-to-module allocations and checked coverage
 of all modules and anticipated changes (\#239).\\
+Nov 15, 2026 & 1.5 & Davis Lenover: 7 Module Decomposition: Goals, Learning,
+Social, Scenarios and Privacy, which are built after the proof of concept, and
+what Trading and Plugins add for them at Revision~0.\\
+Nov 15, 2026 & 1.7 & Farid Bastoros: 12 Database Design.\\
 \bottomrule
 \end{tabularx}
 
@@ -801,12 +805,71 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
 \item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
-\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0.
+\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0. So do trading in and valuing a scenario's portfolio at the prices \mref{mScenarios} Scenarios hands Trading, which it accepts only with the lock on that portfolio (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M13 Goals, M14 Learning, M15 Social, M16 Scenarios and M17 Privacy: #238
+\paragraph{Modules built after the proof of concept.} Goals, Learning,
+Social, Scenarios and Privacy (\mref{mGoals} to \mref{mPrivacy}) are built
+after the proof of concept. Their entries fix what each one hides and the
+rules it must keep, and Table~\ref{TblUses} fixes which modules each one may
+use. Each feature can then be added
+as a plug-in without reaching into another module's data or copying its rules,
+so a likely change stays inside one module (NFR3). The details, such as each
+module's routes, tables and exact services, are not final. They may change
+with feedback on the proof of concept and with usability testing (NFR2), and
+the MIS specifies them at Revision~0.
+
+\subsubsection{Goals Module (\mref{mGoals})}
+
+\begin{description}
+\item[Secrets:] The rules for goals, streaks, rest days and milestones.
+\item[Services:] Keeps each user's daily activity goals and rest days. Works out the user's streak and the milestones they have reached, and serves them to the phone. Gives Social only what the user may share.
+\item[Rationale:] A goal is the user's own choice. It is optional (FR20), changes only when the user confirms it (FR21), and takes effect the next day (FR19), so a day's goal can't move once the day has started. The streak follows the SRS's formal definition (FR22). It is worked out from \mref{mActivity} Activity's daily totals, the goals in effect and the rest days (FR23), rather than kept as a counter that each sync adds to. A total that arrives late (SEC-20), or a rest day marked after that day's totals were sent, then gives the right streak without a fix-up. Each milestone is recorded with the date it was reached, so it is shown only once, even if a later sync lowers a day's total (FR25). Milestones of currency earned count the rewards that \mref{mWallet} Wallet has recorded, which Goals reads but never changes. A missed goal or an ended streak never costs currency or holdings and is never shown to anyone else (FR24), and no goal or milestone uses body weight or calories (FR26).
+\item[Implemented By:] \progname{} server, in \path{goals/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Learning Module (\mref{mLearning})}
+
+\begin{description}
+\item[Secrets:] The learning content, the knowledge checks and the rules that decide when investment feedback is given.
+\item[Services:] Serves the concept explanations and knowledge checks, marks the user's answers and keeps their learning progress. Works out feedback on the user's portfolio: what changed its value, how a trade changed its mix, and when one holding is too large a share of it. Gives Social only the knowledge checks the user has passed, the one kind of update from Learning that may be shared (FR65).
+\item[Rationale:] Explanations and knowledge checks are kept as data on the server, not written into the app, so administrators can add and correct them without a new release (FR58). Each explanation shows its source and the date it was last reviewed, and each explanation and knowledge-check answer is published only after a second team member reviews it (FR59), since users may later act on it with real money. Feedback uses only the user's own holdings and price changes, and shows the data it is based on (FR60). Learning reads these from \mref{mTrading} Trading as read-only copies, so it can't change a holding. Feedback explains what happened and never recommends buying or selling an asset (FR49). The limits that trigger feedback and the pass mark are SRS constants (FR52, FR54, FR57), kept in \mref{mConstants} Constants. Opening an explanation where its concept appears (FR51) is up to \mref{mScreens} Screens, so Learning holds no layout.
+\item[Implemented By:] \progname{} server, in \path{learning/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Social Module (\mref{mSocial})}
+
+\begin{description}
+\item[Secrets:] What a user can share and with whom.
+\item[Services:] Keeps friend requests and friendships. Shares an update with the friends the user picks, after showing the user the update as those friends will see it, and serves each user a feed of their friends' updates, newest first. Stops showing an update once the user deletes it or removes that friend.
+\item[Rationale:] Two users become friends only when the one asked accepts (FR62). A user's statistics stay private until they share them, and then reach only the friends they chose (SEC-13, FR66). An update can only be one of the kinds the SRS lists (FR65). Social builds it from what \mref{mActivity} Activity, \mref{mGoals} Goals and \mref{mLearning} Learning give it, and does not use \mref{mWallet} Wallet or \mref{mTrading} Trading. Each of those three uses Wallet or Trading, so each gives Social only the kinds of update it may share, and a balance or a portfolio value can't end up in one. A single activity record can't either, since the server only has daily totals (SEC-10). A body measurement can't, since no kind of update holds one, and Social takes only usernames from \mref{mUsers} Users, never the profile (FR65, FR68). The update saved is the one the user previewed (FR67), so friends see exactly what the user agreed to share, and a streak that ends later is never shown as ended (FR24). Each update is kept once, and who may see it is checked each time a feed is served, so deleting it or removing a friend stops it showing at once (FR64, FR70, SEC-13). Social offers no way to rank users (FR71), since leaderboards would first need a change to the SRS (SRS LC5).
+\item[Implemented By:] \progname{} server, in \path{social/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Scenarios Module (\mref{mScenarios})}
+
+\begin{description}
+\item[Secrets:] The number and selection of historical market scenarios, and where their past prices come from.
+\item[Services:] Lists the scenarios the user can practise in, with the dates each one replays. Starts a scenario in a portfolio of its own, moves it on one trading day each time the user continues, and trades in it at that day's closing prices.
+\item[Rationale:] A scenario must never touch the live balance or holdings, and nothing in the live market may touch a scenario's, such as the sale when an asset is removed, which sells only live holdings (FR31, FR45, SEC-31). So a scenario starts in its own \mref{mWallet} Wallet portfolio, with \texttt{SCENARIO\_START\_BALANCE} and no holdings (FR46), and trades through \mref{mTrading} Trading at the replayed day's closing prices (FR47). One set of trade rules, such as buying only whole shares and never spending more than the balance, then serves both markets, instead of a second copy that could drift from the first. Scenarios hands Trading the replayed day's prices, to trade in and to value the scenario's portfolio, so Trading doesn't need to know how a scenario replays. Trading checks market hours and price age only on a price it reads from \mref{mMarket} Market, since those rules apply only to the live market (FR33, FR39, FR40). It takes a handed price only with the lock on a scenario's portfolio, which Wallet gives only for a scenario (a lock token), so the live portfolio always trades at the live price (SEC-29, SEC-31). The assets are ones Market keeps, so a stock is named the same way in both. Market keeps an asset after it is removed from the live market, so a removal doesn't change a scenario's assets (FR31). Past prices are stored with each scenario, and a scenario is offered only once its data has a price for every asset on every trading day (SEC-32), so a replay never stops on a missing day. How many scenarios there are, and where their prices come from, depend on the cost of historical data (SRS LC4), so both are hidden here. Every scenario screen shows that it is a scenario and the dates it replays (FR48), which \mref{mScreens} Screens displays.
+\item[Implemented By:] \progname{} server, in \path{scenarios/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Privacy Module (\mref{mPrivacy})}
+
+\begin{description}
+\item[Secrets:] How consent, data export and account deletion are carried out.
+\item[Services:] Records the user's consent to read their health data, and its withdrawal. Gives the user a copy of the personal data stored about them, and deletes their account and all its data once they confirm.
+\item[Rationale:] The user can download their data (FR9), delete their account from the app after confirming that it can't be undone (FR10, FR11, SEC-18), and withdraw consent to read their health data (FR76, SEC-9). These rules change with the law and the app stores' policies (SC6), so they are kept in one module, apart from the features whose data they act on. Privacy doesn't use those features. Instead, at Revision~0 each module's plug-in will also say what personal data it keeps, and how to export and delete it, through \mref{mPlugins} Plugins (the plug-in pattern). Every plug-in must say this, even when its module keeps none, so a new module can't be left out of an export or a deletion. \mref{mControl} Control hands Privacy the plug-ins when it builds the server, as it does for the health check, so Privacy never names a module or reads another module's tables. Privacy deletes the user's data on the server at once. A backup can't be changed, so the hosting keeps each one for no longer than \texttt{DATA\_DELETION\_PERIOD}, and the deletion reaches the backups in time too (SEC-18, SEC-26). On the phone, \mref{mSync} Sync Service reads no health data before consent is given, and stops as soon as it is withdrawn, without waiting for the server (SEC-9).
+\item[Implemented By:] \progname{} server, in \path{privacy/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
 
 % M18 Navigation and M19 Screens (app): #236
 
@@ -829,7 +892,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 
 \begin{description}
 \item[Secrets:] The shape of a module's plug-in.
-\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it.
+\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it. At Revision~0, it also says what personal data the module keeps and how to export and delete it, which Control hands to \mref{mPrivacy} Privacy.
 \item[Rationale:] Control must be able to add any module without knowing anything else about it (the plug-in pattern). A plug-in is a small, read-only record of exactly what Control needs, so the code that builds the server depends on this shape and never on a module. Only the list in \path{registry.py} names the modules. A module with background work must include a health check, since that work can fail without any request noticing.
 \item[Implemented By:] \progname{} server, in \path{core/plugins.py}
 \item[Type of Module:] Record
@@ -1151,8 +1214,105 @@ built after the proof of concept.}
 
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+The user interface for \progname{} is designed to provide users with
+a simple and intuitive way to track their physical activity, earn
+virtual currency, and participate in simulated stock market investing.
+The interface follows a minimalist design approach, with consistent
+navigation, clear labels, and straightforward layouts. The design
+prioritizes ease of use, particularly for users with little or no
+previous investing experience.
+
+The mobile application is designed using Figma mockups and will be
+implemented using React Native with TypeScript, allowing the same
+interface to be used on both Android and iOS devices.
+
+\subsection{Interface Design}
+
+The application uses a bottom navigation bar with three main sections:
+Home, Market, and Portfolio. This allows users to move between the
+core features without navigating through multiple menus. The
+interface uses a consistent colour scheme, typography, and layout
+across screens to improve usability.
+
+The following screens have been designed:
+
+\begin{itemize}
+
+    \item \textbf{Home Dashboard:}
+    Displays the user's daily step count, progress toward their
+    activity goal, virtual currency earned, available balance,
+    and current portfolio value. This screen establishes the
+    connection between physical activity and simulated investing.
+
+    \item \textbf{Stock Market:}
+    Displays available stocks, including their company names,
+    stock symbols, current prices, and price changes. Users can
+    browse stocks or search for a specific company.
+
+    \item \textbf{Stock Details:}
+    Provides information about a selected stock, including its
+    current price, price movement, and historical performance
+    displayed through a graph. Users can initiate a simulated
+    purchase from this screen.
+
+    \item \textbf{Buy Stock:}
+    Allows users to specify the number of shares they wish to
+    purchase. The interface displays the estimated cost and
+    available virtual currency balance before proceeding.
+
+    \item \textbf{Review Purchase:}
+    Displays a summary of the simulated transaction, including
+    the selected stock, number of shares, price per share, total
+    cost, and remaining currency balance. Users can confirm
+    their purchase or return to the previous screen.
+
+    \item \textbf{Purchase Successful:}
+    Confirms that a simulated purchase has been completed and
+    displays the transaction details. A short educational
+    explanation introduces users to basic investing concepts.
+
+    \item \textbf{My Portfolio:}
+    Displays the user's total simulated portfolio value,
+    investment performance, and current stock holdings.
+    A graph illustrates changes in portfolio value over time.
+
+\end{itemize}
+
+\subsection{Design Rationale}
+
+The interface takes inspiration from minimalist financial
+applications, such as Wealthsimple, while adapting the design
+to \progname{}'s focus on physical activity and financial
+education. A simple layout was chosen to reduce unnecessary
+complexity and make simulated investing more approachable for
+beginners.
+
+The Home Dashboard emphasizes the relationship between
+physical activity and virtual currency rewards, while the
+Market and Portfolio sections provide a straightforward
+investing experience. The purchase process is separated into
+multiple screens so users can review transaction details before
+confirming a trade.
+
+The interface also distinguishes simulated investing from
+real-world investing by identifying portfolio values and
+transactions as simulated. Navigation and screen presentation
+are handled by the Navigation and Screens modules, while
+activity rewards, balances, and trading calculations remain
+the responsibility of the server.
+
+
+\subsection{User Interface Mockups}
+
+Figure~\ref{FigUIMockups} presents the seven Figma mockups
+developed for the mobile application's main user interface.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth,keepaspectratio]{figures/Frame.png}
+    \caption{Figma mockups of the \progname{} mobile user interface.}
+    \label{FigUIMockups}
+\end{figure}
 
 \section{Design of Communication Protocols}
 
@@ -1178,11 +1338,173 @@ the service is unavailable or the read fails, the app shows a read error
 instead of treating the failure as zero steps. Individual health records
 remain on the phone (SEC-10).
 
-\section{Database Design}
+\section{Database Design}  \label{SecDB}
 
-\wss{If a database is a significant component of the project, the database
-design should be summarized here.  This section should be filled in with NA if
-it is not appropriate for a given project.}
+% \wss{If a database is a significant component of the project, the database
+% design should be summarized here.  This section should be filled in with NA if
+% it is not appropriate for a given project.}
+
+\progname{} keeps its data in one relational database on the server, reached
+only through \mref{mDB} Database. One database lets a trade save its payment
+and its shares in one transaction (FR37). The server's copy of a balance or a
+holding is the one that counts (SEC-24). Individual activity records stay on
+the phone, in its health platform, and only daily totals reach the server
+(SEC-10).
+
+The database follows the module decomposition. Each module owns its tables, and
+only that module reads or writes them. Another module gets the data through the
+owner's access programs, as a read-only copy. A table may still point at a row
+of another module's table with a foreign key, such as a trade at its asset, so
+the database can refuse a row that points at nothing. Each change to the tables
+is a migration, named after its module and numbered. The migrations form one
+chain, so every copy of the database is changed in the same order.
+
+Table~\ref{TblDB} lists the tables of the proof of concept and
+Figure~\ref{FigDB} shows their columns and how they are related.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{p{0.26\textwidth} p{0.16\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Table} & \textbf{Owner} & \textbf{One row is}\\
+\midrule
+users & \mref{mUsers} Users & A user, with their time zone.\\
+activity\_daily\_totals & \mref{mActivity} Activity & The latest total sent
+  for one user, day and activity type, and whether it counts for a reward.\\
+portfolios & \mref{mWallet} Wallet & A portfolio and its currency balance. A
+  user's live portfolio is the one with no scenario.\\
+balance\_changes & \mref{mWallet} Wallet & One change to a portfolio's balance,
+  with its amount, reason and time. It is never edited.\\
+assets & \mref{mMarket} Market & A stock that can be traded, with its symbol
+  and the currency of its prices.\\
+prices & \mref{mMarket} Market & One price of an asset, with the time the
+  provider set it and the time the server obtained it.\\
+provider\_requests & \mref{mMarket} Market & One call to the market data
+  provider and how it ended, kept to watch the request limit (SC4).\\
+trades & \mref{mTrading} Trading & One trade, with its request ID, quantity,
+  price and cost. It is never edited.\\
+holdings & \mref{mTrading} Trading & The number of shares of one asset that a
+  portfolio holds.\\
+\bottomrule
+\end{tabularx}
+\caption{Tables of the proof of concept and the module that owns each}
+\label{TblDB}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/database-design.pdf}
+\caption{Tables of the proof of concept, grouped by the module that owns them.
+An arrow goes from the table that holds a foreign key to the table it points
+at, and the numbers at its ends say how many rows can be at each end. PK marks
+a primary key and FK a foreign key.}
+\label{FigDB}
+\end{figure}
+
+
+\subsection{Design Decisions}
+
+\begin{description}
+\item[Lists in the SRS are tables.] The data dictionary (SRS Section~7.2) gives
+  a portfolio its holdings, trade history and balance changes as lists, and an
+  asset its price history. Here each is a table with one row per item, so a row
+  can be added without rewriting the rest, and the database can check each row.
+
+\item[A value that can be calculated is not stored.] An asset's current price
+  is its price with the latest time, and a portfolio's value is calculated from
+  its holdings and the current prices when it is asked for (FR42). Neither can
+  then be out of date. The balance is the one exception. It is stored, so that
+  a trade can check it quickly, and it always equals the sum of the portfolio's
+  balance changes (SEC-22).
+
+\item[Money is an exact decimal.] An amount has up to 12 digits before the
+  decimal point and 4 after, and a price up to 8 and 4. Neither is a
+  floating-point number, so no amount is rounded by accident (NFR1).
+
+\item[Every time has its time zone.] A time is stored with its time zone, so
+  times from the server, the provider and users in different places compare
+  correctly (FR33).
+
+\item[Identifiers are UUIDs.] The phone can then make a trade's request ID
+  without asking the server (FR38). Prices and provider requests use a counter,
+  since there are many of them and nothing outside the server refers to one.
+
+\item[History is added to, never edited.] A balance change, a trade and a price
+  are never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A daily activity total is different. Each sync replaces
+  it with the latest total for that day, since a day's total grows until the
+  day ends.
+
+\item[A reward is stored once, in Wallet.] The data dictionary gives an
+  activity record its reward. Here the daily total holds no reward. What a day
+  has been paid is the sum of that day's activity rewards among Wallet's
+  balance changes, and a sync pays only the difference. A day is then never
+  paid twice, and a total that falls later takes nothing back (SEC-19).
+
+\item[Deleting a row deletes what belongs to it.] A portfolio's balance
+  changes, trades and holdings are deleted with it by the database, and a
+  user's daily totals with the user. The proof of concept uses this to reset
+  the demo user. Account deletion is designed at Revision~0 (SEC-18).
+\end{description}
+
+\subsection{Rules the Database Checks}
+
+A module checks its own rules before it saves. The database checks the most
+important ones again on every write, so that a mistake in the code cannot save
+a row that breaks one.
+
+\begin{itemize}
+\item A balance is never below zero (FR37).
+\item A user has at most one live portfolio.
+\item A balance change is never zero. It adds currency exactly when its reason
+  is an activity reward, and it has an activity date exactly when its reason is
+  an activity reward (SEC-19, SEC-22).
+\item Every price is above zero and in \texttt{QUOTE\_CURRENCY}, and an asset
+  has one price for each time the provider set one (FR29, SEC-27).
+\item A portfolio has one trade for each request ID, so a repeated request
+  cannot trade twice (FR38).
+\item A trade's cost is exactly its quantity times its price (NFR1), and each
+  trade points at the one balance change that paid for it (FR37).
+\item A holding is never below zero, and a portfolio has one holding for each
+  asset.
+\item A user has one daily total for each day and activity type (SEC-10). Its
+  step count is never below zero, and it counts for a reward exactly when it
+  is within \texttt{MAX\_DAILY\_STEPS} (FR17).
+\item Every foreign key points at a row that exists.
+\end{itemize}
+
+
+\subsection{From the SRS Data Entities to Tables}
+
+Table~\ref{TblDBEntities} traces each major data entity of the SRS (SRS
+Section~7.1) to the tables that hold it.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{SRS entity} & \textbf{Tables} & \textbf{Owner} & \textbf{State}\\
+\midrule
+User Data & users & \mref{mUsers} Users & The proof of concept has one demo
+  user. Sign-in, profile, consent and settings come at Revision~0.\\
+Activity Record & activity\_daily\_totals & \mref{mActivity} Activity & Built
+  for steps. The other activity types come at Revision~0.\\
+Portfolio & portfolios, balance\_changes, holdings & \mref{mWallet} Wallet,
+  \mref{mTrading} Trading & Built. Scenario portfolios come at Revision~0.\\
+Market Data & assets, prices & \mref{mMarket} Market & Built.\\
+Trade & trades & \mref{mTrading} Trading & Built for buying. Selling and queued
+  trades come at Revision~0.\\
+Social Data & At Revision~0 & \mref{mSocial} Social & Not built.\\
+\bottomrule
+\end{tabularx}
+\caption{The major data entities of the SRS and the tables that hold them}
+\label{TblDBEntities}
+\end{table}
+
+The tables of the modules built after the proof of concept are designed with
+those modules at Revision~0. One decision is already made for
+\mref{mUsers} Users: the server will store only a hash of each password,
+session token and password reset token, never the value itself (HA~H45).
 
 \section{Timeline}
 

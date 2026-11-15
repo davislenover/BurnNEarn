@@ -34,7 +34,6 @@ export async function sendTodaysSteps(
             signal: controller.signal,
         });
         const data: unknown = await response.json().catch(() => null);
-
         if (!response.ok) {
             // Our backend uses detail.message for domain errors; validation errors may differ.
             const detail = data && typeof data === "object" && "detail" in data ? data.detail : null;
@@ -42,13 +41,10 @@ export async function sendTodaysSteps(
                 && typeof detail.message === "string" ? detail.message : null;
             throw new Error(message ?? `Could not sync steps (HTTP ${response.status}).`);
         }
-
-        if (!data || typeof data !== "object" || Array.isArray(data)
-            || !("cash_balance" in data) || typeof data.cash_balance !== "string") {
+        if (!isDailyTotalsResponse(data)) {
             throw new Error("The server returned an invalid step-sync response.");
         }
-
-        return data as DailyTotalsResponse;
+        return data;
     } catch (cause) {
         if (timedOut) {
             throw new Error("Sending steps timed out. Refresh to try again.");
@@ -58,4 +54,30 @@ export async function sendTodaysSteps(
         clearTimeout(timeout);
         signal?.removeEventListener("abort", abort);
     }
+}
+
+function isMoney(value: unknown): value is string {
+    return typeof value === "string" && /^\d+\.\d{4}$/.test(value);
+}
+
+function isDailyTotalsResponse(data: unknown): data is DailyTotalsResponse {
+    if (!data || typeof data !== "object" || Array.isArray(data)
+        || !("cash_balance" in data) || !isMoney(data.cash_balance)
+        || !("steps_per_coin" in data) || typeof data.steps_per_coin !== "number"
+        || !Number.isInteger(data.steps_per_coin) || data.steps_per_coin <= 0
+        || !("totals" in data) || !Array.isArray(data.totals)) {
+        return false;
+    }
+    return data.totals.every((total: unknown) => {
+        if (!total || typeof total !== "object" || Array.isArray(total)) {
+            return false;
+        }
+        return "activity_date" in total && typeof total.activity_date === "string"
+            && "activity_type" in total && total.activity_type === "steps"
+            && "step_count" in total && typeof total.step_count === "number"
+            && Number.isInteger(total.step_count) && total.step_count >= 0
+            && "counted" in total && typeof total.counted === "boolean"
+            && "reward" in total && isMoney(total.reward)
+            && "credited_now" in total && isMoney(total.credited_now);
+    });
 }

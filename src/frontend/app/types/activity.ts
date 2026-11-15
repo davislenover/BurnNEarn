@@ -9,8 +9,14 @@ export type DailyTotalsRequest = {
     totals: DailyStepTotal[];
 };
 
+export type DailyTotalResult = DailyStepTotal & {
+    counted: boolean;
+    reward: string;
+    credited_now: string;
+};
+
 export type DailyTotalsResponse = {
+    totals: DailyTotalResult[];
     cash_balance: string;
-    // Preserve the per-day results without assuming their wrapper before #190 is implemented.
-    [field: string]: unknown;
+    steps_per_coin: number;
 };
