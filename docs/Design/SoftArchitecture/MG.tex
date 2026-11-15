@@ -1233,6 +1233,32 @@ a primary key and FK a foreign key.}
   the demo user. Account deletion is designed at Revision~0 (SEC-18).
 \end{description}
 
+\subsection{Rules the Database Checks}
+
+A module checks its own rules before it saves. The database checks the most
+important ones again on every write, so that a mistake in the code cannot save
+a row that breaks one.
+
+\begin{itemize}
+\item A balance is never below zero (FR37).
+\item A user has at most one live portfolio.
+\item A balance change is never zero. It adds currency exactly when its reason
+  is an activity reward, and it has an activity date exactly when its reason is
+  an activity reward (SEC-19, SEC-22).
+\item Every price is above zero and in \texttt{QUOTE\_CURRENCY}, and an asset
+  has one price for each time the provider set one (FR29, SEC-27).
+\item A portfolio has one trade for each request ID, so a repeated request
+  cannot trade twice (FR38).
+\item A trade's cost is exactly its quantity times its price (NFR1), and each
+  trade points at the one balance change that paid for it (FR37).
+\item A holding is never below zero, and a portfolio has one holding for each
+  asset.
+\item A user has one daily total for each day and activity type (SEC-10). Its
+  step count is never below zero, and it counts for a reward exactly when it
+  is within \texttt{MAX\_DAILY\_STEPS} (FR17).
+\item Every foreign key points at a row that exists.
+\end{itemize}
+
 \section{Timeline}
 
 \wss{Schedule of tasks and who is responsible}
