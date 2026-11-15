@@ -5,6 +5,7 @@
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
@@ -65,6 +66,9 @@ in Module Decomposition (\#235). The activity date
 check follows the supplied time zone used in PR \#313.\\
 Nov 12, 2026 & 1.6 & Preston Grewal: Phone activity access in 11 Design of
 Communication Protocols.\\
+Nov 15, 2026 & 1.8 & Preston Grewal: 8 Traceability Matrices. Replaced the
+template requirements with SRS-to-module allocations and checked coverage
+of all modules and anticipated changes (\#239).\\
 \bottomrule
 \end{tabularx}
 
@@ -843,54 +847,212 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 
 % M24 API Service (app): #236
 
-\section{Traceability Matrix} \label{SecTM}
+\newpage
+\section{Traceability Matrices} \label{SecTM}
 
-This section shows two traceability matrices: between the modules and the
-requirements and between the modules and the anticipated changes.
+Table~\ref{TblRT} assigns the SRS requirements to the modules responsible
+for their behaviour, presentation or platform interface. It covers all 77
+functional requirements, eight nonfunctional requirements, seven system
+constraints, and the 30 security and data-protection requirements stated
+separately in SRS Section~7.3. IDs and short names follow the SRS; the names
+below summarize the requirements rather than replace their wording.
+Stakeholder requirements and the other Hazard Analysis controls reach these
+modules through the SRS's requirement traces.
 
-% the table should use mref, the requirements should be named, use something
-% like fref
-\begin{table}[H]
-\centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+A row lists direct responsibilities, not every module reached through the
+uses hierarchy. For example, Wallet appears where balance rules matter;
+Database is not repeated for every feature that stores data. All 25 modules
+appear in at least one requirement row. Control and Plugins support
+maintainability (NFR3), while JSON Format supports exact amounts (NFR1) and
+consistent request refusals (SEC-25).
+
+These are design allocations for the full system, including modules and
+behaviour planned after the proof of concept. A trace does not mean the PoC
+already satisfies the requirement. Some controls, such as encryption and
+backups (SEC-16 and SEC-26), also require the hosting configuration and
+operational checks described in the SRS and VnV Plan.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.47\textwidth}p{0.47\textwidth}@{}}
+\caption{Trace Between Requirements and Modules}\label{TblRT}\\
 \toprule
-\textbf{Req.} & \textbf{Modules}\\
+\textbf{Requirement} & \textbf{Modules}\\
 \midrule
-R1 & \mref{mHH}, \mref{mInput}, \mref{mParams}, \mref{mControl}\\
-R2 & \mref{mInput}, \mref{mParams}\\
-R3 & \mref{mVerify}\\
-R4 & \mref{mOutput}, \mref{mControl}\\
-R5 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R6 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R7 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R8 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R9 & \mref{mVerifyOut}\\
-R10 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}\\
-R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
+\endfirsthead
+\multicolumn{2}{c}{\tablename\ \thetable: Requirements and modules (continued)}\\
+\toprule
+\textbf{Requirement} & \textbf{Modules}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
 \bottomrule
-\end{tabular}
-\caption{Trace Between Requirements and Modules}
-\label{TblRT}
-\end{table}
+\endlastfoot
+\multicolumn{2}{@{}l}{\textbf{Accounts and profile}}\\*
+FR1 -- Create an account & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctCreate
+FR2 -- Confirm minimum age & \mref{mUsers}, \mref{mConstants}, \mref{mScreens}\\ % FR_AcctAgeConfirm
+FR3 -- Choose a unique username & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctUsername
+FR4 -- Sign in & \mref{mUsers}, \mref{mAPI}, \mref{mScreens}\\ % FR_AcctSignIn
+FR5 -- Sign out of one or all sessions & \mref{mUsers}, \mref{mAPI}, \mref{mDevice}, \mref{mScreens}\\ % FR_AcctSignOut
+FR6 -- Reset a password & \mref{mUsers}, \mref{mEmail}, \mref{mScreens}\\ % FR_AcctResetPassword
+FR7 -- View and edit a profile & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctEditProfile
+FR8 -- Keep body measurements optional & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctBodyOptional
+FR9 -- Download personal data & \mref{mPrivacy}, \mref{mPlugins}, \mref{mScreens}\\ % FR_AcctDownloadData
+FR10 -- Confirm account deletion & \mref{mPrivacy}, \mref{mScreens}\\ % FR_AcctDeleteConfirm
+FR11 -- Delete an account & \mref{mPrivacy}, \mref{mPlugins}, \mref{mUsers}, \mref{mDB}, \mref{mScreens}\\ % FR_AcctDelete
+\multicolumn{2}{@{}l}{\textbf{Activity and rewards}}\\*
+FR12 -- Support the listed activity types & \mref{mActivity}, \mref{mHealth}, \mref{mConstants}, \mref{mSync}\\ % FR_ActTypes
+FR13 -- Earn currency from recorded activity & \mref{mActivity}, \mref{mWallet}, \mref{mHealth}, \mref{mSync}\\ % FR_ActEarn
+FR14 -- Acknowledge the health notice & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mActivity}, \mref{mScreens}\\ % FR_ActHealthNotice
+FR15 -- Earn without interacting during activity & \mref{mHealth}, \mref{mSync}, \mref{mActivity}\\ % FR_ActNoInteraction
+FR16 -- Treat absent activity as zero & \mref{mHealth}, \mref{mActivity}\\ % FR_ActNoData
+FR17 -- Exclude and identify implausible activity & \mref{mActivity}, \mref{mGoals}, \mref{mConstants}, \mref{mScreens}\\ % FR_ActPlausible
+FR18 -- Cap each day's reward & \mref{mActivity}, \mref{mWallet}, \mref{mConstants}, \mref{mClock}\\ % FR_ActDailyCap
+FR19 -- Set or change a daily goal & \mref{mGoals}, \mref{mClock}, \mref{mScreens}\\ % FR_ActGoal
+FR20 -- Make goals optional & \mref{mGoals}, \mref{mActivity}, \mref{mScreens}\\ % FR_ActGoalOptional
+FR21 -- Confirm goal changes & \mref{mGoals}, \mref{mScreens}\\ % FR_ActNoAutoGoal
+FR22 -- Show the current streak & \mref{mGoals}, \mref{mScreens}\\ % FR_ActStreak
+FR23 -- Allow rest days & \mref{mGoals}, \mref{mConstants}, \mref{mClock}, \mref{mScreens}\\ % FR_ActRestDay
+FR24 -- Do not penalize or share missed goals & \mref{mGoals}, \mref{mSocial}, \mref{mScreens}\\ % FR_ActNoPenalty
+FR25 -- Show milestones & \mref{mGoals}, \mref{mConstants}, \mref{mScreens}\\ % FR_ActMilestone
+FR26 -- Exclude weight and calories from rewards & \mref{mActivity}, \mref{mGoals}\\ % FR_ActNoWeightReward
+FR27 -- Show daily activity trends & \mref{mActivity}, \mref{mPrivacy}, \mref{mScreens}\\ % FR_ActTrends
+\multicolumn{2}{@{}l}{\textbf{Market and portfolio}}\\*
+FR28 -- Offer the minimum number of stocks & \mref{mMarket}, \mref{mConstants}\\ % FR_MktAssetCount
+FR29 -- Use one quote currency & \mref{mMarket}, \mref{mProviders}, \mref{mConstants}\\ % FR_MktOneCurrency
+FR30 -- Administer the live asset list & \mref{mMarket}\\ % FR_MktUpdateAssets
+FR31 -- Sell holdings of a removed asset & \mref{mMarket}, \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktRemovedHoldings
+FR32 -- Use the latest real market prices & \mref{mMarket}, \mref{mProviders}\\ % FR_MktRealPrices
+FR33 -- Show price times and delayed prices & \mref{mMarket}, \mref{mClock}, \mref{mConstants}, \mref{mScreens}\\ % FR_MktPriceAge
+FR34 -- Acknowledge the simulation notice & \mref{mTrading}, \mref{mUsers}, \mref{mScreens}\\ % FR_MktSimNotice
+FR35 -- Buy whole shares & \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktBuy
+FR36 -- Sell whole shares & \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktSell
+FR37 -- Apply a trade completely or not at all & \mref{mTrading}, \mref{mWallet}, \mref{mDB}\\ % FR_MktAtomicTrade
+FR38 -- Apply each trade request once & \mref{mTrading}, \mref{mWallet}, \mref{mAPI}\\ % FR_MktNoDuplicate
+FR39 -- Refuse trades at stale prices & \mref{mTrading}, \mref{mMarket}, \mref{mClock}, \mref{mConstants}\\ % FR_MktNoStaleTrade
+FR40 -- Queue trades while the market is closed & \mref{mTrading}, \mref{mMarket}, \mref{mClock}, \mref{mScreens}\\ % FR_MktQueueClosed
+FR41 -- Show holdings & \mref{mTrading}, \mref{mScreens}\\ % FR_MktHoldings
+FR42 -- Show portfolio value & \mref{mTrading}, \mref{mMarket}, \mref{mScreens}\\ % FR_MktPortfolioValue
+FR43 -- Label simulated values & \mref{mScreens}\\ % FR_MktLabelReturns
+FR44 -- Use signs or text for gains and losses & \mref{mScreens}\\ % FR_MktGainLossLabel
+FR45 -- Practise in an isolated market scenario & \mref{mScenarios}, \mref{mTrading}, \mref{mWallet}\\ % FR_MktScenario
+FR46 -- Initialize a scenario portfolio & \mref{mScenarios}, \mref{mWallet}, \mref{mConstants}\\ % FR_MktScenarioStart
+FR47 -- Advance a scenario one trading day & \mref{mScenarios}, \mref{mTrading}, \mref{mScreens}\\ % FR_MktScenarioAdvance
+FR48 -- Label scenario screens and dates & \mref{mScenarios}, \mref{mScreens}\\ % FR_MktScenarioLabel
+FR49 -- Avoid asset recommendations & \mref{mLearning}, \mref{mScreens}\\ % FR_MktNoRecommend
+\multicolumn{2}{@{}l}{\textbf{Learning and feedback}}\\*
+FR50 -- Explain core concepts & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnExplainConcept
+FR51 -- Open explanations where concepts appear & \mref{mLearning}, \mref{mScreens}, \mref{mNavigation}\\ % FR_LearnInPlace
+FR52 -- Explain portfolio value changes & \mref{mLearning}, \mref{mTrading}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnValueChange
+FR53 -- Explain a trade's portfolio effect & \mref{mLearning}, \mref{mTrading}, \mref{mScreens}\\ % FR_LearnTradeEffect
+FR54 -- Explain diversification when concentrated & \mref{mLearning}, \mref{mTrading}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnConcentration
+FR55 -- Provide knowledge checks & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnKnowledgeCheck
+FR56 -- Explain knowledge-check answers & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnCheckResult
+FR57 -- Show learning progress & \mref{mLearning}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnProgress
+FR58 -- Administer learning content & \mref{mLearning}\\ % FR_LearnUpdateContent
+FR59 -- Review and identify learning sources & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnReviewed
+FR60 -- Show the basis of portfolio feedback & \mref{mLearning}, \mref{mTrading}, \mref{mScreens}\\ % FR_LearnFeedbackBasis
+\multicolumn{2}{@{}l}{\textbf{Social feed}}\\*
+FR61 -- Send friend requests & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialRequest
+FR62 -- Accept friendships explicitly & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialAccept
+FR63 -- Decline friend requests & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialDecline
+FR64 -- Remove a friend & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialRemove
+FR65 -- Share only the listed update kinds & \mref{mSocial}, \mref{mActivity}, \mref{mGoals}, \mref{mLearning}, \mref{mScreens}\\ % FR_SocialShare
+FR66 -- Choose an update's viewers & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialChooseFriends
+FR67 -- Preview an update before sharing & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialPreview
+FR68 -- Exclude body measurements and records & \mref{mSocial}\\ % FR_SocialNoBody
+FR69 -- Show the newest friend updates first & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialFeed
+FR70 -- Delete a shared update & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialDeleteUpdate
+FR71 -- Do not rank users & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialNoRanking
+\multicolumn{2}{@{}l}{\textbf{Reminders and settings}}\\*
+FR72 -- Choose reminder periods & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % FR_RemindPeriods
+FR73 -- Deliver only within chosen periods & \mref{mReminders}, \mref{mDevice}, \mref{mClock}, \mref{mConstants}\\ % FR_RemindInPeriods
+FR74 -- Enable or disable each reminder type & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % FR_RemindTypes
+FR75 -- Deliver reminders when the app runs & \mref{mReminders}, \mref{mDevice}, \mref{mSync}\\ % FR_RemindSend
+FR76 -- Withdraw health-data consent & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % FR_SetWithdrawConsent
+FR77 -- Show health permissions and their limits & \mref{mHealth}, \mref{mScreens}\\ % FR_SetPermissionList
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{Nonfunctional requirements}}\\*
+NFR1 -- Accuracy & \mref{mWallet}, \mref{mTrading}, \mref{mActivity}, \mref{mJSON}, \mref{mConstants}\\ % NFR_Accuracy
+NFR2 -- Usability & \mref{mScreens}, \mref{mNavigation}\\ % NFR_Usability
+NFR3 -- Maintainability & \mref{mControl}, \mref{mPlugins}, \mref{mConstants}, \mref{mProviders}, \mref{mHealth}, \mref{mDevice}, \mref{mAPI}, \mref{mDB}, \mref{mClock}\\ % NFR_Maintainability
+NFR4 -- Portability & \mref{mHealth}, \mref{mDevice}, \mref{mScreens}, \mref{mAPI}\\ % NFR_Portability
+NFR5 -- Performance & \mref{mScreens}, \mref{mAPI}, \mref{mActivity}, \mref{mTrading}, \mref{mSocial}, \mref{mDB}\\ % NFR_Performance
+NFR6 -- Reliability & \mref{mTrading}, \mref{mWallet}, \mref{mDB}, \mref{mAPI}\\ % NFR_Reliability
+NFR7 -- Security & \mref{mUsers}, \mref{mPrivacy}, \mref{mAPI}, \mref{mDevice}, \mref{mDB}, \mref{mSocial}\\ % NFR_Security
+NFR8 -- Accessibility & \mref{mScreens}\\ % NFR_Accessibility
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{System constraints}}\\*
+SC1 -- Supported Android and iOS phones & \mref{mHealth}, \mref{mDevice}, \mref{mNavigation}, \mref{mScreens}\\ % SC_Platform
+SC2 -- Use platform health data without a wearable & \mref{mHealth}\\ % SC_HealthPlatform
+SC3 -- Follow platform health-access rules & \mref{mHealth}, \mref{mPrivacy}, \mref{mScreens}\\ % SC_HealthAccess
+SC4 -- Respect market-provider terms and limits & \mref{mProviders}, \mref{mMarket}\\ % SC_MarketData
+SC5 -- Keep currency and investments simulated & \mref{mWallet}, \mref{mTrading}, \mref{mScenarios}, \mref{mLearning}, \mref{mScreens}\\ % SC_NoRealMoney
+SC6 -- Follow privacy law and store policies & \mref{mPrivacy}, \mref{mPlugins}, \mref{mUsers}, \mref{mHealth}, \mref{mDB}\\ % SC_Privacy
+SC7 -- Use the server for trading, prices and feed & \mref{mControl}, \mref{mAPI}, \mref{mMarket}, \mref{mTrading}, \mref{mSocial}\\ % SC_Server
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{Security and data protection (SRS Section 7.3)}}\\*
+SEC-7 -- Read only the needed health data & \mref{mHealth}, \mref{mConstants}\\ % 7
+SEC-8 -- Explain each health permission & \mref{mHealth}, \mref{mScreens}\\ % 8
+SEC-9 -- Obtain and withdraw health-data consent & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % 9
+SEC-10 -- Send only daily activity totals & \mref{mHealth}, \mref{mSync}, \mref{mAPI}, \mref{mActivity}\\ % 10
+SEC-11 -- Limit data sent to outside services & \mref{mProviders}, \mref{mEmail}, \mref{mUsers}\\ % 11
+SEC-12 -- Do not read or store location data & \mref{mHealth}, \mref{mActivity}, \mref{mUsers}\\ % 12
+SEC-13 -- Keep statistics private until shared & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % 13
+SEC-14 -- Exclude location and exact activity times & \mref{mSocial}\\ % 14
+SEC-15 -- Authenticate and authorize data access & \mref{mUsers}, \mref{mAPI}, \mref{mSocial}, \mref{mPrivacy}\\ % 15
+SEC-16 -- Encrypt data in transit and at rest & \mref{mAPI}, \mref{mDB}\\ % 16
+SEC-17 -- Expire and end the correct sessions & \mref{mUsers}, \mref{mAPI}, \mref{mDevice}, \mref{mClock}, \mref{mConstants}\\ % 17
+SEC-18 -- Delete account data and backups in time & \mref{mPrivacy}, \mref{mPlugins}, \mref{mDB}, \mref{mUsers}\\ % 18
+SEC-19 -- Reward each activity only once & \mref{mActivity}, \mref{mWallet}, \mref{mSync}, \mref{mDB}\\ % 19
+SEC-20 -- Catch late activity after acknowledgement & \mref{mSync}, \mref{mHealth}, \mref{mActivity}, \mref{mPrivacy}, \mref{mClock}, \mref{mConstants}\\ % 20
+SEC-21 -- Handle unavailable activity without losses & \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % 21
+SEC-22 -- Keep a complete balance history & \mref{mWallet}, \mref{mDB}\\ % 22
+SEC-23 -- Assign activity to the user's calendar day & \mref{mHealth}, \mref{mSync}, \mref{mActivity}, \mref{mClock}, \mref{mUsers}\\ % 23
+SEC-24 -- Calculate and validate rewards on the server & \mref{mActivity}, \mref{mWallet}, \mref{mTrading}, \mref{mClock}\\ % 24
+SEC-25 -- Validate every request & \mref{mJSON}, \mref{mUsers}, \mref{mActivity}, \mref{mTrading}, \mref{mGoals}, \mref{mLearning}, \mref{mSocial}, \mref{mScenarios}, \mref{mPrivacy}\\ % 25
+SEC-26 -- Back up and test restoration & \mref{mDB}\\ % 26
+SEC-27 -- Keep prices in the quote currency & \mref{mMarket}, \mref{mProviders}, \mref{mConstants}\\ % 27
+SEC-28 -- Apply stock splits consistently & \mref{mMarket}, \mref{mTrading}\\ % 28
+SEC-29 -- Trade only at the confirmed price & \mref{mTrading}, \mref{mMarket}, \mref{mScreens}\\ % 29
+SEC-30 -- Keep displayed balances and values accurate & \mref{mWallet}, \mref{mTrading}, \mref{mActivity}, \mref{mJSON}, \mref{mConstants}\\ % 30
+SEC-31 -- Separate live and scenario portfolios & \mref{mScenarios}, \mref{mWallet}, \mref{mTrading}\\ % 31
+SEC-32 -- Check that scenario data is complete & \mref{mScenarios}\\ % 32
+SEC-33 -- Keep external-service credentials on the server & \mref{mProviders}, \mref{mEmail}\\ % 33
+SEC-34 -- Keep notification contents private & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % 34
+SEC-38 -- Limit password and sign-in attempts & \mref{mUsers}, \mref{mClock}, \mref{mConstants}\\ % 38
+SEC-39 -- Store sessions securely on the phone & \mref{mDevice}, \mref{mAPI}\\ % 39
+\end{longtable}
+\endgroup
 
-\begin{table}[H]
-\centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+\newpage
+Table~\ref{TblACT} names the module that hides each anticipated change from
+Section~\ref{SecAchange}. Each change has one owner and each module owns one
+change. Modules that use that owner's public interface are not extra owners
+of its secret.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.25\textwidth}p{0.65\textwidth}@{}}
+\caption{Trace Between Anticipated Changes and Modules}\label{TblACT}\\
 \toprule
-\textbf{AC} & \textbf{Modules}\\
+\textbf{Anticipated change} & \textbf{Module}\\
 \midrule
-% \acref{acHardware} & \mref{mHH}\\
-% \acref{acInput} & \mref{mInput}\\
-% \acref{acParams} & \mref{mParams}\\
-% \acref{acVerify} & \mref{mVerify}\\
-% \acref{acOutput} & \mref{mOutput}\\
-% \acref{acVerifyOut} & \mref{mVerifyOut}\\
-% \acref{acODEs} & \mref{mODEs}\\
-% \acref{acEnergy} & \mref{mEnergy}\\
-% \acref{acControl} & \mref{mControl}\\
-% \acref{acSeqDS} & \mref{mSeqDS}\\
-% \acref{acSolver} & \mref{mSolver}\\
-% \acref{acPlot} & \mref{mPlot}\\
+\endfirsthead
+\multicolumn{2}{c}{\tablename\ \thetable: Changes and modules (continued)}\\
+\toprule
+\textbf{Anticipated change} & \textbf{Module}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
 \acref{acDB} & \mref{mDB}\\
 \acref{acClock} & \mref{mClock}\\
 \acref{acProviders} & \mref{mProviders}\\
@@ -916,11 +1078,8 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \acref{acJSON} & \mref{mJSON}\\
 \acref{acAPI} & \mref{mAPI}\\
 \acref{acEmail} & \mref{mEmail}\\
-\bottomrule
-\end{tabular}
-\caption{Trace Between Anticipated Changes and Modules}
-\label{TblACT}
-\end{table}
+\end{longtable}
+\endgroup
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
