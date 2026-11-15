@@ -1,0 +1,142 @@
+@startuml database-design
+' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/database-design.puml
+!include style.iuml
+set separator none
+skinparam dpi 150
+title FitFolio database: the tables of the proof of concept
+
+package "M8 Users" {
+  class users <<table>> {
+    PK user_id: UUID
+    time_zone: text
+    created_at: timestamp
+  }
+}
+
+package "M11 Activity" {
+  class activity_daily_totals <<table>> {
+    PK, FK user_id: UUID
+    PK activity_date: date
+    PK activity_type: text
+    step_count: integer
+    counted: boolean
+    updated_at: timestamp
+    .. the database refuses ..
+    step_count < 0
+    counted that disagrees with MAX_DAILY_STEPS
+    activity_type other than 'steps'
+  }
+}
+
+package "M9 Wallet" {
+  class portfolios <<table>> {
+    PK portfolio_id: UUID
+    FK user_id: UUID
+    cash_balance: decimal
+    scenario_id: UUID or empty
+    created_at: timestamp
+    .. the database refuses ..
+    cash_balance < 0
+    a second live portfolio for one user
+  }
+  class balance_changes <<table>> {
+    PK balance_change_id: UUID
+    FK portfolio_id: UUID
+    amount: decimal
+    reason: text
+    activity_date: date or empty
+    created_at: timestamp
+    .. the database refuses ..
+    amount = 0
+    a reward that spends, or a purchase that adds
+    an activity_date on anything but a reward
+  }
+}
+
+package "M10 Market" {
+  class assets <<table>> {
+    PK asset_id: UUID
+    symbol: text, unique
+    name: text
+    asset_type: text
+    price_currency: text
+    is_tradable: boolean
+    created_at: timestamp
+    .. the database refuses ..
+    a second asset with one symbol
+    a price_currency other than QUOTE_CURRENCY
+  }
+  class prices <<table>> {
+    PK price_id: counter
+    FK asset_id: UUID
+    price: decimal
+    price_currency: text
+    quoted_at: timestamp
+    obtained_at: timestamp
+    .. the database refuses ..
+    price ≤ 0
+    a second price for one asset and quoted_at
+    a price_currency other than QUOTE_CURRENCY
+  }
+  class provider_requests <<table>> {
+    PK provider_request_id: counter
+    requested_at: timestamp
+    symbol: text
+    outcome: text
+  }
+}
+
+package "M12 Trading" {
+  class trades <<table>> {
+    PK trade_id: UUID
+    request_id: UUID
+    FK portfolio_id: UUID
+    FK asset_id: UUID
+    FK balance_change_id: UUID
+    trade_type: text
+    quantity: integer
+    unit_price: decimal
+    currency_amount: decimal
+    cash_balance_after: decimal
+    status: text
+    created_at: timestamp
+    .. the database refuses ..
+    a second trade for one portfolio and request_id
+    a balance_change_id used twice
+    currency_amount ≠ quantity × unit_price
+    quantity ≤ 0, unit_price ≤ 0
+  }
+  class holdings <<table>> {
+    PK, FK portfolio_id: UUID
+    PK, FK asset_id: UUID
+    quantity: integer
+    .. the database refuses ..
+    quantity < 0
+  }
+}
+
+
+' An arrow goes from the table that holds the foreign key to the table it
+' points at. The numbers say how many rows can be at each end.
+portfolios "0..*" --> "1" users
+activity_daily_totals "0..*" --> "1" users
+balance_changes "0..*" --> "1" portfolios
+trades "0..*" --> "1" portfolios
+holdings "0..*" --> "1" portfolios
+trades "0..1" --> "1" balance_changes
+trades "0..*" --> "1" assets
+holdings "0..*" --> "1" assets
+prices "0..*" --> "1" assets
+
+legend right
+  <color:#185FA5>■</color> Table: one class is one table
+  PK: primary key. FK: foreign key, a row
+  of another table that this row points at.
+  An arrow goes from the table with the
+  foreign key to the table it points at.
+  0..* means any number of rows, 1 exactly one.
+  A portfolio's balance changes, trades and
+  holdings are deleted with it, and a user's
+  daily totals with the user.
+endlegend
+@enduml
