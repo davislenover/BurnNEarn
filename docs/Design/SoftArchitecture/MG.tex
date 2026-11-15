@@ -60,6 +60,9 @@ fixes to 7 Module Decomposition. Each market data provider gives its own
 request limit, so a new one changes only Market Providers.\\
 Nov 10, 2026 & 1.4 & Farid Bastoros: 6 Connection Between Requirements and
 Design.\\
+Nov 15, 2026 & 1.5 & Davis Lenover: 7 Module Decomposition: Goals, Learning,
+Social, Scenarios and Privacy, which are built after the proof of concept, and
+what Trading and Plugins add for them at Revision~0.\\
 \bottomrule
 \end{tabularx}
 
@@ -761,12 +764,71 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
 \item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
-\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0.
+\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0. So do trading in and valuing a scenario's portfolio at the prices \mref{mScenarios} Scenarios hands Trading, which it accepts only with the lock on that portfolio (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M13 Goals, M14 Learning, M15 Social, M16 Scenarios and M17 Privacy: #238
+\paragraph{Modules built after the proof of concept.} Goals, Learning,
+Social, Scenarios and Privacy (\mref{mGoals} to \mref{mPrivacy}) are built
+after the proof of concept. Their entries fix what each one hides and the
+rules it must keep, and Table~\ref{TblUses} fixes which modules each one may
+use. Each feature can then be added
+as a plug-in without reaching into another module's data or copying its rules,
+so a likely change stays inside one module (NFR3). The details, such as each
+module's routes, tables and exact services, are not final. They may change
+with feedback on the proof of concept and with usability testing (NFR2), and
+the MIS specifies them at Revision~0.
+
+\subsubsection{Goals Module (\mref{mGoals})}
+
+\begin{description}
+\item[Secrets:] The rules for goals, streaks, rest days and milestones.
+\item[Services:] Keeps each user's daily activity goals and rest days. Works out the user's streak and the milestones they have reached, and serves them to the phone. Gives Social only what the user may share.
+\item[Rationale:] A goal is the user's own choice. It is optional (FR20), changes only when the user confirms it (FR21), and takes effect the next day (FR19), so a day's goal can't move once the day has started. The streak follows the SRS's formal definition (FR22). It is worked out from \mref{mActivity} Activity's daily totals, the goals in effect and the rest days (FR23), rather than kept as a counter that each sync adds to. A total that arrives late (SEC-20), or a rest day marked after that day's totals were sent, then gives the right streak without a fix-up. Each milestone is recorded with the date it was reached, so it is shown only once, even if a later sync lowers a day's total (FR25). Milestones of currency earned count the rewards that \mref{mWallet} Wallet has recorded, which Goals reads but never changes. A missed goal or an ended streak never costs currency or holdings and is never shown to anyone else (FR24), and no goal or milestone uses body weight or calories (FR26).
+\item[Implemented By:] \progname{} server, in \path{goals/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Learning Module (\mref{mLearning})}
+
+\begin{description}
+\item[Secrets:] The learning content, the knowledge checks and the rules that decide when investment feedback is given.
+\item[Services:] Serves the concept explanations and knowledge checks, marks the user's answers and keeps their learning progress. Works out feedback on the user's portfolio: what changed its value, how a trade changed its mix, and when one holding is too large a share of it. Gives Social only the knowledge checks the user has passed, the one kind of update from Learning that may be shared (FR65).
+\item[Rationale:] Explanations and knowledge checks are kept as data on the server, not written into the app, so administrators can add and correct them without a new release (FR58). Each explanation shows its source and the date it was last reviewed, and each explanation and knowledge-check answer is published only after a second team member reviews it (FR59), since users may later act on it with real money. Feedback uses only the user's own holdings and price changes, and shows the data it is based on (FR60). Learning reads these from \mref{mTrading} Trading as read-only copies, so it can't change a holding. Feedback explains what happened and never recommends buying or selling an asset (FR49). The limits that trigger feedback and the pass mark are SRS constants (FR52, FR54, FR57), kept in \mref{mConstants} Constants. Opening an explanation where its concept appears (FR51) is up to \mref{mScreens} Screens, so Learning holds no layout.
+\item[Implemented By:] \progname{} server, in \path{learning/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Social Module (\mref{mSocial})}
+
+\begin{description}
+\item[Secrets:] What a user can share and with whom.
+\item[Services:] Keeps friend requests and friendships. Shares an update with the friends the user picks, after showing the user the update as those friends will see it, and serves each user a feed of their friends' updates, newest first. Stops showing an update once the user deletes it or removes that friend.
+\item[Rationale:] Two users become friends only when the one asked accepts (FR62). A user's statistics stay private until they share them, and then reach only the friends they chose (SEC-13, FR66). An update can only be one of the kinds the SRS lists (FR65). Social builds it from what \mref{mActivity} Activity, \mref{mGoals} Goals and \mref{mLearning} Learning give it, and does not use \mref{mWallet} Wallet or \mref{mTrading} Trading. Each of those three uses Wallet or Trading, so each gives Social only the kinds of update it may share, and a balance or a portfolio value can't end up in one. A single activity record can't either, since the server only has daily totals (SEC-10). A body measurement can't, since no kind of update holds one, and Social takes only usernames from \mref{mUsers} Users, never the profile (FR65, FR68). The update saved is the one the user previewed (FR67), so friends see exactly what the user agreed to share, and a streak that ends later is never shown as ended (FR24). Each update is kept once, and who may see it is checked each time a feed is served, so deleting it or removing a friend stops it showing at once (FR64, FR70, SEC-13). Social offers no way to rank users (FR71), since leaderboards would first need a change to the SRS (SRS LC5).
+\item[Implemented By:] \progname{} server, in \path{social/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Scenarios Module (\mref{mScenarios})}
+
+\begin{description}
+\item[Secrets:] The number and selection of historical market scenarios, and where their past prices come from.
+\item[Services:] Lists the scenarios the user can practise in, with the dates each one replays. Starts a scenario in a portfolio of its own, moves it on one trading day each time the user continues, and trades in it at that day's closing prices.
+\item[Rationale:] A scenario must never touch the live balance or holdings, and nothing in the live market may touch a scenario's, such as the sale when an asset is removed, which sells only live holdings (FR31, FR45, SEC-31). So a scenario starts in its own \mref{mWallet} Wallet portfolio, with \texttt{SCENARIO\_START\_BALANCE} and no holdings (FR46), and trades through \mref{mTrading} Trading at the replayed day's closing prices (FR47). One set of trade rules, such as buying only whole shares and never spending more than the balance, then serves both markets, instead of a second copy that could drift from the first. Scenarios hands Trading the replayed day's prices, to trade in and to value the scenario's portfolio, so Trading doesn't need to know how a scenario replays. Trading checks market hours and price age only on a price it reads from \mref{mMarket} Market, since those rules apply only to the live market (FR33, FR39, FR40). It takes a handed price only with the lock on a scenario's portfolio, which Wallet gives only for a scenario (a lock token), so the live portfolio always trades at the live price (SEC-29, SEC-31). The assets are ones Market keeps, so a stock is named the same way in both. Market keeps an asset after it is removed from the live market, so a removal doesn't change a scenario's assets (FR31). Past prices are stored with each scenario, and a scenario is offered only once its data has a price for every asset on every trading day (SEC-32), so a replay never stops on a missing day. How many scenarios there are, and where their prices come from, depend on the cost of historical data (SRS LC4), so both are hidden here. Every scenario screen shows that it is a scenario and the dates it replays (FR48), which \mref{mScreens} Screens displays.
+\item[Implemented By:] \progname{} server, in \path{scenarios/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Privacy Module (\mref{mPrivacy})}
+
+\begin{description}
+\item[Secrets:] How consent, data export and account deletion are carried out.
+\item[Services:] Records the user's consent to read their health data, and its withdrawal. Gives the user a copy of the personal data stored about them, and deletes their account and all its data once they confirm.
+\item[Rationale:] The user can download their data (FR9), delete their account from the app after confirming that it can't be undone (FR10, FR11, SEC-18), and withdraw consent to read their health data (FR76, SEC-9). These rules change with the law and the app stores' policies (SC6), so they are kept in one module, apart from the features whose data they act on. Privacy doesn't use those features. Instead, at Revision~0 each module's plug-in will also say what personal data it keeps, and how to export and delete it, through \mref{mPlugins} Plugins (the plug-in pattern). Every plug-in must say this, even when its module keeps none, so a new module can't be left out of an export or a deletion. \mref{mControl} Control hands Privacy the plug-ins when it builds the server, as it does for the health check, so Privacy never names a module or reads another module's tables. Privacy deletes the user's data on the server at once. A backup can't be changed, so the hosting keeps each one for no longer than \texttt{DATA\_DELETION\_PERIOD}, and the deletion reaches the backups in time too (SEC-18, SEC-26). On the phone, \mref{mSync} Sync Service reads no health data before consent is given, and stops as soon as it is withdrawn, without waiting for the server (SEC-9).
+\item[Implemented By:] \progname{} server, in \path{privacy/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
 
 % M18 Navigation and M19 Screens (app): #236
 
@@ -789,7 +851,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 
 \begin{description}
 \item[Secrets:] The shape of a module's plug-in.
-\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it.
+\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it. At Revision~0, it also says what personal data the module keeps and how to export and delete it, which Control hands to \mref{mPrivacy} Privacy.
 \item[Rationale:] Control must be able to add any module without knowing anything else about it (the plug-in pattern). A plug-in is a small, read-only record of exactly what Control needs, so the code that builds the server depends on this shape and never on a module. Only the list in \path{registry.py} names the modules. A module with background work must include a health check, since that work can fail without any request noticing.
 \item[Implemented By:] \progname{} server, in \path{core/plugins.py}
 \item[Type of Module:] Record
