@@ -956,8 +956,105 @@ built after the proof of concept.}
 
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+The user interface for \progname{} is designed to provide users with
+a simple and intuitive way to track their physical activity, earn
+virtual currency, and participate in simulated stock market investing.
+The interface follows a minimalist design approach, with consistent
+navigation, clear labels, and straightforward layouts. The design
+prioritizes ease of use, particularly for users with little or no
+previous investing experience.
+
+The mobile application is designed using Figma mockups and will be
+implemented using React Native with TypeScript, allowing the same
+interface to be used on both Android and iOS devices.
+
+\subsection{Interface Design}
+
+The application uses a bottom navigation bar with three main sections:
+Home, Market, and Portfolio. This allows users to move between the
+core features without navigating through multiple menus. The
+interface uses a consistent colour scheme, typography, and layout
+across screens to improve usability.
+
+The following screens have been designed:
+
+\begin{itemize}
+
+    \item \textbf{Home Dashboard:}
+    Displays the user's daily step count, progress toward their
+    activity goal, virtual currency earned, available balance,
+    and current portfolio value. This screen establishes the
+    connection between physical activity and simulated investing.
+
+    \item \textbf{Stock Market:}
+    Displays available stocks, including their company names,
+    stock symbols, current prices, and price changes. Users can
+    browse stocks or search for a specific company.
+
+    \item \textbf{Stock Details:}
+    Provides information about a selected stock, including its
+    current price, price movement, and historical performance
+    displayed through a graph. Users can initiate a simulated
+    purchase from this screen.
+
+    \item \textbf{Buy Stock:}
+    Allows users to specify the number of shares they wish to
+    purchase. The interface displays the estimated cost and
+    available virtual currency balance before proceeding.
+
+    \item \textbf{Review Purchase:}
+    Displays a summary of the simulated transaction, including
+    the selected stock, number of shares, price per share, total
+    cost, and remaining currency balance. Users can confirm
+    their purchase or return to the previous screen.
+
+    \item \textbf{Purchase Successful:}
+    Confirms that a simulated purchase has been completed and
+    displays the transaction details. A short educational
+    explanation introduces users to basic investing concepts.
+
+    \item \textbf{My Portfolio:}
+    Displays the user's total simulated portfolio value,
+    investment performance, and current stock holdings.
+    A graph illustrates changes in portfolio value over time.
+
+\end{itemize}
+
+\subsection{Design Rationale}
+
+The interface takes inspiration from minimalist financial
+applications, such as Wealthsimple, while adapting the design
+to \progname{}'s focus on physical activity and financial
+education. A simple layout was chosen to reduce unnecessary
+complexity and make simulated investing more approachable for
+beginners.
+
+The Home Dashboard emphasizes the relationship between
+physical activity and virtual currency rewards, while the
+Market and Portfolio sections provide a straightforward
+investing experience. The purchase process is separated into
+multiple screens so users can review transaction details before
+confirming a trade.
+
+The interface also distinguishes simulated investing from
+real-world investing by identifying portfolio values and
+transactions as simulated. Navigation and screen presentation
+are handled by the Navigation and Screens modules, while
+activity rewards, balances, and trading calculations remain
+the responsibility of the server.
+
+
+\subsection{User Interface Mockups}
+
+Figure~\ref{FigUIMockups} presents the seven Figma mockups
+developed for the mobile application's main user interface.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth,keepaspectratio]{figures/Frame.png}
+    \caption{Figma mockups of the \progname{} mobile user interface.}
+    \label{FigUIMockups}
+\end{figure}
 
 \section{Design of Communication Protocols}
 
