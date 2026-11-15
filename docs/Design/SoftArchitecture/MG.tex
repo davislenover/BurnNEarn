@@ -1187,6 +1187,52 @@ a primary key and FK a foreign key.}
 \label{FigDB}
 \end{figure}
 
+
+\subsection{Design Decisions}
+
+\begin{description}
+\item[Lists in the SRS are tables.] The data dictionary (SRS Section~7.2) gives
+  a portfolio its holdings, trade history and balance changes as lists, and an
+  asset its price history. Here each is a table with one row per item, so a row
+  can be added without rewriting the rest, and the database can check each row.
+
+\item[A value that can be calculated is not stored.] An asset's current price
+  is its price with the latest time, and a portfolio's value is calculated from
+  its holdings and the current prices when it is asked for (FR42). Neither can
+  then be out of date. The balance is the one exception. It is stored, so that
+  a trade can check it quickly, and it always equals the sum of the portfolio's
+  balance changes (SEC-22).
+
+\item[Money is an exact decimal.] An amount has up to 12 digits before the
+  decimal point and 4 after, and a price up to 8 and 4. Neither is a
+  floating-point number, so no amount is rounded by accident (NFR1).
+
+\item[Every time has its time zone.] A time is stored with its time zone, so
+  times from the server, the provider and users in different places compare
+  correctly (FR33).
+
+\item[Identifiers are UUIDs.] The phone can then make a trade's request ID
+  without asking the server (FR38). Prices and provider requests use a counter,
+  since there are many of them and nothing outside the server refers to one.
+
+\item[History is added to, never edited.] A balance change, a trade and a price
+  are never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A daily activity total is different. Each sync replaces
+  it with the latest total for that day, since a day's total grows until the
+  day ends.
+
+\item[A reward is stored once, in Wallet.] The data dictionary gives an
+  activity record its reward. Here the daily total holds no reward. What a day
+  has been paid is the sum of that day's activity rewards among Wallet's
+  balance changes, and a sync pays only the difference. A day is then never
+  paid twice, and a total that falls later takes nothing back (SEC-19).
+
+\item[Deleting a row deletes what belongs to it.] A portfolio's balance
+  changes, trades and holdings are deleted with it by the database, and a
+  user's daily totals with the user. The proof of concept uses this to reset
+  the demo user. Account deletion is designed at Revision~0 (SEC-18).
+\end{description}
+
 \section{Timeline}
 
 \wss{Schedule of tasks and who is responsible}
