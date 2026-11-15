@@ -1,5 +1,6 @@
 @startuml database-design
 ' Render with: plantuml -tpng docs/Design/SoftArchitecture/figures/database-design.puml
+' then convert database-design.svg to database-design.pdf, which the MG includes.
 !include style.iuml
 set separator none
 skinparam dpi 150
