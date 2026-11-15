@@ -63,6 +63,7 @@ Design.\\
 Nov 15, 2026 & 1.5 & Davis Lenover: 7 Module Decomposition: Goals, Learning,
 Social, Scenarios and Privacy, which are built after the proof of concept, and
 what Trading and Plugins add for them at Revision~0.\\
+Nov 15, 2026 & 1.7 & Farid Bastoros: 12 Database Design.\\
 \bottomrule
 \end{tabularx}
 
@@ -1124,11 +1125,173 @@ developed for the mobile application's main user interface.
 to explain the design of the communication protocol.  This section should be filled 
 in with NA if it is not appropriate for a given project.}
 
-\section{Database Design}
+\section{Database Design}  \label{SecDB}
 
-\wss{If a database is a significant component of the project, the database
-design should be summarized here.  This section should be filled in with NA if
-it is not appropriate for a given project.}
+% \wss{If a database is a significant component of the project, the database
+% design should be summarized here.  This section should be filled in with NA if
+% it is not appropriate for a given project.}
+
+\progname{} keeps its data in one relational database on the server, reached
+only through \mref{mDB} Database. One database lets a trade save its payment
+and its shares in one transaction (FR37). The server's copy of a balance or a
+holding is the one that counts (SEC-24). Individual activity records stay on
+the phone, in its health platform, and only daily totals reach the server
+(SEC-10).
+
+The database follows the module decomposition. Each module owns its tables, and
+only that module reads or writes them. Another module gets the data through the
+owner's access programs, as a read-only copy. A table may still point at a row
+of another module's table with a foreign key, such as a trade at its asset, so
+the database can refuse a row that points at nothing. Each change to the tables
+is a migration, named after its module and numbered. The migrations form one
+chain, so every copy of the database is changed in the same order.
+
+Table~\ref{TblDB} lists the tables of the proof of concept and
+Figure~\ref{FigDB} shows their columns and how they are related.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{p{0.26\textwidth} p{0.16\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Table} & \textbf{Owner} & \textbf{One row is}\\
+\midrule
+users & \mref{mUsers} Users & A user, with their time zone.\\
+activity\_daily\_totals & \mref{mActivity} Activity & The latest total sent
+  for one user, day and activity type, and whether it counts for a reward.\\
+portfolios & \mref{mWallet} Wallet & A portfolio and its currency balance. A
+  user's live portfolio is the one with no scenario.\\
+balance\_changes & \mref{mWallet} Wallet & One change to a portfolio's balance,
+  with its amount, reason and time. It is never edited.\\
+assets & \mref{mMarket} Market & A stock that can be traded, with its symbol
+  and the currency of its prices.\\
+prices & \mref{mMarket} Market & One price of an asset, with the time the
+  provider set it and the time the server obtained it.\\
+provider\_requests & \mref{mMarket} Market & One call to the market data
+  provider and how it ended, kept to watch the request limit (SC4).\\
+trades & \mref{mTrading} Trading & One trade, with its request ID, quantity,
+  price and cost. It is never edited.\\
+holdings & \mref{mTrading} Trading & The number of shares of one asset that a
+  portfolio holds.\\
+\bottomrule
+\end{tabularx}
+\caption{Tables of the proof of concept and the module that owns each}
+\label{TblDB}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/database-design.pdf}
+\caption{Tables of the proof of concept, grouped by the module that owns them.
+An arrow goes from the table that holds a foreign key to the table it points
+at, and the numbers at its ends say how many rows can be at each end. PK marks
+a primary key and FK a foreign key.}
+\label{FigDB}
+\end{figure}
+
+
+\subsection{Design Decisions}
+
+\begin{description}
+\item[Lists in the SRS are tables.] The data dictionary (SRS Section~7.2) gives
+  a portfolio its holdings, trade history and balance changes as lists, and an
+  asset its price history. Here each is a table with one row per item, so a row
+  can be added without rewriting the rest, and the database can check each row.
+
+\item[A value that can be calculated is not stored.] An asset's current price
+  is its price with the latest time, and a portfolio's value is calculated from
+  its holdings and the current prices when it is asked for (FR42). Neither can
+  then be out of date. The balance is the one exception. It is stored, so that
+  a trade can check it quickly, and it always equals the sum of the portfolio's
+  balance changes (SEC-22).
+
+\item[Money is an exact decimal.] An amount has up to 12 digits before the
+  decimal point and 4 after, and a price up to 8 and 4. Neither is a
+  floating-point number, so no amount is rounded by accident (NFR1).
+
+\item[Every time has its time zone.] A time is stored with its time zone, so
+  times from the server, the provider and users in different places compare
+  correctly (FR33).
+
+\item[Identifiers are UUIDs.] The phone can then make a trade's request ID
+  without asking the server (FR38). Prices and provider requests use a counter,
+  since there are many of them and nothing outside the server refers to one.
+
+\item[History is added to, never edited.] A balance change, a trade and a price
+  are never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A daily activity total is different. Each sync replaces
+  it with the latest total for that day, since a day's total grows until the
+  day ends.
+
+\item[A reward is stored once, in Wallet.] The data dictionary gives an
+  activity record its reward. Here the daily total holds no reward. What a day
+  has been paid is the sum of that day's activity rewards among Wallet's
+  balance changes, and a sync pays only the difference. A day is then never
+  paid twice, and a total that falls later takes nothing back (SEC-19).
+
+\item[Deleting a row deletes what belongs to it.] A portfolio's balance
+  changes, trades and holdings are deleted with it by the database, and a
+  user's daily totals with the user. The proof of concept uses this to reset
+  the demo user. Account deletion is designed at Revision~0 (SEC-18).
+\end{description}
+
+\subsection{Rules the Database Checks}
+
+A module checks its own rules before it saves. The database checks the most
+important ones again on every write, so that a mistake in the code cannot save
+a row that breaks one.
+
+\begin{itemize}
+\item A balance is never below zero (FR37).
+\item A user has at most one live portfolio.
+\item A balance change is never zero. It adds currency exactly when its reason
+  is an activity reward, and it has an activity date exactly when its reason is
+  an activity reward (SEC-19, SEC-22).
+\item Every price is above zero and in \texttt{QUOTE\_CURRENCY}, and an asset
+  has one price for each time the provider set one (FR29, SEC-27).
+\item A portfolio has one trade for each request ID, so a repeated request
+  cannot trade twice (FR38).
+\item A trade's cost is exactly its quantity times its price (NFR1), and each
+  trade points at the one balance change that paid for it (FR37).
+\item A holding is never below zero, and a portfolio has one holding for each
+  asset.
+\item A user has one daily total for each day and activity type (SEC-10). Its
+  step count is never below zero, and it counts for a reward exactly when it
+  is within \texttt{MAX\_DAILY\_STEPS} (FR17).
+\item Every foreign key points at a row that exists.
+\end{itemize}
+
+
+\subsection{From the SRS Data Entities to Tables}
+
+Table~\ref{TblDBEntities} traces each major data entity of the SRS (SRS
+Section~7.1) to the tables that hold it.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{SRS entity} & \textbf{Tables} & \textbf{Owner} & \textbf{State}\\
+\midrule
+User Data & users & \mref{mUsers} Users & The proof of concept has one demo
+  user. Sign-in, profile, consent and settings come at Revision~0.\\
+Activity Record & activity\_daily\_totals & \mref{mActivity} Activity & Built
+  for steps. The other activity types come at Revision~0.\\
+Portfolio & portfolios, balance\_changes, holdings & \mref{mWallet} Wallet,
+  \mref{mTrading} Trading & Built. Scenario portfolios come at Revision~0.\\
+Market Data & assets, prices & \mref{mMarket} Market & Built.\\
+Trade & trades & \mref{mTrading} Trading & Built for buying. Selling and queued
+  trades come at Revision~0.\\
+Social Data & At Revision~0 & \mref{mSocial} Social & Not built.\\
+\bottomrule
+\end{tabularx}
+\caption{The major data entities of the SRS and the tables that hold them}
+\label{TblDBEntities}
+\end{table}
+
+The tables of the modules built after the proof of concept are designed with
+those modules at Revision~0. One decision is already made for
+\mref{mUsers} Users: the server will store only a hash of each password,
+session token and password reset token, never the value itself (HA~H45).
 
 \section{Timeline}
 
