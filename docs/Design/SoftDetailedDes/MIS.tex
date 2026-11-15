@@ -64,6 +64,9 @@ Format, and the 401 on both Trading routes.\\
 Nov 10, 2026 & 1.3 & Davis Lenover: each provider's request limit in Market
 Providers, with provider\_type, the chosen provider's limit in Market's usage
 route, and obtained\_at in each holding of Trading.\\
+Nov 15, 2026 & 1.4 & Davis Lenover: the MIS of the app modules in the proof
+of concept: Health Service, Screens, Sync Service and API Service. Device
+Service and Navigation are built after it, and 4 Notation covers the app.\\
 \bottomrule
 \end{tabularx}
 
@@ -136,7 +139,9 @@ can then be checked against what the decision was for.
 This revision specifies the modules of the proof of concept. Modules marked
 \textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
 specified at Revision~0, so that every section describes an interface the code
-really has.
+really has. The app's sections describe a proof of concept with one screen.
+They give what each module offers and why, without fixing details that may
+change with feedback on the proof of concept and with usability testing (NFR2).
 
 The full documentation and implementation are in the project repository:
 \url{https://github.com/davislenover/BurnNEarn}.
@@ -200,6 +205,16 @@ as GET /v1/me/balance. Its In column lists what the phone
 sends, and its Exceptions column the refusals it raises, besides JSON Format's 422
 for a request that doesn't fit (SEC-25).
 
+The app is written in TypeScript. An app access program that waits, because
+it reads the phone or calls the server, has the output ``Promise of T'': it
+gives a T later, or fails with one of its exceptions. A React hook is written
+as an access program whose output is a tuple. The tuple's values change as the
+hook's state changes, and the screen that calls it is shown again each time.
+Error is JavaScript's, and AbortSignal is the web platform's signal that
+cancels a call that is still waiting. An amount from the server is a String
+holding a decimal with exactly four places, as JSON Format
+(M23) sends it (NFR1).
+
 \newpage
 
 \section{Module Decomposition}
@@ -221,7 +236,7 @@ Constants is in both programs, and the rest are in the server.
 & M3 Market Providers\\
 & M25 Email Service\textsuperscript{\dag}\\
 & M4 Health Service (app)\\
-& M5 Device Service (app)\\
+& M5 Device Service (app)\textsuperscript{\dag}\\
 \midrule
 
 \multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & M6 Control\\
@@ -236,7 +251,7 @@ Constants is in both programs, and the rest are in the server.
 & M15 Social\textsuperscript{\dag}\\
 & M16 Scenarios\textsuperscript{\dag}\\
 & M17 Privacy\textsuperscript{\dag}\\
-& M18 Navigation (app)\\
+& M18 Navigation (app)\textsuperscript{\dag}\\
 & M19 Screens (app)\\
 & M20 Sync Service (app)\\
 & M21 Reminder Service (app)\textsuperscript{\dag}\\
@@ -253,7 +268,10 @@ Constants is in both programs, and the rest are in the server.
 \end{table}
 
 \noindent Modules marked \textsuperscript{\dag} are built after the proof of
-concept and are specified at Revision~0.
+concept and are specified at Revision~0. The proof of concept has one screen, no
+sign-in and no reminders, so it uses nothing from Device Service (M5) or
+Navigation (M18) yet. Their design isn't final, and may change with feedback on
+the proof of concept.
 
 \newpage
 
@@ -705,7 +723,187 @@ call and never reaches 0, which Market (M10) refuses
 
 \newpage
 
-% M4 Health Service and M5 Device Service (app): #250
+\section{MIS of Health Service} \label{MisHealth}
+
+\subsection{Module}
+
+Health Service (M4 in the MG)
+
+\medskip
+\noindent Health Service hides the phone's health platform behind one access
+program, getTodaysSteps, which works the same on Android and iPhone. So Sync
+Service (M20) has no platform code (NFR4), and a new platform, library or
+wearable changes only this module (AC4 in the MG, SRS LC2, NFR3). Its code is
+\texttt{app/services/health/steps.ts}. The hook useTodaySteps, in the same
+folder, reads the steps and sends them through API Service (M24), so it is part
+of Sync Service (M20) and is specified there.
+
+\medskip
+\noindent On iPhone, the PoC differs from SC2, and from UC8 in the MG, which
+ask that recorded activity come only from the phone's health platform, Apple
+HealthKit on iOS and Health Connect on Android. The PoC reads Android's steps from Health Connect, as
+SC2 asks. It reads the iPhone's steps from Core Motion, through Pedometer of
+\texttt{expo-sensors}, not from HealthKit. The Development Plan (Section~9)
+demonstrates on an Android phone, and on an iPhone with HealthKit only if time
+allows. Core Motion counts only the steps the iPhone itself detects, so it
+misses steps from an Apple Watch worn without the phone, and its count can be
+lower than the one Apple Health shows. At Revision~0, getTodaysSteps reads
+HealthKit on iPhone, through \texttt{@kingstinct/react-native-healthkit}, which
+the app already installs and sets up to read steps only. The access program
+stays the same, so no other module changes.
+
+\subsection{Uses}
+
+{\raggedright
+None. It uses only libraries outside \progname{}: React Native's Platform,
+\texttt{react-native-health-connect} and \texttt{expo-sensors}.\par}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent StepTrackingError, an Error whose name is ``StepTrackingError'' and
+whose message tells the user why their steps could not be read and, when they
+can fix it, how. getTodaysSteps raises it for each failure it detects itself.
+Sync Service (M20) passes the message on for Screens (M19) to show. So in the PoC
+this wording is in a service, but the MG puts all wording in Screens (MG
+Section~6), so usability testing can change it without changing a service
+(NFR2). At Revision~0, each StepTrackingError will carry its reason instead,
+and Screens will word it.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2.4cm} p{3cm} p{4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+getTodaysSteps & DateTime & Promise of $\mathbb{Z}$ & StepTrackingError, Error \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. Health Service keeps nothing between calls. It reads the permission and
+the steps from the platform on every call, since the user or the phone can take
+the permission away at any time (HA H1).
+
+\subsubsection{Environment Variables}
+
+\noindent platform: \{android, ios, other\}, the phone's operating system, from
+React Native's Platform.OS.
+
+\medskip
+\noindent healthConnect: Android's Health Connect, read through
+\texttt{react-native-health-connect}. It holds the step records that the
+phone and any connected app or watch write. It also holds the permissions the
+user gave each app.
+
+\medskip
+{\raggedright
+\noindent motion: the iPhone's step count from Core Motion, read through
+Pedometer of \texttt{expo-sensors}, with its motion and fitness permission:
+whether it is granted, and whether the phone can still ask for it.\par}
+
+\medskip
+\noindent clock: DateTime, the phone's current time with its time zone, which
+gives readAt's default and local midnight.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Before the first call, the user has acknowledged the health notice (FR14,
+  HA SAF-12) and consented to the app reading their steps (SEC-9). A call may
+  show a permission dialog, so the user has also been told which feature uses
+  their steps (SEC-8). Health Service checks none of these, since they are the
+  app's behaviour, not the platform's. Sync Service (M20) holds the call back
+  until then, as the MG decides for consent, and Screens (M19) shows the
+  notice. The PoC demo shows no notice yet. It comes at Revision~0.
+\item The app's settings declare read access to steps alone, READ\_STEPS for
+  Health Connect on Android and the motion and fitness permission on iPhone
+  (SC3, SEC-7).
+\item The phone stays in one time zone through the day. After a change, the
+  range starts at midnight in the new zone, so some steps can be counted on the
+  wrong day. Keeping each step on the day it was taken, across a time zone
+  change (SEC-23, HA H9), comes at Revision~0.
+\item Each call to the platform ends. getTodaysSteps sets no time limit of its
+  own. A platform that never answers leaves the Promise waiting, so the user is
+  never told that steps could not be read, as SEC-21 asks.
+\item readAt is not after the current time, since steps not taken yet can't be
+  read. A readAt on a later day would read a day that hasn't started.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent getTodaysSteps(readAt), with readAt $=$ clock by default and
+$s :=$ midnight(readAt):
+\begin{itemize}
+\item transition: when the app has no permission to read steps and the
+  platform can still ask, the platform's permission dialog is shown, and the
+  user's answer becomes the app's permission. It asks only then, so a user who
+  already allowed it is not asked again. It asks only to read steps, never to
+  write, since steps are all the PoC rewards (SEC-7). The other supported
+  activity types (FR12) each add their own read permission at Revision~0.
+\item output: $out :=$ (platform $=$ android $\Rightarrow$ healthConnect's
+  step total from $s$ to readAt, or 0 if it has none $|$
+  platform $=$ ios $\Rightarrow$ the steps motion counted from $s$ to readAt,
+  which is 0 if there are none). So $out \geq 0$.
+  \begin{itemize}
+  \item A day with no step data gives 0, not an exception, so it is shown and
+    sent as a day of zero activity (FR16). A failed read raises an exception
+    instead, so it is never shown as 0 steps (SEC-21).
+  \item It gives one total for the day, not the records behind it, since the
+    app sends the server only daily totals (SEC-10).
+  \item Health Connect adds up the records itself, so steps that the phone and
+    a watch both record for the same time count once (HA H4).
+  \item readAt is an input, so the caller sends the total for the day it read,
+    even if a permission dialog stays open past midnight (SEC-23), and a test
+    can fix the time.
+  \end{itemize}
+\item {\raggedright exception: the first of these that holds is raised:\\
+  \hspace*{1em}$exc :=$ (platform $=$ android $\land$ healthConnect can't start
+  $\Rightarrow$ StepTrackingError(``Health Connect is unavailable. Install or
+  update it on your phone.'')\\
+  \hspace*{1em}$|$ platform $=$ android $\land$ the app can't read steps after
+  asking $\Rightarrow$ StepTrackingError(``Allow access to steps in Health
+  Connect to read your daily total.'')\\
+  \hspace*{1em}$|$ platform $=$ ios $\land$ no motion permission after asking
+  $\land$ the phone can ask again $\Rightarrow$ StepTrackingError(``Allow motion
+  and fitness access to read your daily steps.'')\\
+  \hspace*{1em}$|$ platform $=$ ios $\land$ no motion permission $\land$ the
+  phone can't ask again $\Rightarrow$ StepTrackingError(``Enable motion and
+  fitness access for this app in your phone settings.'')\\
+  \hspace*{1em}$|$ platform $=$ ios $\land$ the phone has no step counter
+  $\Rightarrow$ StepTrackingError(``This device does not have an available step
+  counter.'')\\
+  \hspace*{1em}$|$ platform $=$ other $\Rightarrow$ StepTrackingError(``Reading
+  steps requires an Android phone or iPhone.''))\\
+  Each message says why steps could not be read (SEC-21). A message about a
+  missing permission also says how to grant it (HA H1). When the phone won't
+  ask again, only its settings can grant access, so the message says so. Any other failure of a platform call, such as
+  a read that fails, rejects with that library's Error, unchanged. Sync Service
+  (M20) treats both kinds the same, and the rest of the app keeps working
+  (SEC-21, HA H6).\par}
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent midnight: DateTime $\rightarrow$ DateTime, midnight($t$) $:=$ the
+start of $t$'s calendar day in the phone's time zone. The range is the user's
+calendar day, not the last 24 hours, so steps count on the day they were taken
+(SEC-23), and the server's daily cap applies to one day (FR18). It is still the
+calendar day when a daylight saving change makes it 23 or 25 hours long.
+
+\newpage
+
+% M5 Device Service (app) is built after the PoC and is specified at Revision 0.
 \section{MIS of Control} \label{MisControl}
 
 \subsection{Module}
@@ -1769,7 +1967,416 @@ holdings\_value: Decimal, total\_value: Decimal) only reads.
 \newpage
 
 % M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
-% M18 Navigation, M19 Screens and M20 Sync Service (app): #250
+% M18 Navigation (app) is built after the PoC and is specified at Revision 0.
+\section{MIS of Screens} \label{MisScreens}
+
+\subsection{Module}
+
+Screens (M19 in the MG)
+
+\subsection{Uses}
+
+Sync Service (M20), and the API Service (M24) calls for the balance, prices,
+buying and the portfolio, to be added for this screen. The MG's uses of
+Constants (M7), for the app's copy of MAX\_TEXT\_SCALE (NFR8), and Reminder
+Service (M21), for the user's reminder periods (FR72), come at Revision~0.
+Today's steps come through Sync Service, so Screens never reads the health
+platform itself.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent None. A component's output has no type name in the code, so the
+table below writes it as Screen, what a React component gives React Native to
+draw (a React element). It is drawn again each time the component's state, or
+a value from a hook it calls, changes.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2cm} p{3cm} p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+DemoScreen & - & Screen & - \\
+App & - & Screen & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent Each DemoScreen shown has its own copy, which React keeps while it
+is shown.
+
+\medskip
+{\raggedright
+\noindent quantityText: String, what the user typed as the number of shares,
+``'' at first.\\
+buying: $\mathbb{B}$, whether a buy is in progress, false at first.\\
+message: String or None, the last message about a request, None at first.\\
+balance: String or None, the latest cash\_balance the server sent.\\
+asset: an element of assets in the Out of GET /v1/assets of Market (M10),
+with that Out's market\_open, or None. It is the entry for DEMO\_SYMBOL in the
+latest reply.\\
+portfolio: the Out of GET /v1/me/portfolio of Trading (M12), or None, from
+its latest reply.\\
+Each is None until it first arrives. Only the server's
+replies set them, and the phone never works out a reward, a balance or a
+holding (SEC-24), since the server holds every rule about currency (MG
+Section~6).\par}
+
+\subsubsection{Environment Variables}
+
+\noindent textScale: $\mathbb{R}$, the phone's text size setting, as a
+multiple of its default size.
+
+\subsubsection{Assumptions}
+
+The server has the demo user, so each request acts for DEMO\_USER\_ID of Users
+(M8) without a sign-in. It runs the price poller of Market (M10), so new
+prices arrive while the market is open. A failed API Service call fails with
+an Error. For a refusal, its message is the server's, worded for a user by
+JSON Format (M23). The app's services write their other messages
+themselves, such as ``Sending steps timed out. Refresh to try again.'' of API
+Service (M24) and the reasons a read fails in Health Service (M4). The proof
+of concept shows them as they are. That goes against the MG's decision that
+what the user sees is in Screens alone, so at Revision~0 Screens words them
+instead.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent DemoScreen():
+\begin{itemize}
+\item transition: when shown, it calls useTodaySteps(true) of Sync Service
+  (M20), and asks API Service for the balance, the asset list and the
+  portfolio. It asks for the asset list and the portfolio again every
+  REFRESH\_INTERVAL while it is shown, so the price and the portfolio value
+  follow the market (FR42). Each reply sets balance, asset or portfolio, and
+  a new syncResult sets balance $:=$ its cash\_balance, so the balance shows
+  what today's steps earned (Development Plan, Section~9).
+  Typing sets quantityText $:=$ the text typed and message $:=$ None. Pressing
+  Buy runs buyShares. A request that fails sets message $:=$ its Error's
+  message and leaves the other values as they were.
+\item output: $out :=$ a Screen with the areas below. Their order and look
+  are not fixed, since usability testing may change them (NFR2, AC19 in the
+  MG).
+  \begin{enumerate}
+  \item Today's steps, from useTodaySteps: ``Loading'' while loading, else
+    steps, which is 0 for a day with no data (FR16), else error's message
+    with a Retry that calls refresh (SEC-21). After a failed read steps is
+    None, so no old count is shown as today's (HA~H47). No other area waits
+    for the steps, so buying and the portfolio stay usable without them
+    (SEC-21).
+  \item balance, as virtual currency (SC5), and what today's steps earned,
+    from syncResult: today's reward and the rate of one unit per
+    steps\_per\_coin steps, so the user sees how steps become currency
+    (FR13, Development Plan, Section~9). A day with counted false says it was
+    not counted (FR17). A syncError's message comes with the same Retry, and balance stays the
+    last one the server sent (SEC-21).
+  \item The asset's symbol, name and price, with its obtained\_at in the
+    phone's time zone, and ``Delayed'' when delayed is true (FR33). It says
+    when the market is closed, so a refused buy is explained (HA~H19), and
+    when there is no price yet. Then quantityText, orderTotal(quantityText,
+    the price) when validQuantity(quantityText), and Buy (FR35). Buy is
+    enabled only when validQuantity(quantityText), there is a price and
+    $\neg$buying.
+  \item The shares held of each holding in portfolio (FR41), so after a buy
+    the new shares show with the new balance from its reply.
+  \item The portfolio value, portfolio.holdings\_value, with ``Simulated''
+    next to it (FR43, HA~SAF-10), and the price it was valued at with its
+    time and ``Delayed'' marker (FR33). Each new portfolio reply shows it at
+    the latest price the server has (FR32, FR42). The reply has no gain or
+    loss yet. At Revision~0 one is shown with its sign or a word, never by
+    colour alone (FR44, HA~H50).
+  \item message, so a failed request, such as a server that can't be reached
+    or too little currency, is told in words and never crashes the screen
+    (NFR2).
+  \end{enumerate}
+  Each amount is shown from the server's text, never as a floating-point
+  number, which can't hold most decimals exactly (NFR1). Showing it to two
+  decimals keeps it within VALUE\_TOLERANCE (SEC-30). Every text and control
+  grows with textScale up to MAX\_TEXT\_SCALE, 200\% (SRS Appendix~C),
+  without being clipped, and the screen scrolls (NFR8). No text is shrunk to
+  fit, which would undo the user's text size.
+\item exception: None. A failed read or request is shown, never raised.
+\end{itemize}
+
+\noindent The wording of the simulation notice before the first trade (FR34,
+HA~SAF-8) and of the health notice before the first read (FR14, HA~SAF-12)
+belongs to Screens (MG Section~6). Both come at Revision~0, the first with
+its check in Trading (M12). Until then the screen calls useTodaySteps(true)
+at once. At Revision~0 it passes false until the user acknowledges the health
+notice.
+
+\medskip
+\noindent App():
+\begin{itemize}
+\item output: $out :=$ DemoScreen(), with the phone's status bar. The proof of
+  concept has one screen, so App shows it alone. At Revision~0, Navigation
+  (M18) shows it among the other screens (AC18 in the MG).
+\item exception: None
+\end{itemize}
+% On main, App.tsx returns null until DemoScreen lands (PR #312).
+
+\subsubsection{Local Functions}
+
+\noindent DEMO\_SYMBOL: String, the one asset the screen shows. The demo user
+starts with no currency, so it is chosen so that a few days of steps can buy a
+whole share (FR35).\\
+REFRESH\_INTERVAL: Duration $=$ 60 seconds, the POLL\_INTERVAL of Market
+(M10), since asking more often would show no new price.
+
+\smallskip
+\noindent validQuantity: String $\rightarrow \mathbb{B}$\\
+validQuantity($s$) $:=$ $s$ is digits only, and its value $n$ has $1 \leq n
+\leq 2^{53} - 1$, so JavaScript holds it exactly. Only whole shares are
+bought (FR35), and the server checks again (SEC-25).
+
+\smallskip
+\noindent orderTotal: String $\times$ String $\rightarrow$ String\\
+orderTotal($s$, price) $:=$ $n \times$ price, exact, worked out from price's
+decimal text, with $n$ the value of $s$ (NFR1). It is only a preview. The
+amount paid is the currency\_amount of the buy's reply, and the server checks
+it against the balance (FR37, SEC-24).
+
+\smallskip
+\noindent buyShares: () $\rightarrow$ Promise of None, one buy
+
+\smallskip
+\noindent buyShares():
+\begin{itemize}
+\item transition: buying $:=$ true and message $:=$ None. It asks API Service
+  to buy $n$ shares of DEMO\_SYMBOL, with $n$ the value of quantityText, at
+  expected\_price $:=$ the price shown, exactly as GET /v1/assets gave it, so
+  the buy runs only at the price the user saw (SEC-29). One press is one buy
+  with one request\_id (FR38). Nothing sends it again, since API Service
+  doesn't retry (AC24 in the MG), so a press after a lost reply is a new buy.
+  Buy is disabled while buying, so a double tap makes one buy (HA~H17). On success, balance $:=$ its cash\_balance, message $:=$
+  a confirmation with $n$ and its currency\_amount, quantityText $:=$ ``'',
+  and it asks for the portfolio again. On failure, message $:=$ its Error's
+  message, and it asks for the asset list and the portfolio again. It does
+  this for every failure, since the Error holds only a message, not the
+  refusal's code. After price\_changed, the message gives the new price, which
+  the asset area then shows, and the user presses Buy again to confirm it
+  (SEC-29). After a lost reply, the shares held show whether the buy went
+  through (HA~H46). Either way, buying $:=$ false at the end.
+\item output: $out :=$ None, once the buy ends
+\item exception: None. The screen doesn't check the balance, since no app
+  module holds a trade rule (MG Section~6). It shows the server's refusal
+  instead (FR37).
+\end{itemize}
+
+\newpage
+
+\section{MIS of Sync Service} \label{MisSync}
+
+\subsection{Module}
+
+Sync Service (M20 in the MG)
+
+\medskip
+\noindent Sync Service decides when the app reads the day's activity and sends
+it to the server, which may change with what the health platforms allow (AC20
+in the MG, SRS LC1). In the proof of concept it is one React hook,
+useTodaySteps, in app/services/health/\allowbreak useTodaySteps.ts. The file
+sits in Health Service's folder, but it is Sync Service, since it holds when to
+read and send, not how the phone is read.
+
+\subsection{Uses}
+
+Health Service (M4), API Service (M24)
+
+\medskip
+\noindent The MG's uses of Device Service (M5) and Constants (M7) come at
+Revision~0, for the app's state, the time and the time zone, and for
+SYNC\_LOOKBACK\_PERIOD (SEC-20).
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+None. The hook's output has no type name in the code, so the table below
+writes it out. DailyTotalsResponse, the server's reply to a sync, is a type of
+API Service (M24).
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so the hook's output fits its column.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.8cm}
+  >{\raggedright\arraybackslash}p{1.2cm}
+  >{\raggedright\arraybackslash}p{8.6cm}
+  >{\raggedright\arraybackslash}p{2.2cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+useTodaySteps & $\mathbb{B}$ & tuple of (steps: $\mathbb{Z}$ or None, loading:
+  $\mathbb{B}$, error: Error or None, refresh: () $\rightarrow$ Promise of
+  None, syncing: $\mathbb{B}$, syncError: Error or None, syncResult:
+  DailyTotalsResponse or None) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Each screen that calls useTodaySteps has its own copy of these, which React
+keeps between the screen's renders.
+
+\begin{itemize}
+\item steps: $\mathbb{Z}$ or None, today's count as the phone read it, 0 or
+  more, or None before the first read and after a failed one
+\item loading, syncing: $\mathbb{B}$, true while the phone is read and while
+  the count is sent. loading starts as enabled, and syncing as false.
+\item error, syncError: Error or None, why the last read or the last send
+  failed
+\item syncResult: DailyTotalsResponse or None, the server's reply to the last
+  send
+\item pending: Promise of None or None, the read and send in progress
+\item cancelled: $\mathbb{B}$, true once enabled has become false or the screen
+  has gone. Each time enabled becomes true, cancelled and pending start again
+  as false and None, so refresh works again.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item appState: String, the app's state from React Native's AppState. It is
+  ``active'' while the app is in the foreground.
+\item now: the phone's local date and time, from its clock.
+\item timeZone: String, the phone's IANA time zone name, such as
+  ``America/Toronto'', from JavaScript's Intl.
+\end{itemize}
+
+\noindent At Revision~0, appState, now and timeZone come through Device
+Service (M5), so the app reaches the phone's operating system only through it
+(NFR4). Then no module reads the system time itself, as the MG decides (MG
+Section~6), and a test can set the time.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The screen passes enabled $=$ false until the user has acknowledged the
+  health notice (FR14) and consented to reading their health data, and again
+  as soon as consent is withdrawn (SEC-9, FR76). The proof of concept has no
+  notice or consent yet, so its screen leaves enabled true. Both come at
+  Revision~0.
+\item The user stays in one time zone for the day that is read. The HA does
+  not assume this (HA~H9), so at Revision~0 each record is put on its day in
+  the time zone where it took place (SEC-23).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent useTodaySteps(enabled), with enabled true by default:
+\begin{itemize}
+\item transition: (enabled $\Rightarrow$ refresh() runs when the screen first
+  shows or enabled becomes true, and again each time appState becomes
+  ``active'' from another state
+  $|$ $\neg$enabled $\Rightarrow$ steps, error, syncError, syncResult $:=$ None,
+  loading, syncing $:=$ false, and nothing is read or sent).\\
+  The app reads when it opens or comes back to the foreground, not in the
+  background, which the health platforms may not allow reliably (SRS LC1,
+  AC20). The user still needn't open the app while exercising, since the
+  platform records the activity and the next read that day gets every step
+  since midnight (FR15, HA~H11).\\
+  When enabled becomes false or the screen goes away, cancelled $:=$ true, the
+  send in progress is cancelled through its AbortSignal, refresh does nothing
+  from then on, and appState is no longer watched. A read already started
+  still finishes, but its count is dropped. So once consent is withdrawn, no
+  new read starts and a count that comes in late is neither shown nor sent,
+  without waiting for the server (SEC-9).
+\item output: $out :=$ (steps, loading, error, refresh, syncing, syncError,
+  syncResult). refresh stays the same function while the screen stays, so a
+  button can keep it.
+\item exception: None. A failure is kept in error or syncError, never raised,
+  so the screen can say activity could not be read or sent and stay usable
+  (SEC-21). In the proof of concept, the words are each Error's message, set
+  by the module that raised it, as Health Service (M4) says. At Revision~0,
+  Screens (M19) chooses them, by the MG's decision that what the user sees is
+  in Screens alone.
+\end{itemize}
+
+\noindent refresh(), the function in the output of useTodaySteps:
+\begin{itemize}
+\item transition: (cancelled or $\neg$enabled $\Rightarrow$ nothing $|$
+  pending $\neq$ None $\Rightarrow$ nothing new starts $|$ pending $=$ None
+  $\Rightarrow$ pending $:=$ readSteps(), and pending $:=$ None once it ends).
+  Reusing the read in progress means a tap and a return to the foreground at
+  once read and send only once. A second send would be harmless, since the app
+  sends the day's total, not an increase, and the server pays only what is
+  still owed (SEC-19, HA~H4), but it costs a request.
+\item output: $out :=$ pending, which gives None once the read and send are
+  done, whether or not they worked, or None at once when nothing starts
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent readSteps: () $\rightarrow$ Promise of None, one read and one send
+
+\medskip
+\noindent readSteps():
+\begin{itemize}
+\item transition: these steps in order. After each wait, nothing more changes
+  if cancelled has become true.
+\begin{enumerate}
+\item loading $:=$ true, and error, syncError, syncResult $:=$ None, so an
+  earlier reply isn't shown as today's.
+\item $t :=$ now, $d :=$ the local date of $t$, and $z :=$ timeZone, taken
+  before the read. The read can wait on a permission prompt past midnight, and
+  its total must stay on the day it was asked for (SEC-23, HA~H9).
+\item total $:=$ getTodaysSteps($t$) of Health Service (M4), the steps from
+  local midnight to $t$. A day with no data gives 0, which is sent as 0
+  (FR16). If the read fails with $e$, then steps $:=$ None, error $:= e$,
+  loading $:=$ false, and nothing is sent. No old count is left on screen as
+  today's, and the currency already earned is untouched (SEC-21).
+\item steps $:=$ total, loading $:=$ false, syncing $:=$ true. The count shows
+  before the send, since it doesn't need the network, and the HA does not
+  assume the network is available.
+\item $r :=$ sendTodaysSteps((activity\_date: $d$, activity\_type:
+  ``steps'', step\_count: total), $z$, signal) of API Service (M24), with
+  signal the AbortSignal that cancels it. The app sends one daily total for
+  one activity type, never a record, a reward or a balance (SEC-10, SEC-24).
+  Activity (M11) works out the reward, by the MG's decision that the server
+  holds every rule about currency. The time zone lets the server refuse a
+  date after its own date in the user's time zone, even if the phone's clock
+  is wrong (SEC-24, HA~H51). Only today's total is sent. At Revision~0 each
+  day of the last SYNC\_LOOKBACK\_PERIOD is sent, so activity recorded late
+  is still paid (SEC-20, HA~H5).
+\item If $r$ comes, syncResult $:= r$. It holds the reward, balance and rate
+  as the server worked them out (SEC-24). By step 1, syncResult is None while
+  a later refresh runs and after a failed send, so it is not a lasting record
+  of the balance. If the send fails with $e$, syncError $:= e$, and steps
+  keeps its count, since the read was right.
+  API Service doesn't retry (AC24), so the next refresh sends it again. Either
+  way, syncing $:=$ false.
+\end{enumerate}
+\item output: $out :=$ None, once the send ends, the read fails, or
+  cancelled stops it after the read
+\item exception: None. Every failure is kept in error or syncError, and one
+  that is not an Error becomes Error(``Could not read today's steps.'') for
+  the read, or Error(``Could not sync today's steps.'') for the send.
+\end{itemize}
+
+\newpage
+
 \section{MIS of Plugins} \label{MisPlugins}
 
 \subsection{Module}
@@ -2010,7 +2617,214 @@ point, such as ``84.0000'' for 84. A zero is always ``0.0000'', never
 
 \newpage
 
-% M24 API Service (app): #250
+\section{MIS of API Service} \label{MisAPI}
+
+\subsection{Module}
+
+API Service (M24 in the MG)
+
+\subsection{Uses}
+
+None. The MG also lists Device Service (M5), which keeps the session token in
+the phone's secure storage (SEC-39). That use comes at Revision~0 with sign-in
+(FR4). The proof of concept has no sign-in (Development Plan, Section~9).
+Users (M8) answers every request as its demo user, so API Service sends no
+token yet.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent DailyStepTotal = tuple of (activity\_date: String, activity\_type:
+\{steps\}, step\_count: $\mathbb{Z}$), one day's steps as the phone read them
+through Health Service (M4). activity\_date is the day on the phone's calendar,
+written YYYY-MM-DD, since the phone puts each record on the user's day
+(SEC-23). step\_count is 0 or more. It is the day's whole total, not the steps
+since the last sync, so sending the same total again earns nothing twice
+(SEC-19).
+
+\medskip
+\noindent DailyTotalsRequest = tuple of (time\_zone: String, totals: seq of
+DailyStepTotal), the JSON body that sendTodaysSteps sends. time\_zone is the
+phone's IANA time zone name, such as ``America/Toronto''. The server uses it to
+find the user's date, so it can refuse a total dated in the future (SEC-24).
+Its activity data is daily totals only, never single records (SEC-10). It
+has no reward or balance, since the server alone decides those (SEC-24).
+This is the MG's decision that the server holds every rule about currency.
+
+\medskip
+\noindent DailyTotalResult = tuple of (activity\_date: String,
+activity\_type: \{steps\}, step\_count: $\mathbb{Z}$, counted: $\mathbb{B}$,
+reward: String, credited\_now: String), the server's result for one total it
+was sent. counted is false when the server found the total implausible (FR17).
+reward is what the day earns in all, and credited\_now is what this sync added
+to the balance. credited\_now is ``0.0000'' when the day was already paid
+(SEC-19).
+
+\medskip
+\noindent DailyTotalsResponse = tuple of (totals: seq of DailyTotalResult,
+cash\_balance: String, steps\_per\_coin: $\mathbb{N}$), the server's reply. It
+has the results in the order the totals were sent, the balance after the sync,
+and the earning rate, in steps per coin. The server sends the rate, so a screen
+can show how steps turn into currency (FR13) without the app holding the rule.
+
+\medskip
+\noindent reward, credited\_now and cash\_balance are Money of JSON Format
+(M23), a String holding a decimal with exactly four places. API Service hands
+them on as text and does no arithmetic with them, since a JavaScript number
+can't hold most decimals exactly (NFR1).
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so the types fit their columns.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}p{4.6cm}
+  >{\raggedright\arraybackslash}p{4.4cm}
+  >{\raggedright\arraybackslash}p{2.6cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+sendTodaysSteps & DailyStepTotal, String, AbortSignal or None & Promise of
+  DailyTotalsResponse & Error \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The demonstration also needs the balance, the price of one asset, a
+buy and the portfolio's value (Development Plan, Section 9). Calls for
+GET /v1/me/balance of Wallet (M9), GET /v1/assets of Market (M10), and
+POST /v1/me/trades and GET /v1/me/portfolio of Trading (M12) are to be added
+here for the demo screen. They are not in the code yet, so they are specified
+once they are written. They are expected to share the address, time limit,
+refusal message and reply check of sendTodaysSteps, so a screen handles every
+failure the same way.
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. Each call stands alone. API Service keeps no session, cache or queue of
+calls to retry.
+
+\subsubsection{Environment Variables}
+
+{\raggedright
+\noindent EXPO\_PUBLIC\_API\_URL: String or None, the server's address, such as
+http://localhost:8000 in src/frontend/.env.example. Expo puts it into the app
+when it bundles it. The address is set outside the code, so moving the server
+changes no code (AC24 of the MG). It depends on how the phone reaches the
+computer that runs the server, over USB or Wi-Fi.\par}
+
+\medskip
+\noindent server: the \progname{} server, reached over the phone's network
+connection, which may be slow or missing. sendTodaysSteps calls its route
+PUT /v1/me/activity/daily-totals of Activity (M11).
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The caller gives a total for today in time zone timeZone, with a
+  step\_count that is a whole number, 0 or more. sendTodaysSteps doesn't check
+  it, since the server refuses a step\_count that doesn't fit (SEC-25) and a
+  date after today (SEC-24), and the refusal reaches the caller as an Error.
+\item The server runs with DEMO\_USER\_ENABLED of Users (M8) on, so it answers
+  for the demo user without a session token. At Revision~0, each call sends the
+  session token instead, so only a signed-in user's requests are answered
+  (SEC-15). The token is read from secure storage through Device Service (M5)
+  (SEC-39).
+\item The demonstration reaches the server over HTTP on a local network. At
+  Revision~0 the address is an HTTPS one, so data is encrypted on the way
+  (SEC-16), as the MG's unlikely change on HTTPS and JSON assumes.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+{\raggedright
+\noindent sendTodaysSteps(total, timeZone, signal), with signal None when left
+out, and $a :=$ EXPO\_PUBLIC\_API\_URL without spaces at either end or slashes
+at its end, so an address written with a final slash gives the same path:\par}
+\begin{itemize}
+\item transition: the server saves total and pays what its day still owes, if
+  anything. sendTodaysSteps sends one request, PUT
+  $a$/v1/me/activity/daily-totals, with the JSON body
+  DailyTotalsRequest(timeZone, $\langle$total$\rangle$). It sends only the
+  day's total, and the server alone works out the reward and the balance
+  (SEC-10, SEC-24). It doesn't retry by itself. Sync Service (M20) sends it
+  again on the next refresh, or when the app comes back to the foreground.
+  That is safe even if an earlier call's reply was lost, since the server pays
+  nothing twice (SEC-19, HA~H46).
+\item output: $out :=$ a Promise that gives the reply's body as a
+  DailyTotalsResponse. It gives it only when the reply's status is 2xx and
+  isDailyTotalsResponse(body) holds, within 10 seconds of the call. Checking
+  the body means a changed or broken server, or another program at the
+  address, can't put a value of the wrong form on screen, such as an amount
+  sent as a number, which may have lost its exact value (NFR1, SEC-30).
+\item exception: the Promise fails with the first of these that holds:\\
+  \hspace*{1em}$exc :=$ ($a$ is None or empty $\Rightarrow$ Error(``Set
+  EXPO\_PUBLIC\_API\_URL in the frontend .env file to sync steps.'')\\
+  \hspace*{1em}$|$ the call is still waiting for the reply 10 seconds after
+  it began $\Rightarrow$
+  Error(``Sending steps timed out. Refresh to try again.'')\\
+  \hspace*{1em}$|$ signal is aborted before the reply $\Rightarrow$ the Error
+  that fetch fails with when it is cancelled\\
+  \hspace*{1em}$|$ the server can't be reached $\Rightarrow$ the Error that
+  fetch fails with, such as a TypeError\\
+  \hspace*{1em}$|$ the status is not 2xx and the body is a Refusal of JSON
+  Format (M23) $\Rightarrow$ Error($m$), with $m$ the Refusal's
+  detail.message\\
+  \hspace*{1em}$|$ the status $s$ is not 2xx otherwise $\Rightarrow$
+  Error(``Could not sync steps (HTTP $s$).'')\\
+  \hspace*{1em}$|$ $\neg$isDailyTotalsResponse(body) $\Rightarrow$
+  Error(``The server returned an invalid step-sync response.''))\\
+  With no address, nothing is sent, and the message says what to set. The
+  time limit means a server that never answers can't leave the screen
+  waiting, so it can say the steps weren't sent and keep showing them
+  (HA~H46). Cancelling through signal lets the caller stop waiting when it no
+  longer needs the reply, such as when the screen closes, so a late reply
+  changes nothing. A refusal shows the server's own message, such as
+  ``Activity dates must be today or one of the preceding six days.'' of
+  Activity (M11). JSON Format (M23) words each refusal for a
+  user and gives every module's refusals one shape, so one check handles them
+  all. A 422 for a request that doesn't fit (SEC-25) has a list of field
+  errors as its detail, with no message for a user, so only its status is
+  shown. The messages above are written for a user, and the demo screen is to
+  show them as they are (issue \#253). That differs from the MG's decision that
+  what the user sees is in Screens alone, which the proof of concept doesn't
+  follow yet.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent isMoney: unknown $\rightarrow \mathbb{B}$, with unknown TypeScript's
+type for a value not yet checked
+
+\noindent isMoney($v$) $:=$ $v$ is a String of one or more digits, a point and
+exactly four digits, such as ``84.0000'', the form Money of JSON Format (M23)
+takes. A minus sign isn't allowed, since no amount in this reply can be below 0
+(FR13, FR37). A later call whose reply holds a loss (FR44) will need one.
+
+\medskip
+\noindent isDailyTotalsResponse: unknown $\rightarrow \mathbb{B}$
+
+{\raggedright
+\noindent isDailyTotalsResponse($d$) $:=$ $d$ is a JSON object, not an array,
+with isMoney($d$.cash\_balance), $d$.steps\_per\_coin a whole number above 0,
+and $d$.totals an array in which every element $t$ is an object, not an array,
+with $t$.activity\_date a String, $t$.activity\_type $=$ ``steps'',
+$t$.step\_count a whole number of 0 or more, $t$.counted a boolean, and
+isMoney($t$.reward) and isMoney($t$.credited\_now). It checks each field's
+type, not its value against the request. Other fields are allowed, so the
+server can add one without breaking an app already on a phone (NFR3).\par}
+
+\newpage
+
 
 \bibliographystyle {plainnat}
 \bibliography {../../../refs/References}

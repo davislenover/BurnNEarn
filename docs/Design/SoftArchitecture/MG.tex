@@ -63,6 +63,8 @@ Design.\\
 Nov 15, 2026 & 1.5 & Davis Lenover: 7 Module Decomposition: Goals, Learning,
 Social, Scenarios and Privacy, which are built after the proof of concept, and
 what Trading and Plugins add for them at Revision~0.\\
+Nov 15, 2026 & 1.6 & Davis Lenover: 5 Module Hierarchy: Device Service and
+Navigation are built after the proof of concept.\\
 \bottomrule
 \end{tabularx}
 
@@ -391,7 +393,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mClock}:] Clock
 \item [\refstepcounter{mnum} \mthemnum \label{mProviders}:] Market Providers
 \item [\refstepcounter{mnum} \mthemnum \label{mHealth}:] Health Service (app)
-\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)\textsuperscript{\dag}
 % Behaviour-Hiding, server
 \item [\refstepcounter{mnum} \mthemnum \label{mControl}:] Control
 \item [\refstepcounter{mnum} \mthemnum \label{mConstants}:] Constants (server and app)
@@ -406,7 +408,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mScenarios}:] Scenarios\textsuperscript{\dag}
 \item [\refstepcounter{mnum} \mthemnum \label{mPrivacy}:] Privacy\textsuperscript{\dag}
 % Behaviour-Hiding, app
-\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)\textsuperscript{\dag}
 \item [\refstepcounter{mnum} \mthemnum \label{mScreens}:] Screens (app)
 \item [\refstepcounter{mnum} \mthemnum \label{mSync}:] Sync Service (app)
 \item [\refstepcounter{mnum} \mthemnum \label{mReminders}:] Reminder Service (app)\textsuperscript{\dag}
@@ -430,7 +432,7 @@ made that the SRS does not mention.
 & \mref{mProviders} Market Providers\\
 & \mref{mEmail} Email Service\textsuperscript{\dag}\\
 & \mref{mHealth} Health Service (app)\\
-& \mref{mDevice} Device Service (app)\\
+& \mref{mDevice} Device Service (app)\textsuperscript{\dag}\\
 \midrule
 
 \multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & \mref{mControl} Control\\
@@ -445,7 +447,7 @@ made that the SRS does not mention.
 & \mref{mSocial} Social\textsuperscript{\dag}\\
 & \mref{mScenarios} Scenarios\textsuperscript{\dag}\\
 & \mref{mPrivacy} Privacy\textsuperscript{\dag}\\
-& \mref{mNavigation} Navigation (app)\\
+& \mref{mNavigation} Navigation (app)\textsuperscript{\dag}\\
 & \mref{mScreens} Screens (app)\\
 & \mref{mSync} Sync Service (app)\\
 & \mref{mReminders} Reminder Service (app)\textsuperscript{\dag}\\
@@ -462,7 +464,11 @@ made that the SRS does not mention.
 \end{table}
 
 Modules marked with \textsuperscript{\dag} in Table~\ref{TblMH} are built after
-the proof of concept and are specified in the MIS at Revision~0.
+the proof of concept and are specified in the MIS at Revision~0. The proof of
+concept has one screen, no sign-in and no reminders, so it needs nothing from
+\mref{mDevice} Device Service or \mref{mNavigation} Navigation yet. What each
+one hides stays as Section~\ref{SecChange} says, but its design isn't final
+and may change with feedback on the proof of concept.
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
