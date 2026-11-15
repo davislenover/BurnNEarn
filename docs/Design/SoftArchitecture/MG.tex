@@ -1124,11 +1124,68 @@ developed for the mobile application's main user interface.
 to explain the design of the communication protocol.  This section should be filled 
 in with NA if it is not appropriate for a given project.}
 
-\section{Database Design}
+\section{Database Design}  \label{SecDB}
 
-\wss{If a database is a significant component of the project, the database
-design should be summarized here.  This section should be filled in with NA if
-it is not appropriate for a given project.}
+% \wss{If a database is a significant component of the project, the database
+% design should be summarized here.  This section should be filled in with NA if
+% it is not appropriate for a given project.}
+
+\progname{} keeps its data in one relational database on the server, reached
+only through \mref{mDB} Database. One database lets a trade save its payment
+and its shares in one transaction (FR37). The server's copy of a balance or a
+holding is the one that counts (SEC-24). Individual activity records stay on
+the phone, in its health platform, and only daily totals reach the server
+(SEC-10).
+
+The database follows the module decomposition. Each module owns its tables, and
+only that module reads or writes them. Another module gets the data through the
+owner's access programs, as a read-only copy. A table may still point at a row
+of another module's table with a foreign key, such as a trade at its asset, so
+the database can refuse a row that points at nothing. Each change to the tables
+is a migration, named after its module and numbered. The migrations form one
+chain, so every copy of the database is changed in the same order.
+
+Table~\ref{TblDB} lists the tables of the proof of concept and
+Figure~\ref{FigDB} shows their columns and how they are related.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{p{0.26\textwidth} p{0.16\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Table} & \textbf{Owner} & \textbf{One row is}\\
+\midrule
+users & \mref{mUsers} Users & A user, with their time zone.\\
+activity\_daily\_totals & \mref{mActivity} Activity & The latest total sent
+  for one user, day and activity type, and whether it counts for a reward.\\
+portfolios & \mref{mWallet} Wallet & A portfolio and its currency balance. A
+  user's live portfolio is the one with no scenario.\\
+balance\_changes & \mref{mWallet} Wallet & One change to a portfolio's balance,
+  with its amount, reason and time. It is never edited.\\
+assets & \mref{mMarket} Market & A stock that can be traded, with its symbol
+  and the currency of its prices.\\
+prices & \mref{mMarket} Market & One price of an asset, with the time the
+  provider set it and the time the server obtained it.\\
+provider\_requests & \mref{mMarket} Market & One call to the market data
+  provider and how it ended, kept to watch the request limit (SC4).\\
+trades & \mref{mTrading} Trading & One trade, with its request ID, quantity,
+  price and cost. It is never edited.\\
+holdings & \mref{mTrading} Trading & The number of shares of one asset that a
+  portfolio holds.\\
+\bottomrule
+\end{tabularx}
+\caption{Tables of the proof of concept and the module that owns each}
+\label{TblDB}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/database-design.png}
+\caption{Tables of the proof of concept, grouped by the module that owns them.
+An arrow goes from the table that holds a foreign key to the table it points
+at, and the numbers at its ends say how many rows can be at each end. PK marks
+a primary key and FK a foreign key.}
+\label{FigDB}
+\end{figure}
 
 \section{Timeline}
 
