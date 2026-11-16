@@ -388,7 +388,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mClock}:] Clock
 \item [\refstepcounter{mnum} \mthemnum \label{mProviders}:] Market Providers
 \item [\refstepcounter{mnum} \mthemnum \label{mHealth}:] Health Service (app)
-\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)\textsuperscript{\dag}
 % Behaviour-Hiding, server
 \item [\refstepcounter{mnum} \mthemnum \label{mControl}:] Control
 \item [\refstepcounter{mnum} \mthemnum \label{mConstants}:] Constants (server and app)
@@ -427,7 +427,7 @@ made that the SRS does not mention.
 & \mref{mProviders} Market Providers\\
 & \mref{mEmail} Email Service\textsuperscript{\dag}\\
 & \mref{mHealth} Health Service (app)\\
-& \mref{mDevice} Device Service (app)\\
+& \mref{mDevice} Device Service (app)\textsuperscript{\dag}\\
 \midrule
 
 \multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & \mref{mControl} Control\\
@@ -679,6 +679,27 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 % M4 Health Service (app): #235
 
 % M5 Device Service (app): #237
+\subsubsection{Device Service Module (\mref{mDevice})}
+\begin{description}
+\item[Secrets:] The phone operating system's interfaces for device services.
+
+\item[Services:] Provides one interface for secure storage, local
+notifications and background tasks on Android and iOS. Stores, reads and
+removes the session token using the phone's secure storage. Checks and
+requests notification permission, schedules and cancels local notifications,
+and registers background tasks requested by other app modules. Reports
+when permission is denied or a service is unavailable.
+
+\item[Rationale:] Android and iOS provide different device interfaces.
+Keeping those details here lets the rest of the app use the same calls on
+both platforms (NFR4) and limits the changes needed when a platform changes (NFR3). The API Service uses this module to keep the session token in secure storage (SEC-39). The Reminder Service decides what to send and when. Device Service handles the operating system calls. Background execution depends on the operating system, so callers must also support updating when the user opens the app.
+
+\item[Implemented By:] \progname{} mobile app, after the proof of concept,
+at Revision~0. The PoC has no sign-in or reminders and does not use this
+module yet.
+
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsection{Behaviour-Hiding Modules}
 
@@ -773,6 +794,26 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 % M20 Sync Service (app): #235
 
 % M21 Reminder Service (app): #237
+\subsubsection{Reminder Service Module (\mref{mReminders})}
+
+\begin{description}
+\item[Secrets:] The reminder selection and scheduling policy.
+
+\item[Services:] Uses the user's reminder settings and application events
+to decide which reminders to send. Supports the Activity, Milestone,
+Portfolio, Learning and Social reminder types defined in the SRS. Retrieves
+and saves settings through the API Service and schedules local notifications
+through the Device Service.
+
+Only enabled reminder types are sent, and only within the user's chosen periods. If no periods have been chosen, uses \texttt{DEFAULT\_REMINDER\_PERIOD}. Cancels or reschedules pending reminders when settings change and tracks handled events to avoid repeating the same reminder. Notification content excludes health data, balances and portfolio values unless the user has explicitly enabled their inclusion.
+\item[Rationale:] The user controls reminder types and delivery periods
+(FR72 to FR75). Keeping these rules in one module lets them change without changing the screens or the operating system calls. Reminders are created on the phone, with no external push notification service. When a reminder needs new data, the module evaluates it the next time the app runs, either in the background or when the user opens it. This follows the SRS without assuming the app can run continuously. Generic notification content protects the user's private information by default (SEC-34).
+
+\item[Implemented By:] \progname{} mobile app, after the proof of concept,
+at Revision~0. The PoC does not include reminders.
+
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsection{Software Decision Modules}
 
