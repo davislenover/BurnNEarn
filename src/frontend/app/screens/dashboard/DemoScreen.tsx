@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodaySteps } from '../../services/health/useTodaySteps';
 
@@ -14,12 +14,57 @@ function formatMoney(cents: number) {
   });
 }
 
+// Most credits steps can earn in one day, shown in the daily limit bar.
+const DAILY_CREDIT_LIMIT = 300;
+
+// Usual earning rate, shown until the server sends its own rate.
+const DEFAULT_STEPS_PER_CREDIT = 100;
+
+// Show a server amount such as "10.0000" as "10.00".
+function formatCredits(text: string) {
+  const [whole, fraction = ''] = text.split('.');
+  return `${Number(whole).toLocaleString('en-US')}.${(fraction + '00').slice(0, 2)}`;
+}
+
+// Turns a server amount like "1062.0000" into cents (106200).
+function toCents(text: string) {
+  const [whole, fraction = ''] = text.split('.');
+  return Number(whole) * 100 + Number((fraction + '00').slice(0, 2));
+}
+
+// Reward fields used by this screen; the shared response type is still generic.
+type StepSyncResult = {
+  cash_balance: string;
+  steps_per_coin: number;
+  totals: {
+    step_count: number;
+    reward: string;
+    counted: boolean;
+  }[];
+};
+
 export default function DemoScreen() {
    // Today's steps from the phone (null if not read yet or unavailable), and whether it is still loading.
-  const { steps, loading } = useTodaySteps();
+  const { steps, loading, syncing, syncError, syncResult: result } = useTodaySteps();
+
+  // Describe the reward fields returned by the server.
+  const syncResult = result as StepSyncResult | null;
+  // Today's result is unavailable until the first sync succeeds.
+  const todayResult = syncResult?.totals?.[0];
+
+  // Keep the bar empty until the server returns today's earnings.
+  const todayReward = todayResult ? Number(todayResult.reward) : 0;
 
   // Starting balance in cents: 100000 = $1,000
   const [balance, setBalance] = useState(100000);
+
+  // Show the server's balance after each successful step sync.
+  // Local purchases can be overwritten until purchases also use the backend.
+  useEffect(() => {
+    if (syncResult) {
+      setBalance(toCents(syncResult.cash_balance));
+    }
+  }, [syncResult]);
 
   // Start with no shares
   const [sharesHeld, setSharesHeld] = useState(0);
@@ -95,7 +140,7 @@ export default function DemoScreen() {
           <Text style={styles.caption}>steps today</Text>
         </View>
 
-        {/* Balance updates after a purchase */}
+        {/* Balance from step sync, then updated locally after a purchase */}
         <View style={styles.card}>
           <Text style={styles.label}>Balance</Text>
           <Text style={styles.number} numberOfLines={1} adjustsFontSizeToFit>
@@ -103,6 +148,44 @@ export default function DemoScreen() {
           </Text>
           <Text style={styles.caption}>virtual credits</Text>
         </View>
+      </View>
+
+            {/* Earned box: how today's steps turned into credits, from the server's reply */}
+      <View style={styles.earnedCard}>
+        <View style={styles.row}>
+          <Text style={styles.sectionTitle}>Earned from steps today</Text>
+          {/* Use the server's earning rate, or the default while waiting. */}
+          <Text style={styles.ratePill}>
+            {syncResult ? syncResult.steps_per_coin : DEFAULT_STEPS_PER_CREDIT} steps = 1 credit
+          </Text>
+        </View>
+
+        {syncResult && todayResult ? (
+          <>
+            {/* Amount earned today and the calculation behind it */}
+            <Text style={styles.earned}>+{formatCredits(todayResult.reward)} credits</Text>
+            <Text style={styles.math}>
+              {todayResult.counted
+                ? `${todayResult.step_count.toLocaleString('en-US')} steps ÷ ${syncResult.steps_per_coin} = ${formatCredits(todayResult.reward)} credits`
+                : 'Not counted: too many steps for one day.'}
+            </Text>
+          </>
+        ) : (
+          // Nothing earned yet: say why
+          <Text style={styles.math}>
+            {syncError ? syncError.message : syncing ? 'Calculating…' : "Waiting for today's steps"}
+          </Text>
+        )}
+
+        {/* Always show the bar; show earned progress only after a successful sync. */}
+        <View style={styles.limitBar}>
+          <View style={[styles.limitFill, { width: `${Math.min(100, (todayReward / DAILY_CREDIT_LIMIT) * 100)}%` }]} />
+        </View>
+        <Text style={styles.caption}>
+          {todayResult
+            ? `${formatCredits(todayResult.reward)} of ${DAILY_CREDIT_LIMIT} daily limit`
+            : `Daily limit: ${DAILY_CREDIT_LIMIT} credits`}
+        </Text>
       </View>
 
       {/* Stock price and purchase controls */}
@@ -197,7 +280,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 80,
     paddingBottom: 40,
-    gap: 24,
+    gap: 16,
   },
   // "FitFolio" title at the top
   title: {
@@ -219,7 +302,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 16,
+    padding: 10,
   },
   // Small grey heading, e.g. "Today's steps", "Balance", "Quantity"
   label: {
@@ -231,8 +314,8 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: '600',
     color: '#171D22',
-    marginTop: 16,
-    marginBottom: 6,
+    marginTop: 8,
+    marginBottom: 4,
   },
   // Smallest grey text, e.g. "steps today", "Order total"
   caption: {
@@ -246,7 +329,7 @@ const styles = StyleSheet.create({
   stockCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
+    padding: 12,
   },
   // Stock symbol, "AAPL"
   symbol: {
@@ -260,8 +343,8 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '600',
     color: '#171D22',
-    marginTop: 14,
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 8,
   },
   // Row that holds the quantity box and the Buy button side by side
   orderRow: {
@@ -359,7 +442,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   // Order total amount, e.g. "$0.00"
-  totalText: {
+  totalText: { 
     fontSize: 13,
     fontWeight: '500',
     color: '#171D22',
@@ -400,7 +483,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     color: '#69737E',
-    marginTop: 30,
+    marginTop: 1,
     marginBottom: 12,
   },
+  // ----- Earned from steps box -----
+  // White box that shows how today's steps turned into credits
+  earnedCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+  },
+  // Small green tag with the earning rate, e.g. "100 steps = 1 credit"
+  ratePill: {
+    fontSize: 11,
+    color: '#087B51',
+    backgroundColor: '#E8F5EE',
+    borderRadius: 6,
+    overflow: 'hidden',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  // Large green amount earned, e.g. "+62.00 credits"
+  earned: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#087B51',
+    marginTop: 10,
+  },
+  // The calculation or status line under the amount
+  math: {
+    flexShrink: 1,
+    fontSize: 13,
+    color: '#171D22',
+    marginTop: 4,
+  },
+  // Grey track of the daily limit bar
+  limitBar: {
+    height: 6,
+    backgroundColor: '#E8EBEE',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  // Green part of the bar: how much of today's limit is earned
+  limitFill: {
+    height: 6,
+    backgroundColor: '#087B51',
+  },
+
 });
