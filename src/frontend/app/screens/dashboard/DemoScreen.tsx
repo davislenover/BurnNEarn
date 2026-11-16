@@ -45,7 +45,7 @@ type StepSyncResult = {
 
 export default function DemoScreen() {
    // Today's steps from the phone (null if not read yet or unavailable), and whether it is still loading.
-  const { steps, loading, syncing, syncError, syncResult: result } = useTodaySteps();
+  const { steps, loading, syncError, syncResult: result } = useTodaySteps();
 
   // Describe the reward fields returned by the server.
   const syncResult = result as StepSyncResult | null;
@@ -160,22 +160,16 @@ export default function DemoScreen() {
           </Text>
         </View>
 
-        {syncResult && todayResult ? (
-          <>
-            {/* Amount earned today and the calculation behind it */}
-            <Text style={styles.earned}>+{formatCredits(todayResult.reward)} credits</Text>
-            <Text style={styles.math}>
-              {todayResult.counted
-                ? `${todayResult.step_count.toLocaleString('en-US')} steps ÷ ${syncResult.steps_per_coin} = ${formatCredits(todayResult.reward)} credits`
-                : 'Not counted: too many steps for one day.'}
-            </Text>
-          </>
-        ) : (
-          // Nothing earned yet: say why
-          <Text style={styles.math}>
-            {syncError ? syncError.message : syncing ? 'Calculating…' : "Waiting for today's steps"}
-          </Text>
+        {/* Credits earned today (0 until steps are synced) */}
+        <Text style={styles.earned}>+{todayReward} credits</Text>
+
+        {/* Only shown when today's steps were too many to count */}
+        {todayResult && !todayResult.counted && (
+          <Text style={styles.math}>Not counted: too many steps for one day.</Text>
         )}
+
+        {/* Shown only if sending steps to the server failed */}
+        {syncError && <Text style={styles.caption}>{syncError.message}</Text>}
 
         {/* Always show the bar, show earned progress only after a successful sync. */}
         <View style={styles.limitBar}>
@@ -506,9 +500,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3,
   },
-  // Large green amount earned, e.g. "+62.00 credits"
+  // Large green amount earned, e.g. "+0.00 credits"
   earned: {
-    fontSize: 28,
+    fontSize: 16,
     fontWeight: '600',
     color: '#087B51',
     marginTop: 10,
