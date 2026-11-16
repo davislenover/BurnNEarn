@@ -177,7 +177,7 @@ export default function DemoScreen() {
           </Text>
         )}
 
-        {/* Always show the bar; show earned progress only after a successful sync. */}
+        {/* Always show the bar, show earned progress only after a successful sync. */}
         <View style={styles.limitBar}>
           <View style={[styles.limitFill, { width: `${Math.min(100, (todayReward / DAILY_CREDIT_LIMIT) * 100)}%` }]} />
         </View>
@@ -245,6 +245,9 @@ export default function DemoScreen() {
       <View style={styles.portfolioCard}>
         <View style={styles.row}>
           <Text style={styles.sectionTitle}>Your portfolio</Text>
+
+          {/* Reminds the user these are not real holdings */}
+          <Text style={styles.currency}>Simulated</Text>
         </View>
 
         <View style={styles.holdingRow}>
@@ -386,7 +389,7 @@ const styles = StyleSheet.create({
   portfolioCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 20,
+    padding: 16,
   },
   // "Your portfolio" heading
   sectionTitle: {
@@ -399,7 +402,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 22,
+    marginTop: 16,
   },
   // Number of shares held, e.g. "0"
   shareCount: {
@@ -414,8 +417,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#E8EBEE',
-    paddingTop: 16,
-    marginTop: 16,
+    paddingTop: 12,
+    marginTop: 12,
   },
   // Large holdings amount, e.g. "$0.00"
   holdingsValue: {
@@ -483,7 +486,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     color: '#69737E',
-    marginTop: 1,
+    marginTop: 3,
     marginBottom: 12,
   },
   // ----- Earned from steps box -----
