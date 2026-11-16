@@ -5,6 +5,7 @@
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
@@ -60,7 +61,14 @@ fixes to 7 Module Decomposition. Each market data provider gives its own
 request limit, so a new one changes only Market Providers.\\
 Nov 10, 2026 & 1.4 & Farid Bastoros: 6 Connection Between Requirements and
 Design.\\
-Nov 15, 2026 & 1.5 & Zaid Alsaadi: Added Device Service (M5) and
+Nov 12, 2026 & 1.5 & Preston Grewal: Health and Activity module descriptions (\#235).\\
+Nov 12, 2026 & 1.6 & Preston Grewal: Phone activity access protocols (\#242).\\
+Nov 15, 2026 & 1.7 & Davis Lenover: 7 Module Decomposition: Goals, Learning,
+Social, Scenarios and Privacy, which are built after the proof of concept, and
+what Trading and Plugins add for them at Revision~0.\\
+Nov 15, 2026 & 1.8 & Farid Bastoros: 12 Database Design.\\
+Nov 15, 2026 & 1.9 & Preston Grewal: Traceability matrices (\#239).\\
+Nov 15, 2026 & 1.10 & Zaid Alsaadi: Added Device Service (M5) and
 Reminder Service (M21) descriptions in Section 7. Marked M5 as planned
 after the proof of concept in Section 5. Updated Section 13 Timeline
 with task ownership, deadlines and links to GitHub.\\
@@ -561,10 +569,11 @@ Section~\ref{SecMD} gives the detail.
 \item[Time is handed to the code.] Many rules depend on the time: whether the
   market is open, whether a price is too old (FR33, FR39), and whether a daily
   total is dated after today in the user's time zone, in which case it is
-  refused (SEC-24). So no module reads the system time. Each is handed
-  \mref{mClock} Clock, and \mref{mUsers} Users keeps each user's time zone. The
-  phone puts each activity record on its calendar day before it sends the
-  totals (SEC-23).
+  refused (SEC-24). Server code is handed \mref{mClock} Clock.
+  \mref{mActivity} Activity finds today in the time zone sent with the totals;
+  the PoC does not read or update the stored Users time zone for this check.
+  The phone puts each record on its calendar day before sending totals
+  (SEC-23).
 
 \item[Features are added as plug-ins.] The system is built in stages, and the
   effort of a likely change is limited (NFR3). So \mref{mControl} Control
@@ -680,7 +689,21 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \item[Type of Module:] Abstract Data Type, with one interface, an implementation for the chosen service and a fake
 \end{description}
 
-% M4 Health Service (app): #235
+\subsubsection{Health Service Module (\mref{mHealth})}
+
+\begin{description}
+\item[Secrets:] The phone's activity-data interface.
+\item[Services:] Reads steps taken. Checks or
+  requests read permission and reports permission or device errors. 
+\item[Rationale:] Android and iOS expose activity differently. Keeping those
+  calls here lets Sync use the same reader on both platforms (NFR4), and
+  keeps a change of data source in one module (SRS LC2). Steps are read
+  from today's local midnight to the reading time. Android uses
+  Health Connect and iPhone uses Expo Pedometer. 
+\item[Implemented By:] \progname{} app, in
+  \path{app/services/health/steps.ts}
+\item[Type of Module:] Library
+\end{description}
 
 % M5 Device Service (app): #237
 \subsubsection{Device Service Module (\mref{mDevice})}
@@ -779,19 +802,94 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M11 Activity: #235
+\subsubsection{Activity Module (\mref{mActivity})}
+
+\begin{description}
+\item[Secrets:] The rules for turning daily activity into currency.
+\item[Services:] Accepts daily totals, checks their dates and plausibility,
+  and credits the unpaid reward through Wallet. Returns each day's result,
+  the updated balance and the earning rate.
+\item[Rationale:] Rewards are calculated on the server (SEC-24), using the
+  earning rate, plausibility limit and daily cap from Constants (FR13, FR17,
+  FR18). Activity locks the live portfolio before reading earlier payments,
+  pays only the difference, and commits totals and payments together
+  (SEC-19, SEC-22). The reply
+  includes whether a total counted, so Screens can show an excluded day
+  (FR17). 
+\item[Implemented By:] \progname{} server, in \path{activity/}
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsubsection{Trading Module (\mref{mTrading})}
 
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
 \item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
-\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0.
+\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0. So do trading in and valuing a scenario's portfolio at the prices \mref{mScenarios} Scenarios hands Trading, which it accepts only with the lock on that portfolio (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M13 Goals, M14 Learning, M15 Social, M16 Scenarios and M17 Privacy: #238
+\paragraph{Modules built after the proof of concept.} Goals, Learning,
+Social, Scenarios and Privacy (\mref{mGoals} to \mref{mPrivacy}) are built
+after the proof of concept. Their entries fix what each one hides and the
+rules it must keep, and Table~\ref{TblUses} fixes which modules each one may
+use. Each feature can then be added
+as a plug-in without reaching into another module's data or copying its rules,
+so a likely change stays inside one module (NFR3). The details, such as each
+module's routes, tables and exact services, are not final. They may change
+with feedback on the proof of concept and with usability testing (NFR2), and
+the MIS specifies them at Revision~0.
+
+\subsubsection{Goals Module (\mref{mGoals})}
+
+\begin{description}
+\item[Secrets:] The rules for goals, streaks, rest days and milestones.
+\item[Services:] Keeps each user's daily activity goals and rest days. Works out the user's streak and the milestones they have reached, and serves them to the phone. Gives Social only what the user may share.
+\item[Rationale:] A goal is the user's own choice. It is optional (FR20), changes only when the user confirms it (FR21), and takes effect the next day (FR19), so a day's goal can't move once the day has started. The streak follows the SRS's formal definition (FR22). It is worked out from \mref{mActivity} Activity's daily totals, the goals in effect and the rest days (FR23), rather than kept as a counter that each sync adds to. A total that arrives late (SEC-20), or a rest day marked after that day's totals were sent, then gives the right streak without a fix-up. Each milestone is recorded with the date it was reached, so it is shown only once, even if a later sync lowers a day's total (FR25). Milestones of currency earned count the rewards that \mref{mWallet} Wallet has recorded, which Goals reads but never changes. A missed goal or an ended streak never costs currency or holdings and is never shown to anyone else (FR24), and no goal or milestone uses body weight or calories (FR26).
+\item[Implemented By:] \progname{} server, in \path{goals/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Learning Module (\mref{mLearning})}
+
+\begin{description}
+\item[Secrets:] The learning content, the knowledge checks and the rules that decide when investment feedback is given.
+\item[Services:] Serves the concept explanations and knowledge checks, marks the user's answers and keeps their learning progress. Works out feedback on the user's portfolio: what changed its value, how a trade changed its mix, and when one holding is too large a share of it. Gives Social only the knowledge checks the user has passed, the one kind of update from Learning that may be shared (FR65).
+\item[Rationale:] Explanations and knowledge checks are kept as data on the server, not written into the app, so administrators can add and correct them without a new release (FR58). Each explanation shows its source and the date it was last reviewed, and each explanation and knowledge-check answer is published only after a second team member reviews it (FR59), since users may later act on it with real money. Feedback uses only the user's own holdings and price changes, and shows the data it is based on (FR60). Learning reads these from \mref{mTrading} Trading as read-only copies, so it can't change a holding. Feedback explains what happened and never recommends buying or selling an asset (FR49). The limits that trigger feedback and the pass mark are SRS constants (FR52, FR54, FR57), kept in \mref{mConstants} Constants. Opening an explanation where its concept appears (FR51) is up to \mref{mScreens} Screens, so Learning holds no layout.
+\item[Implemented By:] \progname{} server, in \path{learning/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Social Module (\mref{mSocial})}
+
+\begin{description}
+\item[Secrets:] What a user can share and with whom.
+\item[Services:] Keeps friend requests and friendships. Shares an update with the friends the user picks, after showing the user the update as those friends will see it, and serves each user a feed of their friends' updates, newest first. Stops showing an update once the user deletes it or removes that friend.
+\item[Rationale:] Two users become friends only when the one asked accepts (FR62). A user's statistics stay private until they share them, and then reach only the friends they chose (SEC-13, FR66). An update can only be one of the kinds the SRS lists (FR65). Social builds it from what \mref{mActivity} Activity, \mref{mGoals} Goals and \mref{mLearning} Learning give it, and does not use \mref{mWallet} Wallet or \mref{mTrading} Trading. Each of those three uses Wallet or Trading, so each gives Social only the kinds of update it may share, and a balance or a portfolio value can't end up in one. A single activity record can't either, since the server only has daily totals (SEC-10). A body measurement can't, since no kind of update holds one, and Social takes only usernames from \mref{mUsers} Users, never the profile (FR65, FR68). The update saved is the one the user previewed (FR67), so friends see exactly what the user agreed to share, and a streak that ends later is never shown as ended (FR24). Each update is kept once, and who may see it is checked each time a feed is served, so deleting it or removing a friend stops it showing at once (FR64, FR70, SEC-13). Social offers no way to rank users (FR71), since leaderboards would first need a change to the SRS (SRS LC5).
+\item[Implemented By:] \progname{} server, in \path{social/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Scenarios Module (\mref{mScenarios})}
+
+\begin{description}
+\item[Secrets:] The number and selection of historical market scenarios, and where their past prices come from.
+\item[Services:] Lists the scenarios the user can practise in, with the dates each one replays. Starts a scenario in a portfolio of its own, moves it on one trading day each time the user continues, and trades in it at that day's closing prices.
+\item[Rationale:] A scenario must never touch the live balance or holdings, and nothing in the live market may touch a scenario's, such as the sale when an asset is removed, which sells only live holdings (FR31, FR45, SEC-31). So a scenario starts in its own \mref{mWallet} Wallet portfolio, with \texttt{SCENARIO\_START\_BALANCE} and no holdings (FR46), and trades through \mref{mTrading} Trading at the replayed day's closing prices (FR47). One set of trade rules, such as buying only whole shares and never spending more than the balance, then serves both markets, instead of a second copy that could drift from the first. Scenarios hands Trading the replayed day's prices, to trade in and to value the scenario's portfolio, so Trading doesn't need to know how a scenario replays. Trading checks market hours and price age only on a price it reads from \mref{mMarket} Market, since those rules apply only to the live market (FR33, FR39, FR40). It takes a handed price only with the lock on a scenario's portfolio, which Wallet gives only for a scenario (a lock token), so the live portfolio always trades at the live price (SEC-29, SEC-31). The assets are ones Market keeps, so a stock is named the same way in both. Market keeps an asset after it is removed from the live market, so a removal doesn't change a scenario's assets (FR31). Past prices are stored with each scenario, and a scenario is offered only once its data has a price for every asset on every trading day (SEC-32), so a replay never stops on a missing day. How many scenarios there are, and where their prices come from, depend on the cost of historical data (SRS LC4), so both are hidden here. Every scenario screen shows that it is a scenario and the dates it replays (FR48), which \mref{mScreens} Screens displays.
+\item[Implemented By:] \progname{} server, in \path{scenarios/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Privacy Module (\mref{mPrivacy})}
+
+\begin{description}
+\item[Secrets:] How consent, data export and account deletion are carried out.
+\item[Services:] Records the user's consent to read their health data, and its withdrawal. Gives the user a copy of the personal data stored about them, and deletes their account and all its data once they confirm.
+\item[Rationale:] The user can download their data (FR9), delete their account from the app after confirming that it can't be undone (FR10, FR11, SEC-18), and withdraw consent to read their health data (FR76, SEC-9). These rules change with the law and the app stores' policies (SC6), so they are kept in one module, apart from the features whose data they act on. Privacy doesn't use those features. Instead, at Revision~0 each module's plug-in will also say what personal data it keeps, and how to export and delete it, through \mref{mPlugins} Plugins (the plug-in pattern). Every plug-in must say this, even when its module keeps none, so a new module can't be left out of an export or a deletion. \mref{mControl} Control hands Privacy the plug-ins when it builds the server, as it does for the health check, so Privacy never names a module or reads another module's tables. Privacy deletes the user's data on the server at once. A backup can't be changed, so the hosting keeps each one for no longer than \texttt{DATA\_DELETION\_PERIOD}, and the deletion reaches the backups in time too (SEC-18, SEC-26). On the phone, \mref{mSync} Sync Service reads no health data before consent is given, and stops as soon as it is withdrawn, without waiting for the server (SEC-9).
+\item[Implemented By:] \progname{} server, in \path{privacy/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
 
 % M18 Navigation and M19 Screens (app): #236
 
@@ -834,7 +932,7 @@ at Revision~0. The PoC does not include reminders.
 
 \begin{description}
 \item[Secrets:] The shape of a module's plug-in.
-\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it.
+\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it. At Revision~0, it also says what personal data the module keeps and how to export and delete it, which Control hands to \mref{mPrivacy} Privacy.
 \item[Rationale:] Control must be able to add any module without knowing anything else about it (the plug-in pattern). A plug-in is a small, read-only record of exactly what Control needs, so the code that builds the server depends on this shape and never on a module. Only the list in \path{registry.py} names the modules. A module with background work must include a health check, since that work can fail without any request noticing.
 \item[Implemented By:] \progname{} server, in \path{core/plugins.py}
 \item[Type of Module:] Record
@@ -852,54 +950,212 @@ at Revision~0. The PoC does not include reminders.
 
 % M24 API Service (app): #236
 
-\section{Traceability Matrix} \label{SecTM}
+\newpage
+\section{Traceability Matrices} \label{SecTM}
 
-This section shows two traceability matrices: between the modules and the
-requirements and between the modules and the anticipated changes.
+Table~\ref{TblRT} assigns the SRS requirements to the modules responsible
+for their behaviour, presentation or platform interface. It covers all 77
+functional requirements, eight nonfunctional requirements, seven system
+constraints, and the 30 security and data-protection requirements stated
+separately in SRS Section~7.3. IDs and short names follow the SRS; the names
+below summarize the requirements rather than replace their wording.
+Stakeholder requirements and the other Hazard Analysis controls reach these
+modules through the SRS's requirement traces.
 
-% the table should use mref, the requirements should be named, use something
-% like fref
-\begin{table}[H]
-\centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+A row lists direct responsibilities, not every module reached through the
+uses hierarchy. For example, Wallet appears where balance rules matter;
+Database is not repeated for every feature that stores data. All 25 modules
+appear in at least one requirement row. Control and Plugins support
+maintainability (NFR3), while JSON Format supports exact amounts (NFR1) and
+consistent request refusals (SEC-25).
+
+These are design allocations for the full system, including modules and
+behaviour planned after the proof of concept. A trace does not mean the PoC
+already satisfies the requirement. Some controls, such as encryption and
+backups (SEC-16 and SEC-26), also require the hosting configuration and
+operational checks described in the SRS and VnV Plan.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.47\textwidth}p{0.47\textwidth}@{}}
+\caption{Trace Between Requirements and Modules}\label{TblRT}\\
 \toprule
-\textbf{Req.} & \textbf{Modules}\\
+\textbf{Requirement} & \textbf{Modules}\\
 \midrule
-R1 & \mref{mHH}, \mref{mInput}, \mref{mParams}, \mref{mControl}\\
-R2 & \mref{mInput}, \mref{mParams}\\
-R3 & \mref{mVerify}\\
-R4 & \mref{mOutput}, \mref{mControl}\\
-R5 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R6 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R7 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R8 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R9 & \mref{mVerifyOut}\\
-R10 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}\\
-R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
+\endfirsthead
+\multicolumn{2}{c}{\tablename\ \thetable: Requirements and modules (continued)}\\
+\toprule
+\textbf{Requirement} & \textbf{Modules}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
 \bottomrule
-\end{tabular}
-\caption{Trace Between Requirements and Modules}
-\label{TblRT}
-\end{table}
+\endlastfoot
+\multicolumn{2}{@{}l}{\textbf{Accounts and profile}}\\*
+FR1 -- Create an account & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctCreate
+FR2 -- Confirm minimum age & \mref{mUsers}, \mref{mConstants}, \mref{mScreens}\\ % FR_AcctAgeConfirm
+FR3 -- Choose a unique username & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctUsername
+FR4 -- Sign in & \mref{mUsers}, \mref{mAPI}, \mref{mScreens}\\ % FR_AcctSignIn
+FR5 -- Sign out of one or all sessions & \mref{mUsers}, \mref{mAPI}, \mref{mDevice}, \mref{mScreens}\\ % FR_AcctSignOut
+FR6 -- Reset a password & \mref{mUsers}, \mref{mEmail}, \mref{mScreens}\\ % FR_AcctResetPassword
+FR7 -- View and edit a profile & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctEditProfile
+FR8 -- Keep body measurements optional & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctBodyOptional
+FR9 -- Download personal data & \mref{mPrivacy}, \mref{mPlugins}, \mref{mScreens}\\ % FR_AcctDownloadData
+FR10 -- Confirm account deletion & \mref{mPrivacy}, \mref{mScreens}\\ % FR_AcctDeleteConfirm
+FR11 -- Delete an account & \mref{mPrivacy}, \mref{mPlugins}, \mref{mUsers}, \mref{mDB}, \mref{mScreens}\\ % FR_AcctDelete
+\multicolumn{2}{@{}l}{\textbf{Activity and rewards}}\\*
+FR12 -- Support the listed activity types & \mref{mActivity}, \mref{mHealth}, \mref{mConstants}, \mref{mSync}\\ % FR_ActTypes
+FR13 -- Earn currency from recorded activity & \mref{mActivity}, \mref{mWallet}, \mref{mHealth}, \mref{mSync}\\ % FR_ActEarn
+FR14 -- Acknowledge the health notice & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mActivity}, \mref{mScreens}\\ % FR_ActHealthNotice
+FR15 -- Earn without interacting during activity & \mref{mHealth}, \mref{mSync}, \mref{mActivity}\\ % FR_ActNoInteraction
+FR16 -- Treat absent activity as zero & \mref{mHealth}, \mref{mActivity}\\ % FR_ActNoData
+FR17 -- Exclude and identify implausible activity & \mref{mActivity}, \mref{mGoals}, \mref{mConstants}, \mref{mScreens}\\ % FR_ActPlausible
+FR18 -- Cap each day's reward & \mref{mActivity}, \mref{mWallet}, \mref{mConstants}, \mref{mClock}\\ % FR_ActDailyCap
+FR19 -- Set or change a daily goal & \mref{mGoals}, \mref{mClock}, \mref{mScreens}\\ % FR_ActGoal
+FR20 -- Make goals optional & \mref{mGoals}, \mref{mActivity}, \mref{mScreens}\\ % FR_ActGoalOptional
+FR21 -- Confirm goal changes & \mref{mGoals}, \mref{mScreens}\\ % FR_ActNoAutoGoal
+FR22 -- Show the current streak & \mref{mGoals}, \mref{mScreens}\\ % FR_ActStreak
+FR23 -- Allow rest days & \mref{mGoals}, \mref{mConstants}, \mref{mClock}, \mref{mScreens}\\ % FR_ActRestDay
+FR24 -- Do not penalize or share missed goals & \mref{mGoals}, \mref{mSocial}, \mref{mScreens}\\ % FR_ActNoPenalty
+FR25 -- Show milestones & \mref{mGoals}, \mref{mConstants}, \mref{mScreens}\\ % FR_ActMilestone
+FR26 -- Exclude weight and calories from rewards & \mref{mActivity}, \mref{mGoals}\\ % FR_ActNoWeightReward
+FR27 -- Show daily activity trends & \mref{mActivity}, \mref{mPrivacy}, \mref{mScreens}\\ % FR_ActTrends
+\multicolumn{2}{@{}l}{\textbf{Market and portfolio}}\\*
+FR28 -- Offer the minimum number of stocks & \mref{mMarket}, \mref{mConstants}\\ % FR_MktAssetCount
+FR29 -- Use one quote currency & \mref{mMarket}, \mref{mProviders}, \mref{mConstants}\\ % FR_MktOneCurrency
+FR30 -- Administer the live asset list & \mref{mMarket}\\ % FR_MktUpdateAssets
+FR31 -- Sell holdings of a removed asset & \mref{mMarket}, \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktRemovedHoldings
+FR32 -- Use the latest real market prices & \mref{mMarket}, \mref{mProviders}\\ % FR_MktRealPrices
+FR33 -- Show price times and delayed prices & \mref{mMarket}, \mref{mClock}, \mref{mConstants}, \mref{mScreens}\\ % FR_MktPriceAge
+FR34 -- Acknowledge the simulation notice & \mref{mTrading}, \mref{mUsers}, \mref{mScreens}\\ % FR_MktSimNotice
+FR35 -- Buy whole shares & \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktBuy
+FR36 -- Sell whole shares & \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktSell
+FR37 -- Apply a trade completely or not at all & \mref{mTrading}, \mref{mWallet}, \mref{mDB}\\ % FR_MktAtomicTrade
+FR38 -- Apply each trade request once & \mref{mTrading}, \mref{mWallet}, \mref{mAPI}\\ % FR_MktNoDuplicate
+FR39 -- Refuse trades at stale prices & \mref{mTrading}, \mref{mMarket}, \mref{mClock}, \mref{mConstants}\\ % FR_MktNoStaleTrade
+FR40 -- Queue trades while the market is closed & \mref{mTrading}, \mref{mMarket}, \mref{mClock}, \mref{mScreens}\\ % FR_MktQueueClosed
+FR41 -- Show holdings & \mref{mTrading}, \mref{mScreens}\\ % FR_MktHoldings
+FR42 -- Show portfolio value & \mref{mTrading}, \mref{mMarket}, \mref{mScreens}\\ % FR_MktPortfolioValue
+FR43 -- Label simulated values & \mref{mScreens}\\ % FR_MktLabelReturns
+FR44 -- Use signs or text for gains and losses & \mref{mScreens}\\ % FR_MktGainLossLabel
+FR45 -- Practise in an isolated market scenario & \mref{mScenarios}, \mref{mTrading}, \mref{mWallet}\\ % FR_MktScenario
+FR46 -- Initialize a scenario portfolio & \mref{mScenarios}, \mref{mWallet}, \mref{mConstants}\\ % FR_MktScenarioStart
+FR47 -- Advance a scenario one trading day & \mref{mScenarios}, \mref{mTrading}, \mref{mScreens}\\ % FR_MktScenarioAdvance
+FR48 -- Label scenario screens and dates & \mref{mScenarios}, \mref{mScreens}\\ % FR_MktScenarioLabel
+FR49 -- Avoid asset recommendations & \mref{mLearning}, \mref{mScreens}\\ % FR_MktNoRecommend
+\multicolumn{2}{@{}l}{\textbf{Learning and feedback}}\\*
+FR50 -- Explain core concepts & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnExplainConcept
+FR51 -- Open explanations where concepts appear & \mref{mLearning}, \mref{mScreens}, \mref{mNavigation}\\ % FR_LearnInPlace
+FR52 -- Explain portfolio value changes & \mref{mLearning}, \mref{mTrading}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnValueChange
+FR53 -- Explain a trade's portfolio effect & \mref{mLearning}, \mref{mTrading}, \mref{mScreens}\\ % FR_LearnTradeEffect
+FR54 -- Explain diversification when concentrated & \mref{mLearning}, \mref{mTrading}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnConcentration
+FR55 -- Provide knowledge checks & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnKnowledgeCheck
+FR56 -- Explain knowledge-check answers & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnCheckResult
+FR57 -- Show learning progress & \mref{mLearning}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnProgress
+FR58 -- Administer learning content & \mref{mLearning}\\ % FR_LearnUpdateContent
+FR59 -- Review and identify learning sources & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnReviewed
+FR60 -- Show the basis of portfolio feedback & \mref{mLearning}, \mref{mTrading}, \mref{mScreens}\\ % FR_LearnFeedbackBasis
+\multicolumn{2}{@{}l}{\textbf{Social feed}}\\*
+FR61 -- Send friend requests & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialRequest
+FR62 -- Accept friendships explicitly & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialAccept
+FR63 -- Decline friend requests & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialDecline
+FR64 -- Remove a friend & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialRemove
+FR65 -- Share only the listed update kinds & \mref{mSocial}, \mref{mActivity}, \mref{mGoals}, \mref{mLearning}, \mref{mScreens}\\ % FR_SocialShare
+FR66 -- Choose an update's viewers & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialChooseFriends
+FR67 -- Preview an update before sharing & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialPreview
+FR68 -- Exclude body measurements and records & \mref{mSocial}\\ % FR_SocialNoBody
+FR69 -- Show the newest friend updates first & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialFeed
+FR70 -- Delete a shared update & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialDeleteUpdate
+FR71 -- Do not rank users & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialNoRanking
+\multicolumn{2}{@{}l}{\textbf{Reminders and settings}}\\*
+FR72 -- Choose reminder periods & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % FR_RemindPeriods
+FR73 -- Deliver only within chosen periods & \mref{mReminders}, \mref{mDevice}, \mref{mClock}, \mref{mConstants}\\ % FR_RemindInPeriods
+FR74 -- Enable or disable each reminder type & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % FR_RemindTypes
+FR75 -- Deliver reminders when the app runs & \mref{mReminders}, \mref{mDevice}, \mref{mSync}\\ % FR_RemindSend
+FR76 -- Withdraw health-data consent & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % FR_SetWithdrawConsent
+FR77 -- Show health permissions and their limits & \mref{mHealth}, \mref{mScreens}\\ % FR_SetPermissionList
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{Nonfunctional requirements}}\\*
+NFR1 -- Accuracy & \mref{mWallet}, \mref{mTrading}, \mref{mActivity}, \mref{mJSON}, \mref{mConstants}\\ % NFR_Accuracy
+NFR2 -- Usability & \mref{mScreens}, \mref{mNavigation}\\ % NFR_Usability
+NFR3 -- Maintainability & \mref{mControl}, \mref{mPlugins}, \mref{mConstants}, \mref{mProviders}, \mref{mHealth}, \mref{mDevice}, \mref{mAPI}, \mref{mDB}, \mref{mClock}\\ % NFR_Maintainability
+NFR4 -- Portability & \mref{mHealth}, \mref{mDevice}, \mref{mScreens}, \mref{mAPI}\\ % NFR_Portability
+NFR5 -- Performance & \mref{mScreens}, \mref{mAPI}, \mref{mActivity}, \mref{mTrading}, \mref{mSocial}, \mref{mDB}\\ % NFR_Performance
+NFR6 -- Reliability & \mref{mTrading}, \mref{mWallet}, \mref{mDB}, \mref{mAPI}\\ % NFR_Reliability
+NFR7 -- Security & \mref{mUsers}, \mref{mPrivacy}, \mref{mAPI}, \mref{mDevice}, \mref{mDB}, \mref{mSocial}\\ % NFR_Security
+NFR8 -- Accessibility & \mref{mScreens}\\ % NFR_Accessibility
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{System constraints}}\\*
+SC1 -- Supported Android and iOS phones & \mref{mHealth}, \mref{mDevice}, \mref{mNavigation}, \mref{mScreens}\\ % SC_Platform
+SC2 -- Use platform health data without a wearable & \mref{mHealth}\\ % SC_HealthPlatform
+SC3 -- Follow platform health-access rules & \mref{mHealth}, \mref{mPrivacy}, \mref{mScreens}\\ % SC_HealthAccess
+SC4 -- Respect market-provider terms and limits & \mref{mProviders}, \mref{mMarket}\\ % SC_MarketData
+SC5 -- Keep currency and investments simulated & \mref{mWallet}, \mref{mTrading}, \mref{mScenarios}, \mref{mLearning}, \mref{mScreens}\\ % SC_NoRealMoney
+SC6 -- Follow privacy law and store policies & \mref{mPrivacy}, \mref{mPlugins}, \mref{mUsers}, \mref{mHealth}, \mref{mDB}\\ % SC_Privacy
+SC7 -- Use the server for trading, prices and feed & \mref{mControl}, \mref{mAPI}, \mref{mMarket}, \mref{mTrading}, \mref{mSocial}\\ % SC_Server
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{Security and data protection (SRS Section 7.3)}}\\*
+SEC-7 -- Read only the needed health data & \mref{mHealth}, \mref{mConstants}\\ % 7
+SEC-8 -- Explain each health permission & \mref{mHealth}, \mref{mScreens}\\ % 8
+SEC-9 -- Obtain and withdraw health-data consent & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % 9
+SEC-10 -- Send only daily activity totals & \mref{mHealth}, \mref{mSync}, \mref{mAPI}, \mref{mActivity}\\ % 10
+SEC-11 -- Limit data sent to outside services & \mref{mProviders}, \mref{mEmail}, \mref{mUsers}\\ % 11
+SEC-12 -- Do not read or store location data & \mref{mHealth}, \mref{mActivity}, \mref{mUsers}\\ % 12
+SEC-13 -- Keep statistics private until shared & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % 13
+SEC-14 -- Exclude location and exact activity times & \mref{mSocial}\\ % 14
+SEC-15 -- Authenticate and authorize data access & \mref{mUsers}, \mref{mAPI}, \mref{mSocial}, \mref{mPrivacy}\\ % 15
+SEC-16 -- Encrypt data in transit and at rest & \mref{mAPI}, \mref{mDB}\\ % 16
+SEC-17 -- Expire and end the correct sessions & \mref{mUsers}, \mref{mAPI}, \mref{mDevice}, \mref{mClock}, \mref{mConstants}\\ % 17
+SEC-18 -- Delete account data and backups in time & \mref{mPrivacy}, \mref{mPlugins}, \mref{mDB}, \mref{mUsers}\\ % 18
+SEC-19 -- Reward each activity only once & \mref{mActivity}, \mref{mWallet}, \mref{mSync}, \mref{mDB}\\ % 19
+SEC-20 -- Catch late activity after acknowledgement & \mref{mSync}, \mref{mHealth}, \mref{mActivity}, \mref{mPrivacy}, \mref{mClock}, \mref{mConstants}\\ % 20
+SEC-21 -- Handle unavailable activity without losses & \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % 21
+SEC-22 -- Keep a complete balance history & \mref{mWallet}, \mref{mDB}\\ % 22
+SEC-23 -- Assign activity to the user's calendar day & \mref{mHealth}, \mref{mSync}, \mref{mActivity}, \mref{mClock}, \mref{mUsers}\\ % 23
+SEC-24 -- Calculate and validate rewards on the server & \mref{mActivity}, \mref{mWallet}, \mref{mTrading}, \mref{mClock}\\ % 24
+SEC-25 -- Validate every request & \mref{mJSON}, \mref{mUsers}, \mref{mActivity}, \mref{mTrading}, \mref{mGoals}, \mref{mLearning}, \mref{mSocial}, \mref{mScenarios}, \mref{mPrivacy}\\ % 25
+SEC-26 -- Back up and test restoration & \mref{mDB}\\ % 26
+SEC-27 -- Keep prices in the quote currency & \mref{mMarket}, \mref{mProviders}, \mref{mConstants}\\ % 27
+SEC-28 -- Apply stock splits consistently & \mref{mMarket}, \mref{mTrading}\\ % 28
+SEC-29 -- Trade only at the confirmed price & \mref{mTrading}, \mref{mMarket}, \mref{mScreens}\\ % 29
+SEC-30 -- Keep displayed balances and values accurate & \mref{mWallet}, \mref{mTrading}, \mref{mActivity}, \mref{mJSON}, \mref{mConstants}\\ % 30
+SEC-31 -- Separate live and scenario portfolios & \mref{mScenarios}, \mref{mWallet}, \mref{mTrading}\\ % 31
+SEC-32 -- Check that scenario data is complete & \mref{mScenarios}\\ % 32
+SEC-33 -- Keep external-service credentials on the server & \mref{mProviders}, \mref{mEmail}\\ % 33
+SEC-34 -- Keep notification contents private & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % 34
+SEC-38 -- Limit password and sign-in attempts & \mref{mUsers}, \mref{mClock}, \mref{mConstants}\\ % 38
+SEC-39 -- Store sessions securely on the phone & \mref{mDevice}, \mref{mAPI}\\ % 39
+\end{longtable}
+\endgroup
 
-\begin{table}[H]
-\centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+\newpage
+Table~\ref{TblACT} names the module that hides each anticipated change from
+Section~\ref{SecAchange}. Each change has one owner and each module owns one
+change. Modules that use that owner's public interface are not extra owners
+of its secret.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.25\textwidth}p{0.65\textwidth}@{}}
+\caption{Trace Between Anticipated Changes and Modules}\label{TblACT}\\
 \toprule
-\textbf{AC} & \textbf{Modules}\\
+\textbf{Anticipated change} & \textbf{Module}\\
 \midrule
-% \acref{acHardware} & \mref{mHH}\\
-% \acref{acInput} & \mref{mInput}\\
-% \acref{acParams} & \mref{mParams}\\
-% \acref{acVerify} & \mref{mVerify}\\
-% \acref{acOutput} & \mref{mOutput}\\
-% \acref{acVerifyOut} & \mref{mVerifyOut}\\
-% \acref{acODEs} & \mref{mODEs}\\
-% \acref{acEnergy} & \mref{mEnergy}\\
-% \acref{acControl} & \mref{mControl}\\
-% \acref{acSeqDS} & \mref{mSeqDS}\\
-% \acref{acSolver} & \mref{mSolver}\\
-% \acref{acPlot} & \mref{mPlot}\\
+\endfirsthead
+\multicolumn{2}{c}{\tablename\ \thetable: Changes and modules (continued)}\\
+\toprule
+\textbf{Anticipated change} & \textbf{Module}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
 \acref{acDB} & \mref{mDB}\\
 \acref{acClock} & \mref{mClock}\\
 \acref{acProviders} & \mref{mProviders}\\
@@ -925,11 +1181,8 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \acref{acJSON} & \mref{mJSON}\\
 \acref{acAPI} & \mref{mAPI}\\
 \acref{acEmail} & \mref{mEmail}\\
-\bottomrule
-\end{tabular}
-\caption{Trace Between Anticipated Changes and Modules}
-\label{TblACT}
-\end{table}
+\end{longtable}
+\endgroup
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
@@ -1001,20 +1254,297 @@ built after the proof of concept.}
 
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+The user interface for \progname{} is designed to provide users with
+a simple and intuitive way to track their physical activity, earn
+virtual currency, and participate in simulated stock market investing.
+The interface follows a minimalist design approach, with consistent
+navigation, clear labels, and straightforward layouts. The design
+prioritizes ease of use, particularly for users with little or no
+previous investing experience.
+
+The mobile application is designed using Figma mockups and will be
+implemented using React Native with TypeScript, allowing the same
+interface to be used on both Android and iOS devices.
+
+\subsection{Interface Design}
+
+The application uses a bottom navigation bar with three main sections:
+Home, Market, and Portfolio. This allows users to move between the
+core features without navigating through multiple menus. The
+interface uses a consistent colour scheme, typography, and layout
+across screens to improve usability.
+
+The following screens have been designed:
+
+\begin{itemize}
+
+    \item \textbf{Home Dashboard:}
+    Displays the user's daily step count, progress toward their
+    activity goal, virtual currency earned, available balance,
+    and current portfolio value. This screen establishes the
+    connection between physical activity and simulated investing.
+
+    \item \textbf{Stock Market:}
+    Displays available stocks, including their company names,
+    stock symbols, current prices, and price changes. Users can
+    browse stocks or search for a specific company.
+
+    \item \textbf{Stock Details:}
+    Provides information about a selected stock, including its
+    current price, price movement, and historical performance
+    displayed through a graph. Users can initiate a simulated
+    purchase from this screen.
+
+    \item \textbf{Buy Stock:}
+    Allows users to specify the number of shares they wish to
+    purchase. The interface displays the estimated cost and
+    available virtual currency balance before proceeding.
+
+    \item \textbf{Review Purchase:}
+    Displays a summary of the simulated transaction, including
+    the selected stock, number of shares, price per share, total
+    cost, and remaining currency balance. Users can confirm
+    their purchase or return to the previous screen.
+
+    \item \textbf{Purchase Successful:}
+    Confirms that a simulated purchase has been completed and
+    displays the transaction details. A short educational
+    explanation introduces users to basic investing concepts.
+
+    \item \textbf{My Portfolio:}
+    Displays the user's total simulated portfolio value,
+    investment performance, and current stock holdings.
+    A graph illustrates changes in portfolio value over time.
+
+\end{itemize}
+
+\subsection{Design Rationale}
+
+The interface takes inspiration from minimalist financial
+applications, such as Wealthsimple, while adapting the design
+to \progname{}'s focus on physical activity and financial
+education. A simple layout was chosen to reduce unnecessary
+complexity and make simulated investing more approachable for
+beginners.
+
+The Home Dashboard emphasizes the relationship between
+physical activity and virtual currency rewards, while the
+Market and Portfolio sections provide a straightforward
+investing experience. The purchase process is separated into
+multiple screens so users can review transaction details before
+confirming a trade.
+
+The interface also distinguishes simulated investing from
+real-world investing by identifying portfolio values and
+transactions as simulated. Navigation and screen presentation
+are handled by the Navigation and Screens modules, while
+activity rewards, balances, and trading calculations remain
+the responsibility of the server.
+
+
+\subsection{User Interface Mockups}
+
+Figure~\ref{FigUIMockups} presents the seven Figma mockups
+developed for the mobile application's main user interface.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth,keepaspectratio]{figures/Frame.png}
+    \caption{Figma mockups of the \progname{} mobile user interface.}
+    \label{FigUIMockups}
+\end{figure}
 
 \section{Design of Communication Protocols}
 
-\wss{If there is communication between hardware and software, it may be necessary 
-to explain the design of the communication protocol.  This section should be filled 
-in with NA if it is not appropriate for a given project.}
+\subsection{Activity Data from the Phone}
 
-\section{Database Design}
+\mref{mHealth} Health Service reads recorded steps through the phone's
+platform APIs. These calls run locally on the phone.
 
-\wss{If a database is a significant component of the project, the database
-design should be summarized here.  This section should be filled in with NA if
-it is not appropriate for a given project.}
+\begin{itemize}
+\item \textbf{Android:} The app connects to Health Connect through
+  \texttt{react-native-health-connect}. It checks for step-read permission,
+  requests it if needed, then asks for the total steps in the selected time
+  range.
+\item \textbf{iPhone:} The app uses Expo Pedometer from
+  \texttt{expo-sensors}. It checks motion and fitness permission and whether
+  a step counter is available, then requests the recorded step count.
+\end{itemize}
+
+Both paths read from today's local midnight to the time the read started.
+\texttt{getTodaysSteps} returns one number: the total steps for that range.
+A successful read with no steps returns zero. If permission is denied,
+the service is unavailable or the read fails, the app shows a read error
+instead of treating the failure as zero steps. Individual health records
+remain on the phone (SEC-10).
+
+\section{Database Design}  \label{SecDB}
+
+% \wss{If a database is a significant component of the project, the database
+% design should be summarized here.  This section should be filled in with NA if
+% it is not appropriate for a given project.}
+
+\progname{} keeps its data in one relational database on the server, reached
+only through \mref{mDB} Database. One database lets a trade save its payment
+and its shares in one transaction (FR37). The server's copy of a balance or a
+holding is the one that counts (SEC-24). Individual activity records stay on
+the phone, in its health platform, and only daily totals reach the server
+(SEC-10).
+
+The database follows the module decomposition. Each module owns its tables, and
+only that module reads or writes them. Another module gets the data through the
+owner's access programs, as a read-only copy. A table may still point at a row
+of another module's table with a foreign key, such as a trade at its asset, so
+the database can refuse a row that points at nothing. Each change to the tables
+is a migration, named after its module and numbered. The migrations form one
+chain, so every copy of the database is changed in the same order.
+
+Table~\ref{TblDB} lists the tables of the proof of concept and
+Figure~\ref{FigDB} shows their columns and how they are related.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{p{0.26\textwidth} p{0.16\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Table} & \textbf{Owner} & \textbf{One row is}\\
+\midrule
+users & \mref{mUsers} Users & A user, with their time zone.\\
+activity\_daily\_totals & \mref{mActivity} Activity & The latest total sent
+  for one user, day and activity type, and whether it counts for a reward.\\
+portfolios & \mref{mWallet} Wallet & A portfolio and its currency balance. A
+  user's live portfolio is the one with no scenario.\\
+balance\_changes & \mref{mWallet} Wallet & One change to a portfolio's balance,
+  with its amount, reason and time. It is never edited.\\
+assets & \mref{mMarket} Market & A stock that can be traded, with its symbol
+  and the currency of its prices.\\
+prices & \mref{mMarket} Market & One price of an asset, with the time the
+  provider set it and the time the server obtained it.\\
+provider\_requests & \mref{mMarket} Market & One call to the market data
+  provider and how it ended, kept to watch the request limit (SC4).\\
+trades & \mref{mTrading} Trading & One trade, with its request ID, quantity,
+  price and cost. It is never edited.\\
+holdings & \mref{mTrading} Trading & The number of shares of one asset that a
+  portfolio holds.\\
+\bottomrule
+\end{tabularx}
+\caption{Tables of the proof of concept and the module that owns each}
+\label{TblDB}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/database-design.pdf}
+\caption{Tables of the proof of concept, grouped by the module that owns them.
+An arrow goes from the table that holds a foreign key to the table it points
+at, and the numbers at its ends say how many rows can be at each end. PK marks
+a primary key and FK a foreign key.}
+\label{FigDB}
+\end{figure}
+
+
+\subsection{Design Decisions}
+
+\begin{description}
+\item[Lists in the SRS are tables.] The data dictionary (SRS Section~7.2) gives
+  a portfolio its holdings, trade history and balance changes as lists, and an
+  asset its price history. Here each is a table with one row per item, so a row
+  can be added without rewriting the rest, and the database can check each row.
+
+\item[A value that can be calculated is not stored.] An asset's current price
+  is its price with the latest time, and a portfolio's value is calculated from
+  its holdings and the current prices when it is asked for (FR42). Neither can
+  then be out of date. The balance is the one exception. It is stored, so that
+  a trade can check it quickly, and it always equals the sum of the portfolio's
+  balance changes (SEC-22).
+
+\item[Money is an exact decimal.] An amount has up to 12 digits before the
+  decimal point and 4 after, and a price up to 8 and 4. Neither is a
+  floating-point number, so no amount is rounded by accident (NFR1).
+
+\item[Every time has its time zone.] A time is stored with its time zone, so
+  times from the server, the provider and users in different places compare
+  correctly (FR33).
+
+\item[Identifiers are UUIDs.] The phone can then make a trade's request ID
+  without asking the server (FR38). Prices and provider requests use a counter,
+  since there are many of them and nothing outside the server refers to one.
+
+\item[History is added to, never edited.] A balance change, a trade and a price
+  are never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A daily activity total is different. Each sync replaces
+  it with the latest total for that day, since a day's total grows until the
+  day ends.
+
+\item[A reward is stored once, in Wallet.] The data dictionary gives an
+  activity record its reward. Here the daily total holds no reward. What a day
+  has been paid is the sum of that day's activity rewards among Wallet's
+  balance changes, and a sync pays only the difference. A day is then never
+  paid twice, and a total that falls later takes nothing back (SEC-19).
+
+\item[Deleting a row deletes what belongs to it.] A portfolio's balance
+  changes, trades and holdings are deleted with it by the database, and a
+  user's daily totals with the user. The proof of concept uses this to reset
+  the demo user. Account deletion is designed at Revision~0 (SEC-18).
+\end{description}
+
+\subsection{Rules the Database Checks}
+
+A module checks its own rules before it saves. The database checks the most
+important ones again on every write, so that a mistake in the code cannot save
+a row that breaks one.
+
+\begin{itemize}
+\item A balance is never below zero (FR37).
+\item A user has at most one live portfolio.
+\item A balance change is never zero. It adds currency exactly when its reason
+  is an activity reward, and it has an activity date exactly when its reason is
+  an activity reward (SEC-19, SEC-22).
+\item Every price is above zero and in \texttt{QUOTE\_CURRENCY}, and an asset
+  has one price for each time the provider set one (FR29, SEC-27).
+\item A portfolio has one trade for each request ID, so a repeated request
+  cannot trade twice (FR38).
+\item A trade's cost is exactly its quantity times its price (NFR1), and each
+  trade points at the one balance change that paid for it (FR37).
+\item A holding is never below zero, and a portfolio has one holding for each
+  asset.
+\item A user has one daily total for each day and activity type (SEC-10). Its
+  step count is never below zero, and it counts for a reward exactly when it
+  is within \texttt{MAX\_DAILY\_STEPS} (FR17).
+\item Every foreign key points at a row that exists.
+\end{itemize}
+
+
+\subsection{From the SRS Data Entities to Tables}
+
+Table~\ref{TblDBEntities} traces each major data entity of the SRS (SRS
+Section~7.1) to the tables that hold it.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{SRS entity} & \textbf{Tables} & \textbf{Owner} & \textbf{State}\\
+\midrule
+User Data & users & \mref{mUsers} Users & The proof of concept has one demo
+  user. Sign-in, profile, consent and settings come at Revision~0.\\
+Activity Record & activity\_daily\_totals & \mref{mActivity} Activity & Built
+  for steps. The other activity types come at Revision~0.\\
+Portfolio & portfolios, balance\_changes, holdings & \mref{mWallet} Wallet,
+  \mref{mTrading} Trading & Built. Scenario portfolios come at Revision~0.\\
+Market Data & assets, prices & \mref{mMarket} Market & Built.\\
+Trade & trades & \mref{mTrading} Trading & Built for buying. Selling and queued
+  trades come at Revision~0.\\
+Social Data & At Revision~0 & \mref{mSocial} Social & Not built.\\
+\bottomrule
+\end{tabularx}
+\caption{The major data entities of the SRS and the tables that hold them}
+\label{TblDBEntities}
+\end{table}
+
+The tables of the modules built after the proof of concept are designed with
+those modules at Revision~0. One decision is already made for
+\mref{mUsers} Users: the server will store only a hash of each password,
+session token and password reset token, never the value itself (HA~H45).
 
 \section{Timeline}
 
