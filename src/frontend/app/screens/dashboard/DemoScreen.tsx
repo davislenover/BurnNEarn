@@ -20,12 +20,6 @@ const DAILY_CREDIT_LIMIT = 300;
 // Usual earning rate, shown until the server sends its own rate.
 const DEFAULT_STEPS_PER_CREDIT = 100;
 
-// Show a server amount such as "10.0000" as "10.00".
-function formatCredits(text: string) {
-  const [whole, fraction = ''] = text.split('.');
-  return `${Number(whole).toLocaleString('en-US')}.${(fraction + '00').slice(0, 2)}`;
-}
-
 // Turns a server amount like "1062.0000" into cents (106200).
 function toCents(text: string) {
   const [whole, fraction = ''] = text.split('.');
@@ -175,11 +169,7 @@ export default function DemoScreen() {
         <View style={styles.limitBar}>
           <View style={[styles.limitFill, { width: `${Math.min(100, (todayReward / DAILY_CREDIT_LIMIT) * 100)}%` }]} />
         </View>
-        <Text style={styles.caption}>
-          {todayResult
-            ? `${formatCredits(todayResult.reward)} of ${DAILY_CREDIT_LIMIT} daily limit`
-            : `Daily limit: ${DAILY_CREDIT_LIMIT} credits`}
-        </Text>
+        <Text style={styles.caption}>Daily limit: {DAILY_CREDIT_LIMIT} credits</Text>
       </View>
 
       {/* Stock price and purchase controls */}
@@ -500,7 +490,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3,
   },
-  // Large green amount earned, e.g. "+0.00 credits"
+  // Large green amount earned, e.g. "+0 credits"
   earned: {
     fontSize: 16,
     fontWeight: '600',
