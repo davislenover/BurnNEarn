@@ -68,6 +68,10 @@ Social, Scenarios and Privacy, which are built after the proof of concept, and
 what Trading and Plugins add for them at Revision~0.\\
 Nov 15, 2026 & 1.8 & Farid Bastoros: 12 Database Design.\\
 Nov 15, 2026 & 1.9 & Preston Grewal: Traceability matrices (\#239).\\
+Nov 15, 2026 & 1.10 & Zaid Alsaadi: Added Device Service (M5) and
+Reminder Service (M21) descriptions in Section 7. Marked M5 as planned
+after the proof of concept in Section 5. Updated Section 13 Timeline
+with task ownership, deadlines and links to GitHub.\\
 \bottomrule
 \end{tabularx}
 
@@ -396,7 +400,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mClock}:] Clock
 \item [\refstepcounter{mnum} \mthemnum \label{mProviders}:] Market Providers
 \item [\refstepcounter{mnum} \mthemnum \label{mHealth}:] Health Service (app)
-\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)\textsuperscript{\dag}
 % Behaviour-Hiding, server
 \item [\refstepcounter{mnum} \mthemnum \label{mControl}:] Control
 \item [\refstepcounter{mnum} \mthemnum \label{mConstants}:] Constants (server and app)
@@ -435,7 +439,7 @@ made that the SRS does not mention.
 & \mref{mProviders} Market Providers\\
 & \mref{mEmail} Email Service\textsuperscript{\dag}\\
 & \mref{mHealth} Health Service (app)\\
-& \mref{mDevice} Device Service (app)\\
+& \mref{mDevice} Device Service (app)\textsuperscript{\dag}\\
 \midrule
 
 \multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & \mref{mControl} Control\\
@@ -702,6 +706,27 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \end{description}
 
 % M5 Device Service (app): #237
+\subsubsection{Device Service Module (\mref{mDevice})}
+\begin{description}
+\item[Secrets:] The phone operating system's interfaces for device services.
+
+\item[Services:] Provides one interface for secure storage, local
+notifications and background tasks on Android and iOS. Stores, reads and
+removes the session token using the phone's secure storage. Checks and
+requests notification permission, schedules and cancels local notifications,
+and registers background tasks requested by other app modules. Reports
+when permission is denied or a service is unavailable.
+
+\item[Rationale:] Android and iOS provide different device interfaces.
+Keeping those details here lets the rest of the app use the same calls on
+both platforms (NFR4) and limits the changes needed when a platform changes (NFR3). The API Service uses this module to keep the session token in secure storage (SEC-39). The Reminder Service decides what to send and when. Device Service handles the operating system calls. Background execution depends on the operating system, so callers must also support updating when the user opens the app.
+
+\item[Implemented By:] \progname{} mobile app, after the proof of concept,
+at Revision~0. The PoC has no sign-in or reminders and does not use this
+module yet.
+
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsection{Behaviour-Hiding Modules}
 
@@ -871,6 +896,26 @@ the MIS specifies them at Revision~0.
 % M20 Sync Service (app): #235
 
 % M21 Reminder Service (app): #237
+\subsubsection{Reminder Service Module (\mref{mReminders})}
+
+\begin{description}
+\item[Secrets:] The reminder selection and scheduling policy.
+
+\item[Services:] Uses the user's reminder settings and application events
+to decide which reminders to send. Supports the Activity, Milestone,
+Portfolio, Learning and Social reminder types defined in the SRS. Retrieves
+and saves settings through the API Service and schedules local notifications
+through the Device Service.
+
+Only enabled reminder types are sent, and only within the user's chosen periods. If no periods have been chosen, uses \texttt{DEFAULT\_REMINDER\_PERIOD}. Cancels or reschedules pending reminders when settings change and tracks handled events to avoid repeating the same reminder. Notification content excludes health data, balances and portfolio values unless the user has explicitly enabled their inclusion.
+\item[Rationale:] The user controls reminder types and delivery periods
+(FR72 to FR75). Keeping these rules in one module lets them change without changing the screens or the operating system calls. Reminders are created on the phone, with no external push notification service. When a reminder needs new data, the module evaluates it the next time the app runs, either in the background or when the user opens it. This follows the SRS without assuming the app can run continuously. Generic notification content protects the user's private information by default (SEC-34).
+
+\item[Implemented By:] \progname{} mobile app, after the proof of concept,
+at Revision~0. The PoC does not include reminders.
+
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsection{Software Decision Modules}
 
@@ -1503,9 +1548,13 @@ session token and password reset token, never the value itself (HA~H45).
 
 \section{Timeline}
 
-\wss{Schedule of tasks and who is responsible}
+The schedule of tasks and responsibilities for \progname{} is maintained in the \href{https://github.com/users/davislenover/projects/4/views/1} {BurnNEarn GitHub Project board} and the \href{https://github.com/davislenover/BurnNEarn/milestones} {repository milestones}. Documentation and implementation work is divided into issues. Each issue describes a task, its assignee identifies theresponsible team member, and its milestone groups it with the corresponding deliverable. The project board tracks progress through Backlog, In Progress, In Review, and Done.
 
-\wss{You can point to GitHub if this information is included there}
+\medskip\noindent
+The overall schedule is documented in the Development Plan, including both internal team deadlines and course deadlines. For Design Document Revision~$-1$, the MG and MIS tasks are grouped under the \href{https://github.com/davislenover/BurnNEarn/milestone/7} {Design Document Revision $-1$ milestone}. The internal deadline is November~13, 2026, and the course deadline is November~16, 2026. As specified in the Development Plan, documentation work is to be merged into the \texttt{main} branch by the internal deadline. The remaining three days are reserved for checking the complete deliverable against its rubric and checklist, resolving inconsistencies, and making final corrections.
+
+\medskip\noindent
+During weekly team meetings, members report progress and blockers on their assigned issues. The team reviews unassigned tasks dependencies, and workloads, and updates assignments as needed. A member who expects to miss an internal deadline must notify the team at least 24 hours beforehand so that support or reassignment can be arranged. Detailed task ownership and progress are maintained in GitHub rather than duplicated here, allowing this section to reference the team's current plan as development continues.
 
 \section{Generative AI Use Disclosure}
 
