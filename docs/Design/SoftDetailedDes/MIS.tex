@@ -2236,6 +2236,8 @@ is shown.
 ``'' at first.\\
 buying: $\mathbb{B}$, whether a buy is in progress, false at first.\\
 message: String or None, the last message about a request, None at first.\\
+retryBuy: tuple of (request\_id: String, quantityText: String,
+expected\_price: String) or None, the last buy that failed, None at first.\\
 balance: String or None, the latest cash\_balance the server sent.\\
 asset: an element of assets in the Out of GET /v1/assets of Market (M10),
 with that Out's market\_open, or None. It is the entry for DEMO\_SYMBOL in the
@@ -2370,13 +2372,18 @@ it against the balance (FR37, SEC-24).
 \item transition: buying $:=$ true and message $:=$ None. It asks API Service
   to buy $n$ shares of DEMO\_SYMBOL, with $n$ the value of quantityText, at
   expected\_price $:=$ the price shown, exactly as GET /v1/assets gave it, so
-  the buy runs only at the price the user saw (SEC-29). One press is one buy
-  with one request\_id (FR38). Nothing sends it again, since API Service
-  doesn't retry (AC24 in the MG), so a press after a lost reply is a new buy.
+  the buy runs only at the price the user saw (SEC-29). API Service doesn't
+  retry (AC24 in the MG), so the user retries by pressing Buy again. If
+  retryBuy has the same quantityText and price, the buy reuses its
+  request\_id, so after a lost reply Trading (M12) answers the retry with
+  the first result and records the trade once (FR38, SEC-6). A refused buy
+  saves no trade, so its request\_id can be sent again. Otherwise the buy gets
+  a new request\_id.
   Buy is disabled while buying, so a double tap makes one buy (HA~H17). On success, balance $:=$ its cash\_balance, message $:=$
   a confirmation with $n$ and its currency\_amount, quantityText $:=$ ``'',
-  and it asks for the portfolio again. On failure, message $:=$ its Error's
-  message, and it asks for the asset list and the portfolio again. It does
+  retryBuy $:=$ None, and it asks for the portfolio again. On failure,
+  retryBuy $:=$ this buy, message $:=$ its Error's message, and it asks for
+  the asset list and the portfolio again. It does
   this for every failure, since the Error holds only a message, not the
   refusal's code. After price\_changed, the message gives the new price, which
   the asset area then shows, and the user presses Buy again to confirm it
