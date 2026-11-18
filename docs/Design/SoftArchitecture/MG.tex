@@ -372,6 +372,8 @@ there ULC1 to ULC3. The rest are decisions fixed at the architecture stage.
 \item[\refstepcounter{ucnum} \uctheucnum \label{ucHealthPlatform}:] Activity
   recorded by the phone is read only through its health platform (SRS SC2).
   The app does not count steps itself or accept activity typed in by the user.
+  The proof of concept's iPhone path is the one exception, as
+  \mref{mHealth} Health Service says.
 \item[\refstepcounter{ucnum} \uctheucnum \label{ucProtocol}:] The app and the
   server communicate over HTTPS with JSON. The form of single values may change
   (\acref{acJSON}), but a different protocol would change every route and the
@@ -707,8 +709,11 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \item[Rationale:] Android and iOS expose activity differently. Keeping those
   calls here lets Sync use the same reader on both platforms (NFR4), and
   keeps a change of data source in one module (SRS LC2). Steps are read
-  from today's local midnight to the reading time. Android uses
-  Health Connect and iPhone uses Expo Pedometer. 
+  from today's local midnight to the reading time. Android reads
+  Health Connect. On iPhone, the proof of concept reads Core Motion through
+  Expo Pedometer, not HealthKit, so it differs from SC2 and
+  \uref{ucHealthPlatform}. At Revision~0 it reads HealthKit through the same
+  access program, so no other module changes.
 \item[Implemented By:] \progname{} app, in
   \path{app/services/health/steps.ts}
 \item[Type of Module:] Library
@@ -1404,19 +1409,26 @@ developed for the mobile application's main user interface.
 
 \section{Design of Communication Protocols}
 
+\progname{} uses three protocols: the app reads activity from the phone's
+health platform, the app and the server exchange JSON, and the server asks the
+market data provider for prices.
+
 \subsection{Activity Data from the Phone}
 
 \mref{mHealth} Health Service reads recorded steps through the phone's
 platform APIs. These calls run locally on the phone.
 
 \begin{itemize}
-\item \textbf{Android:} The app connects to Health Connect through
-  \texttt{react-native-health-connect}. It checks for step-read permission,
+\item \textbf{Android:} Through \texttt{react-native-health-connect}, the app
+  connects to Health Connect. It checks for step-read permission,
   requests it if needed, then asks for the total steps in the selected time
   range.
 \item \textbf{iPhone:} The app uses Expo Pedometer from
   \texttt{expo-sensors}. It checks motion and fitness permission and whether
-  a step counter is available, then requests the recorded step count.
+  a step counter is available, then requests the recorded step count. This
+  reads Core Motion, not HealthKit, so it is the proof of concept's one
+  exception to SC2. At Revision~0 the app reads HealthKit instead, through the
+  \texttt{@kingstinct/react-native-healthkit} library.
 \end{itemize}
 
 Both paths read from today's local midnight to the time the read started.
@@ -1425,6 +1437,43 @@ A successful read with no steps returns zero. If permission is denied,
 the service is unavailable or the read fails, the app shows a read error
 instead of treating the failure as zero steps. Individual health records
 remain on the phone (SEC-10).
+
+\subsection{App and Server}
+
+\mref{mAPI} API Service sends JSON requests to the server's routes, all under
+\texttt{/v1}, and reads the JSON replies (\uref{ucProtocol}). A deployed
+server is reached only over HTTPS (SEC-16). The proof of concept talks to a
+server on the local network over HTTP. The app never sends a user ID. In the
+proof of concept every \texttt{/v1/me} route answers as the demo user, and at
+Revision~0 each request carries the user's session token (SEC-15, SEC-39).
+Amounts are text with four decimals, as \mref{mJSON} JSON Format defines
+(NFR1).
+
+A sync is \texttt{PUT /v1/me/activity/daily-totals}, with the phone's time
+zone and one total for each of up to seven days (SEC-20). Sending a day again
+pays only what is still owed (SEC-19). API Service waits ten seconds for the
+reply and does not retry. A buy is
+\texttt{POST /v1/me/trades}, with a request ID that the phone makes and the
+price the user saw. The server applies each request ID once: a repeat gets the
+first reply back, with status 200 instead of 201 (FR38).
+
+A refused request gets an HTTP status and a body whose \texttt{detail} holds a
+\texttt{code} and a \texttt{message}, such as 409 and
+\texttt{price\_changed} when the price moved (SEC-29), so \mref{mScreens}
+Screens can show the message. A request that does not fit its route is refused
+with 422, without the values it sent (SEC-25).
+
+\subsection{Server and Market Data Provider}
+
+\mref{mMarket} Market asks for one quote for each tradable asset through
+\mref{mProviders} Market Providers, every minute while the market is open and
+for 15 minutes after it closes. With Finnhub, each call is an HTTPS request to
+its quote route that sends only the symbol, with the key in a header and never
+in the address (SEC-11, SEC-33). Each call waits at most ten seconds. The 15
+starting assets make 15 calls a minute, under Finnhub's limit of 60 (SC4).
+Every call is saved in \texttt{provider\_requests} with how it ended. A
+refusal for the request limit ends that poll, and any other error skips only
+that asset.
 
 \section{Database Design}  \label{SecDB}
 
