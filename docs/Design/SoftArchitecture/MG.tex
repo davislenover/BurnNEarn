@@ -75,6 +75,10 @@ with task ownership, deadlines and links to GitHub.\\
 Nov 17, 2026 & 1.11 & Zaid Alsaadi: Added Section 14, Generative AI
 Use Disclosure, including tools and model versions, affected sections,
 and how AI-assisted content was checked.\\
+Nov 18, 2026 & 1.12 & Angad Chhabra: 10 User Interfaces, and 7 Module
+Decomposition: Navigation, Screens and API Service.\\
+Nov 18, 2026 & 1.13 & Davis Lenover: Navigation is built after the proof of
+concept. Review fixes to 4, 5, 7, 9, 11 and 12 (\#323, \#326, \#328, \#329).\\
 \bottomrule
 \end{tabularx}
 
@@ -370,6 +374,8 @@ there ULC1 to ULC3. The rest are decisions fixed at the architecture stage.
 \item[\refstepcounter{ucnum} \uctheucnum \label{ucHealthPlatform}:] Activity
   recorded by the phone is read only through its health platform (SRS SC2).
   The app does not count steps itself or accept activity typed in by the user.
+  The proof of concept's iPhone path is the one exception, as
+  \mref{mHealth} Health Service says.
 \item[\refstepcounter{ucnum} \uctheucnum \label{ucProtocol}:] The app and the
   server communicate over HTTPS with JSON. The form of single values may change
   (\acref{acJSON}), but a different protocol would change every route and the
@@ -418,7 +424,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mScenarios}:] Scenarios\textsuperscript{\dag}
 \item [\refstepcounter{mnum} \mthemnum \label{mPrivacy}:] Privacy\textsuperscript{\dag}
 % Behaviour-Hiding, app
-\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)\textsuperscript{\dag}
 \item [\refstepcounter{mnum} \mthemnum \label{mScreens}:] Screens (app)
 \item [\refstepcounter{mnum} \mthemnum \label{mSync}:] Sync Service (app)
 \item [\refstepcounter{mnum} \mthemnum \label{mReminders}:] Reminder Service (app)\textsuperscript{\dag}
@@ -457,7 +463,7 @@ made that the SRS does not mention.
 & \mref{mSocial} Social\textsuperscript{\dag}\\
 & \mref{mScenarios} Scenarios\textsuperscript{\dag}\\
 & \mref{mPrivacy} Privacy\textsuperscript{\dag}\\
-& \mref{mNavigation} Navigation (app)\\
+& \mref{mNavigation} Navigation (app)\textsuperscript{\dag}\\
 & \mref{mScreens} Screens (app)\\
 & \mref{mSync} Sync Service (app)\\
 & \mref{mReminders} Reminder Service (app)\textsuperscript{\dag}\\
@@ -474,7 +480,11 @@ made that the SRS does not mention.
 \end{table}
 
 Modules marked with \textsuperscript{\dag} in Table~\ref{TblMH} are built after
-the proof of concept and are specified in the MIS at Revision~0.
+the proof of concept and are specified in the MIS at Revision~0. The proof of
+concept has one screen, no sign-in and no reminders, so it needs nothing from
+\mref{mDevice} Device Service or \mref{mNavigation} Navigation yet. What each
+one hides stays as Section~\ref{SecChange} says, but its design isn't final
+and may change with feedback on the proof of concept.
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
@@ -639,7 +649,7 @@ Only the leaf modules in the hierarchy have to be implemented. If a dash
 to be implemented. The \emph{Rationale} field says why the module is designed
 this way: the requirements it serves, by their number in the SRS (such as FR37
 or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented By} are relative to
-\path{src/backend/app/}.
+\path{src/backend/app/}, and app paths are relative to \path{src/frontend/}.
 
 \subsection{Hardware Hiding Modules}
 
@@ -701,8 +711,11 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \item[Rationale:] Android and iOS expose activity differently. Keeping those
   calls here lets Sync use the same reader on both platforms (NFR4), and
   keeps a change of data source in one module (SRS LC2). Steps are read
-  from today's local midnight to the reading time. Android uses
-  Health Connect and iPhone uses Expo Pedometer. 
+  from today's local midnight to the reading time. Android reads
+  Health Connect. On iPhone, the proof of concept reads Core Motion through
+  Expo Pedometer, not HealthKit, so it differs from SC2 and
+  \uref{ucHealthPlatform}. At Revision~0 it reads HealthKit through the same
+  access program, so no other module changes.
 \item[Implemented By:] \progname{} app, in
   \path{app/services/health/steps.ts}
 \item[Type of Module:] Library
@@ -724,7 +737,7 @@ when permission is denied or a service is unavailable.
 Keeping those details here lets the rest of the app use the same calls on
 both platforms (NFR4) and limits the changes needed when a platform changes (NFR3). The API Service uses this module to keep the session token in secure storage (SEC-39). The Reminder Service decides what to send and when. Device Service handles the operating system calls. Background execution depends on the operating system, so callers must also support updating when the user opens the app.
 
-\item[Implemented By:] \progname{} mobile app, after the proof of concept,
+\item[Implemented By:] \progname{} app, after the proof of concept,
 at Revision~0. The PoC has no sign-in or reminders and does not use this
 module yet.
 
@@ -759,16 +772,16 @@ module yet.
 \item[Secrets:] The values of the SRS symbolic constants (SRS Appendix C).
 \item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit.
 \item[Rationale:] The SRS names its tunable values as symbolic constants, such as the price staleness limit (SRS Appendix C), so a value can change without changing a requirement. One file on each side, server and app, with the same names, keeps each value easy to find and traceable back to the SRS.
-\item[Implemented By:] \progname{} server, in \path{core/constants.py}, and a matching file in the app
+\item[Implemented By:] \progname{} server, in \path{core/constants.py}. The app gets its matching file at Revision~0, when it first needs one of the values.
 \item[Type of Module:] Library, with exported types and constants only
 \end{description}
 
 \subsubsection{Users Module (\mref{mUsers})}
 
 \begin{description}
-\item[Secrets:] How the server knows who is calling.
+\item[Secrets:] How a user is known: their account record and how a caller proves who they are.
 \item[Services:] Gives every route that needs one the current user, so the phone never sends a user ID. In the proof of concept, a request that needs a user comes from the built-in demo user while a setting turns it on, and is refused otherwise. Also adds users and keeps each user's record, such as their time zone.
-\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (\mbox{SEC-15}, NFR7). Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow (HA~H45). After too many wrong passwords, an account refuses sign-ins for a while, even with the right password, so guessing a password by signing in is slow (\mbox{SEC-38}, HA~H35). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, which limits who could use it to take over the account (HA~H35). The server keeps only the token's hash, so a stolen copy of the database can't be used to reset a password (HA~H45).
+\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (\mbox{SEC-15}, NFR7). The account record and sign-in are kept in one module, an exception to one secret per module, because signing up makes both at once and no other module reads a password or a session. Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow (HA~H45). After too many wrong passwords, an account refuses sign-ins for a while, even with the right password, so guessing a password by signing in is slow (\mbox{SEC-38}, HA~H35). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, which limits who could use it to take over the account (HA~H35). The server keeps only the token's hash, so a stolen copy of the database can't be used to reset a password (HA~H45).
 
 Each sign-in starts a session that the server stores, and the phone keeps the session's random token in its secure storage (\mbox{SEC-39}) and sends it with every request. Sessions are stored on the server, not in self-contained tokens, because the server must be able to end one at once: on sign-out, on ``sign out of all devices'', after a password reset, or after \texttt{SESSION\_TIMEOUT} without the user opening or using the app (FR5, FR6, \mbox{SEC-17}). The server keeps only a hash of each token, so a stolen copy of the database can't be used to act as a user (HA~H45).
 
@@ -800,7 +813,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \begin{description}
 \item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
 \item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list to the phone, and the provider's usage to the team.
-\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed.
+\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed. At Revision~0, when a stock splits, Market adjusts its past prices and \mref{mTrading} Trading adjusts the holdings in that stock. Both happen in one transaction, so the split changes no portfolio value (SEC-28).
 \item[Implemented By:] \progname{} server, in \path{market/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -811,7 +824,9 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \item[Secrets:] The rules for turning daily activity into currency.
 \item[Services:] Accepts daily totals, checks their dates and plausibility,
   and credits the unpaid reward through Wallet. Returns each day's result,
-  the updated balance and the earning rate.
+  the updated balance and the earning rate. At Revision~0, it also gives
+  \mref{mGoals} Goals and \mref{mSocial} Social read-only copies of each
+  day's total.
 \item[Rationale:] Rewards are calculated on the server (SEC-24), using the
   earning rate, plausibility limit and daily cap from Constants (FR13, FR17,
   FR18). Activity locks the live portfolio before reading earlier payments,
@@ -827,7 +842,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
-\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
+\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42). At Revision~0, it also gives \mref{mLearning} Learning read-only copies of the user's holdings and trades.
 \item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0. So do trading in and valuing a scenario's portfolio at the prices \mref{mScenarios} Scenarios hands Trading, which it accepts only with the lock on that portfolio (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
@@ -896,29 +911,35 @@ the MIS specifies them at Revision~0.
 
 
 
-\subsubsection{Navigation Module (M18)}
+\subsubsection{Navigation Module (\mref{mNavigation})}
 
 \begin{description}
 \item[Secrets:] How users navigate between screens.
-\item[Services:] Provides navigation between the Home, Market and Portfolio sections, and through the screens used to purchase a stock. Opens a selected stock's details, moves through the Buy Stock, Review Purchase and Purchase Successful screens, and allows the user to return to an earlier screen. At Revision~0, also provides navigation to the account, activity, learning, social and settings screens.
-\item[Rationale:] The order of screens may change after usability testing (NFR2), so navigation is kept separate from screen layout (AC18). The app uses a bottom navigation bar for its three main sections and a sequence of screens for simulated stock purchases. Navigation uses M19 Screens to display each destination, but does not decide what data appears on a screen or how it is presented. Keeping navigation separate allows the team to change the user flow without changing the individual screens or the services they use (NFR3).
-\item[Implemented By:] \progname{} mobile app, using React Native and TypeScript navigation components
+\item[Services:] Moves the user between the Home, Market and Portfolio sections, and through the screens for buying a stock. Opens a selected stock's details, moves through the Buy Stock, Review Purchase and Purchase Successful screens, and lets the user go back to an earlier screen. Also reaches the account, activity and goals, learning, social, market scenario, reminder settings and privacy settings screens.
+\item[Rationale:] The order of screens may change after usability testing (NFR2), so navigation is kept separate from screen layout (\acref{acNavigation}). The app uses a bottom navigation bar for its three main sections and a sequence of screens for simulated stock purchases. Navigation uses \mref{mScreens} Screens to display each destination, but does not decide what data appears on a screen or how it is presented. Keeping navigation separate allows the team to change the user flow without changing the individual screens or the services they use (NFR3).
+\item[Implemented By:] \progname{} app, in \path{app/navigation/}, after the proof of concept, at Revision~0. The proof of concept has one screen and does not use this module yet.
 \item[Type of Module:] Abstract Object
 \end{description}
 
-
-\subsubsection{Screens Module (M19)}
+\subsubsection{Screens Module (\mref{mScreens})}
 \begin{description}
 \item[Secrets:] The layout and appearance of the app's screens.
-\item[Services:] Displays daily activity totals, earned virtual currency, available balance, stock prices, simulated purchases and portfolio holdings. Accepts user input, such as selecting a stock or entering the number of shares to purchase, and displays confirmations and error messages. The initial interface consists of seven Figma-designed screens: Home Dashboard, Stock Market, Stock Details, Buy Stock, Review Purchase, Purchase Successful and My Portfolio. At Revision~0, additional screens support account management, goals, learning, social features and privacy settings.
-\item[Rationale:] The interface is expected to change based on usability testing (NFR2), so its appearance and wording are kept in one module (AC19). Screens retrieves activity results from M20 Sync Service and server responses through M24 API Service. It does not calculate activity rewards, currency balances or trade results, since these decisions belong to the server (SEC-24). Every portfolio value and return is labelled as simulated (FR43), and gains and losses use signs or text rather than colour alone (FR44). Stock prices include their timestamps and indicate when they are delayed (FR33). Before a user's first trade, the interface displays the simulation notice for acknowledgement (FR34). The layouts must also remain usable at \texttt{MAX\_TEXT\_SCALE} (NFR8). Keeping presentation separate from the services allows the team to change the design without affecting the underlying functionality (NFR3).
-\item[Implemented By:] \progname{} mobile app, using React Native and TypeScript screen components, based on the Figma mockups in Section~10
+\item[Services:] Displays daily activity totals, earned virtual currency, available balance, stock prices, simulated purchases and portfolio holdings. Accepts user input, such as selecting a stock or entering the number of shares to purchase, and displays confirmations and error messages. The proof of concept has one demo screen, which shows today's steps and what they earned, the balance, one stock to buy and the user's holdings. At Revision~0, the seven Figma-designed screens replace it: Home Dashboard, Stock Market, Stock Details, Buy Stock, Review Purchase, Purchase Successful and My Portfolio. Further screens then cover the account, activity and goals, learning, social, market scenario, reminder settings and privacy settings.
+\item[Rationale:] The interface is expected to change based on usability testing (NFR2), so its appearance and wording are kept in one module (\acref{acScreens}). Screens gets today's steps and their result from \mref{mSync} Sync Service, and the server's other replies through \mref{mAPI} API Service. It does not calculate activity rewards, currency balances or trade results, since these decisions belong to the server (SEC-24). Every portfolio value and return is labelled as simulated (FR43), and gains and losses use signs or text rather than colour alone (FR44). Stock prices include their timestamps and indicate when they are delayed (FR33). At Revision~0, the interface shows the health notice before the first read (FR14) and the simulation notice before the first trade (FR34). The layouts must also remain usable at \texttt{MAX\_TEXT\_SCALE} (NFR8). Keeping presentation separate from the services allows the team to change the design without affecting the underlying functionality (NFR3).
+\item[Implemented By:] \progname{} app, in \path{app/App.tsx} and \path{app/screens/}, based on the Figma mockups in Figure~\ref{FigUIMockups}
 \item[Type of Module:] Abstract Object
 \end{description}
 
+\subsubsection{Sync Service Module (\mref{mSync})}
 
+\begin{description}
+\item[Secrets:] When and how the app reads the day's activity and sends it to the server.
+\item[Services:] Reads today's steps through \mref{mHealth} Health Service when a screen first shows them, each time the app comes back to the foreground, and when the user asks. Sends the day's total, with the phone's time zone, through \mref{mAPI} API Service. Gives \mref{mScreens} Screens the count, the server's reply, and why a read or a send failed. A second read never starts while one is still under way.
+\item[Rationale:] The health platforms may not allow reliable background reads, so the app reads when the user opens it (SRS LC1), and when it reads is kept in this module (\acref{acSync}). Sync sends only the day's total, never single activity records (SEC-10), and never a reward or a balance, which the server works out (SEC-24). Sending a day again pays only what is still owed (SEC-19). A failed read says why, shows no count rather than an old one, and leaves what was already earned as it was (SEC-21). At Revision~0, Sync reads nothing before the user consents and stops as soon as consent is withdrawn (SEC-9), and each sync also sends the days of \texttt{SYNC\_LOOKBACK\_PERIOD} again, so late activity still counts (SEC-20).
+\item[Implemented By:] \progname{} app, in \path{app/services/health/useTodaySteps.ts}
+\item[Type of Module:] Abstract Object
+\end{description}
 
-% M20 Sync Service (app): #235
 
 % M21 Reminder Service (app): #237
 \subsubsection{Reminder Service Module (\mref{mReminders})}
@@ -936,7 +957,7 @@ Only enabled reminder types are sent, and only within the user's chosen periods.
 \item[Rationale:] The user controls reminder types and delivery periods
 (FR72 to FR75). Keeping these rules in one module lets them change without changing the screens or the operating system calls. Reminders are created on the phone, with no external push notification service. When a reminder needs new data, the module evaluates it the next time the app runs, either in the background or when the user opens it. This follows the SRS without assuming the app can run continuously. Generic notification content protects the user's private information by default (SEC-34).
 
-\item[Implemented By:] \progname{} mobile app, after the proof of concept,
+\item[Implemented By:] \progname{} app, after the proof of concept,
 at Revision~0. The PoC does not include reminders.
 
 \item[Type of Module:] Abstract Object
@@ -974,13 +995,13 @@ at Revision~0. The PoC does not include reminders.
 \end{description}
 
 
-\subsubsection{API Service Module (M24)}
+\subsubsection{API Service Module (\mref{mAPI})}
 
 \begin{description}
 \item[Secrets:] How the app communicates with the server.
-\item[Services:] Provides a common interface for sending HTTPS requests and receiving JSON responses from the \progname{} server. Sends daily activity totals, retrieves virtual currency balances, stock prices and portfolio information, and submits simulated trade requests. Converts successful responses and server refusals into results that other app modules can handle consistently. At Revision~0, attaches the user's session token to authenticated requests and handles expired or invalid sessions.
-\item[Rationale:] The server address, authentication and retry behaviour may change (AC24), so they are hidden behind one interface rather than implemented separately in each screen (NFR3). M19 Screens and M20 Sync Service use API Service without needing to know how the requests are sent. Amounts received from the server remain exact decimal text, as defined by M23 JSON Format, to avoid precision loss (NFR1, SEC-30). Server refusals are returned consistently so Screens can display an appropriate message (SEC-25). Each trade request has a unique request ID that is reused if the request is retried, allowing the server to prevent duplicate trades (FR38, NFR6). At Revision~0, API Service uses M5 Device Service to store and retrieve the session token securely (SEC-39). The proof of concept uses the server's built-in demo user and does not yet require authenticated sessions.
-\item[Implemented By:] \progname{} mobile app, using a shared TypeScript API client
+\item[Services:] Provides a common interface for sending requests and receiving JSON responses from the \progname{} server. Sends daily activity totals, retrieves virtual currency balances, stock prices and portfolio information, and submits simulated trade requests. Converts successful responses and server refusals into results that other app modules can handle consistently. At Revision~0, attaches the user's session token to authenticated requests and handles expired or invalid sessions.
+\item[Rationale:] The server address, authentication and retry behaviour may change (\acref{acAPI}), so they are hidden behind one interface rather than implemented separately in each screen (NFR3). \mref{mScreens} Screens and \mref{mSync} Sync Service use API Service without needing to know how the requests are sent. A deployed server is reached only over HTTPS (SEC-16). The proof of concept talks to a server on the local network over HTTP. Amounts received from the server remain exact decimal text, as defined by \mref{mJSON} JSON Format, to avoid precision loss (NFR1, SEC-30). Server refusals are returned consistently so Screens can display an appropriate message (SEC-25). Each trade request has a unique request ID that is reused if the request is retried, allowing the server to prevent duplicate trades (FR38, NFR6). At Revision~0, API Service uses \mref{mDevice} Device Service to store and retrieve the session token securely (SEC-39). The proof of concept uses the server's built-in demo user and does not yet require authenticated sessions.
+\item[Implemented By:] \progname{} app, in \path{app/services/api/}
 \item[Type of Module:] Library
 \end{description}
 
@@ -1392,19 +1413,26 @@ developed for the mobile application's main user interface.
 
 \section{Design of Communication Protocols}
 
+\progname{} uses three protocols: the app reads activity from the phone's
+health platform, the app and the server exchange JSON, and the server asks the
+market data provider for prices.
+
 \subsection{Activity Data from the Phone}
 
 \mref{mHealth} Health Service reads recorded steps through the phone's
 platform APIs. These calls run locally on the phone.
 
 \begin{itemize}
-\item \textbf{Android:} The app connects to Health Connect through
-  \texttt{react-native-health-connect}. It checks for step-read permission,
+\item \textbf{Android:} Through \texttt{react-native-health-connect}, the app
+  connects to Health Connect. It checks for step-read permission,
   requests it if needed, then asks for the total steps in the selected time
   range.
 \item \textbf{iPhone:} The app uses Expo Pedometer from
   \texttt{expo-sensors}. It checks motion and fitness permission and whether
-  a step counter is available, then requests the recorded step count.
+  a step counter is available, then requests the recorded step count. This
+  reads Core Motion, not HealthKit, so it is the proof of concept's one
+  exception to SC2. At Revision~0 the app reads HealthKit instead, through the
+  \texttt{@kingstinct/react-native-healthkit} library.
 \end{itemize}
 
 Both paths read from today's local midnight to the time the read started.
@@ -1413,6 +1441,43 @@ A successful read with no steps returns zero. If permission is denied,
 the service is unavailable or the read fails, the app shows a read error
 instead of treating the failure as zero steps. Individual health records
 remain on the phone (SEC-10).
+
+\subsection{App and Server}
+
+\mref{mAPI} API Service sends JSON requests to the server's routes, all under
+\texttt{/v1}, and reads the JSON replies (\uref{ucProtocol}). A deployed
+server is reached only over HTTPS (SEC-16). The proof of concept talks to a
+server on the local network over HTTP. The app never sends a user ID. In the
+proof of concept every \texttt{/v1/me} route answers as the demo user, and at
+Revision~0 each request carries the user's session token (SEC-15, SEC-39).
+Amounts are text with four decimals, as \mref{mJSON} JSON Format defines
+(NFR1).
+
+A sync is \texttt{PUT /v1/me/activity/daily-totals}, with the phone's time
+zone and one total for each of up to seven days (SEC-20). Sending a day again
+pays only what is still owed (SEC-19). API Service waits ten seconds for the
+reply and does not retry. A buy is
+\texttt{POST /v1/me/trades}, with a request ID that the phone makes and the
+price the user saw. The server applies each request ID once: a repeat gets the
+first reply back, with status 200 instead of 201 (FR38).
+
+A refused request gets an HTTP status and a body whose \texttt{detail} holds a
+\texttt{code} and a \texttt{message}, such as 409 and
+\texttt{price\_changed} when the price moved (SEC-29), so \mref{mScreens}
+Screens can show the message. A request that does not fit its route is refused
+with 422, without the values it sent (SEC-25).
+
+\subsection{Server and Market Data Provider}
+
+\mref{mMarket} Market asks for one quote for each tradable asset through
+\mref{mProviders} Market Providers, every minute while the market is open and
+for 15 minutes after it closes. With Finnhub, each call is an HTTPS request to
+its quote route that sends only the symbol, with the key in a header and never
+in the address (SEC-11, SEC-33). Each call waits at most ten seconds. The 15
+starting assets make 15 calls a minute, under Finnhub's limit of 60 (SC4).
+Every call is saved in \texttt{provider\_requests} with how it ended. A
+refusal for the request limit ends that poll, and any other error skips only
+that asset.
 
 \section{Database Design}  \label{SecDB}
 
@@ -1505,9 +1570,12 @@ a primary key and FK a foreign key.}
   without asking the server (FR38). Prices and provider requests use a counter,
   since there are many of them and nothing outside the server refers to one.
 
-\item[History is added to, never edited.] A balance change, a trade and a price
-  are never updated after they are saved, so the record of what happened stays
-  complete (SEC-22). A daily activity total is different. Each sync replaces
+\item[History is added to, never edited.] A balance change and a trade are
+  never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A price is kept once for each time the provider set it,
+  and is replaced only when the provider corrects that price, or, at
+  Revision~0, when the stock splits (SEC-28). A daily activity
+  total is different. Each sync replaces
   it with the latest total for that day, since a day's total grows until the
   day ends.
 
@@ -1519,8 +1587,10 @@ a primary key and FK a foreign key.}
 
 \item[Deleting a row deletes what belongs to it.] A portfolio's balance
   changes, trades and holdings are deleted with it by the database, and a
-  user's daily totals with the user. The proof of concept uses this to reset
-  the demo user. Account deletion is designed at Revision~0 (SEC-18).
+  user's daily totals with the user. A user's portfolio is not deleted with the
+  user, so a user who has one can't be deleted yet. The proof of concept resets
+  the demo user by deleting their portfolio. Account deletion is designed at
+  Revision~0 (SEC-18).
 \end{description}
 
 \subsection{Rules the Database Checks}
