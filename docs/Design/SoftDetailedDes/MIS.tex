@@ -78,6 +78,7 @@ Activity. A retried buy in Screens reuses its request ID. Activity's table,
 date error and time zone note match the code. Activity and Trading say what
 they export at Revision~0. The Notation section says why the server names its
 library types. The AI disclosure refers to each section by its label.\\
+Nov 18, 2026 & 1.8 & Farid Bastoros: reflection answers.\\
 \bottomrule
 \end{tabularx}
 
@@ -3137,7 +3138,21 @@ works out a reward or a balance (SEC-24), and Trading alone decides whether a
 request ID was already used, so a retried buy is recorded once (FR38). The
 plug-in design paid off for the team too. Preston built Activity as its own
 module, and adding it to the server took two lines in \texttt{registry.py},
-with no change to the code that builds the server.
+with no change to the code that builds the server. \\
+
+\noindent\textbf{Farid:} What went well for me was tying each part I
+wrote to one module and to the requirements behind it. In Section 4 of the MG,
+each anticipated change names the module that hides it, and the trace table
+maps all 25 of them to their modules. A reader can then check that a change
+such as a new market data provider (AC3) touches only Market Providers.
+Writing the changes first also made the secrets in Section 7 easier to agree
+on, since a module's secret is the decision behind the change it hides. For the
+database design (MG Section 12), I worked from the SQLAlchemy models and the
+Alembic migrations rather than from the SRS alone, so the table list and the
+diagram show the tables the proof of concept really creates, and each rule the
+database checks is one the code relies on. Keeping one branch and one pull
+request per section (\#230, \#310 and \#318) also worked well. Each was small
+enough for a teammate to review against the SRS in one sitting.
 
 \subsubsection*{2. What pain points did you experience during this deliverable,
 and how did you resolve them?}
@@ -3166,7 +3181,30 @@ they stay right when a section moves. Before the deadline, I merged
 against each other, which found the stale notes and the missing Sync Service
 entry. Next time I would make one person responsible for the module list and
 the revision history, and check the documents against the code each time a
-feature PR merges, not only at the end.
+feature PR merges, not only at the end. \\
+
+\noindent\textbf{Farid:} My main pain point was that the design kept
+changing while I wrote about it. Section 6 of the MG had a decision about how
+the code gets the time, and Davis's PR \#308 changed that design a few days
+later, so my decision was out of date before it merged, and I rewrote it. I
+also wrote one claim that was too strong. I said the social feed could not
+reach health data, but Social uses Users, and Users stores height and weight.
+Checking the claim against the uses hierarchy (MG Section 9) caught it, and I
+narrowed it to what is true: Social cannot reach a balance or a portfolio's
+value.
+
+My second pain point was tooling. Several of us edited the revision history at
+the same time, so my branch conflicted with \texttt{main}. My first attempt to
+merge \texttt{main} made an ordinary commit instead of a merge, and I redid it
+with \texttt{git pull origin main} and resolved the conflict properly. For the
+database diagram, PlantUML drew some arrow labels on top of each other,
+pdflatex cannot include an SVG, and the repository's \texttt{.gitignore} skips
+every PDF, so the figure was missing from my first commit. I removed the arrow
+labels and moved the deletion rule into the legend, converted the diagram to a
+vector PDF, and added it with \texttt{git add -f}. Next time I would check each
+claim against the code and the uses table before I write it, not after, and
+compile the result of merging \texttt{main} into my branch before I open a pull
+request.
 
 \subsubsection*{3. Which of your design decisions stemmed from speaking to your
 client(s) or a proxy (e.g.\ your peers, stakeholders, potential users)? For
@@ -3188,7 +3226,30 @@ Hazard Analysis and what we learned about modular design. Each module hides
 one decision that may change (information hiding), so the market data
 provider, the health platforms and the email service each sit behind one
 interface. The server works out every reward and balance because the Hazard
-Analysis found that a modified app could send false ones (SEC-24, HA~H43).
+Analysis found that a modified app could send false ones (SEC-24, HA~H43).\\
+
+\noindent\textbf{Farid:} Several of my decisions came from our Design
+Thinking interviews with P01 (our supervisor and TA) and P02 (a financial
+services representative at a credit union). P01 forgets to stop a bike
+tracking app and asked for tracking that is ``as touchless as possible'', and
+P02 keeps track of workouts only as ``a mental check''. So activity comes from
+the phone's health platform rather than being logged by hand, Health Service
+hides which platform that is (AC4), and the phone sends only daily totals
+(SEC-10). Both said they share data with an app only when it has a clear reason
+to ask, and P01 turns off a step app's network access. That supports the
+unlikely change that the user controls what they share and that a balance or
+raw health data is never shared (UC3), and keeping the privacy rules in one
+module. P02 said comparing with others is ``only ever bad when you're
+really far behind'', which is one more reason the social feed cannot reach a
+balance. Both learn best by doing, which supports practising with simulated
+currency in a market that follows real prices, with no real money (UC1).
+
+The database decisions did not come from users, since no user sees a table.
+They came from the SRS: money as exact decimals (NFR1), every time stored with
+its time zone (FR33), UUIDs so the phone can make a trade's request ID itself
+(FR38), and history that is added to and never edited (SEC-22). The database
+checks the most important rules again, such as a balance never going below
+zero (FR37), so that a bug in one module cannot save a row that breaks them.
 
 \subsubsection*{4. While creating the design doc, what parts of your other
 documents (e.g.\ requirements, hazard analysis, etc), if any, needed to be
@@ -3205,7 +3266,20 @@ each activity record its reward, but the design stores a reward once, in
 Wallet's balance changes, so a day is never paid twice (SEC-19). That entry
 should change. Tracing every requirement to a module also found requirements
 that no module handled yet, such as stock splits (SEC-28), which we then placed
-in Market and Trading.
+in Market and Trading.\\
+
+\noindent\textbf{Farid:} Writing the database design showed where the
+SRS data dictionary (SRS Section~7.2) no longer matches the design. It gives a
+portfolio its holdings, trades and balance changes as lists inside the
+portfolio, while the design stores each as its own table with one row per item,
+so the database can check every row. It also gives each activity record its
+reward, while the design stores a reward once, in Wallet's balance changes, so
+a day is never paid twice (SEC-19). The data dictionary should be updated to
+describe the data as it is stored. The design also found a gap in the
+requirements. SEC-18 lets a user delete their account, but a user's portfolio
+is not deleted with the user, so in the proof of concept a user who has a
+portfolio cannot be deleted. Before Revision~0 we need to decide what happens
+to a deleted user's portfolio and trade history, and the SRS should state it.
 
 \subsubsection*{5. What are the limitations of your solution? Put another way,
 given unlimited resources, what could you do to make the project better?
@@ -3223,7 +3297,21 @@ yet, so every request acts as the demo user. With unlimited resources, I would
 read HealthKit and Health Connect in the background, pay for a market data
 feed that sends prices as they change instead of polling, offer far more
 assets, and bind each session to a key in the phone's hardware (DPoP), so a
-copied session token would be useless on its own.
+copied session token would be useless on its own. \\
+
+\noindent\textbf{Farid:} The database design has limits. The balance is
+stored as well as calculated, so a trade can check it quickly, but it must
+always equal the sum of the balance changes (SEC-22), and it is the code that
+keeps the two equal. There is one database, so if it is down, nobody can earn
+or trade. The server saves a price each minute it polls, and nothing removes
+old prices yet, so the price table grows without limit. Account deletion is not
+supported yet (SEC-18). Our user research is also small: two people, one of
+them our supervisor, so the decisions that came from it rest on little
+evidence. With unlimited resources, I would run the database as a replicated
+service with backups and point-in-time recovery, keep every price for recent
+days and only a daily price for older ones, add tests that try to save each
+kind of bad row and check that the database refuses it, and interview and
+observe many more users, including people who have never invested.
 
 \subsubsection*{6. Give a brief overview of other design solutions you
 considered. What are the benefits and tradeoffs of those other designs compared
@@ -3246,7 +3334,32 @@ its own coins, which is simpler and works offline, but a modified app could
 then send any reward, so the server works out every reward from the daily
 totals (SEC-24). For prices, asking the provider on each request would always
 be fresh, but it would use up the request limit as users grow, so the server
-polls once a minute and every user sees the same price (SC4).
+polls once a minute and every user sees the same price (SC4). \\
+
+\noindent\textbf{Farid:} For the database I compared several designs.
+The balance could be calculated from the balance changes every time it is
+needed, so it could never disagree with them, but every trade would then add up
+the whole history. We store it and keep it equal to the sum (SEC-22), which is
+faster but leaves a second copy that a bug could get out of step. Each module
+could have its own database, which would match each module owning its tables,
+but a trade changes both Wallet's balance and Trading's holdings, and that
+would need a transaction across two databases. One database, with each module
+owning its tables, keeps a trade in one transaction (FR37). A document store
+could keep a portfolio as one document with lists, the way the SRS data
+dictionary describes it. That makes reading a portfolio simple, but every trade
+would rewrite the document, and the database could not check each row, such as
+one trade per request ID (FR38). Storing the reward on the daily total, as the
+SRS describes, would be simpler to query, but a repeated sync could pay a day
+twice. Keeping rewards in Wallet means a sync pays only the difference
+(SEC-19). Last, whole-number IDs are smaller and faster than UUIDs, but the
+phone could not make a trade's request ID without asking the server, so we use
+UUIDs and keep counters only for prices and provider requests, which nothing
+outside the server refers to.
+
+In Section 4, I could have listed the anticipated changes by feature. I listed
+them by the module that hides each one, so that the trace table checks the
+information hiding directly: if a change needed more than one module, the
+decomposition would be wrong.
 
 \subsubsection*{7. (After you have implemented another team's module, which
 means this isn't filled in until after the original deadline). What did you
