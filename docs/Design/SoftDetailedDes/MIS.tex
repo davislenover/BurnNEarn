@@ -78,6 +78,7 @@ Activity. A retried buy in Screens reuses its request ID. Activity's table,
 date error and time zone note match the code. Activity and Trading say what
 they export at Revision~0. The Notation section says why the server names its
 library types. The AI disclosure refers to each section by its label.\\
+Nov 18, 2026 & 1.8 & Farid Bastoros: reflection answers.\\
 \bottomrule
 \end{tabularx}
 
@@ -3296,7 +3297,21 @@ yet, so every request acts as the demo user. With unlimited resources, I would
 read HealthKit and Health Connect in the background, pay for a market data
 feed that sends prices as they change instead of polling, offer far more
 assets, and bind each session to a key in the phone's hardware (DPoP), so a
-copied session token would be useless on its own.
+copied session token would be useless on its own. \\
+
+\noindent\textbf{Farid:} The database design has limits. The balance is
+stored as well as calculated, so a trade can check it quickly, but it must
+always equal the sum of the balance changes (SEC-22), and it is the code that
+keeps the two equal. There is one database, so if it is down, nobody can earn
+or trade. The server saves a price each minute it polls, and nothing removes
+old prices yet, so the price table grows without limit. Account deletion is not
+supported yet (SEC-18). Our user research is also small: two people, one of
+them our supervisor, so the decisions that came from it rest on little
+evidence. With unlimited resources, I would run the database as a replicated
+service with backups and point-in-time recovery, keep every price for recent
+days and only a daily price for older ones, add tests that try to save each
+kind of bad row and check that the database refuses it, and interview and
+observe many more users, including people who have never invested.
 
 \subsubsection*{6. Give a brief overview of other design solutions you
 considered. What are the benefits and tradeoffs of those other designs compared
@@ -3319,7 +3334,32 @@ its own coins, which is simpler and works offline, but a modified app could
 then send any reward, so the server works out every reward from the daily
 totals (SEC-24). For prices, asking the provider on each request would always
 be fresh, but it would use up the request limit as users grow, so the server
-polls once a minute and every user sees the same price (SC4).
+polls once a minute and every user sees the same price (SC4). \\
+
+\noindent\textbf{Farid:} For the database I compared several designs.
+The balance could be calculated from the balance changes every time it is
+needed, so it could never disagree with them, but every trade would then add up
+the whole history. We store it and keep it equal to the sum (SEC-22), which is
+faster but leaves a second copy that a bug could get out of step. Each module
+could have its own database, which would match each module owning its tables,
+but a trade changes both Wallet's balance and Trading's holdings, and that
+would need a transaction across two databases. One database, with each module
+owning its tables, keeps a trade in one transaction (FR37). A document store
+could keep a portfolio as one document with lists, the way the SRS data
+dictionary describes it. That makes reading a portfolio simple, but every trade
+would rewrite the document, and the database could not check each row, such as
+one trade per request ID (FR38). Storing the reward on the daily total, as the
+SRS describes, would be simpler to query, but a repeated sync could pay a day
+twice. Keeping rewards in Wallet means a sync pays only the difference
+(SEC-19). Last, whole-number IDs are smaller and faster than UUIDs, but the
+phone could not make a trade's request ID without asking the server, so we use
+UUIDs and keep counters only for prices and provider requests, which nothing
+outside the server refers to.
+
+In Section 4, I could have listed the anticipated changes by feature. I listed
+them by the module that hides each one, so that the trace table checks the
+information hiding directly: if a change needed more than one module, the
+decomposition would be wrong.
 
 \subsubsection*{7. (After you have implemented another team's module, which
 means this isn't filled in until after the original deadline). What did you
