@@ -742,6 +742,121 @@ call and never reaches 0, which Market (M10) refuses
 
 \newpage
 
+\section{MIS of Email Service} \label{MisEmail}
+
+\begingroup\raggedright
+\subsection{Template Module}
+
+EmailSender (Email Service, M25 in the MG), an abstract data type whose values
+are email senders, each made with new ServiceEmailSender or new
+FakeEmailSender. Email Service is built after the proof of concept
+(\textsuperscript{\dag}), so this is the interface planned for Revision~0. As
+with Market Providers (M3), the delivery service is a third party the team may
+change, so every sender has this one interface (the strategy pattern), the
+chosen service is wrapped to fit it (the adapter pattern), and the fake lets
+tests run without sending email.
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Email = tuple of (to: String, subject: String, body: String), one
+email to send. It holds only an address and the text, so the delivery service
+is sent nothing else about the user (SEC-11).
+
+\medskip
+\noindent EmailDeliveryError, an error raised when the delivery service refuses
+an email or can't be reached.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new ServiceEmailSender & - & EmailSender & - \\
+new FakeEmailSender & - & EmailSender & - \\
+send & Email & - & EmailDeliveryError \\
+sent & - & seq of Email & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent outbox: seq of Email, for a FakeEmailSender only: every email it has
+been asked to send, oldest first. A ServiceEmailSender keeps no state.
+
+\subsubsection{Environment Variables}
+
+\noindent deliveryService: the email delivery service, reached over the
+network with a credential kept in the server's settings (SEC-33).
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Users (M8) is the only module that sends email, and it sends only a
+  password reset link (FR6).
+\item Users answers a reset request the same way whether or not the address
+  belongs to an account, so a failed send never tells anyone which addresses
+  are registered.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new ServiceEmailSender():
+\begin{itemize}
+\item output: $out :=$ a sender that uses deliveryService
+\item exception: None
+\end{itemize}
+
+\noindent new FakeEmailSender():
+\begin{itemize}
+\item transition: outbox $:= \langle\rangle$
+\item output: $out :=$ a sender that records emails instead of sending them
+\item exception: None
+\end{itemize}
+
+\noindent $s$.send($e$):
+\begin{itemize}
+\item transition: ($s$ is a ServiceEmailSender $\Rightarrow$ deliveryService
+  accepts $e$ for delivery to $e$.to $|$ $s$ is a FakeEmailSender
+  $\Rightarrow$ outbox $:=$ outbox $\|\ \langle e \rangle$)
+\item exception: $exc :=$ ($s$ is a ServiceEmailSender $\wedge$
+  deliveryService refuses $e$ or can't be reached $\Rightarrow$
+  EmailDeliveryError)
+\end{itemize}
+
+\noindent $s$.sent(), for a FakeEmailSender $s$:
+\begin{itemize}
+\item output: $out :=$ outbox
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
 \section{MIS of Health Service} \label{MisHealth}
 
 \subsection{Module}
@@ -922,7 +1037,326 @@ calendar day when a daylight saving change makes it 23 or 25 hours long.
 
 \newpage
 
+\section{MIS of Device Service} \label{MisDevice}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Device Service (M5 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It gives the rest of the app one set of calls for secure storage,
+local notifications and background tasks on both Android and iOS (NFR4).
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent PermissionStatus $=$ \{granted, denied, undetermined\}, whether the
+user lets the app show notifications. undetermined means the user hasn't been
+asked yet.
+
+\medskip
+\noindent LocalNotification = tuple of (title: String, body: String, at:
+DateTime), a notification to show on the phone at time at.
+
+\medskip
+\noindent DeviceServiceError, an error whose reason is one of
+\{permission\_denied, unavailable\}, raised when the user has refused a
+permission or the phone doesn't offer the service.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+saveToken & String & Promise of - & DeviceServiceError \\
+readToken & - & Promise of String or None & DeviceServiceError \\
+deleteToken & - & Promise of - & - \\
+notification\allowbreak Permission & - & Promise of PermissionStatus & - \\
+request\allowbreak Notification\allowbreak Permission & - & Promise of PermissionStatus & - \\
+scheduleNotification & LocalNotification & Promise of ID & DeviceServiceError \\
+cancelNotification & ID & Promise of - & - \\
+register\allowbreak Background\allowbreak Task & String, () $\rightarrow$ Promise of - & Promise of
+$\mathbb{B}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. The phone's operating system keeps the token, the permission and the
+scheduled notifications, so they survive the app being closed.
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item secureStore: the phone's encrypted storage (Keychain on iOS, Keystore on
+  Android).
+\item notificationCenter: the phone's local notifications and the user's
+  permission for them.
+\item backgroundScheduler: the operating system's scheduler for background
+  tasks, which decides when, and whether, a task runs.
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item API Service (M24) is the only module that saves or reads the session
+  token, so the token is kept only in secureStore (SEC-39).
+\item The operating system may delay or skip a background task, so a caller
+  that registers one also does its work when the user opens the app (FR75).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent saveToken($t$):
+\begin{itemize}
+\item transition: secureStore holds $t$ as the session token, replacing any
+  token saved before.
+\item exception: $exc :=$ (secureStore is unavailable $\Rightarrow$
+  DeviceServiceError(unavailable))
+\end{itemize}
+
+\noindent readToken():
+\begin{itemize}
+\item output: $out :=$ (a token is saved $\Rightarrow$ the token $|$
+  $\neg$ (a token is saved) $\Rightarrow$ None)
+\item exception: $exc :=$ (secureStore is unavailable $\Rightarrow$
+  DeviceServiceError(unavailable))
+\end{itemize}
+
+\noindent deleteToken():
+\begin{itemize}
+\item transition: secureStore holds no session token. Deleting when there is
+  none does nothing, so signing out always succeeds.
+\item exception: None
+\end{itemize}
+
+\noindent notificationPermission():
+\begin{itemize}
+\item output: $out :=$ the permission notificationCenter reports, without
+  asking the user.
+\item exception: None
+\end{itemize}
+
+\noindent requestNotificationPermission():
+\begin{itemize}
+\item transition: if the permission is undetermined, the phone asks the user.
+\item output: $out :=$ the permission after the user answers, or the
+  unchanged permission if it was already granted or denied.
+\item exception: None
+\end{itemize}
+
+\noindent scheduleNotification($n$):
+\begin{itemize}
+\item transition: notificationCenter shows $n$ at $n$.at.
+\item output: $out :=$ a new ID for the scheduled notification
+\item exception: $exc :=$ (the permission is not granted $\Rightarrow$
+  DeviceServiceError(permission\_denied))
+\end{itemize}
+
+\noindent cancelNotification($id$):
+\begin{itemize}
+\item transition: the notification with ID $id$ is no longer scheduled.
+  Cancelling one already shown or cancelled does nothing.
+\item exception: None
+\end{itemize}
+
+\noindent registerBackgroundTask($name$, $task$):
+\begin{itemize}
+\item transition: backgroundScheduler may run $task$ while the app is closed,
+  replacing any task registered before with the same $name$.
+\item output: $out :=$ true if the operating system accepted the task, and
+  false if background tasks are turned off on this phone.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+
+
 % M5 Device Service (app) is built after the PoC and is specified at Revision 0.
+\section{MIS of Device Service} \label{MisDevice}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Device Service (M5 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It gives the rest of the app one set of calls for secure storage,
+local notifications and background tasks on both Android and iOS (NFR4).
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent PermissionStatus $=$ \{granted, denied, undetermined\}, whether the
+user lets the app show notifications. undetermined means the user hasn't been
+asked yet.
+
+\medskip
+\noindent LocalNotification = tuple of (title: String, body: String, at:
+DateTime), a notification to show on the phone at time at.
+
+\medskip
+\noindent DeviceServiceError, an error whose reason is one of
+\{permission\_denied, unavailable\}, raised when the user has refused a
+permission or the phone doesn't offer the service.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+saveToken & String & Promise of - & DeviceServiceError \\
+readToken & - & Promise of String or None & DeviceServiceError \\
+deleteToken & - & Promise of - & - \\
+notification\allowbreak Permission & - & Promise of PermissionStatus & - \\
+request\allowbreak Notification\allowbreak Permission & - & Promise of PermissionStatus & - \\
+scheduleNotification & LocalNotification & Promise of ID & DeviceServiceError \\
+cancelNotification & ID & Promise of - & - \\
+register\allowbreak Background\allowbreak Task & String, () $\rightarrow$ Promise of - & Promise of
+$\mathbb{B}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. The phone's operating system keeps the token, the permission and the
+scheduled notifications, so they survive the app being closed.
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item secureStore: the phone's encrypted storage (Keychain on iOS, Keystore on
+  Android).
+\item notificationCenter: the phone's local notifications and the user's
+  permission for them.
+\item backgroundScheduler: the operating system's scheduler for background
+  tasks, which decides when, and whether, a task runs.
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item API Service (M24) is the only module that saves or reads the session
+  token, so the token is kept only in secureStore (SEC-39).
+\item The operating system may delay or skip a background task, so a caller
+  that registers one also does its work when the user opens the app (FR75).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent saveToken($t$):
+\begin{itemize}
+\item transition: secureStore holds $t$ as the session token, replacing any
+  token saved before.
+\item exception: $exc :=$ (secureStore is unavailable $\Rightarrow$
+  DeviceServiceError(unavailable))
+\end{itemize}
+
+\noindent readToken():
+\begin{itemize}
+\item output: $out :=$ (a token is saved $\Rightarrow$ the token $|$
+  $\neg$ (a token is saved) $\Rightarrow$ None)
+\item exception: $exc :=$ (secureStore is unavailable $\Rightarrow$
+  DeviceServiceError(unavailable))
+\end{itemize}
+
+\noindent deleteToken():
+\begin{itemize}
+\item transition: secureStore holds no session token. Deleting when there is
+  none does nothing, so signing out always succeeds.
+\item exception: None
+\end{itemize}
+
+\noindent notificationPermission():
+\begin{itemize}
+\item output: $out :=$ the permission notificationCenter reports, without
+  asking the user.
+\item exception: None
+\end{itemize}
+
+\noindent requestNotificationPermission():
+\begin{itemize}
+\item transition: if the permission is undetermined, the phone asks the user.
+\item output: $out :=$ the permission after the user answers, or the
+  unchanged permission if it was already granted or denied.
+\item exception: None
+\end{itemize}
+
+\noindent scheduleNotification($n$):
+\begin{itemize}
+\item transition: notificationCenter shows $n$ at $n$.at.
+\item output: $out :=$ a new ID for the scheduled notification
+\item exception: $exc :=$ (the permission is not granted $\Rightarrow$
+  DeviceServiceError(permission\_denied))
+\end{itemize}
+
+\noindent cancelNotification($id$):
+\begin{itemize}
+\item transition: the notification with ID $id$ is no longer scheduled.
+  Cancelling one already shown or cancelled does nothing.
+\item exception: None
+\end{itemize}
+
+\noindent registerBackgroundTask($name$, $task$):
+\begin{itemize}
+\item transition: backgroundScheduler may run $task$ while the app is closed,
+  replacing any task registered before with the same $name$.
+\item output: $out :=$ true if the operating system accepted the task, and
+  false if background tasks are turned off on this phone.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
 \section{MIS of Control} \label{MisControl}
 
 \subsection{Module}
