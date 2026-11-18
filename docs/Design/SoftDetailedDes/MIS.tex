@@ -74,10 +74,10 @@ Nov 18, 2026 & 1.6 & Davis Lenover: the MIS of the app modules in the proof
 of concept: Health Service, Screens, Sync Service and API Service. Device
 Service and Navigation are built after it, and 4 Notation covers the app.\\
 Nov 18, 2026 & 1.7 & Davis Lenover: review fixes. Control's PLUGINS lists
-Activity, a retried buy in Screens reuses its request ID, Activity's table,
-date error and time zone note match the code, Activity and Trading say what
-they export at Revision~0, 4 Notation says why the server names its library
-types, and the AI disclosure refers to each section by its label.\\
+Activity. A retried buy in Screens reuses its request ID. Activity's table,
+date error and time zone note match the code. Activity and Trading say what
+they export at Revision~0. The Notation section says why the server names its
+library types. The AI disclosure refers to each section by its label.\\
 \bottomrule
 \end{tabularx}
 
@@ -213,9 +213,10 @@ defined in its section. ValueError is Python's, IntegrityError,
 NoResultFound, OperationalError and SQLAlchemyError are SQLAlchemy's,
 ValidationError is Pydantic's, and RequestValidationError is FastAPI's. The
 server sections name the types and exceptions the code really uses, so each
-section can be checked against the code. A Session is the one transaction a
-request runs in, and every Session comes from Database (M1), so the library
-behind it stays Database's secret (AC1 in the MG). In
+section can be checked against the code. A Session is one unit of work on the
+database, such as the transaction a request runs in, and every Session comes
+from Database (M1), so the library behind it stays Database's secret (AC1 in
+the MG). In
 an access program table, In gives each input's type in order, separated by
 commas, and - means none. A route is written as its HTTP method and path, such
 as GET /v1/me/balance. Its In column lists what the phone
@@ -2038,7 +2039,7 @@ GET /v1/me/portfolio & - & tuple of (cash\_balance: Money, holdings: seq of
 
 \noindent No other module calls Trading in the proof of concept, so its routes
 are its whole interface. At Revision~0, it also exports read-only copies of a
-portfolio's holdings, trades and value for Learning (M14), and a buy and a
+portfolio's holdings, trades and value for Learning (M14), and trades and a
 valuation at the prices Scenarios (M16) hands in, with the lock on a
 scenario's portfolio (SEC-31), as the MG says.
 

@@ -78,7 +78,7 @@ and how AI-assisted content was checked.\\
 Nov 18, 2026 & 1.12 & Angad Chhabra: 10 User Interfaces, and 7 Module
 Decomposition: Navigation, Screens and API Service.\\
 Nov 18, 2026 & 1.13 & Davis Lenover: Navigation is built after the proof of
-concept. Review fixes to 5, 7, 9, 11 and 12 (\#323, \#326, \#328, \#329).\\
+concept. Review fixes to 4, 5, 7, 9, 11 and 12 (\#323, \#326, \#328, \#329).\\
 \bottomrule
 \end{tabularx}
 
@@ -813,7 +813,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \begin{description}
 \item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
 \item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list to the phone, and the provider's usage to the team.
-\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed. At Revision~0, when a stock splits, Market adjusts its past prices and \mref{mTrading} Trading the holdings of it, in one transaction, so the split changes no portfolio value (SEC-28).
+\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed. At Revision~0, when a stock splits, Market adjusts its past prices and \mref{mTrading} Trading adjusts the holdings in that stock. Both happen in one transaction, so the split changes no portfolio value (SEC-28).
 \item[Implemented By:] \progname{} server, in \path{market/}
 \item[Type of Module:] Abstract Object
 \end{description}
