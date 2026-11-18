@@ -3137,7 +3137,21 @@ works out a reward or a balance (SEC-24), and Trading alone decides whether a
 request ID was already used, so a retried buy is recorded once (FR38). The
 plug-in design paid off for the team too. Preston built Activity as its own
 module, and adding it to the server took two lines in \texttt{registry.py},
-with no change to the code that builds the server.
+with no change to the code that builds the server. \\
+
+\noindent\textbf{Farid:} What went well for me was tying each part I
+wrote to one module and to the requirements behind it. In Section 4 of the MG,
+each anticipated change names the module that hides it, and the trace table
+maps all 25 of them to their modules. A reader can then check that a change
+such as a new market data provider (AC3) touches only Market Providers.
+Writing the changes first also made the secrets in Section 7 easier to agree
+on, since a module's secret is the decision behind the change it hides. For the
+database design (MG Section 12), I worked from the SQLAlchemy models and the
+Alembic migrations rather than from the SRS alone, so the table list and the
+diagram show the tables the proof of concept really creates, and each rule the
+database checks is one the code relies on. Keeping one branch and one pull
+request per section (\#230, \#310 and \#318) also worked well. Each was small
+enough for a teammate to review against the SRS in one sitting.
 
 \subsubsection*{2. What pain points did you experience during this deliverable,
 and how did you resolve them?}
@@ -3166,7 +3180,30 @@ they stay right when a section moves. Before the deadline, I merged
 against each other, which found the stale notes and the missing Sync Service
 entry. Next time I would make one person responsible for the module list and
 the revision history, and check the documents against the code each time a
-feature PR merges, not only at the end.
+feature PR merges, not only at the end. \\
+
+\noindent\textbf{Farid:} My main pain point was that the design kept
+changing while I wrote about it. Section 6 of the MG had a decision about how
+the code gets the time, and Davis's PR \#308 changed that design a few days
+later, so my decision was out of date before it merged, and I rewrote it. I
+also wrote one claim that was too strong. I said the social feed could not
+reach health data, but Social uses Users, and Users stores height and weight.
+Checking the claim against the uses hierarchy (MG Section 9) caught it, and I
+narrowed it to what is true: Social cannot reach a balance or a portfolio's
+value.
+
+My second pain point was tooling. Several of us edited the revision history at
+the same time, so my branch conflicted with \texttt{main}. My first attempt to
+merge \texttt{main} made an ordinary commit instead of a merge, and I redid it
+with \texttt{git pull origin main} and resolved the conflict properly. For the
+database diagram, PlantUML drew some arrow labels on top of each other,
+pdflatex cannot include an SVG, and the repository's \texttt{.gitignore} skips
+every PDF, so the figure was missing from my first commit. I removed the arrow
+labels and moved the deletion rule into the legend, converted the diagram to a
+vector PDF, and added it with \texttt{git add -f}. Next time I would check each
+claim against the code and the uses table before I write it, not after, and
+compile the result of merging \texttt{main} into my branch before I open a pull
+request.
 
 \subsubsection*{3. Which of your design decisions stemmed from speaking to your
 client(s) or a proxy (e.g.\ your peers, stakeholders, potential users)? For
