@@ -17,7 +17,7 @@ digraph uses {
 
     subgraph cluster_features {
       label="Feature modules (each plugs in to Control)"; color="#D3D1C7";
-      style="rounded,dashed"; fontcolor="#5F5E5A";
+      style="rounded"; fontcolor="#5F5E5A";
       node [fillcolor="#EEEDFE", color="#534AB7"];
       M15 [label="M15 Social", style="rounded,filled,dashed"];
       M16 [label="M16 Scenarios", style="rounded,filled,dashed"];
@@ -36,7 +36,7 @@ digraph uses {
   subgraph cluster_app {
     label="App"; color="#B4B2A9"; style="rounded"; fontcolor="#5F5E5A";
     node [fillcolor="#EEEDFE", color="#534AB7"];
-    M18 [label="M18 Navigation"];
+    M18 [label="M18 Navigation", style="rounded,filled,dashed"];
     M19 [label="M19 Screens"];
     M20 [label="M20 Sync Service"];
     M21 [label="M21 Reminder Service", style="rounded,filled,dashed"];
@@ -44,11 +44,11 @@ digraph uses {
     M24 [label="M24 API Service"];
     node [fillcolor="#E6F1FB", color="#185FA5"];
     M4 [label="M4 Health Service"];
-    M5 [label="M5 Device Service"];
+    M5 [label="M5 Device Service", style="rounded,filled,dashed"];
   }
 
   subgraph cluster_shared {
-    label="Shared"; color="#B4B2A9"; style="rounded,dashed"; fontcolor="#5F5E5A";
+    label="Shared"; color="#B4B2A9"; style="rounded"; fontcolor="#5F5E5A";
     node [fillcolor="#E6F1FB", color="#185FA5"];
     M1 [label="M1 Database"];
     M2 [label="M2 Clock"];
@@ -86,7 +86,8 @@ digraph uses {
 
   // Into the shared modules
   M9 -> M22 [ltail=cluster_server, lhead=cluster_shared, penwidth=1.6];
-  M5 -> M7  [ltail=cluster_app, lhead=cluster_shared, penwidth=1.6];
+  // The app uses only Constants from the shared group.
+  M5 -> M7  [ltail=cluster_app, penwidth=1.6];
 
   // Layout only: the app sits below the server, and the shared modules on
   // the bottom row, so the figure is narrow enough to read on a page.
