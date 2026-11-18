@@ -145,7 +145,9 @@ can then be checked against what the decision was for.
 This revision specifies the modules of the proof of concept. Modules marked
 \textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
 specified at Revision~0, so that every section describes an interface the code
-really has. The app's sections describe a proof of concept with one screen.
+really has. Screens is the one exception. It describes the demo screen that
+PR \#312 is finishing, with the API Service calls it needs. The app's sections
+describe a proof of concept with one screen.
 They give what each module offers and why, without fixing details that may
 change with feedback on the proof of concept and with usability testing (NFR2).
 
@@ -466,7 +468,7 @@ Clock = () $\rightarrow$ DateTime, a function that returns the current time.
 Routes and background work are handed a Clock instead of reading the system
 time (dependency injection), so a test can set the time for each rule that
 depends on it: market hours, when a price is delayed or too old to trade
-(FR33, FR39), and the date used by Activity (M11) in PR \#313 (SEC-24).
+(FR33, FR39), and the date used by Activity (M11) (SEC-24).
 
 \subsubsection{Exported Constants}
 
@@ -922,8 +924,8 @@ Database (M1), Users (M8), Wallet (M9), Market (M10), Activity (M11),
 Trading (M12), Plugins (M22), JSON Format (M23)
 
 \medskip
-\noindent PR \#313 adds Activity to PLUGINS. The MG also lists Goals (M13)
-to Privacy (M17), each added once it is built.
+\noindent The MG also lists Goals (M13) to Privacy (M17), each added to PLUGINS
+once it is built.
 
 \subsection{Syntax}
 
@@ -934,7 +936,8 @@ None
 \subsubsection{Exported Constants}
 
 \noindent PLUGINS: seq of Plugin $=$ $\langle$PLUGIN of Users (M8), PLUGIN of
-Wallet (M9), PLUGIN of Market (M10), PLUGIN of Trading (M12)$\rangle$, the
+Wallet (M9), PLUGIN of Market (M10), PLUGIN of Trading (M12), PLUGIN of
+Activity (M11)$\rangle$, the
 PLUGIN of each module in the server, in the order their background work
 starts. Only this list, in app/registry.py, names the modules (the plug-in
 pattern), so adding a module never changes create\_app. Listing a module here
@@ -1045,7 +1048,7 @@ ActivityType = \{STEPS, WHEELCHAIR\_PUSHES, CYCLING, SWIMMING, OTHER\_WORKOUT\},
 the supported activity types (SUPPORTED\_ACTIVITY\_TYPES in SRS Appendix C).
 Each value is also a String, its name in lower case, such as ``steps'', so the
 daily totals the phone sends (SEC-24) can name their type in JSON and the
-database can store it as text. PR \#313 supports steps only.\par}
+database can store it as text. Activity (M11) supports steps only.\par}
 
 \subsubsection{Exported Constants}
 
@@ -1183,7 +1186,7 @@ create\_user & Session, ID or None, String & ID & ValueError, IntegrityError \\
 
 \noindent users: set of tuple of (user\_id: ID, time\_zone: String,
 created\_at: DateTime), every user, with each user\_id once. time\_zone is an
-IANA time zone name. Activity in PR \#313 uses the time zone in the request
+IANA time zone name. Activity (M11) uses the time zone in the request
 to check dates, and does not read or update this stored value (SEC-24,
 HA~H51). The phone, not the server, puts each activity record on its day
 (SEC-23).
@@ -1253,9 +1256,9 @@ Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
 \noindent BalanceChangeReason $=$ \{activity\_reward, trade\_purchase\}, why a
 balance changed. Every change keeps its reason (SEC-22), and the database
 refuses any other. There is no reason for a sale yet, since the proof of
-concept only buys. Selling (FR36) comes at Revision~0. Activity (M11) in
-PR \#313 uses activity\_reward for step payments; tests also use it to give
-a portfolio currency to spend.
+concept only buys. Selling (FR36) comes at Revision~0. Activity (M11) uses
+activity\_reward for step payments. Tests also use it to give a portfolio
+currency to spend.
 
 \medskip
 {\raggedright
@@ -1444,7 +1447,7 @@ locked.portfolio\_id:
 \begin{itemize}
 \item output: $out :=$ the sum of the amounts of the changes with
   portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0.
-  A step sync in Activity (M11), implemented in PR \#313, uses it to pay only
+  A step sync in Activity (M11) uses it to pay only
   the difference, so no activity is paid twice (SEC-19) or past the daily cap
   (FR18).
 \item exception: $exc :=$ (activity\_date is a DateTime $\Rightarrow$
@@ -1862,10 +1865,9 @@ The reply exposes \texttt{counted} through \texttt{syncResult}.
   ends, so requests for that portfolio run one at a time.
 \item The phone assigns activity to days using the time zone at the time of
   the activity. Travel does not change an old record's day (SEC-23).
-% The MG still describes using the stored user zone. PR #313 uses the
-% submitted zone instead; this MIS records the implementation, not a new rule.
-\item The server finds today using Clock and the request's \texttt{time\_zone}. It
-  trusts that zone and leaves the stored Users zone unchanged (SEC-24, HA~H51).
+\item The server finds today using Clock, not the phone's clock, in the
+  request's \texttt{time\_zone}, so changing the phone's date can't date a
+  total after today (SEC-24, HA~H51). The stored Users zone is left unchanged.
 
 \end{itemize}
 
@@ -3057,16 +3059,16 @@ The following AI tools and models were used:
 \end{itemize}
 
 \subsection{How and Where Used}
-ChatGPT helped review contributions for consistency with the intended design, the MG, and other project documents. It also helped identify gaps and inconsistencies and assisted with LaTeX formatting. The reported MIS work included Section 6 (MIS of Database). 
+ChatGPT helped review contributions for consistency with the intended design, the MG, and other project documents. It also helped identify gaps and inconsistencies and assisted with LaTeX formatting. The reported MIS work included Section~\ref{MisDB} (MIS of Database). 
 
 \medskip\noindent
-Codex helped improve wording, check grammar, and format existing content in LaTeX. This assistance covered Section 14 (MIS of Activity). The content was written first, then revised with AI assistance.
+Codex helped improve wording, check grammar, and format existing content in LaTeX. This assistance covered Section~\ref{MisActivity} (MIS of Activity). The content was written first, then revised with AI assistance.
 
 \medskip\noindent
 Claude Code helped draft access programs, state descriptions, and semantics in LaTeX using the MG, the SRS, and the backend and frontend code. The team member established the design decisions before using the tool. These included treating Market Providers as a template module and marking Device Service and Navigation as planned after the proof of concept. Claude Code also helped review the document for gaps and differences from the code and the SRS. 
 
 \medskip\noindent
-This assistance covered Section 1 (Revision History), Section 2 (Symbols, Abbreviations and Acronyms), Section 3 (Introduction), Section 4 (Notation), and Section 5 (Module Decomposition). It also covered Section 6 (MIS of Database), Section 7 (MIS of Clock), Section 8 (MIS of Market Providers), Section 9 (MIS of Control), Section 10 (MIS of Constants), Section 11 (MIS of Users), Section 12 (MIS of Wallet), Section 13 (MIS of Market), Section 15 (MIS of Trading), Section 16 (MIS of Plugins), and Section 17 (MIS of JSON Format), as well as the MIS of Health Service, Screens, Sync Service, and API Service.
+This assistance covered Section 1 (Revision History), Section 2 (Symbols, Abbreviations and Acronyms), Section 3 (Introduction), Section 4 (Notation), and Section 5 (Module Decomposition). It also covered Section~\ref{MisDB} (MIS of Database), Section~\ref{MisClock} (MIS of Clock), Section~\ref{MisProviders} (MIS of Market Providers), Section~\ref{MisHealth} (MIS of Health Service), Section~\ref{MisControl} (MIS of Control), Section~\ref{MisConstants} (MIS of Constants), Section~\ref{MisUsers} (MIS of Users), Section~\ref{MisWallet} (MIS of Wallet), Section~\ref{MisMarket} (MIS of Market), Section~\ref{MisTrading} (MIS of Trading), Section~\ref{MisScreens} (MIS of Screens), Section~\ref{MisSync} (MIS of Sync Service), Section~\ref{MisPlugins} (MIS of Plugins), Section~\ref{MisJSON} (MIS of JSON Format) and Section~\ref{MisAPI} (MIS of API Service).
 
 \subsection{Verification of AI-Generated Content}
 For the contributions reviewed with ChatGPT, the suggested changes were checked against the intended design, the MG, the MIS, and other project documents. The rendered LaTeX output was also reviewed. 
