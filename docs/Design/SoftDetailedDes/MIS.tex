@@ -3225,7 +3225,30 @@ Hazard Analysis and what we learned about modular design. Each module hides
 one decision that may change (information hiding), so the market data
 provider, the health platforms and the email service each sit behind one
 interface. The server works out every reward and balance because the Hazard
-Analysis found that a modified app could send false ones (SEC-24, HA~H43).
+Analysis found that a modified app could send false ones (SEC-24, HA~H43).\\
+
+\noindent\textbf{Farid:} Several of my decisions came from our Design
+Thinking interviews with P01 (our supervisor and TA) and P02 (a financial
+services representative at a credit union). P01 forgets to stop a bike
+tracking app and asked for tracking that is ``as touchless as possible'', and
+P02 keeps track of workouts only as ``a mental check''. So activity comes from
+the phone's health platform rather than being logged by hand, Health Service
+hides which platform that is (AC4), and the phone sends only daily totals
+(SEC-10). Both said they share data with an app only when it has a clear reason
+to ask, and P01 turns off a step app's network access. That supports the
+unlikely change that the user controls what they share and that a balance or
+raw health data is never shared (UC3), and keeping the privacy rules in one
+module. P02 said comparing with others is ``only ever bad when you're
+really far behind'', which is one more reason the social feed cannot reach a
+balance. Both learn best by doing, which supports practising with simulated
+currency in a market that follows real prices, with no real money (UC1).
+
+The database decisions did not come from users, since no user sees a table.
+They came from the SRS: money as exact decimals (NFR1), every time stored with
+its time zone (FR33), UUIDs so the phone can make a trade's request ID itself
+(FR38), and history that is added to and never edited (SEC-22). The database
+checks the most important rules again, such as a balance never going below
+zero (FR37), so that a bug in one module cannot save a row that breaks them.
 
 \subsubsection*{4. While creating the design doc, what parts of your other
 documents (e.g.\ requirements, hazard analysis, etc), if any, needed to be
@@ -3242,7 +3265,20 @@ each activity record its reward, but the design stores a reward once, in
 Wallet's balance changes, so a day is never paid twice (SEC-19). That entry
 should change. Tracing every requirement to a module also found requirements
 that no module handled yet, such as stock splits (SEC-28), which we then placed
-in Market and Trading.
+in Market and Trading.\\
+
+\noindent\textbf{Farid:} Writing the database design showed where the
+SRS data dictionary (SRS Section~7.2) no longer matches the design. It gives a
+portfolio its holdings, trades and balance changes as lists inside the
+portfolio, while the design stores each as its own table with one row per item,
+so the database can check every row. It also gives each activity record its
+reward, while the design stores a reward once, in Wallet's balance changes, so
+a day is never paid twice (SEC-19). The data dictionary should be updated to
+describe the data as it is stored. The design also found a gap in the
+requirements. SEC-18 lets a user delete their account, but a user's portfolio
+is not deleted with the user, so in the proof of concept a user who has a
+portfolio cannot be deleted. Before Revision~0 we need to decide what happens
+to a deleted user's portfolio and trade history, and the SRS should state it.
 
 \subsubsection*{5. What are the limitations of your solution? Put another way,
 given unlimited resources, what could you do to make the project better?
