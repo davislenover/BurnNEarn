@@ -894,7 +894,29 @@ the MIS specifies them at Revision~0.
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M18 Navigation and M19 Screens (app): #236
+
+
+\subsubsection{Navigation Module (M18)}
+
+\begin{description}
+\item[Secrets:] How users navigate between screens.
+\item[Services:] Provides navigation between the Home, Market and Portfolio sections, and through the screens used to purchase a stock. Opens a selected stock's details, moves through the Buy Stock, Review Purchase and Purchase Successful screens, and allows the user to return to an earlier screen. At Revision~0, also provides navigation to the account, activity, learning, social and settings screens.
+\item[Rationale:] The order of screens may change after usability testing (NFR2), so navigation is kept separate from screen layout (AC18). The app uses a bottom navigation bar for its three main sections and a sequence of screens for simulated stock purchases. Navigation uses M19 Screens to display each destination, but does not decide what data appears on a screen or how it is presented. Keeping navigation separate allows the team to change the user flow without changing the individual screens or the services they use (NFR3).
+\item[Implemented By:] \progname{} mobile app, using React Native and TypeScript navigation components
+\item[Type of Module:] Abstract Object
+\end{description}
+
+
+\subsubsection{Screens Module (M19)}
+\begin{description}
+\item[Secrets:] The layout and appearance of the app's screens.
+\item[Services:] Displays daily activity totals, earned virtual currency, available balance, stock prices, simulated purchases and portfolio holdings. Accepts user input, such as selecting a stock or entering the number of shares to purchase, and displays confirmations and error messages. The initial interface consists of seven Figma-designed screens: Home Dashboard, Stock Market, Stock Details, Buy Stock, Review Purchase, Purchase Successful and My Portfolio. At Revision~0, additional screens support account management, goals, learning, social features and privacy settings.
+\item[Rationale:] The interface is expected to change based on usability testing (NFR2), so its appearance and wording are kept in one module (AC19). Screens retrieves activity results from M20 Sync Service and server responses through M24 API Service. It does not calculate activity rewards, currency balances or trade results, since these decisions belong to the server (SEC-24). Every portfolio value and return is labelled as simulated (FR43), and gains and losses use signs or text rather than colour alone (FR44). Stock prices include their timestamps and indicate when they are delayed (FR33). Before a user's first trade, the interface displays the simulation notice for acknowledgement (FR34). The layouts must also remain usable at \texttt{MAX\_TEXT\_SCALE} (NFR8). Keeping presentation separate from the services allows the team to change the design without affecting the underlying functionality (NFR3).
+\item[Implemented By:] \progname{} mobile app, using React Native and TypeScript screen components, based on the Figma mockups in Section~10
+\item[Type of Module:] Abstract Object
+\end{description}
+
+
 
 % M20 Sync Service (app): #235
 
@@ -951,7 +973,18 @@ at Revision~0. The PoC does not include reminders.
 \item[Type of Module:] Library
 \end{description}
 
-% M24 API Service (app): #236
+
+\subsubsection{API Service Module (M24)}
+
+\begin{description}
+\item[Secrets:] How the app communicates with the server.
+\item[Services:] Provides a common interface for sending HTTPS requests and receiving JSON responses from the \progname{} server. Sends daily activity totals, retrieves virtual currency balances, stock prices and portfolio information, and submits simulated trade requests. Converts successful responses and server refusals into results that other app modules can handle consistently. At Revision~0, attaches the user's session token to authenticated requests and handles expired or invalid sessions.
+\item[Rationale:] The server address, authentication and retry behaviour may change (AC24), so they are hidden behind one interface rather than implemented separately in each screen (NFR3). M19 Screens and M20 Sync Service use API Service without needing to know how the requests are sent. Amounts received from the server remain exact decimal text, as defined by M23 JSON Format, to avoid precision loss (NFR1, SEC-30). Server refusals are returned consistently so Screens can display an appropriate message (SEC-25). Each trade request has a unique request ID that is reused if the request is retried, allowing the server to prevent duplicate trades (FR38, NFR6). At Revision~0, API Service uses M5 Device Service to store and retrieve the session token securely (SEC-39). The proof of concept uses the server's built-in demo user and does not yet require authenticated sessions.
+\item[Implemented By:] \progname{} mobile app, using a shared TypeScript API client
+\item[Type of Module:] Library
+\end{description}
+
+
 
 \newpage
 \section{Traceability Matrices} \label{SecTM}
