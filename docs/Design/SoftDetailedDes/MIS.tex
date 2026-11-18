@@ -3120,41 +3120,148 @@ The team remains responsible for the accuracy, completeness, consistency, and ap
 
 \section{Appendix --- Reflection}
 
-\wss{Not required for CAS 741 projects}
-
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Problem Analysis and Design.
 
 \input{../../Reflection.text}
 
-\begin{enumerate}
-  \item What went well while writing this deliverable? 
-  \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
-  \item Which of your design decisions stemmed from speaking to your client(s)
-  or a proxy (e.g. your peers, stakeholders, potential users)? For those that
-  were not, why, and where did they come from?
-  \item While creating the design doc, what parts of your other documents (e.g.
-  requirements, hazard analysis, etc), it any, needed to be changed, and why?
-  \item What are the limitations of your solution?  Put another way, given
-  unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
-  \item Give a brief overview of other design solutions you considered.  What
-  are the benefits and tradeoffs of those other designs compared with the chosen
-  design?  From all the potential options, why did you select the documented design?
-  (LO\_Explores)
-  \item (After you have implemented another team's module, which means this
-  isn't filled in until after the original deadline). What did you learn by
-  implementing another team's module? Were all the details you needed in the
-  documentation, or did you need to make assumptions, or ask the other team
-  questions?  If your team also had another team implement one of your modules,
-  what was this experience like?  Are there things in your documentation you
-  could have changed to make the process go more smoothly for when an
-  ``outsider'' completes some of the implementation?
+\subsubsection*{1. What went well while writing this deliverable?}
 
-  Your reflection should be about concepts learned in your SE education, such as modular decomposition, cohesion, coupling, information hiding, etc.  You should critique the quality and utility of the specification you received.
+\noindent\textbf{Davis:} What went well for me was writing the MG and the MIS
+while I was building the backend for the proof of concept. I wrote the MIS of
+each server module right after its code, so each access program, exception and
+route in those sections is what the code really does, and a reviewer can check
+every line against it. Giving each module one secret also made me check where
+each rule lives. Every currency rule ended up on the server, so the app never
+works out a reward or a balance (SEC-24), and Trading alone decides whether a
+request ID was already used, so a retried buy is recorded once (FR38). The
+plug-in design paid off for the team too. Preston built Activity as its own
+module, and adding it to the server took two lines in \texttt{registry.py},
+with no change to the code that builds the server.
 
-  You should create a PR for your implemented module.  A link to the PR should be part of your reflection.
+\subsubsection*{2. What pain points did you experience during this deliverable,
+and how did you resolve them?}
 
-\end{enumerate}
+\noindent\textbf{Davis:} My main pain point was keeping the design, the proof
+of concept and five people's work in sync. Both documents changed while the
+code they describe was still being written. Preston's step rewards (PR \#313)
+changed Activity's reply after its MIS was drafted, and the MIS of Screens
+describes a demo screen that is still in Zaid's open PR (\#312). Notes such as
+``PR \#313 adds Activity'' were true when I wrote them and wrong a few days
+later. The documents were a second problem. Five of us wrote sections of the
+same two files at the same time, so we hit merge conflicts in the revision
+history, two rows ended up with the same version number, and adding Health
+Service moved every later MIS section, which broke the section numbers typed
+into the AI disclosure. Sync Service was still a placeholder comment in the MG
+when the peer review found it (\#323).
+
+I resolved these in a few ways. I split the work into one GitHub issue per
+section or module, each with an owner, and kept my pull requests small and
+stacked, so each could be reviewed on its own. I marked the modules built after
+the proof of concept with a dagger and kept their entries short, so the team
+agreed on what each one hides without fixing details that feedback on the proof
+of concept may change. I replaced typed section numbers with references, so
+they stay right when a section moves. Before the deadline, I merged
+\texttt{main} into my branch and reviewed both documents against the code and
+against each other, which found the stale notes and the missing Sync Service
+entry. Next time I would make one person responsible for the module list and
+the revision history, and check the documents against the code each time a
+feature PR merges, not only at the end.
+
+\subsubsection*{3. Which of your design decisions stemmed from speaking to your
+client(s) or a proxy (e.g.\ your peers, stakeholders, potential users)? For
+those that were not, why, and where did they come from?}
+
+\noindent\textbf{Davis:} Our supervisor, who is also a stakeholder, set the
+core loop: steps become currency, and the user invests it. So the proof of
+concept covers that whole loop, from Health Service and Sync Service reading
+the day's steps, through Activity paying for them, to Trading spending the
+currency, and the demo screen shows each step of it. Planning the usability
+study with potential users in mind also changed the design. At 100 steps a
+coin, a user could save for days before affording one share of our starting
+stocks, so we added cheaper stocks, and the demo screen's asset is chosen so
+that a few days of steps can buy a whole share (FR35).
+
+Most of the module decomposition did not come from the client, since the
+client sees what the app does, not how it is split. It came from the SRS, the
+Hazard Analysis and what we learned about modular design. Each module hides
+one decision that may change (information hiding), so the market data
+provider, the health platforms and the email service each sit behind one
+interface. The server works out every reward and balance because the Hazard
+Analysis found that a modified app could send false ones (SEC-24, HA~H43).
+
+\subsubsection*{4. While creating the design doc, what parts of your other
+documents (e.g.\ requirements, hazard analysis, etc), if any, needed to be
+changed, and why?}
+
+\noindent\textbf{Davis:} Writing the design did not change the SRS or the
+Hazard Analysis text yet, but it showed where the proof of concept differs from
+them, and where they need updating. SC2 asks for activity only through the
+phone's health platform, but the proof of concept reads the iPhone's steps from
+Core Motion through Expo Pedometer, since the Development Plan demonstrates
+HealthKit only if time allows. We recorded this as a proof of concept exception
+in both documents instead of weakening SC2. The SRS data dictionary also gives
+each activity record its reward, but the design stores a reward once, in
+Wallet's balance changes, so a day is never paid twice (SEC-19). That entry
+should change. Tracing every requirement to a module also found requirements
+that no module handled yet, such as stock splits (SEC-28), which we then placed
+in Market and Trading.
+
+\subsubsection*{5. What are the limitations of your solution? Put another way,
+given unlimited resources, what could you do to make the project better?
+(LO\_ProbSolutions)}
+
+\noindent\textbf{Davis:} The biggest limits come from the proof of concept's
+shortcuts. The app reads steps only when it is opened, since background reads
+are not reliable on either platform (SRS LC1), so a day's steps reach the
+server only when the user opens the app. On iPhone, Core Motion misses steps
+from an Apple Watch worn without the phone. Prices come from one provider's
+free plan, polled once a minute, so prices can be up to a minute old, and the
+request limit caps how many assets we can offer (SC4). The proof of concept
+lists 15 assets, below the 50 that FR28 asks for. There is also no sign-in
+yet, so every request acts as the demo user. With unlimited resources, I would
+read HealthKit and Health Connect in the background, pay for a market data
+feed that sends prices as they change instead of polling, offer far more
+assets, and bind each session to a key in the phone's hardware (DPoP), so a
+copied session token would be useless on its own.
+
+\subsubsection*{6. Give a brief overview of other design solutions you
+considered. What are the benefits and tradeoffs of those other designs compared
+with the chosen design? From all the potential options, why did you select the
+documented design? (LO\_Explores)}
+
+\noindent\textbf{Davis:} For the server, we considered separate services, one
+for each feature. That would let each one be deployed and scaled on its own.
+But a buy changes both the balance and the shares, which two modules own, so a
+buy would need a transaction across services, and a failure halfway could
+charge the user without giving them the shares. We chose a modular monolith:
+one process and one database, so a trade is one transaction (FR37), split into
+modules that each own their tables and plug into Control, which keeps most of
+the separation. For sign-in, we considered self-contained tokens, which the
+server can check without a lookup. We chose sessions stored on the server,
+since the server must be able to end a session at once on sign-out, on sign
+out of all devices or after a password reset (SEC-17), which a self-contained
+token can't do before it expires. For rewards, the phone could have worked out
+its own coins, which is simpler and works offline, but a modified app could
+then send any reward, so the server works out every reward from the daily
+totals (SEC-24). For prices, asking the provider on each request would always
+be fresh, but it would use up the request limit as users grow, so the server
+polls once a minute and every user sees the same price (SC4).
+
+\subsubsection*{7. (After you have implemented another team's module, which
+means this isn't filled in until after the original deadline). What did you
+learn by implementing another team's module? Were all the details you needed in
+the documentation, or did you need to make assumptions, or ask the other team
+questions? If your team also had another team implement one of your modules,
+what was this experience like? Are there things in your documentation you could
+have changed to make the process go more smoothly for when an ``outsider''
+completes some of the implementation?}
+
+Your reflection should be about concepts learned in your SE education, such as
+modular decomposition, cohesion, coupling, information hiding, etc. You should
+critique the quality and utility of the specification you received.
+
+You should create a PR for your implemented module. A link to the PR should be
+part of your reflection.
 
 \end{document}
