@@ -811,7 +811,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \begin{description}
 \item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
 \item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list to the phone, and the provider's usage to the team.
-\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed.
+\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed. At Revision~0, when a stock splits, Market adjusts its past prices and \mref{mTrading} Trading the holdings of it, in one transaction, so the split changes no portfolio value (SEC-28).
 \item[Implemented By:] \progname{} server, in \path{market/}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -1566,9 +1566,12 @@ a primary key and FK a foreign key.}
   without asking the server (FR38). Prices and provider requests use a counter,
   since there are many of them and nothing outside the server refers to one.
 
-\item[History is added to, never edited.] A balance change, a trade and a price
-  are never updated after they are saved, so the record of what happened stays
-  complete (SEC-22). A daily activity total is different. Each sync replaces
+\item[History is added to, never edited.] A balance change and a trade are
+  never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A price is kept once for each time the provider set it,
+  and is replaced only when the provider corrects that price, or, at
+  Revision~0, when the stock splits (SEC-28). A daily activity
+  total is different. Each sync replaces
   it with the latest total for that day, since a day's total grows until the
   day ends.
 
@@ -1580,8 +1583,10 @@ a primary key and FK a foreign key.}
 
 \item[Deleting a row deletes what belongs to it.] A portfolio's balance
   changes, trades and holdings are deleted with it by the database, and a
-  user's daily totals with the user. The proof of concept uses this to reset
-  the demo user. Account deletion is designed at Revision~0 (SEC-18).
+  user's daily totals with the user. A user's portfolio is not deleted with the
+  user, so a user who has one can't be deleted yet. The proof of concept resets
+  the demo user by deleting their portfolio. Account deletion is designed at
+  Revision~0 (SEC-18).
 \end{description}
 
 \subsection{Rules the Database Checks}
