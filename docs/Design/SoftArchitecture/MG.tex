@@ -770,16 +770,16 @@ module yet.
 \item[Secrets:] The values of the SRS symbolic constants (SRS Appendix C).
 \item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit.
 \item[Rationale:] The SRS names its tunable values as symbolic constants, such as the price staleness limit (SRS Appendix C), so a value can change without changing a requirement. One file on each side, server and app, with the same names, keeps each value easy to find and traceable back to the SRS.
-\item[Implemented By:] \progname{} server, in \path{core/constants.py}, and a matching file in the app
+\item[Implemented By:] \progname{} server, in \path{core/constants.py}. The app gets its matching file at Revision~0, when it first needs one of the values.
 \item[Type of Module:] Library, with exported types and constants only
 \end{description}
 
 \subsubsection{Users Module (\mref{mUsers})}
 
 \begin{description}
-\item[Secrets:] How the server knows who is calling.
+\item[Secrets:] How a user is known: their account record and how a caller proves who they are.
 \item[Services:] Gives every route that needs one the current user, so the phone never sends a user ID. In the proof of concept, a request that needs a user comes from the built-in demo user while a setting turns it on, and is refused otherwise. Also adds users and keeps each user's record, such as their time zone.
-\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (\mbox{SEC-15}, NFR7). Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow (HA~H45). After too many wrong passwords, an account refuses sign-ins for a while, even with the right password, so guessing a password by signing in is slow (\mbox{SEC-38}, HA~H35). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, which limits who could use it to take over the account (HA~H35). The server keeps only the token's hash, so a stolen copy of the database can't be used to reset a password (HA~H45).
+\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (\mbox{SEC-15}, NFR7). The account record and sign-in are kept in one module, an exception to one secret per module, because signing up makes both at once and no other module reads a password or a session. Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow (HA~H45). After too many wrong passwords, an account refuses sign-ins for a while, even with the right password, so guessing a password by signing in is slow (\mbox{SEC-38}, HA~H35). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, which limits who could use it to take over the account (HA~H35). The server keeps only the token's hash, so a stolen copy of the database can't be used to reset a password (HA~H45).
 
 Each sign-in starts a session that the server stores, and the phone keeps the session's random token in its secure storage (\mbox{SEC-39}) and sends it with every request. Sessions are stored on the server, not in self-contained tokens, because the server must be able to end one at once: on sign-out, on ``sign out of all devices'', after a password reset, or after \texttt{SESSION\_TIMEOUT} without the user opening or using the app (FR5, FR6, \mbox{SEC-17}). The server keeps only a hash of each token, so a stolen copy of the database can't be used to act as a user (HA~H45).
 
@@ -822,7 +822,9 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \item[Secrets:] The rules for turning daily activity into currency.
 \item[Services:] Accepts daily totals, checks their dates and plausibility,
   and credits the unpaid reward through Wallet. Returns each day's result,
-  the updated balance and the earning rate.
+  the updated balance and the earning rate. At Revision~0, it also gives
+  \mref{mGoals} Goals and \mref{mSocial} Social read-only copies of each
+  day's total.
 \item[Rationale:] Rewards are calculated on the server (SEC-24), using the
   earning rate, plausibility limit and daily cap from Constants (FR13, FR17,
   FR18). Activity locks the live portfolio before reading earlier payments,
@@ -838,7 +840,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
-\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
+\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42). At Revision~0, it also gives \mref{mLearning} Learning read-only copies of the user's holdings and trades.
 \item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0. So do trading in and valuing a scenario's portfolio at the prices \mref{mScenarios} Scenarios hands Trading, which it accepts only with the lock on that portfolio (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
