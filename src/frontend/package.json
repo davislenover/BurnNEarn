@@ -1,3 +1,4 @@
+
 {
   "name": "frontend",
   "version": "1.0.0",
@@ -16,12 +17,30 @@
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.0.0",
+    "jest-expo": "~58.0.15",
     "typescript": "~6.0.3"
   },
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "test": "jest --runInBand",
+    "test:coverage": "jest --runInBand --coverage"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "roots": [
+      "<rootDir>/../../test/frontend"
+    ],
+    "testMatch": [
+      "**/*.test.ts",
+      "**/*.test.tsx"
+    ],
+    "collectCoverageFrom": [
+      "<rootDir>/app/services/api/**/*.ts"
+    ]
   },
   "private": true
 }
