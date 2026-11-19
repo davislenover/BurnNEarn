@@ -2640,6 +2640,820 @@ holdings\_value: Decimal, total\_value: Decimal) only reads.
 
 % M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
 % M18 Navigation (app) is built after the PoC and is specified at Revision 0.
+
+\section{MIS of Goals} \label{MisGoals}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Goals (M13 in the MG), on the server. It is built after the proof of concept
+(\textsuperscript{\dag}), so this is the interface planned for Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Constants (M7), Users (M8), Wallet (M9), Activity
+(M11), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Goal = tuple of (activity\_type: ActivityType, target: $\mathbb{N}$,
+starts\_on: Date), a daily goal for one activity type, in effect from starts\_on.
+
+\medskip
+\noindent Milestone = tuple of (kind: \{streak, currency\_earned\}, value:
+$\mathbb{N}$, reached\_on: Date), one value in MILESTONES that the user has
+reached.
+
+\medskip
+\noindent ShareableGoalUpdate = tuple of (kind: \{streak,
+fitness\_milestone\}, value: $\mathbb{N}$), a streak or a fitness milestone,
+the only updates from Goals that Social (M15) may share (FR65). It holds no
+balance, no missed goal and no ended streak (FR24).
+
+\medskip
+\noindent RestDayLimitError, a DomainError raised when a user marks more than
+REST\_DAYS\_PER\_PERIOD rest days in one STREAK\_PERIOD (FR23).
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``goals'', router: this module's routes,
+lifespan: None, health: None)
+
+\medskip
+\noindent Goals reads REST\_DAYS\_PER\_PERIOD, STREAK\_PERIOD,
+GOAL\_REVIEW\_PERIOD, MAX\_GOAL\_INCREASE and MILESTONES from Constants (M7),
+which adds them from SRS Appendix~C at Revision~0.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+set\_goal & Session, ID, ActivityType, $\mathbb{N}$ or None & Goal or None &
+ValueError \\
+goals\_in\_effect & Session, ID, Date & set of Goal & - \\
+mark\_rest\_day & Session, ID, Date & - & RestDayLimitError, ValueError \\
+streak & Session, ID & $\mathbb{N}$ & - \\
+suggest\_goal & Session, ID, ActivityType & $\mathbb{N}$ or None & - \\
+milestones & Session, ID & seq of Milestone & - \\
+shareable\_updates & Session, ID & set of ShareableGoalUpdate & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item goals: set of tuple of (user\_id: ID, goal: Goal), every goal each user
+  has set. Older goals are kept, so a past day is always judged by the goal in
+  effect that day.
+\item rest\_days: set of tuple of (user\_id: ID, day: Date)
+\item reached: set of tuple of (user\_id: ID, milestone: Milestone), each
+  milestone the first time it was reached, so it is shown once (FR25).
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Activity (M11) gives each user's daily totals by day, in the user's time
+  zone, and Wallet (M9) gives the total currency each user has earned.
+\item A route acts only for the signed-in user, given by Users (M8).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent set\_goal(session, user\_id, type, target), with $t$ the day after
+today in the user's time zone:
+\begin{itemize}
+\item transition: goals $:=$ goals $\cup$ \{(user\_id, (type, target, $t$))\},
+  or, when target is None, the user has no goal for type from $t$. Today's goal
+  doesn't change (FR19). This is the only routine that changes a goal, and a
+  route calls it only after the user confirms (FR21). A user with no goal
+  still earns currency (FR20).
+\item output: $out :=$ the new Goal, or None when the goal was removed
+\item exception: $exc :=$ (target $\le 0 \Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent goals\_in\_effect(session, user\_id, $d$):
+\begin{itemize}
+\item output: $out :=$ for each activity type, the goal of user\_id with the
+  latest starts\_on $\le d$, if it has one.
+\item exception: None
+\end{itemize}
+
+\noindent mark\_rest\_day(session, user\_id, $d$):
+\begin{itemize}
+\item transition: rest\_days $:=$ rest\_days $\cup$ \{(user\_id, $d$)\}
+\item exception: $exc :=$ ($d$ is before today in the user's time zone
+  $\Rightarrow$ ValueError $|$ the user already has REST\_DAYS\_PER\_PERIOD
+  rest days in $d$'s STREAK\_PERIOD $\Rightarrow$ RestDayLimitError)
+\end{itemize}
+
+\noindent streak(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the streak as defined in SRS Section~6.7, worked out
+  each time from Activity's daily totals, goals\_in\_effect and rest\_days
+  (FR22, FR23), so a late total (SEC-20) or a rest day marked later gives the
+  right streak without a fix-up.
+\item exception: None
+\end{itemize}
+
+\noindent suggest\_goal(session, user\_id, type):
+\begin{itemize}
+\item output: $out :=$ (the user met their goal for type on each of the last
+  GOAL\_REVIEW\_PERIOD days $\Rightarrow$ a target at most
+  (1 + MAX\_GOAL\_INCREASE) times the current one $|$ otherwise $\Rightarrow$
+  None). A suggestion changes nothing until the user confirms it with
+  set\_goal (FR21).
+\item exception: None
+\end{itemize}
+
+\noindent milestones(session, user\_id):
+\begin{itemize}
+\item transition: reached gains each value in MILESTONES that the user's
+  streak or total currency earned has reached and that isn't in reached yet,
+  with today's date.
+\item output: $out :=$ the user's milestones in reached, oldest first. No
+  milestone uses body weight or calories (FR26).
+\item exception: None
+\end{itemize}
+
+\noindent shareable\_updates(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ \{(streak, streak(session, user\_id))\} $\cup$
+  \{(fitness\_milestone, $m$.value) $|$ $m$ in milestones(session, user\_id)\}
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Learning} \label{MisLearning}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Learning (M14 in the MG), on the server. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Constants (M7), Users (M8), Trading (M12), Plugins (M22), JSON
+Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Explanation = tuple of (concept: String, text: String, source:
+String, reviewed\_on: Date), a concept explanation with its source and the
+date it was last reviewed (FR59).
+
+\medskip
+\noindent KnowledgeCheck = tuple of (check\_id: ID, concept: String,
+questions: seq of tuple of (question: String, choices: seq of String)), a
+knowledge check without its answers, so the phone can't show them early.
+
+\medskip
+\noindent CheckResult = tuple of (correct: seq of $\mathbb{B}$, explanations:
+seq of String or None, passed: $\mathbb{B}$), which answers were right, the
+explanation of each one that was wrong (FR56), and whether the check was
+passed (FR57).
+
+\medskip
+\noindent Feedback = tuple of (kind: \{value\_change, trade\_effect,
+concentration\}, text: String, based\_on: seq of tuple of (asset: String,
+change: Decimal)), feedback on the user's portfolio, with the holdings and
+price changes it is based on (FR60).
+
+\medskip
+\noindent UnpublishedContentError, a DomainError raised when content is
+published before a second team member has reviewed it (FR59).
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``learning'', router: this module's
+routes, lifespan: None, health: None)
+
+\medskip
+\noindent Learning reads FEEDBACK\_THRESHOLD, CONCENTRATION\_LIMIT and
+KNOWLEDGE\_CHECK\_PASS\_MARK from Constants (M7), which adds them from SRS
+Appendix~C at Revision~0.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+explanation & Session, String & Explanation & NoResultFound \\
+knowledge\_check & Session, String & KnowledgeCheck & NoResultFound \\
+submit\_answers & Session, ID, ID, seq of $\mathbb{N}$ & CheckResult &
+NoResultFound, ValueError \\
+progress & Session, ID & tuple of (viewed: set of String, passed: set of
+String) & - \\
+portfolio\_feedback & Session, ID & seq of Feedback & - \\
+trade\_feedback & Session, ID, ID & Feedback & NoResultFound \\
+save\_content & Session, ID, Explanation or KnowledgeCheck & ID & ValueError \\
+publish & Session, ID, ID & - & Unpublished\allowbreak ContentError \\
+passed\_checks & Session, ID & set of String & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item content: set of tuple of (content\_id: ID, item: Explanation or
+  KnowledgeCheck with its answers, author: ID, reviewer: ID or None,
+  published: $\mathbb{B}$), kept on the server so administrators can change it
+  without a new release of the app (FR58).
+\item attempts: set of tuple of (user\_id: ID, check\_id: ID, result:
+  CheckResult)
+\item viewed: set of tuple of (user\_id: ID, concept: String)
+\item last\_viewed\_value: tuple of (user\_id: ID, value: Decimal), each
+  user's portfolio value when they last viewed their portfolio.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Trading (M12) gives read-only copies of a user's holdings, trades and
+  their values, so Learning can't change them.
+\item Only users Users (M8) marks as administrators reach save\_content and
+  publish.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent explanation(session, concept):
+\begin{itemize}
+\item transition: viewed gains (the signed-in user, concept)
+\item output: $out :=$ the published Explanation of concept (FR50)
+\item exception: $exc :=$ (no published explanation of concept
+  $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent knowledge\_check(session, concept):
+\begin{itemize}
+\item output: $out :=$ the published knowledge check of concept, without its
+  answers (FR55)
+\item exception: $exc :=$ (none is published $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent submit\_answers(session, user\_id, check\_id, answers):
+\begin{itemize}
+\item transition: attempts gains (user\_id, check\_id, $out$)
+\item output: $out :=$ the CheckResult, where passed is true exactly when at
+  least KNOWLEDGE\_CHECK\_PASS\_MARK of the answers are correct (FR56, FR57)
+\item exception: $exc :=$ (no such check $\Rightarrow$ NoResultFound $|$
+  $|$answers$|$ differs from the number of questions $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent progress(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the concepts the user has viewed and those whose check
+  they have passed (FR57)
+\item exception: None
+\end{itemize}
+
+\noindent portfolio\_feedback(session, user\_id), with $v$ the portfolio's
+value now and $v_0$ its last\_viewed\_value:
+\begin{itemize}
+\item transition: last\_viewed\_value of user\_id $:= v$
+\item output: $out :=$ a value\_change Feedback naming the holdings that
+  changed the value most, when $v_0 > 0$ and $|v - v_0| / v_0 >$
+  FEEDBACK\_THRESHOLD (FR52), and a concentration Feedback explaining
+  diversification, when one holding is more than CONCENTRATION\_LIMIT of $v$
+  (FR54). Feedback never recommends buying or selling an asset (FR49).
+\item exception: None
+\end{itemize}
+
+\noindent trade\_feedback(session, user\_id, trade\_id):
+\begin{itemize}
+\item output: $out :=$ a trade\_effect Feedback giving each holding's share of
+  the portfolio's value before and after the trade (FR53)
+\item exception: $exc :=$ (the user has no such trade $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent save\_content(session, author, item):
+\begin{itemize}
+\item transition: content gains item, unpublished, with author and no
+  reviewer. Editing published content saves a new unpublished version, so
+  only reviewed content is shown.
+\item output: $out :=$ the new content\_id
+\item exception: $exc :=$ (an Explanation has no source $\Rightarrow$
+  ValueError)
+\end{itemize}
+
+\noindent publish(session, reviewer, content\_id):
+\begin{itemize}
+\item transition: the content is published, with reviewer and today as its
+  review date.
+\item exception: $exc :=$ (reviewer is its author $\Rightarrow$
+  UnpublishedContentError) (FR59)
+\end{itemize}
+
+\noindent passed\_checks(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the concepts whose knowledge check the user has
+  passed, the only updates from Learning that Social (M15) may share (FR65)
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Social} \label{MisSocial}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Social (M15 in the MG), on the server. It is built after the proof of concept
+(\textsuperscript{\dag}), so this is the interface planned for Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Users (M8), Activity (M11), Goals (M13), Learning
+(M14), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent UpdateKind $=$ \{activity\_total, streak, fitness\_milestone,
+learning\_milestone\}, the kinds of shared update in the SRS (FR65). There is
+no kind that holds a balance, a portfolio value, a body measurement or a
+single activity record (FR68).
+
+\medskip
+\noindent Update = tuple of (update\_id: ID, author: String, kind:
+UpdateKind, content: String, shared\_at: DateTime), an update as a friend sees
+it. author is a username, never a profile.
+
+\medskip
+\noindent FriendRequest = tuple of (request\_id: ID, from: String, to:
+String, sent\_at: DateTime)
+
+\medskip
+\noindent NotFriendsError, a DomainError raised when an update is shared with
+someone who isn't the user's friend (FR66).
+
+\medskip
+\noindent UnknownUserError, a DomainError raised when no user has the
+username given.
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``social'', router: this module's routes,
+lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+send\_request & Session, ID, String & FriendRequest & UnknownUserError,
+ValueError \\
+answer\_request & Session, ID, ID, $\mathbb{B}$ & - & NoResultFound \\
+remove\_friend & Session, ID, String & - & - \\
+shareable & Session, ID & seq of tuple of (kind: UpdateKind, content: String)
+& - \\
+preview & Session, ID, UpdateKind, $\mathbb{N}$ & Update & ValueError \\
+share & Session, ID, Update, set of String & ID & NotFriendsError,
+ValueError \\
+delete\_update & Session, ID, ID & - & - \\
+feed & Session, ID & seq of Update & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item requests: set of FriendRequest, the pending friend requests.
+\item friends: set of set of ID, each pair of users who are friends. A pair
+  is added only when the user asked accepts (FR62).
+\item updates: set of tuple of (update: Update, audience: set of ID), each
+  shared update and the friends who may see it. Each update is kept once.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Activity (M11), Goals (M13) and Learning (M14) give Social only the
+  updates each one may share. Social uses neither Wallet (M9) nor Trading
+  (M12), so a balance or a portfolio value can't reach an update.
+\item A route acts only for the signed-in user, given by Users (M8).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent send\_request(session, user\_id, username):
+\begin{itemize}
+\item transition: requests gains a request from user\_id to username (FR61)
+\item output: $out :=$ the new FriendRequest
+\item exception: $exc :=$ (no user has username $\Rightarrow$
+  UnknownUserError $|$ username is the user's own, or they are already friends
+  $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent answer\_request(session, user\_id, request\_id, accept):
+\begin{itemize}
+\item transition: the request is removed from requests, and when accept is
+  true, friends gains \{the sender, user\_id\} (FR62, FR63).
+\item exception: $exc :=$ (no pending request with request\_id was sent to
+  user\_id $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent remove\_friend(session, user\_id, username):
+\begin{itemize}
+\item transition: the pair is removed from friends. Since the audience is
+  checked each time a feed is served, neither user sees the other's updates
+  from then on (FR64, SEC-13).
+\item exception: None
+\end{itemize}
+
+\noindent shareable(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ every update the user may share now, built from what
+  Activity, Goals and Learning give Social (FR65)
+\item exception: None
+\end{itemize}
+
+\noindent preview(session, user\_id, kind, $i$):
+\begin{itemize}
+\item output: $out :=$ the $i$th update of that kind in shareable, exactly as
+  friends will see it (FR67)
+\item exception: $exc :=$ (there is no such update $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent share(session, user\_id, $u$, usernames):
+\begin{itemize}
+\item transition: updates gains ($u$, the IDs of usernames). The update saved
+  is the one the user previewed, so friends see what the user agreed to share
+  (FR66, FR67).
+\item output: $out := u$.update\_id
+\item exception: $exc :=$ (a username isn't the user's friend $\Rightarrow$
+  NotFriendsError $|$ $u$ isn't an update preview gave the user, or usernames
+  is empty $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent delete\_update(session, user\_id, update\_id):
+\begin{itemize}
+\item transition: the update, if user\_id shared it, is removed from updates,
+  so no feed shows it again (FR70, SEC-13).
+\item exception: None
+\end{itemize}
+
+\noindent feed(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ every update whose audience holds user\_id and whose
+  author is still user\_id's friend, newest first (FR69). The feed isn't
+  ranked, and no routine orders users against each other (FR71).
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Scenarios} \label{MisScenarios}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Scenarios (M16 in the MG), on the server. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Constants (M7), Users (M8), Wallet (M9), Market (M10), Trading
+(M12), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Scenario = tuple of (scenario\_id: ID, name: String, first\_day:
+Date, last\_day: Date), a past period the user can replay, such as a market
+downturn.
+
+\medskip
+\noindent ScenarioState = tuple of (run\_id: ID, scenario: Scenario, day:
+Date, cash\_balance: Decimal, value: Decimal), where a user's run of a
+scenario is up to. Every screen that shows one also shows that it is a
+scenario and its dates (FR48).
+
+\medskip
+\noindent ScenarioEndedError, a DomainError raised when the user continues a
+run that has reached its last day.
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``scenarios'', router: this module's
+routes, lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+list\_scenarios & Session & seq of Scenario & - \\
+start & Session, ID, ID & ScenarioState & NoResultFound \\
+state & Session, ID, ID & ScenarioState & NoResultFound \\
+continue\_run & Session, ID, ID & ScenarioState & ScenarioEndedError,
+NoResultFound \\
+buy & Session, ID, ID, String, $\mathbb{N}$, ID & ScenarioState &
+InsufficientFundsError, NoResultFound \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item scenarios: set of tuple of (scenario: Scenario, prices: (String
+  $\times$ Date) $\rightarrow$ Decimal), each scenario with the closing price
+  of each asset on each trading day it replays.
+\item runs: set of tuple of (run\_id: ID, user\_id: ID, scenario\_id: ID,
+  portfolio\_id: ID, day: Date), each run and the Wallet (M9) portfolio of its
+  own that it trades in.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item A scenario is in scenarios only once it has a price for every asset on
+  every trading day between first\_day and last\_day (SEC-32), so a replay
+  never stops on a missing day.
+\item Its assets are ones Market (M10) keeps, including assets removed from
+  the live market (FR31).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent list\_scenarios(session):
+\begin{itemize}
+\item output: $out :=$ every Scenario in scenarios
+\item exception: None
+\end{itemize}
+
+\noindent start(session, user\_id, scenario\_id):
+\begin{itemize}
+\item transition: Wallet makes a new scenario portfolio for user\_id with
+  SCENARIO\_START\_BALANCE and no holdings (FR46), and runs gains a run on it
+  at first\_day. The user's live balance and holdings don't change (FR45).
+\item output: $out :=$ the run's ScenarioState
+\item exception: $exc :=$ (no such scenario $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent state(session, user\_id, run\_id):
+\begin{itemize}
+\item output: $out :=$ the run's ScenarioState, valued at that day's closing
+  prices
+\item exception: $exc :=$ (user\_id has no such run $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent continue\_run(session, user\_id, run\_id):
+\begin{itemize}
+\item transition: the run's day $:=$ the next trading day of its scenario
+  (FR47)
+\item output: $out :=$ the new ScenarioState
+\item exception: $exc :=$ (the day is last\_day $\Rightarrow$
+  ScenarioEndedError $|$ no such run $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent buy(session, user\_id, run\_id, symbol, shares, request\_id):
+\begin{itemize}
+\item transition: Trading (M12) buys shares of symbol in the run's portfolio
+  at the run's day's closing price, under the lock that Wallet gives only for
+  a scenario portfolio. The same trade rules as the live market apply, such as
+  whole shares, no spending past the balance (FR37) and one trade per
+  request\_id (FR38). Market hours and price age aren't checked, since they
+  apply only to the live market. The live portfolio is never touched
+  (SEC-29, SEC-31).
+\item output: $out :=$ the run's new ScenarioState
+\item exception: $exc :=$ (the cost is more than the run's balance
+  $\Rightarrow$ InsufficientFundsError $|$ no such run or asset $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Privacy} \label{MisPrivacy}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Privacy (M17 in the MG), on the server. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It never names another module or reads another module's tables.
+Each module's plug-in says what personal data it keeps and how to export and
+delete it, and Control (M6) hands Privacy the plug-ins (the plug-in pattern).
+
+\subsection{Uses}
+
+Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent PersonalDataHandler = tuple of (export: (Session, ID)
+$\rightarrow$ String, delete: (Session, ID) $\rightarrow$ -), what each
+plug-in gives Privacy. export gives the module's data about the user as JSON
+text, written with JSON Format (M23). A module that keeps no
+personal data gives an export with no entries and a delete that does nothing,
+so no module can be left out by mistake.
+
+\medskip
+\noindent DeletionNotConfirmedError, a DomainError raised when the user asks
+to delete their account without confirming that it can't be undone (FR10).
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``privacy'', router: this module's
+routes, lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+set\_handlers & seq of tuple of (String, PersonalDataHandler) & - & ValueError \\
+give\_consent & Session, ID & - & - \\
+withdraw\_consent & Session, ID & - & - \\
+has\_consent & Session, ID & $\mathbb{B}$ & - \\
+export\_data & Session, ID & String $\rightarrow$ String & - \\
+delete\_account & Session, ID, $\mathbb{B}$ & - &
+DeletionNot\allowbreak ConfirmedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item handlers: String $\rightarrow$ PersonalDataHandler, one for each
+  module, by its plug-in's name.
+\item consent: set of tuple of (user\_id: ID, given: $\mathbb{B}$, at:
+  DateTime), each consent and withdrawal, newest last.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\noindent backups: the database backups kept by the hosting, which can't be
+changed once made.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Control (M6) calls set\_handlers once, when it builds the server, with
+  a handler from every plug-in.
+\item The hosting keeps each backup for no longer than
+  DATA\_DELETION\_PERIOD (SEC-26).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent set\_handlers($hs$):
+\begin{itemize}
+\item transition: handlers $:= hs$
+\item exception: $exc :=$ (a plug-in has no handler, or two have the same
+  name $\Rightarrow$ ValueError), so the server won't start with a module
+  left out.
+\end{itemize}
+
+\noindent give\_consent(session, user\_id) and withdraw\_consent(session,
+user\_id):
+\begin{itemize}
+\item transition: consent gains (user\_id, true or false, now) (FR76,
+  SEC-9). On the phone, Sync Service (M20) stops reading at once when consent
+  is withdrawn, without waiting for the server.
+\item exception: None
+\end{itemize}
+
+\noindent has\_consent(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the given of user\_id's newest consent, or false if
+  there is none
+\item exception: None
+\end{itemize}
+
+\noindent export\_data(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ for each name $n$ in handlers,
+  handlers($n$).export(session, user\_id): the profile, activity totals,
+  balance, holdings, trades and shared updates stored about the user (FR9)
+\item exception: None
+\end{itemize}
+
+\noindent delete\_account(session, user\_id, confirmed):
+\begin{itemize}
+\item transition: for each handler, handler.delete(session, user\_id), with
+  Users (M8) last, all in one transaction, so the account and all its data are
+  deleted together or not at all. The user can no longer sign in, and
+  friends no longer see their updates (FR11). The deletion reaches backups
+  within DATA\_DELETION\_PERIOD as old backups expire (SEC-18).
+\item exception: $exc :=$ ($\neg$ confirmed $\Rightarrow$
+  DeletionNotConfirmedError) (FR10)
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
 \section{MIS of Screens} \label{MisScreens}
 
 \subsection{Module}
