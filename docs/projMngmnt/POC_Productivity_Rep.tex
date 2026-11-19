@@ -44,10 +44,12 @@ currency through activity and investing it cannot be built.
 \begin{enumerate}
 \item \textbf{Reading step data from the phone's health platform.} The app
   reads steps through Google Health Connect on Android and Apple HealthKit on
-  iOS, using the third-party React Native libraries
-  \texttt{react-native-health-connect} and
-  \texttt{@kingstinct/react-native-healthkit}. If steps cannot be read
-  reliably, the app cannot award currency fairly.
+  iOS, using two third-party React Native libraries:
+  \begin{itemize}
+  \item \texttt{react-native-health-connect}
+  \item \texttt{@kingstinct/react-native-healthkit}
+  \end{itemize}
+  If steps cannot be read reliably, the app cannot award currency fairly.
 \item \textbf{Valuing portfolios with real market prices.} Portfolio values
   must follow real prices from Finnhub, the market data provider, while
   staying within the request limits of its free plan.
