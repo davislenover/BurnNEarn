@@ -79,6 +79,8 @@ date error and time zone note match the code. Activity and Trading say what
 they export at Revision~0. The Notation section says why the server names its
 library types. The AI disclosure refers to each section by its label.\\
 Nov 18, 2026 & 1.8 & Farid Bastoros: reflection answers.\\
+Nov 18, 2026 & 1.9 & Farid Bastoros: draft MIS of the modules built after
+the proof of concept (M5, M13 to M18, M21, M25).\\
 \bottomrule
 \end{tabularx}
 
@@ -148,10 +150,11 @@ system must do. Next to each decision, a module's section gives its reason: the
 requirement or hazard it serves, or the design pattern it uses. A later change
 can then be checked against what the decision was for.
 
-This revision specifies the modules of the proof of concept. Modules marked
-\textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
-specified at Revision~0, so that every section describes an interface the code
-really has. Screens is the one exception. It describes the demo screen that
+This revision specifies every module. The sections of the proof of concept's
+modules describe an interface the code really has. Modules marked
+\textsuperscript{\dag} in Table~\ref{TblMH} are built after the proof of
+concept, so their sections give the interface planned for them, which is
+checked against the code and may change at Revision~0. Screens is the one exception. It describes the demo screen that
 PR \#312 is finishing, with the API Service calls it needs. The app's sections
 describe a proof of concept with one screen.
 They give what each module offers and why, without fixing details that may
@@ -287,8 +290,8 @@ Constants is in both programs, and the rest are in the server.
 \end{table}
 
 \noindent Modules marked \textsuperscript{\dag} are built after the proof of
-concept and are specified at Revision~0. The proof of concept has one screen, no
-sign-in and no reminders, so it uses nothing from Device Service (M5) or
+concept, and their sections give the interface planned for them. The proof of
+concept has one screen, no sign-in and no reminders, so it uses nothing from Device Service (M5) or
 Navigation (M18) yet. Their design isn't final, and may change with feedback on
 the proof of concept.
 
