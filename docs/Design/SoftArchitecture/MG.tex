@@ -9,6 +9,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{xltabular}
 \hypersetup{
     colorlinks,
     citecolor=blue,
@@ -44,7 +45,7 @@
 
 \section{Revision History}
 
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
+\begin{xltabular}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 Nov 5, 2026 & 1.0 & Davis Lenover: Revision $-1$. Sections 1 to 3, 5
@@ -79,8 +80,9 @@ Nov 18, 2026 & 1.12 & Angad Chhabra: 10 User Interfaces, and 7 Module
 Decomposition: Navigation, Screens and API Service.\\
 Nov 18, 2026 & 1.13 & Davis Lenover: Navigation is built after the proof of
 concept. Review fixes to 4, 5, 7, 9, 11 and 12 (\#323, \#326, \#328, \#329).\\
+Nov 18, 2026 & 1.14 & Farid Bastoros: 6.1 Decisions from the Design Thinking.\\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 \newpage
 
@@ -630,6 +632,45 @@ Section~\ref{SecMD} gives the detail.
   value by default (FR72 to FR75, SEC-34). So \mref{mReminders} Reminder
   Service schedules them on the phone, through \mref{mDevice} Device Service,
   with the user's settings.
+\end{description}
+
+\subsection{Decisions from the Design Thinking}
+
+Our Design Thinking worksheet, the Custom Document for this deliverable, is in
+the repository's
+\href{https://github.com/davislenover/BurnNEarn/tree/main/docs/CDs/DesignThinking}{Design
+Thinking folder}, \path{docs/CDs/DesignThinking/}, as a PowerPoint file and a
+PDF.
+It records interviews with two users, P01 (our supervisor) and P02 (a
+financial services representative), and feedback on two prototypes. Several
+design decisions trace back to it:
+
+\begin{description}
+\item[Activity is read, not logged.] P01 forgets to stop a bike tracking app
+  and asked for tracking that is ``as touchless as possible'', and P02 tracks
+  workouts only as ``a mental check''. So \mref{mHealth} Health Service reads
+  activity from the phone's health platform (\acref{acHealth}), and
+  \mref{mSync} Sync Service sends the day's total when the app opens, with
+  nothing for the user to enter (SEC-10).
+
+\item[Sharing is the user's choice, and nothing is ranked.] Both users share
+  data only when an app has a clear reason to ask, and P02 said comparing with
+  others is ``only ever bad when you're really far behind''. So the user
+  chooses what is shared and with whom, a balance or raw health data is never
+  shared (\uref{ucSharingControl}), privacy rules are kept in \mref{mPrivacy}
+  Privacy, and \mref{mSocial} Social offers no ranking (FR71).
+
+\item[Practice with simulated money.] Both users learn best by doing, so the
+  market follows real prices but uses only virtual currency
+  (\uref{ucNoRealMoney}), and \mref{mLearning} Learning explains the user's own
+  portfolio rather than general advice (FR60).
+
+\item[One screen for the core loop.] Users found the seven-screen Prototype~1
+  took ``too many taps just to buy one share'' and could not tell where their
+  coins came from. So the proof of concept's \mref{mScreens} Screens shows the
+  whole loop on one screen, with today's steps and what they earned at the
+  top. The seven screens return at Revision~0, and their order is kept in
+  \mref{mNavigation} Navigation so testing can change it (NFR2).
 \end{description}
 
 \section{Module Decomposition} \label{SecMD}
