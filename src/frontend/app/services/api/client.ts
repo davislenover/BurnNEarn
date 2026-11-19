@@ -9,10 +9,24 @@ export async function apiRequest<T>(
     throw new Error("EXPO_PUBLIC_API_URL is not configured");
   }
 
-  const response = await fetch(`${API_URL}${path}`, options);
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      ...options.headers,
+    },
+  });
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    // Domain errors send detail.message; validation errors (422) send a list.
+    const data: any = await response.json().catch(() => null);
+    const detail = data?.detail;
+    const message =
+      typeof detail?.message === "string" ? detail.message
+      : Array.isArray(detail) && typeof detail[0]?.msg === "string" ? detail[0].msg
+      : null;
+    throw new Error(message ?? `API request failed: ${response.status}`);
   }
 
   return response.json() as Promise<T>;
