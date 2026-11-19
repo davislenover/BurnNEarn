@@ -198,7 +198,8 @@ The pull requests are all those each member opened: 101 are merged, four were
 closed without merging and one is open
 (\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}, the POC demo
 screen). Its commits are not in the counts above yet. When these were counted,
-it had 26 commits that add 553 lines of frontend code. No commit has more than
+it had 26 commits by Zaid Alsaadi, which add 688 lines of frontend code and
+delete 152. Section 11 shows the lines added with this pull request included. No commit has more than
 one author.
 
 \section{Issue Tracker}
@@ -271,7 +272,7 @@ of file they are in, counted the same way and at the same commit.
 \centering
 % Smaller, with less space between columns, so the table fits the text width.
 \small
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lrrrrrr}
 \toprule
 \textbf{Kind of file} & \textbf{Davis} & \textbf{Preston} & \textbf{Angad} &
@@ -288,18 +289,25 @@ Frontend code (POC) & 0 & 426 & 0 & 0 & 222 & 648\\
 CI and other files & 200 & 0 & 0 & 5 & 0 & 205\\
 \midrule
 All lines added & 24,534 & 3,813 & 2,535 & 8,306 & 6,916 & 46,104\\
+\midrule
+Open PR \#312, frontend (POC) & 0 & 0 & 0 & 0 & 688 & 688\\
+With the open pull request & 24,534 & 3,813 & 2,535 & 8,306 & 7,604 & 46,792\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The backend rows are the POC server: its code under \texttt{src/backend}, its
-database migrations, and its tests under \texttt{test/backend}. Frontend code
+The backend rows are the POC server: the files under \texttt{src/backend}
+(its code, README and configuration, apart from its lock file), its database
+migrations, and its tests under \texttt{test/backend}. Frontend code
 is the POC app under \texttt{src/frontend}, apart from its lock file. The POC
 demo screen is still in the open pull request
-\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}, so its 553
-lines are not in the frontend row yet. Figure sources are the PlantUML and DOT files
-the diagrams are drawn from. The drawn figures and the PDFs are binary files,
-which git counts as no lines, so they add nothing here. Markdown notes are the architecture notes and the README
+\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}, so it is not
+on \texttt{main} and not in the frontend row. The row under the total adds its
+26 commits, counted the same way, and the last row gives each member's lines
+with it included. Figure sources are the PlantUML and DOT files the diagrams are drawn from.
+The drawn figures and the PDFs are binary files, which git counts as no lines.
+One drawn SVG, since replaced by a PNG, adds two lines to the figure sources
+row. Markdown notes are the architecture notes, \texttt{CONTRIBUTING.md} and the README
 files outside \texttt{src/}.
 
 \end{document}
