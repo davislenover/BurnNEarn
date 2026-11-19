@@ -271,9 +271,47 @@ counts for each of them.
 
 \section{Custom Documents (CDs)}
 
-\wss{What is the plan (as documented in TeamComposition.csv) for the team's
-CDs?  Should the CDs be modified now that the team knows more about the
-project?}
+% \wss{What is the plan (as documented in TeamComposition.csv) for the team's
+% CDs?  Should the CDs be modified now that the team knows more about the
+% project?}
+
+\paragraph{Plan.} The team's two CDs, one per term, are the ones in
+TeamComposition.csv and in Section 4 of the Problem Statement and Goals:
+Design Thinking in the Fall and Usability Testing in the Winter. The V\&V
+Plan (Section 2.3) explains how both feed into validation.
+
+\paragraph{Design Thinking (Fall): done.} The team followed the course's
+Design Thinking process up to the second prototype, and the completed
+35-slide worksheet is in the repository as
+\href{https://github.com/davislenover/BurnNEarn/blob/main/docs/CDs/DesignThinking/DesignThinkingWorksheet.pdf}{PDF}
+and \texttt{.pptx}, merged on November 18
+(\href{https://github.com/davislenover/BurnNEarn/pull/333}{\#333},
+\href{https://github.com/davislenover/BurnNEarn/pull/336}{\#336}). It covers
+domain research on fitness tracking and beginner investing, two interviews
+held on October 14, 2026 (P01, our supervisor and TA, and P02, a financial
+services representative at a credit union), and two prototypes with user
+feedback: a seven-screen Figma concept, and the POC demo screen. The
+interviews are the source of most of the stakeholder requirements in SRS
+Section 3 and of Personas 1 and 2 in SRS Section 4.
+
+\paragraph{Usability Testing (Winter): no change needed.} Now that the team
+knows more about the project, we still think usability testing is the right
+CD for the Winter term. It tests the core loop that the POC shows, and it
+provides the evidence for NFR2 (Usability), NFR8 (Accessibility) and goals G1
+and G2. Its participant profile, tasks and survey are already set in the V\&V
+Plan (Sections 3.7 and 6.2), and testing will start after the Rev 0 demo, once
+there is a working app. Design Thinking has refined what the tests should
+check:
+
+\begin{itemize}
+\item Neither interviewee was a beginner at investing, so participants will be
+  recruited mainly from beginners, who are represented only by Persona 3.
+\item Testers of Prototype 2 asked whether credits are the same as dollars and
+  what happens after 300 credits. The tests will check whether users
+  understand that credits are virtual, and where their credits came from.
+\item When steps could not be read, the screen only showed ``Unavailable'', so
+  the tests will include that case and check whether users understand why.
+\end{itemize}
 
 \section{Team Charter Trigger Items}
 
