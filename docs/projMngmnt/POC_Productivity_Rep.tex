@@ -32,9 +32,53 @@ the report.}
 
 \section{Demo Plans}
 
-\wss{What is your feasibility risk?}
+% \wss{What is your feasibility risk?}
 
-\wss{What will you be demonstrating}
+% \wss{What will you be demonstrating}
+
+\paragraph{Feasibility risks.} As set out in Section 9 of the Development
+Plan, FitFolio depends on two outside systems that no team member had used
+before. If either cannot be made to work, the app's core loop of earning
+currency through activity and investing it cannot be built.
+
+\begin{enumerate}
+\item \textbf{Reading step data from the phone's health platform.} The app
+  reads steps through Google Health Connect on Android and Apple HealthKit on
+  iOS, using the third-party React Native libraries
+  \texttt{react-native-health-connect} and
+  \texttt{@kingstinct/react-native-healthkit}. If steps cannot be read
+  reliably, the app cannot award currency fairly.
+\item \textbf{Valuing portfolios with real market prices.} Portfolio values
+  must follow real prices from Finnhub, the market data provider, while
+  staying within the request limits of its free plan.
+\end{enumerate}
+
+\paragraph{What we will demonstrate.} The demo shows one path through the core
+loop, on a physical phone, as planned in the Development Plan:
+
+\begin{enumerate}
+\item \textbf{Read today's steps} (Risk 1). After the user grants permission,
+  the app reads the day's step count and displays it. This succeeds if the
+  count matches the phone's own health app and goes up after a team member
+  walks and reopens the app. Both platforms are implemented
+  (\texttt{src/frontend/app/services/health/steps.ts}), so the iPhone, a
+  stretch goal in the Development Plan, is now part of the demo.
+\item \textbf{Turn steps into virtual currency} (connects Risks 1 and 2). The
+  app sends the day's total to the server
+  (\texttt{PUT /v1/me/activity/daily-totals}), which awards one credit per 100
+  steps, up to 300 credits a day, and never takes currency back if a later
+  total is lower. The new balance is shown (\texttt{GET /v1/me/balance}).
+\item \textbf{Buy a real asset with that currency} (Risk 2). The user buys
+  whole shares at the current market price (\texttt{POST /v1/me/trades}). The
+  server refuses an order the balance cannot cover, and refuses all orders
+  while the market is closed, so the demo will be held during market hours.
+\item \textbf{Show the portfolio following the market} (Risk 2). While the
+  market is open, the server requests each supported asset's price from
+  Finnhub once a minute and shares it across all users.
+  \texttt{GET /v1/me/portfolio} values the holdings at the latest price, and
+  \texttt{GET /v1/market/usage} shows how many calls were made in the last
+  minute and today, to show that this interval fits within the free plan.
+\end{enumerate}
 
 \section{Team Meeting Attendance}
 
