@@ -48,3 +48,38 @@ export interface SyncActivityResponse {
 export interface BalanceResponse {
   cash_balance: string;
 }
+
+
+export interface BuyTradeRequest {
+  request_id: string;
+  symbol: string;
+  trade_type: "buy";
+  quantity: number;
+  expected_price: string;
+}
+
+export interface BuyTradeResponse {
+  trade_id: string;
+  status: string;
+  unit_price: string;
+  currency_amount: string;
+  executed_at: string;
+  cash_balance: string;
+}
+
+export interface PortfolioHolding {
+  symbol: string;
+  quantity: number;
+  price: string | null;
+  quoted_at: string | null;
+  delayed: boolean;
+  value: string | null;
+}
+
+export interface PortfolioResponse {
+  cash_balance: string;
+  holdings: PortfolioHolding[];
+  holdings_value: string;
+  total_value: string;
+  simulated: boolean;
+}
