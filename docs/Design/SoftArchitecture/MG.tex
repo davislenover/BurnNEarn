@@ -632,6 +632,45 @@ Section~\ref{SecMD} gives the detail.
   with the user's settings.
 \end{description}
 
+\subsection{Decisions from the Design Thinking}
+
+Our Design Thinking worksheet, the Custom Document for this deliverable, is in
+the repository's
+\href{https://github.com/davislenover/BurnNEarn/tree/main/docs/CDs/DesignThinking}{Design
+Thinking folder}, \path{docs/CDs/DesignThinking/}, as a PowerPoint file and a
+PDF.
+It records interviews with two users, P01 (our supervisor) and P02 (a
+financial services representative), and feedback on two prototypes. Several
+design decisions trace back to it:
+
+\begin{description}
+\item[Activity is read, not logged.] P01 forgets to stop a bike tracking app
+  and asked for tracking that is ``as touchless as possible'', and P02 tracks
+  workouts only as ``a mental check''. So \mref{mHealth} Health Service reads
+  activity from the phone's health platform (\acref{acHealth}), and
+  \mref{mSync} Sync Service sends the day's total when the app opens, with
+  nothing for the user to enter (SEC-10).
+
+\item[Sharing is the user's choice, and nothing is ranked.] Both users share
+  data only when an app has a clear reason to ask, and P02 said comparing with
+  others is ``only ever bad when you're really far behind''. So the user
+  chooses what is shared and with whom, a balance or raw health data is never
+  shared (\uref{ucSharingControl}), privacy rules are kept in \mref{mPrivacy}
+  Privacy, and \mref{mSocial} Social offers no ranking (FR71).
+
+\item[Practice with simulated money.] Both users learn best by doing, so the
+  market follows real prices but uses only virtual currency
+  (\uref{ucNoRealMoney}), and \mref{mLearning} Learning explains the user's own
+  portfolio rather than general advice (FR60).
+
+\item[One screen for the core loop.] Users found the seven-screen Prototype~1
+  took ``too many taps just to buy one share'' and could not tell where their
+  coins came from. So the proof of concept's \mref{mScreens} Screens shows the
+  whole loop on one screen, with today's steps and what they earned at the
+  top. The seven screens return at Revision~0, and their order is kept in
+  \mref{mNavigation} Navigation so testing can change it (NFR2).
+\end{description}
+
 \section{Module Decomposition} \label{SecMD}
 
 Modules are decomposed according to the principle of ``information
