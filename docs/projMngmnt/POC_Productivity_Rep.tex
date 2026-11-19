@@ -177,9 +177,12 @@ PDFs, and the initial commit of the course template.
 Binary files, such as the PDFs and the figures, add no lines. The lines added
 include two generated lock files, 6,359 lines of the app's
 \texttt{package-lock.json} and 1,081 lines of the server's \texttt{uv.lock},
-which count for the member who committed them. Most of the other lines are in
-the documents, so these numbers show the size of what each member committed,
-not how hard it was to write.
+which count for the member who committed them. By kind of file, 23,871 of the
+lines added are in the \LaTeX{} documents, 7,440 in the lock files, 5,693 in
+tests, 3,798 in server code, 2,164 in figure sources, 1,573 in Markdown notes,
+712 in server migrations, 648 in app code and 205 in CI and other files.
+Section 11 gives the same split for each member. These numbers show the size
+of what each member committed, not how hard it was to write.
 
 The pull requests are all those each member opened: 101 are merged, four were
 closed without merging and one is open
@@ -247,5 +250,39 @@ had to be corrected, number of internal deadlines missed, test cases written, et
 \wss{We are looking for data on these metrics, not just a list of additional
 metrics the team is planning on tracking.  However, if all you have is a plan,
 please share it here.}
+
+\subsection{Lines Added by Kind of File}
+
+Section 6 gives each member's lines added. This table splits them by the kind
+of file they are in, counted the same way and at the same commit.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Kind of file} & \textbf{Davis} & \textbf{Preston} & \textbf{Angad} &
+\textbf{Farid} & \textbf{Zaid} & \textbf{Team}\\
+\midrule
+Documents (\LaTeX{}) & 11,529 & 1,725 & 2,535 & 7,551 & 531 & 23,871\\
+Generated lock files & 977 & 196 & 0 & 104 & 6,163 & 7,440\\
+Tests & 4,635 & 806 & 0 & 252 & 0 & 5,693\\
+Server code & 3,252 & 302 & 0 & 244 & 0 & 3,798\\
+Figure sources & 1,904 & 116 & 0 & 144 & 0 & 2,164\\
+Markdown notes & 1,381 & 186 & 0 & 6 & 0 & 1,573\\
+Server migrations & 656 & 56 & 0 & 0 & 0 & 712\\
+App code & 0 & 426 & 0 & 0 & 222 & 648\\
+CI and other files & 200 & 0 & 0 & 5 & 0 & 205\\
+\midrule
+All lines added & 24,534 & 3,813 & 2,535 & 8,306 & 6,916 & 46,104\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tests are the files under \texttt{test/}. Server code and app code are the
+files under \texttt{src/backend} and \texttt{src/frontend}, apart from the
+migrations and the lock files. Figure sources are the PlantUML and DOT files
+the diagrams are drawn from. The drawn figures and the PDFs are binary files,
+which git counts as no lines, so they add nothing here. Markdown notes are the architecture notes and the README
+files outside \texttt{src/}.
 
 \end{document}
