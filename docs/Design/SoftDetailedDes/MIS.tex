@@ -3454,6 +3454,117 @@ None
 
 \newpage
 
+\section{MIS of Navigation} \label{MisNavigation}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Navigation (M18 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. The proof of concept has one screen and doesn't use it yet. It
+decides which screen comes next, and Screens (M19) decides what each screen
+shows, so usability testing can change the order of screens without changing
+a screen (NFR2, NFR3).
+
+\subsection{Uses}
+
+Screens (M19)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Section $=$ \{home, market, portfolio\}, the three main sections of
+the bottom navigation bar.
+
+\medskip
+\noindent Destination $=$ \{home, market, portfolio, stockDetails, buyStock,
+reviewPurchase, purchaseSuccessful, account, activityAndGoals, learning,
+social, scenarios, reminderSettings, privacySettings\}, every screen the user
+can reach. stockDetails, buyStock and reviewPurchase also take the stock's
+symbol, and reviewPurchase and purchaseSuccessful the number of shares.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+switchSection & Section & - & - \\
+navigate & Destination & - & - \\
+goBack & - & $\mathbb{B}$ & - \\
+current & - & Destination & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent stacks: Section $\rightarrow$ seq of Destination, the screens the
+user has opened in each section, the last one shown. active: Section, the
+section shown now.
+
+\subsubsection{Environment Variables}
+
+\noindent display: the phone's screen, which shows Screens' layout of the
+destination at the top of stacks(active).
+
+\subsubsection{Assumptions}
+
+The phone's back button or gesture calls goBack.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent switchSection($s$):
+\begin{itemize}
+\item transition: active $:= s$. Each section keeps its own stack, so
+  switching back returns the user to where they were.
+\item exception: None
+\end{itemize}
+
+\noindent navigate($d$):
+\begin{itemize}
+\item transition: ($d$ is purchaseSuccessful $\Rightarrow$ stacks(active) $:=
+  \langle$market, $d\rangle$, so going back can't repeat a purchase $|$
+  otherwise $\Rightarrow$ stacks(active) $:=$ stacks(active) $\|\ \langle d
+  \rangle$)
+\item exception: None
+\end{itemize}
+
+\noindent goBack():
+\begin{itemize}
+\item transition: ($|$stacks(active)$| > 1 \Rightarrow$ the last destination is
+  removed from stacks(active))
+\item output: $out :=$ true when there was an earlier screen to return to
+\item exception: None
+\end{itemize}
+
+\noindent current():
+\begin{itemize}
+\item output: $out :=$ the last destination in stacks(active)
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
 \section{MIS of Screens} \label{MisScreens}
 
 \subsection{Module}
@@ -3867,6 +3978,141 @@ Section~6), and a test can set the time.
   that is not an Error becomes Error(``Could not read today's steps.'') for
   the read, or Error(``Could not sync today's steps.'') for the send.
 \end{itemize}
+
+\newpage
+
+\section{MIS of Reminder Service} \label{MisReminders}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Reminder Service (M21 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It decides which reminders to send and when, and Device Service
+(M5) shows them. Reminders are made on the phone, with no push notification
+service.
+
+\subsection{Uses}
+
+Device Service (M5), Constants (M7), API Service (M24)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent ReminderType $=$ \{activity, milestone, portfolio, learning,
+social\}, the reminder types in the SRS's Reminders and Settings requirements.
+
+\medskip
+\noindent ReminderSettings = tuple of (enabled: set of ReminderType, periods:
+seq of tuple of (from: Time, to: Time), includeDetails: $\mathbb{B}$), what the
+user has chosen, where Time is a time of day. periods are in the user's time zone, and includeDetails is
+false until the user turns it on.
+
+\medskip
+\noindent ReminderEvent = tuple of (eventId: String, type: ReminderType,
+occurredAt: DateTime, details: String), an event that may lead to a reminder,
+such as a friend's new update. details holds only what the reminder may show
+when includeDetails is true.
+
+\subsubsection{Exported Constants}
+
+None. It reads DEFAULT\_REMINDER\_PERIOD from Constants (M7), which adds it
+from SRS Appendix~C at Revision~0.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+getSettings & - & Promise of ReminderSettings & Error \\
+saveSettings & ReminderSettings & Promise of - & Error, ValueError \\
+handleEvents & seq of ReminderEvent & Promise of $\mathbb{N}$ & - \\
+checkNow & - & Promise of $\mathbb{N}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item settings: ReminderSettings, the user's settings, saved on the server
+  through API Service (M24) and cached here.
+\item handled: set of String, the eventIds already turned into a reminder, so
+  the same event never sends two reminders.
+\item scheduled: set of tuple of (eventId: String, notificationId: ID), the
+  reminders Device Service has scheduled and not yet shown.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None. Device Service holds the phone's notifications.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The app calls checkNow each time it opens, and registers it as a
+  background task with Device Service, so a reminder can be sent after its
+  event the next time the app runs (FR75).
+\item The server gives the events since the last check through API Service.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent getSettings():
+\begin{itemize}
+\item output: $out :=$ settings, from the server when it can be reached, and
+  the cached copy otherwise
+\item exception: $exc :=$ (no settings are cached and the server can't be
+  reached $\Rightarrow$ Error)
+\end{itemize}
+
+\noindent saveSettings($s$):
+\begin{itemize}
+\item transition: settings $:= s$ on the server and here (FR72, FR74). Each
+  reminder in scheduled whose type is no longer enabled, or whose time is no
+  longer in a period, is cancelled or moved to the start of the next period.
+\item exception: $exc :=$ (a period's from is not before its to
+  $\Rightarrow$ ValueError $|$ the server can't be reached $\Rightarrow$
+  Error)
+\end{itemize}
+
+\noindent handleEvents($es$), with $P$ = settings.periods, or
+DEFAULT\_REMINDER\_PERIOD when the user has chosen none:
+\begin{itemize}
+\item transition: for each $e$ in $es$ with $e$.type in settings.enabled and
+  $e$.eventId not in handled, Device Service schedules a reminder at the
+  first time from now that is in $P$ (FR73), scheduled gains it and handled
+  gains $e$.eventId. Its text holds no health data, balance or portfolio value
+  unless settings.includeDetails is true (SEC-34).
+\item output: $out :=$ the number of reminders scheduled
+\item exception: None. A reminder Device Service can't schedule, because the
+  permission was refused, is skipped and its event is not marked handled.
+\end{itemize}
+
+\noindent checkNow():
+\begin{itemize}
+\item transition: as handleEvents(the events API Service gives since the last
+  check)
+\item output: $out :=$ the number of reminders scheduled
+\item exception: None. If the server can't be reached, nothing is scheduled
+  and the next check tries again.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
 
 \newpage
 
