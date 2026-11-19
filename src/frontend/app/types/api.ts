@@ -44,3 +44,7 @@ export interface SyncActivityResponse {
   cash_balance: Money;
   steps_per_coin: number;
 }
+
+export interface BalanceResponse {
+  cash_balance: string;
+}
