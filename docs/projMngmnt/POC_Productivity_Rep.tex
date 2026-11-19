@@ -149,22 +149,6 @@ and its supervisor.
 
 \section{Commits, Lines Added and Lines Deleted, Pull Requests}
 
-\wss{For each team member how many commits to the main branch have been made
-over the time period of interest.  The total is the total number of commits for
-the entire team since the beginning of the term.  The percentage is the
-percentage of the total commits made by each team member.}
-
-\wss{There are also columns for lines added and lines deleted to give a sense of
-the magnitude of each team member's contributions.  Note that these numbers can
-be somewhat misleading, as a team member who does refactoring may have high
-numbers in both columns, while a team member who implements a large new feature
-may have a high number of lines added, but few lines deleted.  As for all commit
-information, these numbers will be interpreted with care.}
-
-\wss{The pull requests column counts the number of pull requests created by each
-team member.  This is a measure of how many contributions were made in branches,
-which may not be reflected in the commit counts for the main branch.}
-
 \begin{table}[H]
 \centering
 \begin{tabular}{lllllll}
@@ -172,20 +156,35 @@ which may not be reflected in the commit counts for the main branch.}
 \textbf{Student} & \textbf{Commits} & \textbf{Percent} & \textbf{Lines Added} &
 \textbf{Lines Deleted} & \textbf{Pull Requests}\\
 \midrule
-Total & Num & 100\% & total added & total deleted & total PRs\\
-Name 1 & Num & \% & num & num & num\\
-Name 2 & Num & \% & num & num & num\\
-Name 3 & Num & \% & num & num & num\\
-Name 4 & Num & \% & num & num & num\\
-Name 5 & Num & \% & num & num & num\\
+Total & 654 & 100\% & 46,104 & 11,439 & 106\\
+Davis Lenover & 302 & 46.2\% & 24,534 & 7,407 & 38\\
+Preston Grewal & 59 & 9.0\% & 3,813 & 519 & 11\\
+Angad Chhabra & 29 & 4.4\% & 2,535 & 1,053 & 8\\
+Farid Bastoros & 194 & 29.7\% & 8,306 & 2,151 & 35\\
+Zaid Alsaadi & 70 & 10.7\% & 6,916 & 309 & 14\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\wss{If needed, an explanation for the counts can be provided here.  For
-instance, if a team member has more commits to unmerged branches, these numbers
-can be provided here.  If multiple people contribute to a commit, git allows for
-multi-author commits.}
+These were counted on November 18, 2026, at commit \texttt{2f3ab0c} of
+\texttt{main}, with \texttt{git log --no-merges --numstat}. The team merges
+pull requests with merge commits, so the commits of a merged branch are on
+\texttt{main} and count for their author. Three kinds of commit are left out:
+the merge commits themselves, the 94 commits the CI bot made to rebuild the
+PDFs, and the initial commit of the course template.
+
+Binary files, such as the PDFs and the figures, add no lines. The lines added
+include two generated lock files, 6,359 lines of the app's
+\texttt{package-lock.json} and 1,081 lines of the server's \texttt{uv.lock},
+which count for the member who committed them. Most of the other lines are in
+the documents, so these numbers show the size of what each member committed,
+not how hard it was to write.
+
+The pull requests are all those each member opened: 101 are merged, four were
+closed without merging and one is open
+(\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}, the POC demo
+screen). Its commits are not in the counts above yet. No commit has more than
+one author.
 
 \section{Issue Tracker}
 
