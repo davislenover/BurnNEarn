@@ -204,8 +204,14 @@ lines added are in the \LaTeX{} documents, 7,440 in the lock files, 5,693 in
 backend tests, 3,798 in backend code, 2,164 in figure sources, 1,567 in
 Markdown notes, 712 in backend migrations, 648 in frontend code and 205 in CI
 and other files.
-Section 11 gives the same split for each member. These numbers show the size
-of what each member committed, not how hard it was to write.
+Section 11 gives the same split for each member, with each member's net lines.
+
+Line counts run high for documents. They are counted by source line, and most
+of their text is wrapped at about 80 characters, so one paragraph is six to
+eight lines and each table row is a line. A line that is revised counts again
+as a line added, and the old one as a line deleted. Net of the lines deleted,
+the team added 35,749 lines. These numbers show the size of what each member
+committed, not how hard it was to write.
 
 The pull requests are all those each member opened: 101 are merged, four were
 closed without merging and one is open
@@ -304,9 +310,11 @@ Frontend code (POC) & 0 & 426 & 0 & 0 & 222 & 648\\
 CI and other files & 200 & 0 & 0 & 5 & 0 & 205\\
 \midrule
 All lines added & 23,779 & 3,813 & 2,535 & 8,306 & 6,916 & 45,349\\
+Lines deleted & 5,568 & 519 & 1,053 & 2,151 & 309 & 9,600\\
+Net lines (added less deleted) & 18,211 & 3,294 & 1,482 & 6,155 & 6,607 & 35,749\\
 \midrule
 Open PR \#312, frontend (POC) & 0 & 0 & 0 & 0 & 688 & 688\\
-With the open pull request & 23,779 & 3,813 & 2,535 & 8,306 & 7,604 & 46,037\\
+Lines added with the open PR & 23,779 & 3,813 & 2,535 & 8,306 & 7,604 & 46,037\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -319,7 +327,7 @@ demo screen is still in the open pull request
 \href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}, so it is not
 on \texttt{main} and not in the frontend row. The row under the total adds its
 26 commits, counted the same way, and the last row gives each member's lines
-with it included. Figure sources are the PlantUML and DOT files the diagrams are drawn from.
+added with it included. Figure sources are the PlantUML and DOT files the diagrams are drawn from.
 The drawn figures and the PDFs are binary files, which git counts as no lines.
 One drawn SVG, since replaced by a PNG, adds two lines to the figure sources
 row. Markdown notes are the architecture notes, \texttt{CONTRIBUTING.md} and the README
