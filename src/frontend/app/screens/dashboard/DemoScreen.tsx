@@ -219,57 +219,62 @@ export default function DemoScreen() {
 
       {/* Stock price and purchase controls */}
       <View style={styles.stockCard}>
-        <View style={styles.row}>
-          <View>
-            <Text style={styles.symbol}>AAPL</Text>
-            <Text style={styles.caption}>Apple Inc.</Text>
+        {/* Green header: company, symbol and price from the server */}
+        <View style={styles.stockHeader}>
+          <View style={styles.row}>
+            <Text style={styles.companyName}>Apple Inc.</Text>
+            <Text style={styles.usdBadge}>USD</Text>
           </View>
-          <Text style={styles.currency}>USD</Text>
-        </View>
-        <Text style={[styles.price, sharePrice === null && styles.label]}>
-          {sharePrice !== null ? `$${formatMoney(sharePrice)}` : priceFailed ? 'Unavailable' : 'Loading…'}
-        </Text>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>Quantity</Text>
-        </View>
-
-        <View style={styles.orderRow}>
-          <TextInput
-            style={styles.input}
-            value={quantity}
-            onChangeText={changeQuantity}
-            keyboardType="number-pad"
-            placeholder="Enter shares"
-            placeholderTextColor="#69737E"
-            accessibilityLabel="Number of shares to buy" />
-
-          {/* Run the existing purchase checks when Buy button is pressed */}
-          <TouchableOpacity
-            style={styles.buyButton}
-            onPress={buyShares}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Buy AAPL shares">
-            <Text style={styles.buyButtonText}>Buy</Text>
-          </TouchableOpacity>
+          <View style={styles.row}>
+            <Text style={styles.symbol}>AAPL</Text>
+            <Text style={[styles.price, sharePrice === null && styles.priceMissing]}>
+              {sharePrice !== null ? `$${formatMoney(sharePrice)}` : priceFailed ? 'Unavailable' : 'Loading…'}
+            </Text>
+          </View>
+          <Text style={styles.priceNote}>price per share</Text>
         </View>
 
-        {/* Total cost for the entered quantity */}
-        <View style={styles.orderTotal}>
-          <Text style={styles.caption}>Order total</Text>
-          {/* display the total cost of the order in dollars as $0.00 */}
-          <Text style={styles.totalText}>
-            ${formatMoney(orderTotal)}
-          </Text>
-        </View>
+        {/* White part: quantity, Buy button and order total */}
+        <View style={styles.stockBody}>
+          <Text style={styles.quantityLabel}>Quantity</Text>
 
-        {/* Show a message only when a purchase fails */}
-        {error !== '' && (
-          <Text style={styles.error} accessibilityRole="alert">
-            {error}
-          </Text>
-        )}
+          <View style={styles.orderRow}>
+            <TextInput
+              style={styles.input}
+              value={quantity}
+              onChangeText={changeQuantity}
+              keyboardType="number-pad"
+              placeholder="Enter shares"
+              placeholderTextColor="#69737E"
+              accessibilityLabel="Number of shares to buy" />
+
+            {/* Run the existing purchase checks when Buy button is pressed */}
+            <TouchableOpacity
+              style={styles.buyButton}
+              onPress={buyShares}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Buy AAPL shares">
+              <Text style={styles.buyButtonText}>Buy</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Total cost for the entered quantity */}
+          <View style={styles.orderTotal}>
+            <Text style={styles.label}>Order total</Text>
+            {/* display the total cost of the order in dollars as $0.00 */}
+            <Text style={styles.totalText}>
+              ${formatMoney(orderTotal)}
+            </Text>
+          </View>
+
+          {/* Show a message only when a purchase fails */}
+          {error !== '' && (
+            <Text style={styles.error} accessibilityRole="alert">
+              {error}
+            </Text>
+          )}
+        </View>
       </View>
 
       {/* Portfolio updates after a purchase */}
@@ -363,22 +368,63 @@ const styles = StyleSheet.create({
   stockCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    padding: 12,
+    overflow: 'hidden',
+  },
+  // Light green top part with the name and price
+  stockHeader: {
+    backgroundColor: '#E1F5EE',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  // White bottom part with quantity, Buy and order total
+  stockBody: {
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+  },
+  // Company name, "Apple Inc."
+  companyName: {
+    fontSize: 14,
+    color: '#0F6E56',
+  },
+  // Green "USD" badge in the header
+  usdBadge: {
+    fontSize: 11,
+    color: '#085041',
+    borderWidth: 1,
+    borderColor: '#5DCAA5',
+    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
   },
   // Stock symbol, "AAPL"
   symbol: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#171D22',
-    marginBottom: 5,
-  },
-  // Large share price, e.g. "$120.23"
-  price: {
-    fontSize: 36,
-    fontWeight: '600',
-    color: '#171D22',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#085041',
     marginTop: 8,
-    marginBottom: 8,
+  },
+  // Share price, e.g. "$120.23"
+  price: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#085041',
+    marginTop: 8,
+  },
+  // Smaller price text while loading or unavailable
+  priceMissing: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  // "price per share" under the price
+  priceNote: {
+    fontSize: 13,
+    color: '#0F6E56',
+    textAlign: 'right',
+  },
+  // "Quantity" above the input
+  quantityLabel: {
+    fontSize: 15,
+    color: '#3D454D',
   },
   // Row that holds the quantity box and the Buy button side by side
   orderRow: {
@@ -466,19 +512,22 @@ const styles = StyleSheet.create({
 
   // ----- Stock box more -----
 
-  // Row with "Order total" on the left and the amount on the right
+  // Row with "Order total" on the left and the amount on the right, line above
   orderTotal: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 16,
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E8EBEE',
   },
   // Order total amount, e.g. "$0.00"
-  totalText: { 
-    fontSize: 13,
-    fontWeight: '500',
+  totalText: {
+    fontSize: 18,
+    fontWeight: '700',
     color: '#171D22',
     fontVariant: ['tabular-nums'],
   },
