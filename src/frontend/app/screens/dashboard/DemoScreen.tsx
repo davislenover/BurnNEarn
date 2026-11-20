@@ -104,6 +104,15 @@ export default function DemoScreen() {
   // Store a message when a purchase cannot proceed
   const [error, setError] = useState('');
 
+  const [success, setSuccess] = useState('');
+
+  // Hide the purchase confirmation after three seconds.
+  useEffect(() => {
+    if (success === '') return;
+    const timer = setTimeout(() => setSuccess(''), 3000);
+    return () => clearTimeout(timer);
+  }, [success]);
+
   const [buying, setBuying] = useState(false);
   const buyInFlight = useRef(false);
   // Reuse the ID when the user retries the same order after a lost reply.
@@ -130,6 +139,7 @@ export default function DemoScreen() {
   // Validate the order before sending it to the trading API.
   async function buyShares() {
     if (buyInFlight.current) return;
+    setSuccess('');
     // Stop if the quantity is empty, not a whole number, or 0
     if (!validQuantity) {
       setError('Enter a positive whole number of shares.');
@@ -173,6 +183,7 @@ export default function DemoScreen() {
       setSharesHeld(previous => previous + shareCount);
       buyRequestId.current = null;
       setQuantity('');
+      setSuccess('Successful purchase');
       Keyboard.dismiss();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Purchase failed. Try again.');
@@ -299,6 +310,12 @@ export default function DemoScreen() {
           {error !== '' && (
             <Text style={styles.error} accessibilityRole="alert">
               {error}
+            </Text>
+          )}
+
+          {success !== '' && (
+            <Text style={styles.success} accessibilityRole="alert">
+              {success}
             </Text>
           )}
         </View>
@@ -583,6 +600,16 @@ const styles = StyleSheet.create({
   error: {
     backgroundColor: '#FFF0ED',
     color: '#A82D22',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 14,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  // Green confirmation for a completed purchase.
+  success: {
+    backgroundColor: '#E8F5EE',
+    color: '#087B51',
     borderRadius: 10,
     padding: 12,
     marginTop: 14,
