@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { uuid } from 'expo';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodaySteps } from '../../services/health/useTodaySteps';
 import { getBalance } from '../../services/api/balance';
 import { getAssets } from '../../services/api/market';
+import { buyShares as placeBuyOrder } from '../../services/api/trading';
 
 // Turns cents into dollars for display. 100000 -> "1,000.00"
 // show the 2 decimal places even if they are 0, and use commas for thousands
@@ -87,7 +89,6 @@ export default function DemoScreen() {
   const sharePrice = priceText !== null ? toCents(priceText) : null;
 
   // Show the server's balance after each successful step sync.
-  // Local purchases can be overwritten until purchases also use the backend.
   useEffect(() => {
     if (syncResult) {
       setBalance(toCents(syncResult.cash_balance));
@@ -102,6 +103,11 @@ export default function DemoScreen() {
 
   // Store a message when a purchase cannot proceed
   const [error, setError] = useState('');
+
+  const [buying, setBuying] = useState(false);
+  const buyInFlight = useRef(false);
+  // Reuse the ID when the user retries the same order after a lost reply.
+  const buyRequestId = useRef<string | null>(null);
 
   // Check that the quantity contains digits and is a positive whole number
   const shareCount = Number(quantity);
@@ -121,9 +127,9 @@ export default function DemoScreen() {
   // Value of the shares owned in cents (shares × price). Does not include the balance.
   const holdingsValue = sharePrice !== null ? sharesHeld * sharePrice : 0;
 
-  // Runs when Buy is pressed. Checks the order first, then completes it.
-  // Each check stops the purchase and shows a message if it fails.
-  function buyShares() {
+  // Validate the order before sending it to the trading API.
+  async function buyShares() {
+    if (buyInFlight.current) return;
     // Stop if the quantity is empty, not a whole number, or 0
     if (!validQuantity) {
       setError('Enter a positive whole number of shares.');
@@ -135,7 +141,7 @@ export default function DemoScreen() {
       return;
     }
     // Stop if the price has not loaded yet
-    if (sharePrice === null) {
+    if (sharePrice === null || priceText === null) {
       setError('Price is not loaded yet.');
       return;
     }
@@ -150,17 +156,36 @@ export default function DemoScreen() {
       setError('Not enough balance for this purchase.');
       return;
     }
-    // All checks passed: pay for the shares, add them, and clear any old message
-    setBalance(balance - orderTotal);
-    setSharesHeld(sharesHeld + shareCount);
+
+    buyInFlight.current = true;
+    setBuying(true);
     setError('');
-    
-    //hide the keyboard after a successful purchase
-    Keyboard.dismiss();
+    try {
+      buyRequestId.current ??= uuid.v4();
+      const receipt = await placeBuyOrder({
+        request_id: buyRequestId.current,
+        symbol: 'AAPL',
+        trade_type: 'buy',
+        quantity: shareCount,
+        expected_price: priceText,
+      });
+      setBalance(toCents(receipt.cash_balance));
+      setSharesHeld(previous => previous + shareCount);
+      buyRequestId.current = null;
+      setQuantity('');
+      Keyboard.dismiss();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Purchase failed. Try again.');
+    } finally {
+      buyInFlight.current = false;
+      setBuying(false);
+    }
   }
 
   // Clear the previous error when the quantity changes
   function changeQuantity(value: string) {
+    if (buyInFlight.current) return;
+    if (value !== quantity) buyRequestId.current = null;
     setQuantity(value);
     setError('');
   }
@@ -242,20 +267,22 @@ export default function DemoScreen() {
             <TextInput
               style={styles.input}
               value={quantity}
+              editable={!buying}
               onChangeText={changeQuantity}
               keyboardType="number-pad"
               placeholder="Enter shares"
               placeholderTextColor="#69737E"
               accessibilityLabel="Number of shares to buy" />
 
-            {/* Run the existing purchase checks when Buy button is pressed */}
+            {/* Send the purchase to the server when Buy is pressed */}
             <TouchableOpacity
-              style={styles.buyButton}
+              style={[styles.buyButton, buying && styles.buyButtonBusy]}
+              disabled={buying}
               onPress={buyShares}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Buy AAPL shares">
-              <Text style={styles.buyButtonText}>Buy</Text>
+              <Text style={styles.buyButtonText}>{buying ? 'Buying…' : 'Buy'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -452,6 +479,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     minHeight: 48,
+  },
+  // Fade the button while the order is being sent.
+  buyButtonBusy: {
+    opacity: 0.6,
   },
   // White "Buy" text inside the button
   buyButtonText: {
