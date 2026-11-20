@@ -322,9 +322,60 @@ counts for each of them.
 
 \section{CICD via GitHub Actions}
 
-\wss{Say how CICD technology is used and will be used in your project.}
+% \wss{Say how CICD technology is used and will be used in your project.}
 
-\wss{Provide links to your CICD yaml files}
+% \wss{Provide links to your CICD yaml files}
+
+The repository runs three GitHub Actions workflows, as planned in Section 7.6
+of the Development Plan. A pull request is merged into \texttt{main} only
+after its checks pass, and its author fixes any failure (Development Plan,
+Section 7.3).
+
+\begin{enumerate}
+\item \textbf{Backend CI}
+  (\href{https://github.com/davislenover/BurnNEarn/blob/main/.github/workflows/backend-ci.yml}{\texttt{backend-ci.yml}}).
+  Runs on every pull request and every push to \texttt{main}, in two jobs:
+  \begin{itemize}
+  \item \textit{Lint:} checks the backend and its tests with Ruff (lint and
+    formatting), and checks that modules only import modules below them.
+  \item \textit{Test:} starts a PostgreSQL 18 database, applies every
+    migration, undoes them all and applies them again, checks that the models
+    match the migrations, and then runs the 181 backend tests in
+    \texttt{test/backend} with a coverage report.
+  \end{itemize}
+\item \textbf{Build LaTeX and Deploy PDFs}
+  (\href{https://github.com/davislenover/BurnNEarn/blob/main/.github/workflows/latex-pages.yml}{\texttt{latex-pages.yml}}).
+  Runs on every pull request and push to \texttt{main} that changes the
+  documents. It compiles only the documents affected by the change, so a
+  document that does not build fails the pull request. On \texttt{main}, it
+  commits the new PDFs to the \texttt{pdfs} folder for TA review and publishes
+  them to the team's
+  \href{https://davislenover.github.io/BurnNEarn/}{GitHub Pages site}.
+\item \textbf{Secret scan}
+  (\href{https://github.com/davislenover/BurnNEarn/blob/main/.github/workflows/secret-scan.yml}{\texttt{secret-scan.yml}}).
+  Runs gitleaks on the commit history of every pull request and every push to
+  \texttt{main}, and fails if a commit adds an API key, password or token.
+  This was added once the backend needed a Finnhub API key. A pre-commit hook
+  (\texttt{.pre-commit-config.yaml}) runs the same check on each member's
+  machine before a commit is made.
+\end{enumerate}
+
+Two things differ from the Development Plan. Reviewers read the rendered
+documents on the GitHub Pages site rather than as files attached to each
+workflow run, and the secret scan was not in the plan.
+
+\paragraph{Future use.}
+
+\begin{itemize}
+\item \textbf{Frontend CI:} Jest is now set up for the app
+  (\texttt{npm test} in \texttt{src/frontend}), but no workflow runs it yet.
+  As the Development Plan requires for all code, a frontend job will run a
+  TypeScript type check and the app's tests on every pull request.
+\item \textbf{Deployment:} For Revision 0, every merge into \texttt{main} will
+  produce an internal test build of the mobile app, so the team and supervisor
+  can install the latest version on their phones (Development Plan,
+  Section 7.6).
+\end{itemize}
 
 \section{Custom Documents (CDs)}
 
