@@ -144,7 +144,7 @@ export default function DemoScreen() {
         {/* Steps box: today's steps from the phone, "Loading…" or "Unavailable" */}
         <View style={styles.card}>
           <Text style={styles.label}>Today's steps</Text>
-          <Text style={[styles.number, (loading || steps === null) && styles.label]}>
+          <Text style={[styles.number, (loading || steps === null) && styles.label]} numberOfLines={1} adjustsFontSizeToFit>
             {loading ? 'Loading…' : steps === null ? 'Unavailable' : steps.toLocaleString('en-US')}
           </Text>
           <Text style={styles.caption}>steps today</Text>
@@ -160,7 +160,7 @@ export default function DemoScreen() {
         </View>
       </View>
 
-            {/* Earned box: how today's steps turned into credits, from the server's reply */}
+      {/* Earned box: how today's steps turned into credits, from the server's reply */}
       <View style={styles.earnedCard}>
         <View style={styles.row}>
           <Text style={styles.sectionTitle}>Earned from steps today</Text>
