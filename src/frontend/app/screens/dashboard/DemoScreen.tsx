@@ -70,21 +70,23 @@ export default function DemoScreen() {
   // True if the price could not be loaded from the server
   const [priceFailed, setPriceFailed] = useState(false);
 
+  // Gets the AAPL price from the server
+  const loadPrice = useCallback(() => {
+    getAssets()
+      .then(data => {
+        const aapl = data.assets.find(asset => asset.symbol === 'AAPL');
+        setPriceText(aapl?.price ?? null);
+        setPriceFailed(false);
+      })
+      .catch(() => setPriceFailed(true));
+  }, []);
+
   // Get the AAPL price now, then again every 60 seconds
   useEffect(() => {
-    function loadPrice() {
-      getAssets()
-        .then(data => {
-          const aapl = data.assets.find(asset => asset.symbol === 'AAPL');
-          setPriceText(aapl?.price ?? null);
-          setPriceFailed(false);
-        })
-        .catch(() => setPriceFailed(true));
-    }
     loadPrice();
     const timer = setInterval(loadPrice, 60000);
     return () => clearInterval(timer);
-  }, []);
+  }, [loadPrice]);
 
   // Price in cents, null until it arrives
   const sharePrice = priceText !== null ? toCents(priceText) : null;
@@ -216,6 +218,8 @@ export default function DemoScreen() {
       Keyboard.dismiss();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Purchase failed. Try again.');
+      // The price may have changed, so show the latest one before the user tries again.
+      loadPrice();
     } finally {
       buyInFlight.current = false;
       setBuying(false);
