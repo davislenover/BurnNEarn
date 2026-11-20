@@ -116,6 +116,7 @@ export default function DemoScreen() {
     };
   }, [loadPortfolio]);
 
+  // Text shown in the portfolio box while waiting, or if the server can't be reached
   const portfolioStatus = portfolioFailed ? 'Unavailable' : 'Loading…';
 
   // Store the quantity entered in the input
@@ -124,6 +125,7 @@ export default function DemoScreen() {
   // Store a message when a purchase cannot proceed
   const [error, setError] = useState('');
 
+  // Store a message after a successful purchase, shown for 3 seconds
   const [success, setSuccess] = useState('');
 
   // Hide the purchase confirmation after three seconds.
@@ -133,7 +135,9 @@ export default function DemoScreen() {
     return () => clearTimeout(timer);
   }, [success]);
 
+  // True while a purchase is being sent: fades the Buy button and shows "Buying…"
   const [buying, setBuying] = useState(false);
+  // Same as buying, but updates instantly, so a fast double tap can't send two orders
   const buyInFlight = useRef(false);
   // Reuse the ID when the user retries the same order after a lost reply.
   const buyRequestId = useRef<string | null>(null);
