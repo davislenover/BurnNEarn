@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { uuid } from 'expo';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodaySteps } from '../../services/health/useTodaySteps';
 import { getBalance } from '../../services/api/balance';
 import { getAssets } from '../../services/api/market';
 import { buyShares as placeBuyOrder } from '../../services/api/trading';
+import { getPortfolio } from '../../services/api/portfolio';
 
 // Turns cents into dollars for display. 100000 -> "1,000.00"
 // show the 2 decimal places even if they are 0, and use commas for thousands
@@ -95,8 +96,39 @@ export default function DemoScreen() {
     }
   }, [syncResult]);
 
-  // Start with no shares
-  const [sharesHeld, setSharesHeld] = useState(0);
+  // AAPL shares and their value from the server, null until they arrive
+  const [sharesHeld, setSharesHeld] = useState<number | null>(null);
+  const [holdingsValue, setHoldingsValue] = useState<number | null>(null);
+  // True if the portfolio could not be loaded from the server
+  const [portfolioFailed, setPortfolioFailed] = useState(false);
+  const portfolioRequest = useRef(0);
+
+  // Gets the AAPL shares and the holdings value from the server
+  const loadPortfolio = useCallback(async () => {
+    const request = ++portfolioRequest.current;
+    try {
+      const data = await getPortfolio();
+      if (request !== portfolioRequest.current) return;
+      const aapl = data.holdings.find(holding => holding.symbol === 'AAPL');
+      setSharesHeld(aapl?.quantity ?? 0);
+      setHoldingsValue(toCents(data.holdings_value));
+      setPortfolioFailed(false);
+    } catch {
+      if (request === portfolioRequest.current) setPortfolioFailed(true);
+    }
+  }, []);
+
+  // Load the portfolio now, then again every 60 seconds
+  useEffect(() => {
+    void loadPortfolio();
+    const timer = setInterval(loadPortfolio, 60000);
+    return () => {
+      clearInterval(timer);
+      portfolioRequest.current++;
+    };
+  }, [loadPortfolio]);
+
+  const portfolioStatus = portfolioFailed ? 'Unavailable' : 'Loading…';
 
   // Store the quantity entered in the input
   const [quantity, setQuantity] = useState('');
@@ -132,9 +164,6 @@ export default function DemoScreen() {
 
   // Calculate the total in cents when the quantity is valid
   const orderTotal = validQuantity && sharePrice !== null ? shareCount * sharePrice : 0;
-
-  // Value of the shares owned in cents (shares × price). Does not include the balance.
-  const holdingsValue = sharePrice !== null ? sharesHeld * sharePrice : 0;
 
   // Validate the order before sending it to the trading API.
   async function buyShares() {
@@ -180,7 +209,7 @@ export default function DemoScreen() {
         expected_price: priceText,
       });
       setBalance(toCents(receipt.cash_balance));
-      setSharesHeld(previous => previous + shareCount);
+      void loadPortfolio();
       buyRequestId.current = null;
       setQuantity('');
       setSuccess('Successful purchase');
@@ -321,7 +350,7 @@ export default function DemoScreen() {
         </View>
       </View>
 
-      {/* Portfolio updates after a purchase */}
+      {/* Portfolio from the server, refreshed after a purchase and every 60 seconds */}
       <View style={styles.portfolioCard}>
         <View style={styles.row}>
           <Text style={styles.sectionTitle}>Your portfolio</Text>
@@ -332,12 +361,16 @@ export default function DemoScreen() {
 
         <View style={styles.holdingRow}>
           <Text style={styles.label}>AAPL shares held</Text>
-          <Text style={styles.shareCount}>{sharesHeld}</Text>
+          <Text style={[styles.shareCount, sharesHeld === null && styles.label]}>
+            {sharesHeld ?? portfolioStatus}
+          </Text>
         </View>
 
         <View style={styles.valueRow}>
           <Text style={styles.label}>Holdings value</Text>
-          <Text style={styles.holdingsValue}>${formatMoney(holdingsValue)}</Text>
+          <Text style={[styles.holdingsValue, holdingsValue === null && styles.label]}>
+            {holdingsValue === null ? portfolioStatus : `$${formatMoney(holdingsValue)}`}
+          </Text>
         </View>
 
         <Text style={styles.portfolioNote}>
@@ -624,7 +657,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     color: '#69737E',
-    marginTop: 3,
+    marginTop: 8,
     marginBottom: 12,
   },
   // ----- Earned from steps box -----
