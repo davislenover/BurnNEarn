@@ -4,6 +4,7 @@
 \restylefloat{table}
 
 \usepackage{booktabs}
+\usepackage{tabularx}
 
 \title{Team Productivity: POC\\\progname}
 
@@ -32,9 +33,55 @@ the report.}
 
 \section{Demo Plans}
 
-\wss{What is your feasibility risk?}
+% \wss{What is your feasibility risk?}
 
-\wss{What will you be demonstrating}
+% \wss{What will you be demonstrating}
+
+\paragraph{Feasibility risks.} As set out in Section 9 of the Development
+Plan, FitFolio depends on two outside systems that no team member had used
+before. If either cannot be made to work, the app's core loop of earning
+currency through activity and investing it cannot be built.
+
+\begin{enumerate}
+\item \textbf{Reading step data from the phone's health platform.} The app
+  reads steps through Google Health Connect on Android and Apple HealthKit on
+  iOS, using two third-party React Native libraries:
+  \begin{itemize}
+  \item \texttt{react-native-health-connect}
+  \item \texttt{@kingstinct/react-native-healthkit}
+  \end{itemize}
+  If steps cannot be read reliably, the app cannot award currency fairly.
+\item \textbf{Valuing portfolios with real market prices.} Portfolio values
+  must follow real prices from Finnhub, the market data provider, while
+  staying within the request limits of its free plan.
+\end{enumerate}
+
+\paragraph{What we will demonstrate.} The demo shows one path through the core
+loop, on a physical phone, as planned in the Development Plan:
+
+\begin{enumerate}
+\item \textbf{Read today's steps} (Risk 1). After the user grants permission,
+  the app reads the day's step count and displays it. This succeeds if the
+  count matches the phone's own health app and goes up after a team member
+  walks and reopens the app. Both platforms are implemented
+  (\texttt{src/frontend/app/services/health/steps.ts}), so the iPhone, a
+  stretch goal in the Development Plan, is now part of the demo.
+\item \textbf{Turn steps into virtual currency} (connects Risks 1 and 2). The
+  app sends the day's total to the server
+  (\texttt{PUT /v1/me/activity/daily-totals}), which awards one credit per 100
+  steps, up to 300 credits a day, and never takes currency back if a later
+  total is lower. The new balance is shown (\texttt{GET /v1/me/balance}).
+\item \textbf{Buy a real asset with that currency} (Risk 2). The user buys
+  whole shares at the current market price (\texttt{POST /v1/me/trades}). The
+  server refuses an order the balance cannot cover, and refuses all orders
+  while the market is closed, so the demo will be held during market hours.
+\item \textbf{Show the portfolio following the market} (Risk 2). While the
+  market is open, the server requests each supported asset's price from
+  Finnhub once a minute and shares it across all users.
+  \texttt{GET /v1/me/portfolio} values the holdings at the latest price, and
+  \texttt{GET /v1/market/usage} shows how many calls were made in the last
+  minute and today, to show that this interval fits within the free plan.
+\end{enumerate}
 
 \section{Team Meeting Attendance}
 
@@ -224,9 +271,9 @@ one author.
 
 \section{Issue Tracker}
 
-\wss{For each team member how many issues have they authored (including open and
-closed issues (O+C)) and how many have they been assigned (only counting closed
-issues (C only)) over the time period of interest.}
+% \wss{For each team member how many issues have they authored (including open and
+% closed issues (O+C)) and how many have they been assigned (only counting closed
+% issues (C only)) over the time period of interest.}
 
 \begin{table}[H]
 \centering
@@ -234,16 +281,25 @@ issues (C only)) over the time period of interest.}
 \toprule
 \textbf{Student} & \textbf{Authored (O+C)} & \textbf{Assigned (C only)}\\
 \midrule
-Name 1 & Num & Num \\
-Name 2 & Num & Num \\
-Name 3 & Num & Num \\
-Name 4 & Num & Num \\
-Name 5 & Num & Num \\
+Davis Lenover & 70 & 55 \\
+Preston Grewal & 1 & 40 \\
+Angad Chhabra & 1 & 37 \\
+Farid Bastoros & 119 & 47 \\
+Zaid Alsaadi & 7 & 37 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\wss{If needed, an explanation for the counts can be provided here.}
+These counts cover the same period as Sections 2 to 6, up to November 18,
+2026, and were pulled with GitHub's issue search. Authored counts every issue
+a member opened in that period, open or closed. Assigned counts the issues
+assigned to a member that were closed by November 18. Pull requests are not
+counted, since Section 6 covers them. An issue assigned to more than one member
+counts for each of them.
+
+
+
+% \wss{If needed, an explanation for the counts can be provided here.}
 
 \section{CICD via GitHub Actions}
 
@@ -253,35 +309,133 @@ Name 5 & Num & Num \\
 
 \section{Custom Documents (CDs)}
 
-\wss{What is the plan (as documented in TeamComposition.csv) for the team's
-CDs?  Should the CDs be modified now that the team knows more about the
-project?}
+% \wss{What is the plan (as documented in TeamComposition.csv) for the team's
+% CDs?  Should the CDs be modified now that the team knows more about the
+% project?}
+
+\paragraph{Plan.} The team's two CDs, one per term, are the ones in
+TeamComposition.csv and in Section 4 of the Problem Statement and Goals:
+Design Thinking in the Fall and Usability Testing in the Winter. The V\&V
+Plan (Section 2.3) explains how both feed into validation.
+
+\paragraph{Design Thinking (Fall): done.} The team followed the course's
+Design Thinking process up to the second prototype, and the completed
+35-slide worksheet is in the repository as
+\href{https://github.com/davislenover/BurnNEarn/blob/main/docs/CDs/DesignThinking/DesignThinkingWorksheet.pdf}{PDF}
+and \texttt{.pptx}, merged on November 18
+(\href{https://github.com/davislenover/BurnNEarn/pull/333}{\#333},
+\href{https://github.com/davislenover/BurnNEarn/pull/336}{\#336}). It covers
+domain research on fitness tracking and beginner investing, two interviews
+held on October 14, 2026 (P01, our supervisor and TA, and P02, a financial
+services representative at a credit union), and two prototypes with user
+feedback: a seven-screen Figma concept, and the POC demo screen. The
+interviews are the source of most of the stakeholder requirements in SRS
+Section 3 and of Personas 1 and 2 in SRS Section 4.
+
+\paragraph{Usability Testing (Winter): no change needed.} Now that the team
+knows more about the project, we still think usability testing is the right
+CD for the Winter term. It tests the core loop that the POC shows, and it
+provides the evidence for NFR2 (Usability), NFR8 (Accessibility) and goals G1
+and G2. Its participant profile, tasks and survey are already set in the V\&V
+Plan (Sections 3.7 and 6.2), and testing will start after the Rev 0 demo, once
+there is a working app. Design Thinking has refined what the tests should
+check:
+
+\begin{itemize}
+\item Neither interviewee was a beginner at investing, so participants will be
+  recruited mainly from beginners, who are represented only by Persona 3.
+\item Testers of Prototype 2 asked whether credits are the same as dollars and
+  what happens after 300 credits. The tests will check whether users
+  understand that credits are virtual, and where their credits came from.
+\item When steps could not be read, the screen only showed ``Unavailable'', so
+  the tests will include that case and check whether users understand why.
+\end{itemize}
 
 \section{Team Charter Trigger Items}
 
-\wss{Provide a summary of the quantified triggers identified in the team's
-charter.}
+The Team Charter in the
+\href{https://github.com/davislenover/BurnNEarn/blob/main/docs/DevelopmentPlan/DevelopmentPlan.tex}{Development Plan}
+sets five triggers.
 
-\wss{Provide a list of any violations of the triggers.  If the team wishes, the
-violations can be summarized on aggregate, instead of naming specific team
-members.}
+\begin{itemize}
+  \item \textbf{Meeting attendance.} Attend fewer than 80\% of team meetings
+    in a deliverable period, or miss two in a row without an excuse.
+  \item \textbf{Missed team deadlines.} Miss two or more team deadlines in a term.
+  \item \textbf{Review turnaround.} Take more than 72 hours from the review
+    request to complete a review, two or more times in a deliverable period.
+  \item \textbf{Responsiveness.} Miss the deadline to acknowledge a GitHub or
+    Teams mention three or more times in a deliverable period. The deadline
+    is 12 hours, or 24 hours on weekends.
+  \item \textbf{Contribution.} Go two consecutive weeks without closing an
+    assigned issue, contributing a merged pull request, or submitting a
+    pull request review.
+\end{itemize}
 
-\wss{Provide a plan to address the violations.  This could include revising the
-triggers, if they are found to be too weak, strong or ambiguous.}
+\begin{table}[H]
+\caption{Team charter findings through November 18, 2026}
+\centering
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth}
+  >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Trigger} & \textbf{Finding}\\
+\midrule
+Meeting attendance &
+  Three members attended 3 of 3 recorded meetings and two attended 2 of 3
+  (67\%). No member missed two recorded meetings in a row, absences were excused.
+  (\href{https://github.com/davislenover/BurnNEarn/issues/30}{\#30},
+  \href{https://github.com/davislenover/BurnNEarn/issues/31}{\#31},
+  \href{https://github.com/davislenover/BurnNEarn/issues/257}{\#257})\\
+\addlinespace
+Missed team deadlines & N/A\\
+\addlinespace
+Review turnaround & N/A\\
+\addlinespace
+Responsiveness & N/A\\
+\addlinespace
+Contribution & N/A\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Follow-up:}
+No violations currently to address.
 
 \section{Additional Productivity Metrics}
 
-\wss{If your team has additional metrics of productivity, please feel free to
-add them to this report.  If not, please explicitly state that there are no additional
-metrics.}
+% \wss{If your team has additional metrics of productivity, please feel free to
+% add them to this report.  If not, please explicitly state that there are no additional
+% metrics.}
 
-\wss{Additional metrics can include things like code reviews done, pull requests
-created, count of joining meetings late, count of number of times contributions
-had to be corrected, number of internal deadlines missed, test cases written, etc.}
+% \wss{Additional metrics can include things like code reviews done, pull requests
+% created, count of joining meetings late, count of number of times contributions
+% had to be corrected, number of internal deadlines missed, test cases written, etc.}
 
-\wss{We are looking for data on these metrics, not just a list of additional
-metrics the team is planning on tracking.  However, if all you have is a plan,
-please share it here.}
+% \wss{We are looking for data on these metrics, not just a list of additional
+% metrics the team is planning on tracking.  However, if all you have is a plan,
+% please share it here.}
+
+\subsection{Pull Request Reviews and Merges}
+
+Pull requests by other members that each member reviewed on GitHub, and pull
+requests each member merged into \texttt{main}, split into another member's
+and their own, up to November 18 (commit \texttt{2f3ab0c}).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Student} & \textbf{Reviewed} & \textbf{Merged, another's} &
+\textbf{Merged, own}\\
+\midrule
+Total & 93 & 82 & 15\\
+Davis Lenover & 45 & 46 & 8\\
+Preston Grewal & 5 & 0 & 0\\
+Angad Chhabra & 5 & 0 & 0\\
+Farid Bastoros & 36 & 34 & 7\\
+Zaid Alsaadi & 2 & 2 & 0\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Lines Added by Kind of File}
 
