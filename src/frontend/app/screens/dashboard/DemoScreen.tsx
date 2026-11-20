@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodaySteps } from '../../services/health/useTodaySteps';
+import { getBalance } from '../../services/api/balance';
 
 // Sample share price stored in cents: 12023 = $120.23
 const sharePrice = 12023;
@@ -49,8 +50,18 @@ export default function DemoScreen() {
   // Keep the bar empty until the server returns today's earnings.
   const todayReward = todayResult ? Number(todayResult.reward) : 0;
 
-  // Starting balance in cents: 100000 = $1,000
-  const [balance, setBalance] = useState(100000);
+  // Balance in cents, null until the server sends it
+  const [balance, setBalance] = useState<number | null>(null);
+
+  // True if the balance could not be loaded from the server
+  const [balanceFailed, setBalanceFailed] = useState(false);
+
+  // Get the balance from the server once, when the screen opens
+  useEffect(() => {
+    getBalance()
+      .then(data => setBalance(toCents(data.cash_balance)))
+      .catch(() => setBalanceFailed(true));
+  }, []);
 
   // Show the server's balance after each successful step sync.
   // Local purchases can be overwritten until purchases also use the backend.
@@ -100,6 +111,11 @@ export default function DemoScreen() {
       setError('The quantity is too large.');
       return;
     }
+    // Stop if the balance has not loaded yet
+    if (balance === null) {
+      setError('Balance is not loaded yet.');
+      return;
+    }
     // Stop if the order costs more than the current balance
     if (orderTotal > balance) {
       setError('Not enough balance for this purchase.');
@@ -134,11 +150,11 @@ export default function DemoScreen() {
           <Text style={styles.caption}>steps today</Text>
         </View>
 
-        {/* Balance from step sync, then updated locally after a purchase */}
+        {/* Balance from the server, updated after step sync and after a purchase */}
         <View style={styles.card}>
           <Text style={styles.label}>Balance</Text>
-          <Text style={styles.number} numberOfLines={1} adjustsFontSizeToFit>
-            ${formatMoney(balance)}
+          <Text style={[styles.number, balance === null && styles.label]} numberOfLines={1} adjustsFontSizeToFit> 
+          {balance !== null ? `$${formatMoney(balance)}` : balanceFailed ? 'Unavailable' : 'Loading…'}
           </Text>
           <Text style={styles.caption}>virtual credits</Text>
         </View>
