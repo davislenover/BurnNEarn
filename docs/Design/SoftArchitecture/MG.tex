@@ -5,9 +5,11 @@
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{longtable}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{xltabular}
 \hypersetup{
     colorlinks,
     citecolor=blue,
@@ -43,7 +45,7 @@
 
 \section{Revision History}
 
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
+\begin{xltabular}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 Nov 5, 2026 & 1.0 & Davis Lenover: Revision $-1$. Sections 1 to 3, 5
@@ -58,8 +60,29 @@ Nov 10, 2026 & 1.2 & Farid Bastoros: 4 Anticipated and Unlikely Changes.\\
 Nov 10, 2026 & 1.3 & Davis Lenover: 2.1 Abbreviations and Acronyms, and review
 fixes to 7 Module Decomposition. Each market data provider gives its own
 request limit, so a new one changes only Market Providers.\\
+Nov 10, 2026 & 1.4 & Farid Bastoros: 6 Connection Between Requirements and
+Design.\\
+Nov 12, 2026 & 1.5 & Preston Grewal: Health and Activity module descriptions (\#235).\\
+Nov 12, 2026 & 1.6 & Preston Grewal: Phone activity access protocols (\#242).\\
+Nov 15, 2026 & 1.7 & Davis Lenover: 7 Module Decomposition: Goals, Learning,
+Social, Scenarios and Privacy, which are built after the proof of concept, and
+what Trading and Plugins add for them at Revision~0.\\
+Nov 15, 2026 & 1.8 & Farid Bastoros: 12 Database Design.\\
+Nov 15, 2026 & 1.9 & Preston Grewal: Traceability matrices (\#239).\\
+Nov 15, 2026 & 1.10 & Zaid Alsaadi: Added Device Service (M5) and
+Reminder Service (M21) descriptions in Section 7. Marked M5 as planned
+after the proof of concept in Section 5. Updated Section 13 Timeline
+with task ownership, deadlines and links to GitHub.\\
+Nov 17, 2026 & 1.11 & Zaid Alsaadi: Added Section 14, Generative AI
+Use Disclosure, including tools and model versions, affected sections,
+and how AI-assisted content was checked.\\
+Nov 18, 2026 & 1.12 & Angad Chhabra: 10 User Interfaces, and 7 Module
+Decomposition: Navigation, Screens and API Service.\\
+Nov 18, 2026 & 1.13 & Davis Lenover: Navigation is built after the proof of
+concept. Review fixes to 4, 5, 7, 9, 11 and 12 (\#323, \#326, \#328, \#329).\\
+Nov 18, 2026 & 1.14 & Farid Bastoros: 6.1 Decisions from the Design Thinking.\\
 \bottomrule
-\end{tabularx}
+\end{xltabular}
 
 \newpage
 
@@ -353,6 +376,8 @@ there ULC1 to ULC3. The rest are decisions fixed at the architecture stage.
 \item[\refstepcounter{ucnum} \uctheucnum \label{ucHealthPlatform}:] Activity
   recorded by the phone is read only through its health platform (SRS SC2).
   The app does not count steps itself or accept activity typed in by the user.
+  The proof of concept's iPhone path is the one exception, as
+  \mref{mHealth} Health Service says.
 \item[\refstepcounter{ucnum} \uctheucnum \label{ucProtocol}:] The app and the
   server communicate over HTTPS with JSON. The form of single values may change
   (\acref{acJSON}), but a different protocol would change every route and the
@@ -386,7 +411,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mClock}:] Clock
 \item [\refstepcounter{mnum} \mthemnum \label{mProviders}:] Market Providers
 \item [\refstepcounter{mnum} \mthemnum \label{mHealth}:] Health Service (app)
-\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mDevice}:] Device Service (app)\textsuperscript{\dag}
 % Behaviour-Hiding, server
 \item [\refstepcounter{mnum} \mthemnum \label{mControl}:] Control
 \item [\refstepcounter{mnum} \mthemnum \label{mConstants}:] Constants (server and app)
@@ -401,7 +426,7 @@ made that the SRS does not mention.
 \item [\refstepcounter{mnum} \mthemnum \label{mScenarios}:] Scenarios\textsuperscript{\dag}
 \item [\refstepcounter{mnum} \mthemnum \label{mPrivacy}:] Privacy\textsuperscript{\dag}
 % Behaviour-Hiding, app
-\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)
+\item [\refstepcounter{mnum} \mthemnum \label{mNavigation}:] Navigation (app)\textsuperscript{\dag}
 \item [\refstepcounter{mnum} \mthemnum \label{mScreens}:] Screens (app)
 \item [\refstepcounter{mnum} \mthemnum \label{mSync}:] Sync Service (app)
 \item [\refstepcounter{mnum} \mthemnum \label{mReminders}:] Reminder Service (app)\textsuperscript{\dag}
@@ -425,7 +450,7 @@ made that the SRS does not mention.
 & \mref{mProviders} Market Providers\\
 & \mref{mEmail} Email Service\textsuperscript{\dag}\\
 & \mref{mHealth} Health Service (app)\\
-& \mref{mDevice} Device Service (app)\\
+& \mref{mDevice} Device Service (app)\textsuperscript{\dag}\\
 \midrule
 
 \multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & \mref{mControl} Control\\
@@ -440,7 +465,7 @@ made that the SRS does not mention.
 & \mref{mSocial} Social\textsuperscript{\dag}\\
 & \mref{mScenarios} Scenarios\textsuperscript{\dag}\\
 & \mref{mPrivacy} Privacy\textsuperscript{\dag}\\
-& \mref{mNavigation} Navigation (app)\\
+& \mref{mNavigation} Navigation (app)\textsuperscript{\dag}\\
 & \mref{mScreens} Screens (app)\\
 & \mref{mSync} Sync Service (app)\\
 & \mref{mReminders} Reminder Service (app)\textsuperscript{\dag}\\
@@ -457,7 +482,11 @@ made that the SRS does not mention.
 \end{table}
 
 Modules marked with \textsuperscript{\dag} in Table~\ref{TblMH} are built after
-the proof of concept and are specified in the MIS at Revision~0.
+the proof of concept and are specified in the MIS at Revision~0. The proof of
+concept has one screen, no sign-in and no reminders, so it needs nothing from
+\mref{mDevice} Device Service or \mref{mNavigation} Navigation yet. What each
+one hides stays as Section~\ref{SecChange} says, but its design isn't final
+and may change with feedback on the proof of concept.
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
@@ -465,12 +494,184 @@ The design of the system is intended to satisfy the requirements developed in
 the SRS. In this stage, the system is decomposed into modules. The connection
 between requirements and modules is listed in Table~\ref{TblRT}.
 
-\wss{The intention of this section is to document decisions that are made
-  ``between'' the requirements and the design.  To satisfy some requirements,
-  design decisions need to be made.  Rather than make these decisions implicit,
-  they are explicitly recorded here.  For instance, if a program has security
-  requirements, a specific design decision may be made to satisfy those
-  requirements with a password.}
+% \wss{The intention of this section is to document decisions that are made
+%   ``between'' the requirements and the design.  To satisfy some requirements,
+%   design decisions need to be made.  Rather than make these decisions implicit,
+%   they are explicitly recorded here.  For instance, if a program has security
+%   requirements, a specific design decision may be made to satisfy those
+%   requirements with a password.}
+
+Some requirements can only be met by a decision that the SRS leaves to the
+design. This section records those decisions, so that none of them is implicit.
+Each one names the requirements it serves, by their number in the SRS, and the
+modules that carry it out. The \emph{Rationale} field of each module in
+Section~\ref{SecMD} gives the detail.
+
+\begin{description}
+\item[One server with one database.] A trade must update the balance and the
+  holdings together or not at all (FR37, NFR6), and two modules own that data.
+  So the server is one process with one database, split into modules, and not
+  separate services. \mref{mTrading} Trading pays through \mref{mWallet} Wallet
+  in the same transaction of \mref{mDB} Database, and only the route commits
+  it, so a refused or interrupted trade saves nothing.
+
+\item[The server holds every rule about currency.] Rewards, balances and
+  holdings are calculated only on the server (SEC-24). The app sends daily
+  totals for each activity type and nothing else (SEC-10), through
+  \mref{mSync} Sync Service. \mref{mActivity} Activity turns the totals into
+  currency, with the plausibility limits and the daily cap (FR13, FR17, FR18).
+  No app module holds a reward or trade rule, so a changed app cannot give
+  itself currency.
+
+\item[One way to change a balance.] Every change to a balance is recorded with
+  its amount, time and reason, and the balance equals the sum of its changes
+  (SEC-22). So \mref{mWallet} Wallet offers one call that changes a balance and
+  records the change together, and refuses a change that would take the balance
+  below zero (FR37). The caller must lock the portfolio first, so that two
+  requests for one user take turns. That is how a repeated sync pays each day's
+  activity once (SEC-19) and never more than the daily cap (FR18).
+
+\item[Each trade request has an ID.] A trade submitted twice is recorded once
+  (FR38, NFR6). So the app makes an ID for each trade request, and
+  \mref{mTrading} Trading answers a repeated ID with the first result. A retry
+  over a bad connection is then safe.
+
+\item[The server fetches prices on a schedule.] Prices come from a third
+  party, within its request limits (FR32, SC4). So \mref{mMarket} Market
+  fetches each price once for all users, instead of each phone asking the
+  provider. It keeps the time each price was obtained, marks a price that is
+  too old (FR33), and \mref{mTrading} Trading refuses to trade on one while the
+  market is open (FR39). The provider's key never leaves the server (SEC-33).
+
+\item[Each outside service has one interface.] The market data provider may
+  change (SRS LC3), activity is read only through each phone's health platform
+  (SC2, SC3), and a password reset needs an email service (FR6). So each of
+  these is hidden by its own module: \mref{mProviders} Market Providers,
+  \mref{mHealth} Health Service and \mref{mEmail} Email Service.
+  \mref{mDevice} Device Service does the same for the phone's operating system,
+  so the rest of the app is the same on Android and iOS (NFR4). A change of
+  service then stays inside one module (NFR3).
+
+\item[Sessions are stored on the server.] Every request that reads or changes a
+  user's data needs an authenticated session (SEC-15, NFR7). Users sign in with
+  an email address and a password (FR1, FR4), and the server must be able to
+  end a session on sign-out, on a password reset or after
+  \texttt{SESSION\_TIMEOUT} (FR5, FR6, SEC-17). So \mref{mUsers} Users stores
+  sessions on the server instead of issuing self-contained tokens, limits
+  sign-in attempts (SEC-38), and gives every route the current user. The phone
+  never sends a user ID. \mref{mAPI} API Service keeps the session token in the
+  phone's secure storage, through \mref{mDevice} Device Service (SEC-39).
+
+\item[Amounts are exact decimals.] Every balance and portfolio value must be
+  accurate to within the tolerance the SRS sets, \texttt{VALUE\_TOLERANCE}
+  (NFR1, SEC-30). So every amount is an exact decimal with four decimal places
+  on the server, and \mref{mJSON} JSON Format sends it to the phone as text, so
+  that no precision is lost on the way.
+
+\item[Requests are checked before a route runs.] A request with a missing,
+  wrongly typed or out-of-range input is rejected (SEC-25). So each route
+  declares its inputs, and a request that does not fit them is refused before
+  the route runs, without sending back the values it sent. Every refusal a
+  module raises itself has one shape, a code and a message, which
+  \mref{mJSON} JSON Format defines. \mref{mAPI} API Service and
+  \mref{mScreens} Screens then handle a refusal the same way for every module.
+
+\item[The tunable values are in one module.] The SRS names its limits as
+  symbolic constants (SRS Appendix~C), so that a value can change without
+  changing a requirement. \mref{mConstants} Constants holds them under the same
+  names on the server and in the app, which keeps such a change small (NFR3).
+
+\item[Time is handed to the code.] Many rules depend on the time: whether the
+  market is open, whether a price is too old (FR33, FR39), and whether a daily
+  total is dated after today in the user's time zone, in which case it is
+  refused (SEC-24). Server code is handed \mref{mClock} Clock.
+  \mref{mActivity} Activity finds today in the time zone sent with the totals;
+  the PoC does not read or update the stored Users time zone for this check.
+  The phone puts each record on its calendar day before sending totals
+  (SEC-23).
+
+\item[Features are added as plug-ins.] The system is built in stages, and the
+  effort of a likely change is limited (NFR3). So \mref{mControl} Control
+  builds the server from a list of modules, each described by a record that
+  \mref{mPlugins} Plugins defines. Adding a feature, such as Goals or Social,
+  adds a module to the list and changes no existing module.
+
+\item[A scenario has its own portfolio.] A market scenario starts with its own
+  balance and no holdings, and must not affect the live portfolio (FR45, FR46,
+  SEC-31). So \mref{mWallet} Wallet keeps a separate portfolio for each
+  scenario, and \mref{mScenarios} Scenarios trades in it through
+  \mref{mTrading} Trading. The live balance is never read or changed by a
+  scenario.
+
+\item[The social feed cannot reach a balance.] Only the kinds of update the
+  SRS lists can be shared, and a currency balance or a portfolio value is not
+  one of them (FR65). So \mref{mSocial} Social uses Activity, Goals and
+  Learning for what may be shared, and does not use Wallet or Trading
+  (Section~\ref{SecUse}). A balance or a portfolio value cannot appear in an
+  update, because Social has no way to read one. An individual activity record
+  cannot appear either, since the app sends the server only daily totals
+  (SEC-10, FR68). Social also offers no ranking of users (FR71).
+
+\item[Privacy rules are in one module.] The user can download their data,
+  delete their account and withdraw consent to read health data (FR9 to FR11,
+  FR76, SEC-9, SEC-18). These rules change with the law and the app stores'
+  policies (SC6), so \mref{mPrivacy} Privacy holds them, apart from the
+  features whose data they act on.
+
+\item[What the user sees is in Screens alone.] Several requirements are about
+  display: every return and portfolio value is labelled as simulated (FR43), a
+  gain or loss is shown by a sign or a text label and not by colour alone
+  (FR44), and the core features stay usable at \texttt{MAX\_TEXT\_SCALE} text
+  size (NFR8). So layout and wording are in \mref{mScreens} Screens and
+  \mref{mNavigation} Navigation, and the app's services hold none. Results of
+  usability testing (NFR2) can then change a screen without changing a
+  service.
+
+\item[Reminders are scheduled on the phone.] Reminders are sent only in the
+  periods the user chose, and contain no health data, balance or portfolio
+  value by default (FR72 to FR75, SEC-34). So \mref{mReminders} Reminder
+  Service schedules them on the phone, through \mref{mDevice} Device Service,
+  with the user's settings.
+\end{description}
+
+\subsection{Decisions from the Design Thinking}
+
+Our Design Thinking worksheet, the Custom Document for this deliverable, is in
+the repository's
+\href{https://github.com/davislenover/BurnNEarn/tree/main/docs/CDs/DesignThinking}{Design
+Thinking folder}, \path{docs/CDs/DesignThinking/}, as a PowerPoint file and a
+PDF.
+It records interviews with two users, P01 (our supervisor) and P02 (a
+financial services representative), and feedback on two prototypes. Several
+design decisions trace back to it:
+
+\begin{description}
+\item[Activity is read, not logged.] P01 forgets to stop a bike tracking app
+  and asked for tracking that is ``as touchless as possible'', and P02 tracks
+  workouts only as ``a mental check''. So \mref{mHealth} Health Service reads
+  activity from the phone's health platform (\acref{acHealth}), and
+  \mref{mSync} Sync Service sends the day's total when the app opens, with
+  nothing for the user to enter (SEC-10).
+
+\item[Sharing is the user's choice, and nothing is ranked.] Both users share
+  data only when an app has a clear reason to ask, and P02 said comparing with
+  others is ``only ever bad when you're really far behind''. So the user
+  chooses what is shared and with whom, a balance or raw health data is never
+  shared (\uref{ucSharingControl}), privacy rules are kept in \mref{mPrivacy}
+  Privacy, and \mref{mSocial} Social offers no ranking (FR71).
+
+\item[Practice with simulated money.] Both users learn best by doing, so the
+  market follows real prices but uses only virtual currency
+  (\uref{ucNoRealMoney}), and \mref{mLearning} Learning explains the user's own
+  portfolio rather than general advice (FR60).
+
+\item[One screen for the core loop.] Users found the seven-screen Prototype~1
+  took ``too many taps just to buy one share'' and could not tell where their
+  coins came from. So the proof of concept's \mref{mScreens} Screens shows the
+  whole loop on one screen, with today's steps and what they earned at the
+  top. The seven screens return at Revision~0, and their order is kept in
+  \mref{mNavigation} Navigation so testing can change it (NFR2).
+\end{description}
 
 \section{Module Decomposition} \label{SecMD}
 
@@ -489,7 +690,7 @@ Only the leaf modules in the hierarchy have to be implemented. If a dash
 to be implemented. The \emph{Rationale} field says why the module is designed
 this way: the requirements it serves, by their number in the SRS (such as FR37
 or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented By} are relative to
-\path{src/backend/app/}.
+\path{src/backend/app/}, and app paths are relative to \path{src/frontend/}.
 
 \subsection{Hardware Hiding Modules}
 
@@ -542,9 +743,47 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \item[Type of Module:] Abstract Data Type, with one interface, an implementation for the chosen service and a fake
 \end{description}
 
-% M4 Health Service (app): #235
+\subsubsection{Health Service Module (\mref{mHealth})}
+
+\begin{description}
+\item[Secrets:] The phone's activity-data interface.
+\item[Services:] Reads steps taken. Checks or
+  requests read permission and reports permission or device errors. 
+\item[Rationale:] Android and iOS expose activity differently. Keeping those
+  calls here lets Sync use the same reader on both platforms (NFR4), and
+  keeps a change of data source in one module (SRS LC2). Steps are read
+  from today's local midnight to the reading time. Android reads
+  Health Connect. On iPhone, the proof of concept reads Core Motion through
+  Expo Pedometer, not HealthKit, so it differs from SC2 and
+  \uref{ucHealthPlatform}. At Revision~0 it reads HealthKit through the same
+  access program, so no other module changes.
+\item[Implemented By:] \progname{} app, in
+  \path{app/services/health/steps.ts}
+\item[Type of Module:] Library
+\end{description}
 
 % M5 Device Service (app): #237
+\subsubsection{Device Service Module (\mref{mDevice})}
+\begin{description}
+\item[Secrets:] The phone operating system's interfaces for device services.
+
+\item[Services:] Provides one interface for secure storage, local
+notifications and background tasks on Android and iOS. Stores, reads and
+removes the session token using the phone's secure storage. Checks and
+requests notification permission, schedules and cancels local notifications,
+and registers background tasks requested by other app modules. Reports
+when permission is denied or a service is unavailable.
+
+\item[Rationale:] Android and iOS provide different device interfaces.
+Keeping those details here lets the rest of the app use the same calls on
+both platforms (NFR4) and limits the changes needed when a platform changes (NFR3). The API Service uses this module to keep the session token in secure storage (SEC-39). The Reminder Service decides what to send and when. Device Service handles the operating system calls. Background execution depends on the operating system, so callers must also support updating when the user opens the app.
+
+\item[Implemented By:] \progname{} app, after the proof of concept,
+at Revision~0. The PoC has no sign-in or reminders and does not use this
+module yet.
+
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsection{Behaviour-Hiding Modules}
 
@@ -574,16 +813,16 @@ or SEC-15), and the design pattern it uses. Server paths under \emph{Implemented
 \item[Secrets:] The values of the SRS symbolic constants (SRS Appendix C).
 \item[Services:] Gives every module the same values, such as the daily currency cap and the price staleness limit.
 \item[Rationale:] The SRS names its tunable values as symbolic constants, such as the price staleness limit (SRS Appendix C), so a value can change without changing a requirement. One file on each side, server and app, with the same names, keeps each value easy to find and traceable back to the SRS.
-\item[Implemented By:] \progname{} server, in \path{core/constants.py}, and a matching file in the app
+\item[Implemented By:] \progname{} server, in \path{core/constants.py}. The app gets its matching file at Revision~0, when it first needs one of the values.
 \item[Type of Module:] Library, with exported types and constants only
 \end{description}
 
 \subsubsection{Users Module (\mref{mUsers})}
 
 \begin{description}
-\item[Secrets:] How the server knows who is calling.
+\item[Secrets:] How a user is known: their account record and how a caller proves who they are.
 \item[Services:] Gives every route that needs one the current user, so the phone never sends a user ID. In the proof of concept, a request that needs a user comes from the built-in demo user while a setting turns it on, and is refused otherwise. Also adds users and keeps each user's record, such as their time zone.
-\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (\mbox{SEC-15}, NFR7). Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow (HA~H45). After too many wrong passwords, an account refuses sign-ins for a while, even with the right password, so guessing a password by signing in is slow (\mbox{SEC-38}, HA~H35). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, which limits who could use it to take over the account (HA~H35). The server keeps only the token's hash, so a stolen copy of the database can't be used to reset a password (HA~H45).
+\item[Rationale:] Every request that reads or changes a user's data must come from an authenticated user (\mbox{SEC-15}, NFR7). The account record and sign-in are kept in one module, an exception to one secret per module, because signing up makes both at once and no other module reads a password or a session. Routes get the current user from one place (dependency injection), so how users are known can change in this module alone, and the routes stay the same. At Revision~0, users sign up and sign in with an email address and a password (FR1, FR4). The server keeps only a slow, salted hash of each password, so a stolen copy of the database gives away no password and makes guessing one slow (HA~H45). After too many wrong passwords, an account refuses sign-ins for a while, even with the right password, so guessing a password by signing in is slow (\mbox{SEC-38}, HA~H35). A forgotten password is reset through a link that \mref{mEmail} sends (FR6). An email can be read later or forwarded, so the link's random token works once and expires soon, which limits who could use it to take over the account (HA~H35). The server keeps only the token's hash, so a stolen copy of the database can't be used to reset a password (HA~H45).
 
 Each sign-in starts a session that the server stores, and the phone keeps the session's random token in its secure storage (\mbox{SEC-39}) and sends it with every request. Sessions are stored on the server, not in self-contained tokens, because the server must be able to end one at once: on sign-out, on ``sign out of all devices'', after a password reset, or after \texttt{SESSION\_TIMEOUT} without the user opening or using the app (FR5, FR6, \mbox{SEC-17}). The server keeps only a hash of each token, so a stolen copy of the database can't be used to act as a user (HA~H45).
 
@@ -615,30 +854,155 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \begin{description}
 \item[Secrets:] The live market data: the asset list, the latest prices, how old each price is, and when the market is open.
 \item[Services:] Keeps every tradable stock's price up to date while the market is open, and marks a price as delayed when it is too old. Gives other modules the assets and their current prices, and serves the asset list to the phone, and the provider's usage to the team.
-\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed.
+\item[Rationale:] Users trade at real prices (FR32), all in one currency (FR29, SEC-27). Fetching them on the server, once a minute while the market is open, keeps within the provider's request limits (SC4) and gives every user the same price. That rate may change with the provider (SRS LC3). While the market is open, a price older than the staleness limit is marked delayed (FR33), so Trading can refuse it (FR39). Other modules get read-only copies, never rows, so none can change a price by accident. The market's hours are part of this secret, not a module of their own, because they decide both when prices are fetched and when a price counts as delayed. At Revision~0, when a stock splits, Market adjusts its past prices and \mref{mTrading} Trading adjusts the holdings in that stock. Both happen in one transaction, so the split changes no portfolio value (SEC-28).
 \item[Implemented By:] \progname{} server, in \path{market/}
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M11 Activity: #235
+\subsubsection{Activity Module (\mref{mActivity})}
+
+\begin{description}
+\item[Secrets:] The rules for turning daily activity into currency.
+\item[Services:] Accepts daily totals, checks their dates and plausibility,
+  and credits the unpaid reward through Wallet. Returns each day's result,
+  the updated balance and the earning rate. At Revision~0, it also gives
+  \mref{mGoals} Goals and \mref{mSocial} Social read-only copies of each
+  day's total.
+\item[Rationale:] Rewards are calculated on the server (SEC-24), using the
+  earning rate, plausibility limit and daily cap from Constants (FR13, FR17,
+  FR18). Activity locks the live portfolio before reading earlier payments,
+  pays only the difference, and commits totals and payments together
+  (SEC-19, SEC-22). The reply
+  includes whether a total counted, so Screens can show an excluded day
+  (FR17). 
+\item[Implemented By:] \progname{} server, in \path{activity/}
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsubsection{Trading Module (\mref{mTrading})}
 
 \begin{description}
 \item[Secrets:] The trade rules: buying, selling, holdings and portfolio value.
-\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42).
-\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0.
+\item[Services:] Buys and sells whole shares at the current price (FR35, FR36), and queues a trade asked for while the market is closed, to run at the first price after it opens (FR40). Refuses a trade that is not allowed, such as one on a price that is out of date, without enough currency, or before the user has accepted the simulation notice (FR34). Applies each trade request once, and values the user's holdings (FR41, FR42). At Revision~0, it also gives \mref{mLearning} Learning read-only copies of the user's holdings and trades.
+\item[Rationale:] A trade changes the balance and the shares together, so Trading pays through Wallet in the same transaction as it saves the shares and the trade (FR37). A trade made while the market is open runs only at the price the user confirmed (SEC-29), and never on an out-of-date one (FR39). A queued trade runs at the first price after the open, which the user is told when they queue it (FR40). Each request carries an ID from the phone (an idempotency key), so a retry over a bad connection never trades twice (FR38, NFR6). Values use exact decimals (NFR1). The proof of concept only buys, and refuses a buy while the market is closed. Selling (FR36), queuing (FR40) and the notice check (FR34) come at Revision~0. So do trading in and valuing a scenario's portfolio at the prices \mref{mScenarios} Scenarios hands Trading, which it accepts only with the lock on that portfolio (SEC-31).
 \item[Implemented By:] \progname{} server, in \path{trading/}
 \item[Type of Module:] Abstract Object
 \end{description}
 
-% M13 Goals, M14 Learning, M15 Social, M16 Scenarios and M17 Privacy: #238
+\paragraph{Modules built after the proof of concept.} Goals, Learning,
+Social, Scenarios and Privacy (\mref{mGoals} to \mref{mPrivacy}) are built
+after the proof of concept. Their entries fix what each one hides and the
+rules it must keep, and Table~\ref{TblUses} fixes which modules each one may
+use. Each feature can then be added
+as a plug-in without reaching into another module's data or copying its rules,
+so a likely change stays inside one module (NFR3). The details, such as each
+module's routes, tables and exact services, are not final. They may change
+with feedback on the proof of concept and with usability testing (NFR2), and
+the MIS specifies them at Revision~0.
 
-% M18 Navigation and M19 Screens (app): #236
+\subsubsection{Goals Module (\mref{mGoals})}
 
-% M20 Sync Service (app): #235
+\begin{description}
+\item[Secrets:] The rules for goals, streaks, rest days and milestones.
+\item[Services:] Keeps each user's daily activity goals and rest days. Works out the user's streak and the milestones they have reached, and serves them to the phone. Gives Social only what the user may share.
+\item[Rationale:] A goal is the user's own choice. It is optional (FR20), changes only when the user confirms it (FR21), and takes effect the next day (FR19), so a day's goal can't move once the day has started. The streak follows the SRS's formal definition (FR22). It is worked out from \mref{mActivity} Activity's daily totals, the goals in effect and the rest days (FR23), rather than kept as a counter that each sync adds to. A total that arrives late (SEC-20), or a rest day marked after that day's totals were sent, then gives the right streak without a fix-up. Each milestone is recorded with the date it was reached, so it is shown only once, even if a later sync lowers a day's total (FR25). Milestones of currency earned count the rewards that \mref{mWallet} Wallet has recorded, which Goals reads but never changes. A missed goal or an ended streak never costs currency or holdings and is never shown to anyone else (FR24), and no goal or milestone uses body weight or calories (FR26).
+\item[Implemented By:] \progname{} server, in \path{goals/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Learning Module (\mref{mLearning})}
+
+\begin{description}
+\item[Secrets:] The learning content, the knowledge checks and the rules that decide when investment feedback is given.
+\item[Services:] Serves the concept explanations and knowledge checks, marks the user's answers and keeps their learning progress. Works out feedback on the user's portfolio: what changed its value, how a trade changed its mix, and when one holding is too large a share of it. Gives Social only the knowledge checks the user has passed, the one kind of update from Learning that may be shared (FR65).
+\item[Rationale:] Explanations and knowledge checks are kept as data on the server, not written into the app, so administrators can add and correct them without a new release (FR58). Each explanation shows its source and the date it was last reviewed, and each explanation and knowledge-check answer is published only after a second team member reviews it (FR59), since users may later act on it with real money. Feedback uses only the user's own holdings and price changes, and shows the data it is based on (FR60). Learning reads these from \mref{mTrading} Trading as read-only copies, so it can't change a holding. Feedback explains what happened and never recommends buying or selling an asset (FR49). The limits that trigger feedback and the pass mark are SRS constants (FR52, FR54, FR57), kept in \mref{mConstants} Constants. Opening an explanation where its concept appears (FR51) is up to \mref{mScreens} Screens, so Learning holds no layout.
+\item[Implemented By:] \progname{} server, in \path{learning/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Social Module (\mref{mSocial})}
+
+\begin{description}
+\item[Secrets:] What a user can share and with whom.
+\item[Services:] Keeps friend requests and friendships. Shares an update with the friends the user picks, after showing the user the update as those friends will see it, and serves each user a feed of their friends' updates, newest first. Stops showing an update once the user deletes it or removes that friend.
+\item[Rationale:] Two users become friends only when the one asked accepts (FR62). A user's statistics stay private until they share them, and then reach only the friends they chose (SEC-13, FR66). An update can only be one of the kinds the SRS lists (FR65). Social builds it from what \mref{mActivity} Activity, \mref{mGoals} Goals and \mref{mLearning} Learning give it, and does not use \mref{mWallet} Wallet or \mref{mTrading} Trading. Each of those three uses Wallet or Trading, so each gives Social only the kinds of update it may share, and a balance or a portfolio value can't end up in one. A single activity record can't either, since the server only has daily totals (SEC-10). A body measurement can't, since no kind of update holds one, and Social takes only usernames from \mref{mUsers} Users, never the profile (FR65, FR68). The update saved is the one the user previewed (FR67), so friends see exactly what the user agreed to share, and a streak that ends later is never shown as ended (FR24). Each update is kept once, and who may see it is checked each time a feed is served, so deleting it or removing a friend stops it showing at once (FR64, FR70, SEC-13). Social offers no way to rank users (FR71), since leaderboards would first need a change to the SRS (SRS LC5).
+\item[Implemented By:] \progname{} server, in \path{social/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Scenarios Module (\mref{mScenarios})}
+
+\begin{description}
+\item[Secrets:] The number and selection of historical market scenarios, and where their past prices come from.
+\item[Services:] Lists the scenarios the user can practise in, with the dates each one replays. Starts a scenario in a portfolio of its own, moves it on one trading day each time the user continues, and trades in it at that day's closing prices.
+\item[Rationale:] A scenario must never touch the live balance or holdings, and nothing in the live market may touch a scenario's, such as the sale when an asset is removed, which sells only live holdings (FR31, FR45, SEC-31). So a scenario starts in its own \mref{mWallet} Wallet portfolio, with \texttt{SCENARIO\_START\_BALANCE} and no holdings (FR46), and trades through \mref{mTrading} Trading at the replayed day's closing prices (FR47). One set of trade rules, such as buying only whole shares and never spending more than the balance, then serves both markets, instead of a second copy that could drift from the first. Scenarios hands Trading the replayed day's prices, to trade in and to value the scenario's portfolio, so Trading doesn't need to know how a scenario replays. Trading checks market hours and price age only on a price it reads from \mref{mMarket} Market, since those rules apply only to the live market (FR33, FR39, FR40). It takes a handed price only with the lock on a scenario's portfolio, which Wallet gives only for a scenario (a lock token), so the live portfolio always trades at the live price (SEC-29, SEC-31). The assets are ones Market keeps, so a stock is named the same way in both. Market keeps an asset after it is removed from the live market, so a removal doesn't change a scenario's assets (FR31). Past prices are stored with each scenario, and a scenario is offered only once its data has a price for every asset on every trading day (SEC-32), so a replay never stops on a missing day. How many scenarios there are, and where their prices come from, depend on the cost of historical data (SRS LC4), so both are hidden here. Every scenario screen shows that it is a scenario and the dates it replays (FR48), which \mref{mScreens} Screens displays.
+\item[Implemented By:] \progname{} server, in \path{scenarios/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Privacy Module (\mref{mPrivacy})}
+
+\begin{description}
+\item[Secrets:] How consent, data export and account deletion are carried out.
+\item[Services:] Records the user's consent to read their health data, and its withdrawal. Gives the user a copy of the personal data stored about them, and deletes their account and all its data once they confirm.
+\item[Rationale:] The user can download their data (FR9), delete their account from the app after confirming that it can't be undone (FR10, FR11, SEC-18), and withdraw consent to read their health data (FR76, SEC-9). These rules change with the law and the app stores' policies (SC6), so they are kept in one module, apart from the features whose data they act on. Privacy doesn't use those features. Instead, at Revision~0 each module's plug-in will also say what personal data it keeps, and how to export and delete it, through \mref{mPlugins} Plugins (the plug-in pattern). Every plug-in must say this, even when its module keeps none, so a new module can't be left out of an export or a deletion. \mref{mControl} Control hands Privacy the plug-ins when it builds the server, as it does for the health check, so Privacy never names a module or reads another module's tables. Privacy deletes the user's data on the server at once. A backup can't be changed, so the hosting keeps each one for no longer than \texttt{DATA\_DELETION\_PERIOD}, and the deletion reaches the backups in time too (SEC-18, SEC-26). On the phone, \mref{mSync} Sync Service reads no health data before consent is given, and stops as soon as it is withdrawn, without waiting for the server (SEC-9).
+\item[Implemented By:] \progname{} server, in \path{privacy/}, after the proof of concept
+\item[Type of Module:] Abstract Object
+\end{description}
+
+
+
+\subsubsection{Navigation Module (\mref{mNavigation})}
+
+\begin{description}
+\item[Secrets:] How users navigate between screens.
+\item[Services:] Moves the user between the Home, Market and Portfolio sections, and through the screens for buying a stock. Opens a selected stock's details, moves through the Buy Stock, Review Purchase and Purchase Successful screens, and lets the user go back to an earlier screen. Also reaches the account, activity and goals, learning, social, market scenario, reminder settings and privacy settings screens.
+\item[Rationale:] The order of screens may change after usability testing (NFR2), so navigation is kept separate from screen layout (\acref{acNavigation}). The app uses a bottom navigation bar for its three main sections and a sequence of screens for simulated stock purchases. Navigation uses \mref{mScreens} Screens to display each destination, but does not decide what data appears on a screen or how it is presented. Keeping navigation separate allows the team to change the user flow without changing the individual screens or the services they use (NFR3).
+\item[Implemented By:] \progname{} app, in \path{app/navigation/}, after the proof of concept, at Revision~0. The proof of concept has one screen and does not use this module yet.
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Screens Module (\mref{mScreens})}
+\begin{description}
+\item[Secrets:] The layout and appearance of the app's screens.
+\item[Services:] Displays daily activity totals, earned virtual currency, available balance, stock prices, simulated purchases and portfolio holdings. Accepts user input, such as selecting a stock or entering the number of shares to purchase, and displays confirmations and error messages. The proof of concept has one demo screen, which shows today's steps and what they earned, the balance, one stock to buy and the user's holdings. At Revision~0, the seven Figma-designed screens replace it: Home Dashboard, Stock Market, Stock Details, Buy Stock, Review Purchase, Purchase Successful and My Portfolio. Further screens then cover the account, activity and goals, learning, social, market scenario, reminder settings and privacy settings.
+\item[Rationale:] The interface is expected to change based on usability testing (NFR2), so its appearance and wording are kept in one module (\acref{acScreens}). Screens gets today's steps and their result from \mref{mSync} Sync Service, and the server's other replies through \mref{mAPI} API Service. It does not calculate activity rewards, currency balances or trade results, since these decisions belong to the server (SEC-24). Every portfolio value and return is labelled as simulated (FR43), and gains and losses use signs or text rather than colour alone (FR44). Stock prices include their timestamps and indicate when they are delayed (FR33). At Revision~0, the interface shows the health notice before the first read (FR14) and the simulation notice before the first trade (FR34). The layouts must also remain usable at \texttt{MAX\_TEXT\_SCALE} (NFR8). Keeping presentation separate from the services allows the team to change the design without affecting the underlying functionality (NFR3).
+\item[Implemented By:] \progname{} app, in \path{app/App.tsx} and \path{app/screens/}, based on the Figma mockups in Figure~\ref{FigUIMockups}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Sync Service Module (\mref{mSync})}
+
+\begin{description}
+\item[Secrets:] When and how the app reads the day's activity and sends it to the server.
+\item[Services:] Reads today's steps through \mref{mHealth} Health Service when a screen first shows them, each time the app comes back to the foreground, and when the user asks. Sends the day's total, with the phone's time zone, through \mref{mAPI} API Service. Gives \mref{mScreens} Screens the count, the server's reply, and why a read or a send failed. A second read never starts while one is still under way.
+\item[Rationale:] The health platforms may not allow reliable background reads, so the app reads when the user opens it (SRS LC1), and when it reads is kept in this module (\acref{acSync}). Sync sends only the day's total, never single activity records (SEC-10), and never a reward or a balance, which the server works out (SEC-24). Sending a day again pays only what is still owed (SEC-19). A failed read says why, shows no count rather than an old one, and leaves what was already earned as it was (SEC-21). At Revision~0, Sync reads nothing before the user consents and stops as soon as consent is withdrawn (SEC-9), and each sync also sends the days of \texttt{SYNC\_LOOKBACK\_PERIOD} again, so late activity still counts (SEC-20).
+\item[Implemented By:] \progname{} app, in \path{app/services/health/useTodaySteps.ts}
+\item[Type of Module:] Abstract Object
+\end{description}
+
 
 % M21 Reminder Service (app): #237
+\subsubsection{Reminder Service Module (\mref{mReminders})}
+
+\begin{description}
+\item[Secrets:] The reminder selection and scheduling policy.
+
+\item[Services:] Uses the user's reminder settings and application events
+to decide which reminders to send. Supports the Activity, Milestone,
+Portfolio, Learning and Social reminder types defined in the SRS. Retrieves
+and saves settings through the API Service and schedules local notifications
+through the Device Service.
+
+Only enabled reminder types are sent, and only within the user's chosen periods. If no periods have been chosen, uses \texttt{DEFAULT\_REMINDER\_PERIOD}. Cancels or reschedules pending reminders when settings change and tracks handled events to avoid repeating the same reminder. Notification content excludes health data, balances and portfolio values unless the user has explicitly enabled their inclusion.
+\item[Rationale:] The user controls reminder types and delivery periods
+(FR72 to FR75). Keeping these rules in one module lets them change without changing the screens or the operating system calls. Reminders are created on the phone, with no external push notification service. When a reminder needs new data, the module evaluates it the next time the app runs, either in the background or when the user opens it. This follows the SRS without assuming the app can run continuously. Generic notification content protects the user's private information by default (SEC-34).
+
+\item[Implemented By:] \progname{} app, after the proof of concept,
+at Revision~0. The PoC does not include reminders.
+
+\item[Type of Module:] Abstract Object
+\end{description}
 
 \subsection{Software Decision Modules}
 
@@ -655,7 +1019,7 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 
 \begin{description}
 \item[Secrets:] The shape of a module's plug-in.
-\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it.
+\item[Services:] Defines what a module hands to Control: its name, its routes, its background work and its health check. Control can then add any module without knowing anything else about it. At Revision~0, it also says what personal data the module keeps and how to export and delete it, which Control hands to \mref{mPrivacy} Privacy.
 \item[Rationale:] Control must be able to add any module without knowing anything else about it (the plug-in pattern). A plug-in is a small, read-only record of exactly what Control needs, so the code that builds the server depends on this shape and never on a module. Only the list in \path{registry.py} names the modules. A module with background work must include a health check, since that work can fail without any request noticing.
 \item[Implemented By:] \progname{} server, in \path{core/plugins.py}
 \item[Type of Module:] Record
@@ -671,56 +1035,225 @@ There is no separate encryption module. HTTPS comes with the hosting. The hostin
 \item[Type of Module:] Library
 \end{description}
 
-% M24 API Service (app): #236
 
-\section{Traceability Matrix} \label{SecTM}
+\subsubsection{API Service Module (\mref{mAPI})}
 
-This section shows two traceability matrices: between the modules and the
-requirements and between the modules and the anticipated changes.
+\begin{description}
+\item[Secrets:] How the app communicates with the server.
+\item[Services:] Provides a common interface for sending requests and receiving JSON responses from the \progname{} server. Sends daily activity totals, retrieves virtual currency balances, stock prices and portfolio information, and submits simulated trade requests. Converts successful responses and server refusals into results that other app modules can handle consistently. At Revision~0, attaches the user's session token to authenticated requests and handles expired or invalid sessions.
+\item[Rationale:] The server address, authentication and retry behaviour may change (\acref{acAPI}), so they are hidden behind one interface rather than implemented separately in each screen (NFR3). \mref{mScreens} Screens and \mref{mSync} Sync Service use API Service without needing to know how the requests are sent. A deployed server is reached only over HTTPS (SEC-16). The proof of concept talks to a server on the local network over HTTP. Amounts received from the server remain exact decimal text, as defined by \mref{mJSON} JSON Format, to avoid precision loss (NFR1, SEC-30). Server refusals are returned consistently so Screens can display an appropriate message (SEC-25). Each trade request has a unique request ID that is reused if the request is retried, allowing the server to prevent duplicate trades (FR38, NFR6). At Revision~0, API Service uses \mref{mDevice} Device Service to store and retrieve the session token securely (SEC-39). The proof of concept uses the server's built-in demo user and does not yet require authenticated sessions.
+\item[Implemented By:] \progname{} app, in \path{app/services/api/}
+\item[Type of Module:] Library
+\end{description}
 
-% the table should use mref, the requirements should be named, use something
-% like fref
-\begin{table}[H]
-\centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+
+
+\newpage
+\section{Traceability Matrices} \label{SecTM}
+
+Table~\ref{TblRT} assigns the SRS requirements to the modules responsible
+for their behaviour, presentation or platform interface. It covers all 77
+functional requirements, eight nonfunctional requirements, seven system
+constraints, and the 30 security and data-protection requirements stated
+separately in SRS Section~7.3. IDs and short names follow the SRS; the names
+below summarize the requirements rather than replace their wording.
+Stakeholder requirements and the other Hazard Analysis controls reach these
+modules through the SRS's requirement traces.
+
+A row lists direct responsibilities, not every module reached through the
+uses hierarchy. For example, Wallet appears where balance rules matter;
+Database is not repeated for every feature that stores data. All 25 modules
+appear in at least one requirement row. Control and Plugins support
+maintainability (NFR3), while JSON Format supports exact amounts (NFR1) and
+consistent request refusals (SEC-25).
+
+These are design allocations for the full system, including modules and
+behaviour planned after the proof of concept. A trace does not mean the PoC
+already satisfies the requirement. Some controls, such as encryption and
+backups (SEC-16 and SEC-26), also require the hosting configuration and
+operational checks described in the SRS and VnV Plan.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.47\textwidth}p{0.47\textwidth}@{}}
+\caption{Trace Between Requirements and Modules}\label{TblRT}\\
 \toprule
-\textbf{Req.} & \textbf{Modules}\\
+\textbf{Requirement} & \textbf{Modules}\\
 \midrule
-R1 & \mref{mHH}, \mref{mInput}, \mref{mParams}, \mref{mControl}\\
-R2 & \mref{mInput}, \mref{mParams}\\
-R3 & \mref{mVerify}\\
-R4 & \mref{mOutput}, \mref{mControl}\\
-R5 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R6 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R7 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R8 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R9 & \mref{mVerifyOut}\\
-R10 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}\\
-R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
+\endfirsthead
+\multicolumn{2}{c}{\tablename\ \thetable: Requirements and modules (continued)}\\
+\toprule
+\textbf{Requirement} & \textbf{Modules}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
 \bottomrule
-\end{tabular}
-\caption{Trace Between Requirements and Modules}
-\label{TblRT}
-\end{table}
+\endlastfoot
+\multicolumn{2}{@{}l}{\textbf{Accounts and profile}}\\*
+FR1 -- Create an account & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctCreate
+FR2 -- Confirm minimum age & \mref{mUsers}, \mref{mConstants}, \mref{mScreens}\\ % FR_AcctAgeConfirm
+FR3 -- Choose a unique username & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctUsername
+FR4 -- Sign in & \mref{mUsers}, \mref{mAPI}, \mref{mScreens}\\ % FR_AcctSignIn
+FR5 -- Sign out of one or all sessions & \mref{mUsers}, \mref{mAPI}, \mref{mDevice}, \mref{mScreens}\\ % FR_AcctSignOut
+FR6 -- Reset a password & \mref{mUsers}, \mref{mEmail}, \mref{mScreens}\\ % FR_AcctResetPassword
+FR7 -- View and edit a profile & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctEditProfile
+FR8 -- Keep body measurements optional & \mref{mUsers}, \mref{mScreens}\\ % FR_AcctBodyOptional
+FR9 -- Download personal data & \mref{mPrivacy}, \mref{mPlugins}, \mref{mScreens}\\ % FR_AcctDownloadData
+FR10 -- Confirm account deletion & \mref{mPrivacy}, \mref{mScreens}\\ % FR_AcctDeleteConfirm
+FR11 -- Delete an account & \mref{mPrivacy}, \mref{mPlugins}, \mref{mUsers}, \mref{mDB}, \mref{mScreens}\\ % FR_AcctDelete
+\multicolumn{2}{@{}l}{\textbf{Activity and rewards}}\\*
+FR12 -- Support the listed activity types & \mref{mActivity}, \mref{mHealth}, \mref{mConstants}, \mref{mSync}\\ % FR_ActTypes
+FR13 -- Earn currency from recorded activity & \mref{mActivity}, \mref{mWallet}, \mref{mHealth}, \mref{mSync}\\ % FR_ActEarn
+FR14 -- Acknowledge the health notice & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mActivity}, \mref{mScreens}\\ % FR_ActHealthNotice
+FR15 -- Earn without interacting during activity & \mref{mHealth}, \mref{mSync}, \mref{mActivity}\\ % FR_ActNoInteraction
+FR16 -- Treat absent activity as zero & \mref{mHealth}, \mref{mActivity}\\ % FR_ActNoData
+FR17 -- Exclude and identify implausible activity & \mref{mActivity}, \mref{mGoals}, \mref{mConstants}, \mref{mScreens}\\ % FR_ActPlausible
+FR18 -- Cap each day's reward & \mref{mActivity}, \mref{mWallet}, \mref{mConstants}, \mref{mClock}\\ % FR_ActDailyCap
+FR19 -- Set or change a daily goal & \mref{mGoals}, \mref{mClock}, \mref{mScreens}\\ % FR_ActGoal
+FR20 -- Make goals optional & \mref{mGoals}, \mref{mActivity}, \mref{mScreens}\\ % FR_ActGoalOptional
+FR21 -- Confirm goal changes & \mref{mGoals}, \mref{mScreens}\\ % FR_ActNoAutoGoal
+FR22 -- Show the current streak & \mref{mGoals}, \mref{mScreens}\\ % FR_ActStreak
+FR23 -- Allow rest days & \mref{mGoals}, \mref{mConstants}, \mref{mClock}, \mref{mScreens}\\ % FR_ActRestDay
+FR24 -- Do not penalize or share missed goals & \mref{mGoals}, \mref{mSocial}, \mref{mScreens}\\ % FR_ActNoPenalty
+FR25 -- Show milestones & \mref{mGoals}, \mref{mConstants}, \mref{mScreens}\\ % FR_ActMilestone
+FR26 -- Exclude weight and calories from rewards & \mref{mActivity}, \mref{mGoals}\\ % FR_ActNoWeightReward
+FR27 -- Show daily activity trends & \mref{mActivity}, \mref{mPrivacy}, \mref{mScreens}\\ % FR_ActTrends
+\multicolumn{2}{@{}l}{\textbf{Market and portfolio}}\\*
+FR28 -- Offer the minimum number of stocks & \mref{mMarket}, \mref{mConstants}\\ % FR_MktAssetCount
+FR29 -- Use one quote currency & \mref{mMarket}, \mref{mProviders}, \mref{mConstants}\\ % FR_MktOneCurrency
+FR30 -- Administer the live asset list & \mref{mMarket}\\ % FR_MktUpdateAssets
+FR31 -- Sell holdings of a removed asset & \mref{mMarket}, \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktRemovedHoldings
+FR32 -- Use the latest real market prices & \mref{mMarket}, \mref{mProviders}\\ % FR_MktRealPrices
+FR33 -- Show price times and delayed prices & \mref{mMarket}, \mref{mClock}, \mref{mConstants}, \mref{mScreens}\\ % FR_MktPriceAge
+FR34 -- Acknowledge the simulation notice & \mref{mTrading}, \mref{mUsers}, \mref{mScreens}\\ % FR_MktSimNotice
+FR35 -- Buy whole shares & \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktBuy
+FR36 -- Sell whole shares & \mref{mTrading}, \mref{mWallet}, \mref{mScreens}\\ % FR_MktSell
+FR37 -- Apply a trade completely or not at all & \mref{mTrading}, \mref{mWallet}, \mref{mDB}\\ % FR_MktAtomicTrade
+FR38 -- Apply each trade request once & \mref{mTrading}, \mref{mWallet}, \mref{mAPI}\\ % FR_MktNoDuplicate
+FR39 -- Refuse trades at stale prices & \mref{mTrading}, \mref{mMarket}, \mref{mClock}, \mref{mConstants}\\ % FR_MktNoStaleTrade
+FR40 -- Queue trades while the market is closed & \mref{mTrading}, \mref{mMarket}, \mref{mClock}, \mref{mScreens}\\ % FR_MktQueueClosed
+FR41 -- Show holdings & \mref{mTrading}, \mref{mScreens}\\ % FR_MktHoldings
+FR42 -- Show portfolio value & \mref{mTrading}, \mref{mMarket}, \mref{mScreens}\\ % FR_MktPortfolioValue
+FR43 -- Label simulated values & \mref{mScreens}\\ % FR_MktLabelReturns
+FR44 -- Use signs or text for gains and losses & \mref{mScreens}\\ % FR_MktGainLossLabel
+FR45 -- Practise in an isolated market scenario & \mref{mScenarios}, \mref{mTrading}, \mref{mWallet}\\ % FR_MktScenario
+FR46 -- Initialize a scenario portfolio & \mref{mScenarios}, \mref{mWallet}, \mref{mConstants}\\ % FR_MktScenarioStart
+FR47 -- Advance a scenario one trading day & \mref{mScenarios}, \mref{mTrading}, \mref{mScreens}\\ % FR_MktScenarioAdvance
+FR48 -- Label scenario screens and dates & \mref{mScenarios}, \mref{mScreens}\\ % FR_MktScenarioLabel
+FR49 -- Avoid asset recommendations & \mref{mLearning}, \mref{mScreens}\\ % FR_MktNoRecommend
+\multicolumn{2}{@{}l}{\textbf{Learning and feedback}}\\*
+FR50 -- Explain core concepts & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnExplainConcept
+FR51 -- Open explanations where concepts appear & \mref{mLearning}, \mref{mScreens}, \mref{mNavigation}\\ % FR_LearnInPlace
+FR52 -- Explain portfolio value changes & \mref{mLearning}, \mref{mTrading}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnValueChange
+FR53 -- Explain a trade's portfolio effect & \mref{mLearning}, \mref{mTrading}, \mref{mScreens}\\ % FR_LearnTradeEffect
+FR54 -- Explain diversification when concentrated & \mref{mLearning}, \mref{mTrading}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnConcentration
+FR55 -- Provide knowledge checks & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnKnowledgeCheck
+FR56 -- Explain knowledge-check answers & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnCheckResult
+FR57 -- Show learning progress & \mref{mLearning}, \mref{mConstants}, \mref{mScreens}\\ % FR_LearnProgress
+FR58 -- Administer learning content & \mref{mLearning}\\ % FR_LearnUpdateContent
+FR59 -- Review and identify learning sources & \mref{mLearning}, \mref{mScreens}\\ % FR_LearnReviewed
+FR60 -- Show the basis of portfolio feedback & \mref{mLearning}, \mref{mTrading}, \mref{mScreens}\\ % FR_LearnFeedbackBasis
+\multicolumn{2}{@{}l}{\textbf{Social feed}}\\*
+FR61 -- Send friend requests & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialRequest
+FR62 -- Accept friendships explicitly & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialAccept
+FR63 -- Decline friend requests & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialDecline
+FR64 -- Remove a friend & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % FR_SocialRemove
+FR65 -- Share only the listed update kinds & \mref{mSocial}, \mref{mActivity}, \mref{mGoals}, \mref{mLearning}, \mref{mScreens}\\ % FR_SocialShare
+FR66 -- Choose an update's viewers & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialChooseFriends
+FR67 -- Preview an update before sharing & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialPreview
+FR68 -- Exclude body measurements and records & \mref{mSocial}\\ % FR_SocialNoBody
+FR69 -- Show the newest friend updates first & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialFeed
+FR70 -- Delete a shared update & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialDeleteUpdate
+FR71 -- Do not rank users & \mref{mSocial}, \mref{mScreens}\\ % FR_SocialNoRanking
+\multicolumn{2}{@{}l}{\textbf{Reminders and settings}}\\*
+FR72 -- Choose reminder periods & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % FR_RemindPeriods
+FR73 -- Deliver only within chosen periods & \mref{mReminders}, \mref{mDevice}, \mref{mClock}, \mref{mConstants}\\ % FR_RemindInPeriods
+FR74 -- Enable or disable each reminder type & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % FR_RemindTypes
+FR75 -- Deliver reminders when the app runs & \mref{mReminders}, \mref{mDevice}, \mref{mSync}\\ % FR_RemindSend
+FR76 -- Withdraw health-data consent & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % FR_SetWithdrawConsent
+FR77 -- Show health permissions and their limits & \mref{mHealth}, \mref{mScreens}\\ % FR_SetPermissionList
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{Nonfunctional requirements}}\\*
+NFR1 -- Accuracy & \mref{mWallet}, \mref{mTrading}, \mref{mActivity}, \mref{mJSON}, \mref{mConstants}\\ % NFR_Accuracy
+NFR2 -- Usability & \mref{mScreens}, \mref{mNavigation}\\ % NFR_Usability
+NFR3 -- Maintainability & \mref{mControl}, \mref{mPlugins}, \mref{mConstants}, \mref{mProviders}, \mref{mHealth}, \mref{mDevice}, \mref{mAPI}, \mref{mDB}, \mref{mClock}\\ % NFR_Maintainability
+NFR4 -- Portability & \mref{mHealth}, \mref{mDevice}, \mref{mScreens}, \mref{mAPI}\\ % NFR_Portability
+NFR5 -- Performance & \mref{mScreens}, \mref{mAPI}, \mref{mActivity}, \mref{mTrading}, \mref{mSocial}, \mref{mDB}\\ % NFR_Performance
+NFR6 -- Reliability & \mref{mTrading}, \mref{mWallet}, \mref{mDB}, \mref{mAPI}\\ % NFR_Reliability
+NFR7 -- Security & \mref{mUsers}, \mref{mPrivacy}, \mref{mAPI}, \mref{mDevice}, \mref{mDB}, \mref{mSocial}\\ % NFR_Security
+NFR8 -- Accessibility & \mref{mScreens}\\ % NFR_Accessibility
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{System constraints}}\\*
+SC1 -- Supported Android and iOS phones & \mref{mHealth}, \mref{mDevice}, \mref{mNavigation}, \mref{mScreens}\\ % SC_Platform
+SC2 -- Use platform health data without a wearable & \mref{mHealth}\\ % SC_HealthPlatform
+SC3 -- Follow platform health-access rules & \mref{mHealth}, \mref{mPrivacy}, \mref{mScreens}\\ % SC_HealthAccess
+SC4 -- Respect market-provider terms and limits & \mref{mProviders}, \mref{mMarket}\\ % SC_MarketData
+SC5 -- Keep currency and investments simulated & \mref{mWallet}, \mref{mTrading}, \mref{mScenarios}, \mref{mLearning}, \mref{mScreens}\\ % SC_NoRealMoney
+SC6 -- Follow privacy law and store policies & \mref{mPrivacy}, \mref{mPlugins}, \mref{mUsers}, \mref{mHealth}, \mref{mDB}\\ % SC_Privacy
+SC7 -- Use the server for trading, prices and feed & \mref{mControl}, \mref{mAPI}, \mref{mMarket}, \mref{mTrading}, \mref{mSocial}\\ % SC_Server
+\addlinespace
+\multicolumn{2}{@{}l}{\textbf{Security and data protection (SRS Section 7.3)}}\\*
+SEC-7 -- Read only the needed health data & \mref{mHealth}, \mref{mConstants}\\ % 7
+SEC-8 -- Explain each health permission & \mref{mHealth}, \mref{mScreens}\\ % 8
+SEC-9 -- Obtain and withdraw health-data consent & \mref{mPrivacy}, \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % 9
+SEC-10 -- Send only daily activity totals & \mref{mHealth}, \mref{mSync}, \mref{mAPI}, \mref{mActivity}\\ % 10
+SEC-11 -- Limit data sent to outside services & \mref{mProviders}, \mref{mEmail}, \mref{mUsers}\\ % 11
+SEC-12 -- Do not read or store location data & \mref{mHealth}, \mref{mActivity}, \mref{mUsers}\\ % 12
+SEC-13 -- Keep statistics private until shared & \mref{mSocial}, \mref{mUsers}, \mref{mScreens}\\ % 13
+SEC-14 -- Exclude location and exact activity times & \mref{mSocial}\\ % 14
+SEC-15 -- Authenticate and authorize data access & \mref{mUsers}, \mref{mAPI}, \mref{mSocial}, \mref{mPrivacy}\\ % 15
+SEC-16 -- Encrypt data in transit and at rest & \mref{mAPI}, \mref{mDB}\\ % 16
+SEC-17 -- Expire and end the correct sessions & \mref{mUsers}, \mref{mAPI}, \mref{mDevice}, \mref{mClock}, \mref{mConstants}\\ % 17
+SEC-18 -- Delete account data and backups in time & \mref{mPrivacy}, \mref{mPlugins}, \mref{mDB}, \mref{mUsers}\\ % 18
+SEC-19 -- Reward each activity only once & \mref{mActivity}, \mref{mWallet}, \mref{mSync}, \mref{mDB}\\ % 19
+SEC-20 -- Catch late activity after acknowledgement & \mref{mSync}, \mref{mHealth}, \mref{mActivity}, \mref{mPrivacy}, \mref{mClock}, \mref{mConstants}\\ % 20
+SEC-21 -- Handle unavailable activity without losses & \mref{mHealth}, \mref{mSync}, \mref{mScreens}\\ % 21
+SEC-22 -- Keep a complete balance history & \mref{mWallet}, \mref{mDB}\\ % 22
+SEC-23 -- Assign activity to the user's calendar day & \mref{mHealth}, \mref{mSync}, \mref{mActivity}, \mref{mClock}, \mref{mUsers}\\ % 23
+SEC-24 -- Calculate and validate rewards on the server & \mref{mActivity}, \mref{mWallet}, \mref{mTrading}, \mref{mClock}\\ % 24
+SEC-25 -- Validate every request & \mref{mJSON}, \mref{mUsers}, \mref{mActivity}, \mref{mTrading}, \mref{mGoals}, \mref{mLearning}, \mref{mSocial}, \mref{mScenarios}, \mref{mPrivacy}\\ % 25
+SEC-26 -- Back up and test restoration & \mref{mDB}\\ % 26
+SEC-27 -- Keep prices in the quote currency & \mref{mMarket}, \mref{mProviders}, \mref{mConstants}\\ % 27
+SEC-28 -- Apply stock splits consistently & \mref{mMarket}, \mref{mTrading}\\ % 28
+SEC-29 -- Trade only at the confirmed price & \mref{mTrading}, \mref{mMarket}, \mref{mScreens}\\ % 29
+SEC-30 -- Keep displayed balances and values accurate & \mref{mWallet}, \mref{mTrading}, \mref{mActivity}, \mref{mJSON}, \mref{mConstants}\\ % 30
+SEC-31 -- Separate live and scenario portfolios & \mref{mScenarios}, \mref{mWallet}, \mref{mTrading}\\ % 31
+SEC-32 -- Check that scenario data is complete & \mref{mScenarios}\\ % 32
+SEC-33 -- Keep external-service credentials on the server & \mref{mProviders}, \mref{mEmail}\\ % 33
+SEC-34 -- Keep notification contents private & \mref{mReminders}, \mref{mDevice}, \mref{mScreens}\\ % 34
+SEC-38 -- Limit password and sign-in attempts & \mref{mUsers}, \mref{mClock}, \mref{mConstants}\\ % 38
+SEC-39 -- Store sessions securely on the phone & \mref{mDevice}, \mref{mAPI}\\ % 39
+\end{longtable}
+\endgroup
 
-\begin{table}[H]
-\centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+\newpage
+Table~\ref{TblACT} names the module that hides each anticipated change from
+Section~\ref{SecAchange}. Each change has one owner and each module owns one
+change. Modules that use that owner's public interface are not extra owners
+of its secret.
+
+\begingroup
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{longtable}{@{}p{0.25\textwidth}p{0.65\textwidth}@{}}
+\caption{Trace Between Anticipated Changes and Modules}\label{TblACT}\\
 \toprule
-\textbf{AC} & \textbf{Modules}\\
+\textbf{Anticipated change} & \textbf{Module}\\
 \midrule
-% \acref{acHardware} & \mref{mHH}\\
-% \acref{acInput} & \mref{mInput}\\
-% \acref{acParams} & \mref{mParams}\\
-% \acref{acVerify} & \mref{mVerify}\\
-% \acref{acOutput} & \mref{mOutput}\\
-% \acref{acVerifyOut} & \mref{mVerifyOut}\\
-% \acref{acODEs} & \mref{mODEs}\\
-% \acref{acEnergy} & \mref{mEnergy}\\
-% \acref{acControl} & \mref{mControl}\\
-% \acref{acSeqDS} & \mref{mSeqDS}\\
-% \acref{acSolver} & \mref{mSolver}\\
-% \acref{acPlot} & \mref{mPlot}\\
+\endfirsthead
+\multicolumn{2}{c}{\tablename\ \thetable: Changes and modules (continued)}\\
+\toprule
+\textbf{Anticipated change} & \textbf{Module}\\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
 \acref{acDB} & \mref{mDB}\\
 \acref{acClock} & \mref{mClock}\\
 \acref{acProviders} & \mref{mProviders}\\
@@ -746,11 +1279,8 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \acref{acJSON} & \mref{mJSON}\\
 \acref{acAPI} & \mref{mAPI}\\
 \acref{acEmail} & \mref{mEmail}\\
-\bottomrule
-\end{tabular}
-\caption{Trace Between Anticipated Changes and Modules}
-\label{TblACT}
-\end{table}
+\end{longtable}
+\endgroup
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
@@ -822,58 +1352,393 @@ built after the proof of concept.}
 
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+The user interface for \progname{} is designed to provide users with
+a simple and intuitive way to track their physical activity, earn
+virtual currency, and participate in simulated stock market investing.
+The interface follows a minimalist design approach, with consistent
+navigation, clear labels, and straightforward layouts. The design
+prioritizes ease of use, particularly for users with little or no
+previous investing experience.
+
+The mobile application is designed using Figma mockups and will be
+implemented using React Native with TypeScript, allowing the same
+interface to be used on both Android and iOS devices.
+
+\subsection{Interface Design}
+
+The application uses a bottom navigation bar with three main sections:
+Home, Market, and Portfolio. This allows users to move between the
+core features without navigating through multiple menus. The
+interface uses a consistent colour scheme, typography, and layout
+across screens to improve usability.
+
+The following screens have been designed:
+
+\begin{itemize}
+
+    \item \textbf{Home Dashboard:}
+    Displays the user's daily step count, progress toward their
+    activity goal, virtual currency earned, available balance,
+    and current portfolio value. This screen establishes the
+    connection between physical activity and simulated investing.
+
+    \item \textbf{Stock Market:}
+    Displays available stocks, including their company names,
+    stock symbols, current prices, and price changes. Users can
+    browse stocks or search for a specific company.
+
+    \item \textbf{Stock Details:}
+    Provides information about a selected stock, including its
+    current price, price movement, and historical performance
+    displayed through a graph. Users can initiate a simulated
+    purchase from this screen.
+
+    \item \textbf{Buy Stock:}
+    Allows users to specify the number of shares they wish to
+    purchase. The interface displays the estimated cost and
+    available virtual currency balance before proceeding.
+
+    \item \textbf{Review Purchase:}
+    Displays a summary of the simulated transaction, including
+    the selected stock, number of shares, price per share, total
+    cost, and remaining currency balance. Users can confirm
+    their purchase or return to the previous screen.
+
+    \item \textbf{Purchase Successful:}
+    Confirms that a simulated purchase has been completed and
+    displays the transaction details. A short educational
+    explanation introduces users to basic investing concepts.
+
+    \item \textbf{My Portfolio:}
+    Displays the user's total simulated portfolio value,
+    investment performance, and current stock holdings.
+    A graph illustrates changes in portfolio value over time.
+
+\end{itemize}
+
+\subsection{Design Rationale}
+
+The interface takes inspiration from minimalist financial
+applications, such as Wealthsimple, while adapting the design
+to \progname{}'s focus on physical activity and financial
+education. A simple layout was chosen to reduce unnecessary
+complexity and make simulated investing more approachable for
+beginners.
+
+The Home Dashboard emphasizes the relationship between
+physical activity and virtual currency rewards, while the
+Market and Portfolio sections provide a straightforward
+investing experience. The purchase process is separated into
+multiple screens so users can review transaction details before
+confirming a trade.
+
+The interface also distinguishes simulated investing from
+real-world investing by identifying portfolio values and
+transactions as simulated. Navigation and screen presentation
+are handled by the Navigation and Screens modules, while
+activity rewards, balances, and trading calculations remain
+the responsibility of the server.
+
+
+\subsection{User Interface Mockups}
+
+Figure~\ref{FigUIMockups} presents the seven Figma mockups
+developed for the mobile application's main user interface.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth,keepaspectratio]{figures/Frame.png}
+    \caption{Figma mockups of the \progname{} mobile user interface.}
+    \label{FigUIMockups}
+\end{figure}
 
 \section{Design of Communication Protocols}
 
-\wss{If there is communication between hardware and software, it may be necessary 
-to explain the design of the communication protocol.  This section should be filled 
-in with NA if it is not appropriate for a given project.}
+\progname{} uses three protocols: the app reads activity from the phone's
+health platform, the app and the server exchange JSON, and the server asks the
+market data provider for prices.
 
-\section{Database Design}
+\subsection{Activity Data from the Phone}
 
-\wss{If a database is a significant component of the project, the database
-design should be summarized here.  This section should be filled in with NA if
-it is not appropriate for a given project.}
+\mref{mHealth} Health Service reads recorded steps through the phone's
+platform APIs. These calls run locally on the phone.
+
+\begin{itemize}
+\item \textbf{Android:} Through \texttt{react-native-health-connect}, the app
+  connects to Health Connect. It checks for step-read permission,
+  requests it if needed, then asks for the total steps in the selected time
+  range.
+\item \textbf{iPhone:} The app uses Expo Pedometer from
+  \texttt{expo-sensors}. It checks motion and fitness permission and whether
+  a step counter is available, then requests the recorded step count. This
+  reads Core Motion, not HealthKit, so it is the proof of concept's one
+  exception to SC2. At Revision~0 the app reads HealthKit instead, through the
+  \texttt{@kingstinct/react-native-healthkit} library.
+\end{itemize}
+
+Both paths read from today's local midnight to the time the read started.
+\texttt{getTodaysSteps} returns one number: the total steps for that range.
+A successful read with no steps returns zero. If permission is denied,
+the service is unavailable or the read fails, the app shows a read error
+instead of treating the failure as zero steps. Individual health records
+remain on the phone (SEC-10).
+
+\subsection{App and Server}
+
+\mref{mAPI} API Service sends JSON requests to the server's routes, all under
+\texttt{/v1}, and reads the JSON replies (\uref{ucProtocol}). A deployed
+server is reached only over HTTPS (SEC-16). The proof of concept talks to a
+server on the local network over HTTP. The app never sends a user ID. In the
+proof of concept every \texttt{/v1/me} route answers as the demo user, and at
+Revision~0 each request carries the user's session token (SEC-15, SEC-39).
+Amounts are text with four decimals, as \mref{mJSON} JSON Format defines
+(NFR1).
+
+A sync is \texttt{PUT /v1/me/activity/daily-totals}, with the phone's time
+zone and one total for each of up to seven days (SEC-20). Sending a day again
+pays only what is still owed (SEC-19). API Service waits ten seconds for the
+reply and does not retry. A buy is
+\texttt{POST /v1/me/trades}, with a request ID that the phone makes and the
+price the user saw. The server applies each request ID once: a repeat gets the
+first reply back, with status 200 instead of 201 (FR38).
+
+A refused request gets an HTTP status and a body whose \texttt{detail} holds a
+\texttt{code} and a \texttt{message}, such as 409 and
+\texttt{price\_changed} when the price moved (SEC-29), so \mref{mScreens}
+Screens can show the message. A request that does not fit its route is refused
+with 422, without the values it sent (SEC-25).
+
+\subsection{Server and Market Data Provider}
+
+\mref{mMarket} Market asks for one quote for each tradable asset through
+\mref{mProviders} Market Providers, every minute while the market is open and
+for 15 minutes after it closes. With Finnhub, each call is an HTTPS request to
+its quote route that sends only the symbol, with the key in a header and never
+in the address (SEC-11, SEC-33). Each call waits at most ten seconds. The 15
+starting assets make 15 calls a minute, under Finnhub's limit of 60 (SC4).
+Every call is saved in \texttt{provider\_requests} with how it ended. A
+refusal for the request limit ends that poll, and any other error skips only
+that asset.
+
+\section{Database Design}  \label{SecDB}
+
+% \wss{If a database is a significant component of the project, the database
+% design should be summarized here.  This section should be filled in with NA if
+% it is not appropriate for a given project.}
+
+\progname{} keeps its data in one relational database on the server, reached
+only through \mref{mDB} Database. One database lets a trade save its payment
+and its shares in one transaction (FR37). The server's copy of a balance or a
+holding is the one that counts (SEC-24). Individual activity records stay on
+the phone, in its health platform, and only daily totals reach the server
+(SEC-10).
+
+The database follows the module decomposition. Each module owns its tables, and
+only that module reads or writes them. Another module gets the data through the
+owner's access programs, as a read-only copy. A table may still point at a row
+of another module's table with a foreign key, such as a trade at its asset, so
+the database can refuse a row that points at nothing. Each change to the tables
+is a migration, named after its module and numbered. The migrations form one
+chain, so every copy of the database is changed in the same order.
+
+Table~\ref{TblDB} lists the tables of the proof of concept and
+Figure~\ref{FigDB} shows their columns and how they are related.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{p{0.26\textwidth} p{0.16\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Table} & \textbf{Owner} & \textbf{One row is}\\
+\midrule
+users & \mref{mUsers} Users & A user, with their time zone.\\
+activity\_daily\_totals & \mref{mActivity} Activity & The latest total sent
+  for one user, day and activity type, and whether it counts for a reward.\\
+portfolios & \mref{mWallet} Wallet & A portfolio and its currency balance. A
+  user's live portfolio is the one with no scenario.\\
+balance\_changes & \mref{mWallet} Wallet & One change to a portfolio's balance,
+  with its amount, reason and time. It is never edited.\\
+assets & \mref{mMarket} Market & A stock that can be traded, with its symbol
+  and the currency of its prices.\\
+prices & \mref{mMarket} Market & One price of an asset, with the time the
+  provider set it and the time the server obtained it.\\
+provider\_requests & \mref{mMarket} Market & One call to the market data
+  provider and how it ended, kept to watch the request limit (SC4).\\
+trades & \mref{mTrading} Trading & One trade, with its request ID, quantity,
+  price and cost. It is never edited.\\
+holdings & \mref{mTrading} Trading & The number of shares of one asset that a
+  portfolio holds.\\
+\bottomrule
+\end{tabularx}
+\caption{Tables of the proof of concept and the module that owns each}
+\label{TblDB}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{figures/database-design.pdf}
+\caption{Tables of the proof of concept, grouped by the module that owns them.
+An arrow goes from the table that holds a foreign key to the table it points
+at, and the numbers at its ends say how many rows can be at each end. PK marks
+a primary key and FK a foreign key.}
+\label{FigDB}
+\end{figure}
+
+
+\subsection{Design Decisions}
+
+\begin{description}
+\item[Lists in the SRS are tables.] The data dictionary (SRS Section~7.2) gives
+  a portfolio its holdings, trade history and balance changes as lists, and an
+  asset its price history. Here each is a table with one row per item, so a row
+  can be added without rewriting the rest, and the database can check each row.
+
+\item[A value that can be calculated is not stored.] An asset's current price
+  is its price with the latest time, and a portfolio's value is calculated from
+  its holdings and the current prices when it is asked for (FR42). Neither can
+  then be out of date. The balance is the one exception. It is stored, so that
+  a trade can check it quickly, and it always equals the sum of the portfolio's
+  balance changes (SEC-22).
+
+\item[Money is an exact decimal.] An amount has up to 12 digits before the
+  decimal point and 4 after, and a price up to 8 and 4. Neither is a
+  floating-point number, so no amount is rounded by accident (NFR1).
+
+\item[Every time has its time zone.] A time is stored with its time zone, so
+  times from the server, the provider and users in different places compare
+  correctly (FR33).
+
+\item[Identifiers are UUIDs.] The phone can then make a trade's request ID
+  without asking the server (FR38). Prices and provider requests use a counter,
+  since there are many of them and nothing outside the server refers to one.
+
+\item[History is added to, never edited.] A balance change and a trade are
+  never updated after they are saved, so the record of what happened stays
+  complete (SEC-22). A price is kept once for each time the provider set it,
+  and is replaced only when the provider corrects that price, or, at
+  Revision~0, when the stock splits (SEC-28). A daily activity
+  total is different. Each sync replaces
+  it with the latest total for that day, since a day's total grows until the
+  day ends.
+
+\item[A reward is stored once, in Wallet.] The data dictionary gives an
+  activity record its reward. Here the daily total holds no reward. What a day
+  has been paid is the sum of that day's activity rewards among Wallet's
+  balance changes, and a sync pays only the difference. A day is then never
+  paid twice, and a total that falls later takes nothing back (SEC-19).
+
+\item[Deleting a row deletes what belongs to it.] A portfolio's balance
+  changes, trades and holdings are deleted with it by the database, and a
+  user's daily totals with the user. A user's portfolio is not deleted with the
+  user, so a user who has one can't be deleted yet. The proof of concept resets
+  the demo user by deleting their portfolio. Account deletion is designed at
+  Revision~0 (SEC-18).
+\end{description}
+
+\subsection{Rules the Database Checks}
+
+A module checks its own rules before it saves. The database checks the most
+important ones again on every write, so that a mistake in the code cannot save
+a row that breaks one.
+
+\begin{itemize}
+\item A balance is never below zero (FR37).
+\item A user has at most one live portfolio.
+\item A balance change is never zero. It adds currency exactly when its reason
+  is an activity reward, and it has an activity date exactly when its reason is
+  an activity reward (SEC-19, SEC-22).
+\item Every price is above zero and in \texttt{QUOTE\_CURRENCY}, and an asset
+  has one price for each time the provider set one (FR29, SEC-27).
+\item A portfolio has one trade for each request ID, so a repeated request
+  cannot trade twice (FR38).
+\item A trade's cost is exactly its quantity times its price (NFR1), and each
+  trade points at the one balance change that paid for it (FR37).
+\item A holding is never below zero, and a portfolio has one holding for each
+  asset.
+\item A user has one daily total for each day and activity type (SEC-10). Its
+  step count is never below zero, and it counts for a reward exactly when it
+  is within \texttt{MAX\_DAILY\_STEPS} (FR17).
+\item Every foreign key points at a row that exists.
+\end{itemize}
+
+
+\subsection{From the SRS Data Entities to Tables}
+
+Table~\ref{TblDBEntities} traces each major data entity of the SRS (SRS
+Section~7.1) to the tables that hold it.
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.17\textwidth} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{SRS entity} & \textbf{Tables} & \textbf{Owner} & \textbf{State}\\
+\midrule
+User Data & users & \mref{mUsers} Users & The proof of concept has one demo
+  user. Sign-in, profile, consent and settings come at Revision~0.\\
+Activity Record & activity\_daily\_totals & \mref{mActivity} Activity & Built
+  for steps. The other activity types come at Revision~0.\\
+Portfolio & portfolios, balance\_changes, holdings & \mref{mWallet} Wallet,
+  \mref{mTrading} Trading & Built. Scenario portfolios come at Revision~0.\\
+Market Data & assets, prices & \mref{mMarket} Market & Built.\\
+Trade & trades & \mref{mTrading} Trading & Built for buying. Selling and queued
+  trades come at Revision~0.\\
+Social Data & At Revision~0 & \mref{mSocial} Social & Not built.\\
+\bottomrule
+\end{tabularx}
+\caption{The major data entities of the SRS and the tables that hold them}
+\label{TblDBEntities}
+\end{table}
+
+The tables of the modules built after the proof of concept are designed with
+those modules at Revision~0. One decision is already made for
+\mref{mUsers} Users: the server will store only a hash of each password,
+session token and password reset token, never the value itself (HA~H45).
 
 \section{Timeline}
 
-\wss{Schedule of tasks and who is responsible}
+The schedule of tasks and responsibilities for \progname{} is maintained in the \href{https://github.com/users/davislenover/projects/4/views/1} {BurnNEarn GitHub Project board} and the \href{https://github.com/davislenover/BurnNEarn/milestones} {repository milestones}. Documentation and implementation work is divided into issues. Each issue describes a task, its assignee identifies the responsible team member, and its milestone groups it with the corresponding deliverable. The project board tracks progress through Backlog, In Progress, In Review, and Done.
 
-\wss{You can point to GitHub if this information is included there}
+\medskip\noindent
+The overall schedule is documented in the Development Plan, including both internal team deadlines and course deadlines. For Design Document Revision~$-1$, the MG and MIS tasks are grouped under the \href{https://github.com/davislenover/BurnNEarn/milestone/7} {Design Document Revision $-1$ milestone}. The internal deadline is November~13, 2026, and the course deadline is November~16, 2026. As specified in the Development Plan, documentation work is to be merged into the \texttt{main} branch by the internal deadline. The remaining three days are reserved for checking the complete deliverable against its rubric and checklist, resolving inconsistencies, and making final corrections.
+
+\medskip\noindent
+During weekly team meetings, members report progress and blockers on their assigned issues. The team reviews unassigned tasks, dependencies, and workloads, and updates assignments as needed. A member who expects to miss an internal deadline must notify the team at least 24 hours beforehand so that support or reassignment can be arranged. Detailed task ownership and progress are maintained in GitHub rather than duplicated here, allowing this section to reference the team's current plan as development continues.
 
 \section{Generative AI Use Disclosure}
 
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
+This section summarizes the team's reported AI use in the contributions described below. It identifies the tools and model versions used, the parts of the Module Guide affected, and how the content was checked.
 
 \subsection{AI Tools Used}
 
-\wss{Give the name of the AI tool(s) used and the version.}
+The following AI tools and models were used: 
+\begin{itemize}
+  \item ChatGPT (OpenAI): GPT-6.
+  \item Codex (OpenAI): GPT-6.1 Sol.
+  \item Claude Code (Anthropic): Claude Opus 5.5.
+\end{itemize}
 
 \subsection{How and Where Used}
+ChatGPT helped review contributions for gaps, inconsistencies, and agreement with the overall design and other project documents. It also helped with LaTeX formatting and the creation and refinement of the database UML diagram. This assistance included Section 12 (Database Design) and its diagram. 
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
+\medskip\noindent
+Codex helped improve wording, check grammar, and format existing content in LaTeX. This assistance covered contributions to Section 7 (Module Decomposition) for activity and health data on the server and in the app, Section 8 (Traceability Matrices), and Section 11 (Design of Communication Protocols). Codex also helped with grammar and LaTeX formatting in contributions to Section 10 (User Interfaces) and other parts of Section 7 (Module Decomposition). 
 
-\wss{For each of the uses, identify which parts of the document were affected.}
+\medskip\noindent
+Claude Code helped draft module entries in LaTeX from the SRS after the content and design decisions had been established. These decisions included module health checks and keeping descriptions of modules planned after the proof of concept at a high level. It also helped draw the use hierarchy diagram, review the document for gaps and differences from the SRS, and explain design decisions with the relevant SRS requirement identifiers. 
 
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+\medskip\noindent
+The Claude Code assistance covered contributions to Section 2.1 (Abbreviations and Acronyms), Section 3 (Introduction), Section 5 (Module Hierarchy), Section 7 (Module Decomposition), Section 9 (Use Hierarchy Between Modules), and the related entries in Section 1 (Revision History). The module descriptions included the kernel, market and trading modules, Users, Wallet, Email Service, Goals, Learning, Social, Scenarios, and Privacy.
 
 \subsection{Verification of AI-Generated Content}
+For the contributions revised with Codex, the team members reread each section to check that grammar, wording, and formatting changes preserved the original ideas and intended meaning. 
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+\medskip\noindent
+For the contributions reviewed with ChatGPT, the suggested changes were checked against the intended design, the MG, the MIS, and other project documents. The rendered LaTeX output was checked, and the database UML diagram was reviewed to make sure it represented the database structure correctly. 
+
+\medskip\noindent
+For the contributions drafted or revised with Claude Code, the rendered PDF pages were reviewed before committing each change. The cited requirement identifiers were checked against the SRS, and the module entries were compared with the backend code. These changes also went through team review in pull requests before merging. 
+
+\medskip\noindent
+The team remains responsible for the accuracy, completeness, consistency, and appropriateness of the Module Guide, including any content drafted or revised with AI assistance.
+
 
 \end{document}

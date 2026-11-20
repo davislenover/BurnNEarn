@@ -16,7 +16,7 @@
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage[section]{placeins}
+\IfFileExists{placeins.sty}{\usepackage[section]{placeins}}{}
 \usepackage{caption}
 \usepackage{fullpage}
 
@@ -64,6 +64,23 @@ Format, and the 401 on both Trading routes.\\
 Nov 10, 2026 & 1.3 & Davis Lenover: each provider's request limit in Market
 Providers, with provider\_type, the chosen provider's limit in Market's usage
 route, and obtained\_at in each holding of Trading.\\
+Nov 12, 2026 & 1.4 & Preston Grewal: Activity (M11) interface and semantics
+matched to PR \#313, including its 200 reply and steps\_per\_coin
+(\#249, \#190).\\
+Nov 17, 2026 & 1.5 & Zaid Alsaadi: Added the Generative AI Use
+Disclosure, including tools and model versions, affected sections,
+and how AI-assisted content was checked.\\
+Nov 18, 2026 & 1.6 & Davis Lenover: the MIS of the app modules in the proof
+of concept: Health Service, Screens, Sync Service and API Service. Device
+Service and Navigation are built after it, and 4 Notation covers the app.\\
+Nov 18, 2026 & 1.7 & Davis Lenover: review fixes. Control's PLUGINS lists
+Activity. A retried buy in Screens reuses its request ID. Activity's table,
+date error and time zone note match the code. Activity and Trading say what
+they export at Revision~0. The Notation section says why the server names its
+library types. The AI disclosure refers to each section by its label.\\
+Nov 18, 2026 & 1.8 & Farid Bastoros: reflection answers.\\
+Nov 18, 2026 & 1.9 & Farid Bastoros: draft MIS of the modules built after
+the proof of concept (M5, M13 to M18, M21, M25).\\
 \bottomrule
 \end{tabularx}
 
@@ -133,10 +150,15 @@ system must do. Next to each decision, a module's section gives its reason: the
 requirement or hazard it serves, or the design pattern it uses. A later change
 can then be checked against what the decision was for.
 
-This revision specifies the modules of the proof of concept. Modules marked
-\textsuperscript{\dag} in Table~\ref{TblMH} are built after it and are
-specified at Revision~0, so that every section describes an interface the code
-really has.
+This revision specifies every module. The sections of the proof of concept's
+modules describe an interface the code really has. Modules marked
+\textsuperscript{\dag} in Table~\ref{TblMH} are built after the proof of
+concept, so their sections give the interface planned for them, which is
+checked against the code and may change at Revision~0. Screens is the one exception. It describes the demo screen that
+PR \#312 is finishing, with the API Service calls it needs. The app's sections
+describe a proof of concept with one screen.
+They give what each module offers and why, without fixing details that may
+change with feedback on the proof of concept and with usability testing (NFR2).
 
 The full documentation and implementation are in the project repository:
 \url{https://github.com/davislenover/BurnNEarn}.
@@ -193,12 +215,27 @@ nothing is raised.
 Types such as Session, Plugin and DomainError are exported by a module and
 defined in its section. ValueError is Python's, IntegrityError,
 NoResultFound, OperationalError and SQLAlchemyError are SQLAlchemy's,
-ValidationError is Pydantic's, and RequestValidationError is FastAPI's. In
+ValidationError is Pydantic's, and RequestValidationError is FastAPI's. The
+server sections name the types and exceptions the code really uses, so each
+section can be checked against the code. A Session is one unit of work on the
+database, such as the transaction a request runs in, and every Session comes
+from Database (M1), so the library behind it stays Database's secret (AC1 in
+the MG). In
 an access program table, In gives each input's type in order, separated by
 commas, and - means none. A route is written as its HTTP method and path, such
 as GET /v1/me/balance. Its In column lists what the phone
 sends, and its Exceptions column the refusals it raises, besides JSON Format's 422
 for a request that doesn't fit (SEC-25).
+
+The app is written in TypeScript. An app access program that waits, because
+it reads the phone or calls the server, has the output ``Promise of T'': it
+gives a T later, or fails with one of its exceptions. A React hook is written
+as an access program whose output is a tuple. The tuple's values change as the
+hook's state changes, and the screen that calls it is shown again each time.
+Error is JavaScript's, and AbortSignal is the web platform's signal that
+cancels a call that is still waiting. An amount from the server is a String
+holding a decimal with exactly four places, as JSON Format
+(M23) sends it (NFR1).
 
 \newpage
 
@@ -221,7 +258,7 @@ Constants is in both programs, and the rest are in the server.
 & M3 Market Providers\\
 & M25 Email Service\textsuperscript{\dag}\\
 & M4 Health Service (app)\\
-& M5 Device Service (app)\\
+& M5 Device Service (app)\textsuperscript{\dag}\\
 \midrule
 
 \multirow{16}{0.3\textwidth}{Behaviour-Hiding Module} & M6 Control\\
@@ -236,7 +273,7 @@ Constants is in both programs, and the rest are in the server.
 & M15 Social\textsuperscript{\dag}\\
 & M16 Scenarios\textsuperscript{\dag}\\
 & M17 Privacy\textsuperscript{\dag}\\
-& M18 Navigation (app)\\
+& M18 Navigation (app)\textsuperscript{\dag}\\
 & M19 Screens (app)\\
 & M20 Sync Service (app)\\
 & M21 Reminder Service (app)\textsuperscript{\dag}\\
@@ -253,7 +290,10 @@ Constants is in both programs, and the rest are in the server.
 \end{table}
 
 \noindent Modules marked \textsuperscript{\dag} are built after the proof of
-concept and are specified at Revision~0.
+concept, and their sections give the interface planned for them. The proof of
+concept has one screen, no sign-in and no reminders, so it uses nothing from Device Service (M5) or
+Navigation (M18) yet. Their design isn't final, and may change with feedback on
+the proof of concept.
 
 \newpage
 
@@ -442,7 +482,7 @@ Clock = () $\rightarrow$ DateTime, a function that returns the current time.
 Routes and background work are handed a Clock instead of reading the system
 time (dependency injection), so a test can set the time for each rule that
 depends on it: market hours, when a price is delayed or too old to trade
-(FR33, FR39), and, once Activity (M11) is built, the user's date (SEC-24).
+(FR33, FR39), and the date used by Activity (M11) (SEC-24).
 
 \subsubsection{Exported Constants}
 
@@ -705,7 +745,463 @@ call and never reaches 0, which Market (M10) refuses
 
 \newpage
 
-% M4 Health Service and M5 Device Service (app): #250
+\section{MIS of Email Service} \label{MisEmail}
+
+\begingroup\raggedright
+\subsection{Template Module}
+
+EmailSender (Email Service, M25 in the MG), an abstract data type whose values
+are email senders, each made with new ServiceEmailSender or new
+FakeEmailSender. Email Service is built after the proof of concept
+(\textsuperscript{\dag}), so this is the interface planned for Revision~0. As
+with Market Providers (M3), the delivery service is a third party the team may
+change, so every sender has this one interface (the strategy pattern), the
+chosen service is wrapped to fit it (the adapter pattern), and the fake lets
+tests run without sending email.
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Email = tuple of (to: String, subject: String, body: String), one
+email to send. It holds only an address and the text, so the delivery service
+is sent nothing else about the user (SEC-11).
+
+\medskip
+\noindent EmailDeliveryError, an error raised when the delivery service refuses
+an email or can't be reached.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+new ServiceEmailSender & - & EmailSender & - \\
+new FakeEmailSender & - & EmailSender & - \\
+send & Email & - & EmailDeliveryError \\
+sent & - & seq of Email & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent outbox: seq of Email, for a FakeEmailSender only: every email it has
+been asked to send, oldest first. A ServiceEmailSender keeps no state.
+
+\subsubsection{Environment Variables}
+
+\noindent deliveryService: the email delivery service, reached over the
+network with a credential kept in the server's settings (SEC-33).
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Users (M8) is the only module that sends email, and it sends only a
+  password reset link (FR6).
+\item Users answers a reset request the same way whether or not the address
+  belongs to an account, so a failed send never tells anyone which addresses
+  are registered.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent new ServiceEmailSender():
+\begin{itemize}
+\item output: $out :=$ a sender that uses deliveryService
+\item exception: None
+\end{itemize}
+
+\noindent new FakeEmailSender():
+\begin{itemize}
+\item transition: outbox $:= \langle\rangle$
+\item output: $out :=$ a sender that records emails instead of sending them
+\item exception: None
+\end{itemize}
+
+\noindent $s$.send($e$):
+\begin{itemize}
+\item transition: ($s$ is a ServiceEmailSender $\Rightarrow$ deliveryService
+  accepts $e$ for delivery to $e$.to $|$ $s$ is a FakeEmailSender
+  $\Rightarrow$ outbox $:=$ outbox $\|\ \langle e \rangle$)
+\item exception: $exc :=$ ($s$ is a ServiceEmailSender $\wedge$
+  deliveryService refuses $e$ or can't be reached $\Rightarrow$
+  EmailDeliveryError)
+\end{itemize}
+
+\noindent $s$.sent(), for a FakeEmailSender $s$:
+\begin{itemize}
+\item output: $out :=$ outbox
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Health Service} \label{MisHealth}
+
+\subsection{Module}
+
+Health Service (M4 in the MG)
+
+\medskip
+\noindent Health Service hides the phone's health platform behind one access
+program, getTodaysSteps, which works the same on Android and iPhone. So Sync
+Service (M20) has no platform code (NFR4), and a new platform, library or
+wearable changes only this module (AC4 in the MG, SRS LC2, NFR3). Its code is
+\texttt{app/services/health/steps.ts}. The hook useTodaySteps, in the same
+folder, reads the steps and sends them through API Service (M24), so it is part
+of Sync Service (M20) and is specified there.
+
+\medskip
+\noindent On iPhone, the PoC differs from SC2, and from UC8 in the MG, which
+ask that recorded activity come only from the phone's health platform, Apple
+HealthKit on iOS and Health Connect on Android. The PoC reads Android's steps from Health Connect, as
+SC2 asks. It reads the iPhone's steps from Core Motion, through Pedometer of
+\texttt{expo-sensors}, not from HealthKit. The Development Plan (Section~9)
+demonstrates on an Android phone, and on an iPhone with HealthKit only if time
+allows. Core Motion counts only the steps the iPhone itself detects, so it
+misses steps from an Apple Watch worn without the phone, and its count can be
+lower than the one Apple Health shows. At Revision~0, getTodaysSteps reads
+HealthKit on iPhone, through \texttt{@kingstinct/react-native-healthkit}, which
+the app already installs and sets up to read steps only. The access program
+stays the same, so no other module changes.
+
+\subsection{Uses}
+
+{\raggedright
+None. It uses only libraries outside \progname{}: React Native's Platform,
+\texttt{react-native-health-connect} and \texttt{expo-sensors}.\par}
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent StepTrackingError, an Error whose name is ``StepTrackingError'' and
+whose message tells the user why their steps could not be read and, when they
+can fix it, how. getTodaysSteps raises it for each failure it detects itself.
+Sync Service (M20) passes the message on for Screens (M19) to show. So in the PoC
+this wording is in a service, but the MG puts all wording in Screens (MG
+Section~6), so usability testing can change it without changing a service
+(NFR2). At Revision~0, each StepTrackingError will carry its reason instead,
+and Screens will word it.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2.4cm} p{3cm} p{4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+getTodaysSteps & DateTime & Promise of $\mathbb{Z}$ & StepTrackingError, Error \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. Health Service keeps nothing between calls. It reads the permission and
+the steps from the platform on every call, since the user or the phone can take
+the permission away at any time (HA H1).
+
+\subsubsection{Environment Variables}
+
+\noindent platform: \{android, ios, other\}, the phone's operating system, from
+React Native's Platform.OS.
+
+\medskip
+\noindent healthConnect: Android's Health Connect, read through
+\texttt{react-native-health-connect}. It holds the step records that the
+phone and any connected app or watch write. It also holds the permissions the
+user gave each app.
+
+\medskip
+{\raggedright
+\noindent motion: the iPhone's step count from Core Motion, read through
+Pedometer of \texttt{expo-sensors}, with its motion and fitness permission:
+whether it is granted, and whether the phone can still ask for it.\par}
+
+\medskip
+\noindent clock: DateTime, the phone's current time with its time zone, which
+gives readAt's default and local midnight.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Before the first call, the user has acknowledged the health notice (FR14,
+  HA SAF-12) and consented to the app reading their steps (SEC-9). A call may
+  show a permission dialog, so the user has also been told which feature uses
+  their steps (SEC-8). Health Service checks none of these, since they are the
+  app's behaviour, not the platform's. Sync Service (M20) holds the call back
+  until then, as the MG decides for consent, and Screens (M19) shows the
+  notice. The PoC demo shows no notice yet. It comes at Revision~0.
+\item The app's settings declare read access to steps alone, READ\_STEPS for
+  Health Connect on Android and the motion and fitness permission on iPhone
+  (SC3, SEC-7).
+\item The phone stays in one time zone through the day. After a change, the
+  range starts at midnight in the new zone, so some steps can be counted on the
+  wrong day. Keeping each step on the day it was taken, across a time zone
+  change (SEC-23, HA H9), comes at Revision~0.
+\item Each call to the platform ends. getTodaysSteps sets no time limit of its
+  own. A platform that never answers leaves the Promise waiting, so the user is
+  never told that steps could not be read, as SEC-21 asks.
+\item readAt is not after the current time, since steps not taken yet can't be
+  read. A readAt on a later day would read a day that hasn't started.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent getTodaysSteps(readAt), with readAt $=$ clock by default and
+$s :=$ midnight(readAt):
+\begin{itemize}
+\item transition: when the app has no permission to read steps and the
+  platform can still ask, the platform's permission dialog is shown, and the
+  user's answer becomes the app's permission. It asks only then, so a user who
+  already allowed it is not asked again. It asks only to read steps, never to
+  write, since steps are all the PoC rewards (SEC-7). The other supported
+  activity types (FR12) each add their own read permission at Revision~0.
+\item output: $out :=$ (platform $=$ android $\Rightarrow$ healthConnect's
+  step total from $s$ to readAt, or 0 if it has none $|$
+  platform $=$ ios $\Rightarrow$ the steps motion counted from $s$ to readAt,
+  which is 0 if there are none). So $out \geq 0$.
+  \begin{itemize}
+  \item A day with no step data gives 0, not an exception, so it is shown and
+    sent as a day of zero activity (FR16). A failed read raises an exception
+    instead, so it is never shown as 0 steps (SEC-21).
+  \item It gives one total for the day, not the records behind it, since the
+    app sends the server only daily totals (SEC-10).
+  \item Health Connect adds up the records itself, so steps that the phone and
+    a watch both record for the same time count once (HA H4).
+  \item readAt is an input, so the caller sends the total for the day it read,
+    even if a permission dialog stays open past midnight (SEC-23), and a test
+    can fix the time.
+  \end{itemize}
+\item {\raggedright exception: the first of these that holds is raised:\\
+  \hspace*{1em}$exc :=$ (platform $=$ android $\land$ healthConnect can't start
+  $\Rightarrow$ StepTrackingError(``Health Connect is unavailable. Install or
+  update it on your phone.'')\\
+  \hspace*{1em}$|$ platform $=$ android $\land$ the app can't read steps after
+  asking $\Rightarrow$ StepTrackingError(``Allow access to steps in Health
+  Connect to read your daily total.'')\\
+  \hspace*{1em}$|$ platform $=$ ios $\land$ no motion permission after asking
+  $\land$ the phone can ask again $\Rightarrow$ StepTrackingError(``Allow motion
+  and fitness access to read your daily steps.'')\\
+  \hspace*{1em}$|$ platform $=$ ios $\land$ no motion permission $\land$ the
+  phone can't ask again $\Rightarrow$ StepTrackingError(``Enable motion and
+  fitness access for this app in your phone settings.'')\\
+  \hspace*{1em}$|$ platform $=$ ios $\land$ the phone has no step counter
+  $\Rightarrow$ StepTrackingError(``This device does not have an available step
+  counter.'')\\
+  \hspace*{1em}$|$ platform $=$ other $\Rightarrow$ StepTrackingError(``Reading
+  steps requires an Android phone or iPhone.''))\\
+  Each message says why steps could not be read (SEC-21). A message about a
+  missing permission also says how to grant it (HA H1). When the phone won't
+  ask again, only its settings can grant access, so the message says so. Any other failure of a platform call, such as
+  a read that fails, rejects with that library's Error, unchanged. Sync Service
+  (M20) treats both kinds the same, and the rest of the app keeps working
+  (SEC-21, HA H6).\par}
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent midnight: DateTime $\rightarrow$ DateTime, midnight($t$) $:=$ the
+start of $t$'s calendar day in the phone's time zone. The range is the user's
+calendar day, not the last 24 hours, so steps count on the day they were taken
+(SEC-23), and the server's daily cap applies to one day (FR18). It is still the
+calendar day when a daylight saving change makes it 23 or 25 hours long.
+
+\newpage
+
+\section{MIS of Device Service} \label{MisDevice}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Device Service (M5 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It gives the rest of the app one set of calls for secure storage,
+local notifications and background tasks on both Android and iOS (NFR4).
+
+\subsection{Uses}
+
+None
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent PermissionStatus $=$ \{granted, denied, undetermined\}, whether the
+user lets the app show notifications. undetermined means the user hasn't been
+asked yet.
+
+\medskip
+\noindent LocalNotification = tuple of (title: String, body: String, at:
+DateTime), a notification to show on the phone at time at.
+
+\medskip
+\noindent DeviceServiceError, an error whose reason is one of
+\{permission\_denied, unavailable\}, raised when the user has refused a
+permission or the phone doesn't offer the service.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+saveToken & String & Promise of - & DeviceServiceError \\
+readToken & - & Promise of String or None & DeviceServiceError \\
+deleteToken & - & Promise of - & - \\
+notification\allowbreak Permission & - & Promise of PermissionStatus & - \\
+request\allowbreak Notification\allowbreak Permission & - & Promise of PermissionStatus & - \\
+scheduleNotification & LocalNotification & Promise of ID & DeviceServiceError \\
+cancelNotification & ID & Promise of - & - \\
+register\allowbreak Background\allowbreak Task & String, () $\rightarrow$ Promise of - & Promise of
+$\mathbb{B}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. The phone's operating system keeps the token, the permission and the
+scheduled notifications, so they survive the app being closed.
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item secureStore: the phone's encrypted storage (Keychain on iOS, Keystore on
+  Android).
+\item notificationCenter: the phone's local notifications and the user's
+  permission for them.
+\item backgroundScheduler: the operating system's scheduler for background
+  tasks, which decides when, and whether, a task runs.
+\end{itemize}
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item API Service (M24) is the only module that saves or reads the session
+  token, so the token is kept only in secureStore (SEC-39).
+\item The operating system may delay or skip a background task, so a caller
+  that registers one also does its work when the user opens the app (FR75).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent saveToken($t$):
+\begin{itemize}
+\item transition: secureStore holds $t$ as the session token, replacing any
+  token saved before.
+\item exception: $exc :=$ (secureStore is unavailable $\Rightarrow$
+  DeviceServiceError(unavailable))
+\end{itemize}
+
+\noindent readToken():
+\begin{itemize}
+\item output: $out :=$ (a token is saved $\Rightarrow$ the token $|$
+  $\neg$ (a token is saved) $\Rightarrow$ None)
+\item exception: $exc :=$ (secureStore is unavailable $\Rightarrow$
+  DeviceServiceError(unavailable))
+\end{itemize}
+
+\noindent deleteToken():
+\begin{itemize}
+\item transition: secureStore holds no session token. Deleting when there is
+  none does nothing, so signing out always succeeds.
+\item exception: None
+\end{itemize}
+
+\noindent notificationPermission():
+\begin{itemize}
+\item output: $out :=$ the permission notificationCenter reports, without
+  asking the user.
+\item exception: None
+\end{itemize}
+
+\noindent requestNotificationPermission():
+\begin{itemize}
+\item transition: if the permission is undetermined, the phone asks the user.
+\item output: $out :=$ the permission after the user answers, or the
+  unchanged permission if it was already granted or denied.
+\item exception: None
+\end{itemize}
+
+\noindent scheduleNotification($n$):
+\begin{itemize}
+\item transition: notificationCenter shows $n$ at $n$.at.
+\item output: $out :=$ a new ID for the scheduled notification
+\item exception: $exc :=$ (the permission is not granted $\Rightarrow$
+  DeviceServiceError(permission\_denied))
+\end{itemize}
+
+\noindent cancelNotification($id$):
+\begin{itemize}
+\item transition: the notification with ID $id$ is no longer scheduled.
+  Cancelling one already shown or cancelled does nothing.
+\item exception: None
+\end{itemize}
+
+\noindent registerBackgroundTask($name$, $task$):
+\begin{itemize}
+\item transition: backgroundScheduler may run $task$ while the app is closed,
+  replacing any task registered before with the same $name$.
+\item output: $out :=$ true if the operating system accepted the task, and
+  false if background tasks are turned off on this phone.
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+
+
+% M5 Device Service (app) is built after the PoC and is specified at Revision 0.
 \section{MIS of Control} \label{MisControl}
 
 \subsection{Module}
@@ -714,12 +1210,12 @@ Control (M6 in the MG)
 
 \subsection{Uses}
 
-Database (M1), Users (M8), Wallet (M9), Market (M10), Trading (M12), Plugins
-(M22), JSON Format (M23)
+Database (M1), Users (M8), Wallet (M9), Market (M10), Activity (M11),
+Trading (M12), Plugins (M22), JSON Format (M23)
 
 \medskip
-\noindent The MG also lists Activity (M11) and Goals (M13) to Privacy (M17).
-Each is added to PLUGINS once it is built.
+\noindent The MG also lists Goals (M13) to Privacy (M17), each added to PLUGINS
+once it is built.
 
 \subsection{Syntax}
 
@@ -730,7 +1226,8 @@ None
 \subsubsection{Exported Constants}
 
 \noindent PLUGINS: seq of Plugin $=$ $\langle$PLUGIN of Users (M8), PLUGIN of
-Wallet (M9), PLUGIN of Market (M10), PLUGIN of Trading (M12)$\rangle$, the
+Wallet (M9), PLUGIN of Market (M10), PLUGIN of Trading (M12), PLUGIN of
+Activity (M11)$\rangle$, the
 PLUGIN of each module in the server, in the order their background work
 starts. Only this list, in app/registry.py, names the modules (the plug-in
 pattern), so adding a module never changes create\_app. Listing a module here
@@ -841,7 +1338,7 @@ ActivityType = \{STEPS, WHEELCHAIR\_PUSHES, CYCLING, SWIMMING, OTHER\_WORKOUT\},
 the supported activity types (SUPPORTED\_ACTIVITY\_TYPES in SRS Appendix C).
 Each value is also a String, its name in lower case, such as ``steps'', so the
 daily totals the phone sends (SEC-24) can name their type in JSON and the
-database can store it as text, once Activity (M11) is built.\par}
+database can store it as text. Activity (M11) supports steps only.\par}
 
 \subsubsection{Exported Constants}
 
@@ -979,10 +1476,10 @@ create\_user & Session, ID or None, String & ID & ValueError, IntegrityError \\
 
 \noindent users: set of tuple of (user\_id: ID, time\_zone: String,
 created\_at: DateTime), every user, with each user\_id once. time\_zone is an
-IANA time zone name. Nothing reads it yet. It is kept
-because the server needs the user's date to refuse a daily total dated in the
-future (SEC-24, HA~H51). The phone, not the server, puts each activity record
-on its day (SEC-23).
+IANA time zone name. Activity (M11) uses the time zone in the request
+to check dates, and does not read or update this stored value (SEC-24,
+HA~H51). The phone, not the server, puts each activity record on its day
+(SEC-23).
 
 \subsubsection{Environment Variables}
 
@@ -1049,9 +1546,9 @@ Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
 \noindent BalanceChangeReason $=$ \{activity\_reward, trade\_purchase\}, why a
 balance changed. Every change keeps its reason (SEC-22), and the database
 refuses any other. There is no reason for a sale yet, since the proof of
-concept only buys. Selling (FR36) comes at Revision~0. Nothing pays a reward
-yet either. That reason is there for Activity (M11), and tests use it to give
-a portfolio currency to spend.
+concept only buys. Selling (FR36) comes at Revision~0. Activity (M11) uses
+activity\_reward for step payments. Tests also use it to give a portfolio
+currency to spend.
 
 \medskip
 {\raggedright
@@ -1240,7 +1737,7 @@ locked.portfolio\_id:
 \begin{itemize}
 \item output: $out :=$ the sum of the amounts of the changes with
   portfolio\_id, reason \mbox{activity\_reward} and activity\_date, or 0.
-  Nothing calls it yet. A step sync in Activity (M11) will use it to pay only
+  A step sync in Activity (M11) uses it to pay only
   the difference, so no activity is paid twice (SEC-19) or past the daily cap
   (FR18).
 \item exception: $exc :=$ (activity\_date is a DateTime $\Rightarrow$
@@ -1546,7 +2043,219 @@ closed.
 
 \newpage
 
-% M11 Activity: #249
+\section{MIS of Activity} \label{MisActivity}
+
+\subsection{Module}
+
+Activity (M11 in the MG)
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Constants (M7), Users (M8), Wallet (M9), Plugins
+(M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\begin{itemize}
+\raggedright
+\item \textbf{DailyTotal:} One day's step data:
+  \texttt{activity\_date}: Date (calendar date),
+  \texttt{activity\_type}: \{steps\}, and \texttt{step\_count}:
+  $\mathbb{Z}$ (integer). The count is the full total for that day.
+\item \textbf{DailyTotalsRequest:} The data sent to the server. It contains
+  \texttt{time\_zone}: String (text) and \texttt{totals}: seq of DailyTotal
+  (a list of daily step totals for up to seven different days). Each date
+  can appear only once.
+\item \textbf{DailyTotalResult:} One day's result. It has the same date,
+  type and count fields as DailyTotal, plus \texttt{counted}: $\mathbb{B}$
+  (Boolean, true or false). \texttt{reward} and \texttt{credited\_now} are
+  Money (exact decimals sent as text with four decimal places).
+  \texttt{reward} is what the day earns; \texttt{credited\_now} is only the
+  amount added by this sync after earlier payments.
+\item \textbf{DailyTotalsResponse:} The server's reply. It contains the
+  daily results in \texttt{totals}: seq of DailyTotalResult (a list), the
+  updated \texttt{cash\_balance}: Money (exact decimal text with four decimal
+  places), and \texttt{steps\_per\_coin}: $\mathbb{N}$ (positive integer),
+  the number of steps needed to earn one coin.
+\item \textbf{ActivityDateOutOfRangeError:} a DomainError with code
+  ``activity\_date\_out\_of\_range'', status 422 and the message ``Activity
+  dates must be today or one of the preceding six days.'' Raised when a date
+  is in the future or more than six days before today.
+\end{itemize}
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``activity'', router: the route below,
+lifespan: None, health: None).
+
+\medskip
+{\raggedright\noindent EARNING\_RATES, MAX\_DAILY\_CURRENCY,
+MAX\_DAILY\_STEPS and SYNC\_LOOKBACK\_PERIOD come from Constants (M7).\par}
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.5cm}
+  >{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{5.1cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+PUT /v1/me/activity/\allowbreak daily-totals & DailyTotalsRequest &
+DailyTotalsResponse & ActivityDateOutOfRangeError, NotAuthenticatedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent This is Activity's only public operation. It returns 200 with the
+daily results, updated balance and earning rate. The helpers below are local.
+No other module calls Activity in the proof of concept. At Revision~0, it also
+exports a read-only copy of each day's total for Goals (M13) and Social (M15),
+as the MG says.
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent \texttt{activity\_daily\_totals} stores one row per user, date and activity type:
+
+\begin{center}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.5cm}
+  >{\raggedright\arraybackslash}p{4.4cm}
+  >{\raggedright\arraybackslash}p{6.6cm}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Meaning} \\
+\midrule
+\texttt{user\_id} & ID (UUID) & The user who owns the total. \\
+\texttt{activity\_date} & Date (calendar date) & The day the activity belongs to. \\
+\texttt{activity\_type} & \{steps\} & The supported activity type. \\
+\texttt{step\_count} & $\mathbb{Z}$ (integer) & The full step count for that day. \\
+\texttt{counted} & $\mathbb{B}$ (Boolean) & Whether the count is within the plausibility limit. \\
+\texttt{updated\_at} & DateTime (date and time with a time zone) & The server time of the last sync. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\medskip
+\noindent Wallet keeps the payment history (SEC-19, SEC-22). Activity stores
+only daily totals, so individual health records stay on the phone (SEC-10).
+The reply includes \texttt{counted}, so the app can show a day that did not
+count (FR17).
+
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The demo user and live portfolio exist. \texttt{get\_current\_user} identifies
+  the user; the phone cannot choose a user ID (SEC-15).
+\item Every request that changes a portfolio locks it until the transaction
+  ends, so requests for that portfolio run one at a time.
+\item The phone assigns activity to days using the time zone at the time of
+  the activity. Travel does not change an old record's day (SEC-23).
+\item The server finds today using Clock, not the phone's clock, in the
+  request's \texttt{time\_zone}, so changing the phone's date can't date a
+  total after today (SEC-24, HA~H51). The stored Users zone is left unchanged.
+
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent \textbf{PUT /v1/me/activity/daily-totals}
+
+\medskip
+\noindent \textbf{Inputs:} \texttt{request}: DailyTotalsRequest,
+\texttt{session}: Session, \texttt{now}: DateTime (date and time with a time zone),
+and \texttt{user}: CurrentUser.
+The phone sends the request; Database, Clock and Users supply the other inputs.
+
+\begin{itemize}
+\raggedright
+\item \textbf{Transition:} Lock the live portfolio, run
+  \texttt{sync\_daily\_totals}, and build the reply with its results,
+  the updated balance and EARNING\_RATES(STEPS). Commit once, saving totals
+  and payments together. The lock prevents duplicate payments (SEC-19).
+\item \textbf{Output:} DailyTotalsResponse with HTTP 200, returned after
+  the commit. The balance is captured while locked. Repeated totals have
+  \texttt{credited\_now} 0; empty totals return an empty list and the
+  unchanged balance. Both include \texttt{steps\_per\_coin}.
+\item \textbf{Errors:} NotAuthenticatedError (401) or
+  ActivityDateOutOfRangeError (422). Invalid fields, time zones, counts,
+  repeated dates, or sending daily step totals for more than seven days in
+  one request also return 422 (SEC-24, SEC-25).
+  A failed request saves no totals or payments.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent \textbf{\texttt{daily\_reward}}
+
+{\raggedright\noindent \textbf{Input:} \texttt{step\_count}: $\mathbb{Z}$ (integer), nonnegative.
+\textbf{Output:} Decimal (exact decimal).
+Returns 0 above MAX\_DAILY\_STEPS. Otherwise, divide by EARNING\_RATES(STEPS),
+round down, and cap at MAX\_DAILY\_CURRENCY (FR13, FR17, FR18).\par}
+
+\medskip
+\noindent \textbf{\texttt{top\_up}}
+
+\noindent \textbf{Inputs:} \texttt{reward}: Decimal (exact decimal) and
+\texttt{already\_paid}: Decimal (exact decimal), both nonnegative.
+\textbf{Output:} Decimal (exact decimal).
+Subtracts what was already paid from the reward, with a minimum of 0.
+A lower total never takes currency back (SEC-19, issue \#190).
+
+\medskip
+\noindent \textbf{\texttt{allowed\_dates}}
+
+\noindent \textbf{Input:} \texttt{today}: Date (calendar date).
+\textbf{Output:} set of Date (calendar dates).
+Returns the last SYNC\_LOOKBACK\_PERIOD calendar days, including today:
+currently today through six days ago (SEC-20).
+
+\medskip
+\noindent \textbf{\texttt{sync\_daily\_totals}}\\*
+\textbf{Inputs:} \texttt{session}: Session,
+\texttt{locked}: LockedPortfolio, \texttt{request}: DailyTotalsRequest,
+and \texttt{now}: DateTime (date and time with a time zone).
+\texttt{locked} identifies the user and portfolio.
+\begin{itemize}
+\raggedright
+\item \textbf{Transition:} Check every date using \texttt{now} and the
+  request's \texttt{time\_zone} before writing anything. For each total,
+  in request order:
+  \begin{enumerate}
+  \item Save its step count, \texttt{counted} flag and
+    \texttt{updated\_at}: now in the user's daily row.
+  \item Calculate \texttt{reward} with \texttt{daily\_reward}. Read earlier
+    payments with Wallet's \texttt{activity\_paid}, then use
+    \texttt{top\_up} to find what is still owed.
+  \item If anything is owed, call Wallet's \texttt{change\_balance} with
+    reason \texttt{activity\_reward} and the activity date. Otherwise, make
+    no payment.
+  \end{enumerate}
+\item \textbf{Output:} seq of DailyTotalResult (a list), one per submitted total in
+  request order. \texttt{credited\_now} is the amount added. Empty totals
+  return an empty list.
+\item \textbf{Error:} ActivityDateOutOfRangeError for a date outside
+  \texttt{allowed\_dates} (SEC-24).
+\end{itemize}
+
+\noindent This function never commits; the route commits once at the end.
+
+\noindent For the same day, totals of 8,421, 8,500 and 8,000 earn rewards
+of 84, 85 and 80, but add only 84, 1 and 0. The user keeps the 85 already paid.
+
+\newpage
+
 \section{MIS of Trading} \label{MisTrading}
 
 \subsection{Module}
@@ -1607,6 +2316,12 @@ GET /v1/me/portfolio & - & tuple of (cash\_balance: Money, holdings: seq of
 \bottomrule
 \end{tabular}
 \end{center}
+
+\noindent No other module calls Trading in the proof of concept, so its routes
+are its whole interface. At Revision~0, it also exports read-only copies of a
+portfolio's holdings, trades and value for Learning (M14), and trades and a
+valuation at the prices Scenarios (M16) hands in, with the lock on a
+scenario's portfolio (SEC-31), as the MG says.
 
 \subsection{Semantics}
 
@@ -1769,7 +2484,1483 @@ holdings\_value: Decimal, total\_value: Decimal) only reads.
 \newpage
 
 % M13 to M17 and M21 are built after the PoC and are specified at Revision 0.
-% M18 Navigation, M19 Screens and M20 Sync Service (app): #250
+% M18 Navigation (app) is built after the PoC and is specified at Revision 0.
+
+\section{MIS of Goals} \label{MisGoals}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Goals (M13 in the MG), on the server. It is built after the proof of concept
+(\textsuperscript{\dag}), so this is the interface planned for Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Constants (M7), Users (M8), Wallet (M9), Activity
+(M11), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Goal = tuple of (activity\_type: ActivityType, target: $\mathbb{N}$,
+starts\_on: Date), a daily goal for one activity type, in effect from starts\_on.
+
+\medskip
+\noindent Milestone = tuple of (kind: \{streak, currency\_earned\}, value:
+$\mathbb{N}$, reached\_on: Date), one value in MILESTONES that the user has
+reached.
+
+\medskip
+\noindent ShareableGoalUpdate = tuple of (kind: \{streak,
+fitness\_milestone\}, value: $\mathbb{N}$), a streak or a fitness milestone,
+the only updates from Goals that Social (M15) may share (FR65). It holds no
+balance, no missed goal and no ended streak (FR24).
+
+\medskip
+\noindent RestDayLimitError, a DomainError raised when a user marks more than
+REST\_DAYS\_PER\_PERIOD rest days in one STREAK\_PERIOD (FR23).
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``goals'', router: this module's routes,
+lifespan: None, health: None)
+
+\medskip
+\noindent Goals reads REST\_DAYS\_PER\_PERIOD, STREAK\_PERIOD,
+GOAL\_REVIEW\_PERIOD, MAX\_GOAL\_INCREASE and MILESTONES from Constants (M7),
+which adds them from SRS Appendix~C at Revision~0.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+set\_goal & Session, ID, ActivityType, $\mathbb{N}$ or None & Goal or None &
+ValueError \\
+goals\_in\_effect & Session, ID, Date & set of Goal & - \\
+mark\_rest\_day & Session, ID, Date & - & RestDayLimitError, ValueError \\
+streak & Session, ID & $\mathbb{N}$ & - \\
+suggest\_goal & Session, ID, ActivityType & $\mathbb{N}$ or None & - \\
+milestones & Session, ID & seq of Milestone & - \\
+shareable\_updates & Session, ID & set of ShareableGoalUpdate & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item goals: set of tuple of (user\_id: ID, goal: Goal), every goal each user
+  has set. Older goals are kept, so a past day is always judged by the goal in
+  effect that day.
+\item rest\_days: set of tuple of (user\_id: ID, day: Date)
+\item reached: set of tuple of (user\_id: ID, milestone: Milestone), each
+  milestone the first time it was reached, so it is shown once (FR25).
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Activity (M11) gives each user's daily totals by day, in the user's time
+  zone, and Wallet (M9) gives the total currency each user has earned.
+\item A route acts only for the signed-in user, given by Users (M8).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent set\_goal(session, user\_id, type, target), with $t$ the day after
+today in the user's time zone:
+\begin{itemize}
+\item transition: goals $:=$ goals $\cup$ \{(user\_id, (type, target, $t$))\},
+  or, when target is None, the user has no goal for type from $t$. Today's goal
+  doesn't change (FR19). This is the only routine that changes a goal, and a
+  route calls it only after the user confirms (FR21). A user with no goal
+  still earns currency (FR20).
+\item output: $out :=$ the new Goal, or None when the goal was removed
+\item exception: $exc :=$ (target $\le 0 \Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent goals\_in\_effect(session, user\_id, $d$):
+\begin{itemize}
+\item output: $out :=$ for each activity type, the goal of user\_id with the
+  latest starts\_on $\le d$, if it has one.
+\item exception: None
+\end{itemize}
+
+\noindent mark\_rest\_day(session, user\_id, $d$):
+\begin{itemize}
+\item transition: rest\_days $:=$ rest\_days $\cup$ \{(user\_id, $d$)\}
+\item exception: $exc :=$ ($d$ is before today in the user's time zone
+  $\Rightarrow$ ValueError $|$ the user already has REST\_DAYS\_PER\_PERIOD
+  rest days in $d$'s STREAK\_PERIOD $\Rightarrow$ RestDayLimitError)
+\end{itemize}
+
+\noindent streak(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the streak as defined in SRS Section~6.7, worked out
+  each time from Activity's daily totals, goals\_in\_effect and rest\_days
+  (FR22, FR23), so a late total (SEC-20) or a rest day marked later gives the
+  right streak without a fix-up.
+\item exception: None
+\end{itemize}
+
+\noindent suggest\_goal(session, user\_id, type):
+\begin{itemize}
+\item output: $out :=$ (the user met their goal for type on each of the last
+  GOAL\_REVIEW\_PERIOD days $\Rightarrow$ a target at most
+  (1 + MAX\_GOAL\_INCREASE) times the current one $|$ otherwise $\Rightarrow$
+  None). A suggestion changes nothing until the user confirms it with
+  set\_goal (FR21).
+\item exception: None
+\end{itemize}
+
+\noindent milestones(session, user\_id):
+\begin{itemize}
+\item transition: reached gains each value in MILESTONES that the user's
+  streak or total currency earned has reached and that isn't in reached yet,
+  with today's date.
+\item output: $out :=$ the user's milestones in reached, oldest first. No
+  milestone uses body weight or calories (FR26).
+\item exception: None
+\end{itemize}
+
+\noindent shareable\_updates(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ \{(streak, streak(session, user\_id))\} $\cup$
+  \{(fitness\_milestone, $m$.value) $|$ $m$ in milestones(session, user\_id)\}
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Learning} \label{MisLearning}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Learning (M14 in the MG), on the server. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Constants (M7), Users (M8), Trading (M12), Plugins (M22), JSON
+Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Explanation = tuple of (concept: String, text: String, source:
+String, reviewed\_on: Date), a concept explanation with its source and the
+date it was last reviewed (FR59).
+
+\medskip
+\noindent KnowledgeCheck = tuple of (check\_id: ID, concept: String,
+questions: seq of tuple of (question: String, choices: seq of String)), a
+knowledge check without its answers, so the phone can't show them early.
+
+\medskip
+\noindent CheckResult = tuple of (correct: seq of $\mathbb{B}$, explanations:
+seq of String or None, passed: $\mathbb{B}$), which answers were right, the
+explanation of each one that was wrong (FR56), and whether the check was
+passed (FR57).
+
+\medskip
+\noindent Feedback = tuple of (kind: \{value\_change, trade\_effect,
+concentration\}, text: String, based\_on: seq of tuple of (asset: String,
+change: Decimal)), feedback on the user's portfolio, with the holdings and
+price changes it is based on (FR60).
+
+\medskip
+\noindent UnpublishedContentError, a DomainError raised when content is
+published before a second team member has reviewed it (FR59).
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``learning'', router: this module's
+routes, lifespan: None, health: None)
+
+\medskip
+\noindent Learning reads FEEDBACK\_THRESHOLD, CONCENTRATION\_LIMIT and
+KNOWLEDGE\_CHECK\_PASS\_MARK from Constants (M7), which adds them from SRS
+Appendix~C at Revision~0.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+explanation & Session, String & Explanation & NoResultFound \\
+knowledge\_check & Session, String & KnowledgeCheck & NoResultFound \\
+submit\_answers & Session, ID, ID, seq of $\mathbb{N}$ & CheckResult &
+NoResultFound, ValueError \\
+progress & Session, ID & tuple of (viewed: set of String, passed: set of
+String) & - \\
+portfolio\_feedback & Session, ID & seq of Feedback & - \\
+trade\_feedback & Session, ID, ID & Feedback & NoResultFound \\
+save\_content & Session, ID, Explanation or KnowledgeCheck & ID & ValueError \\
+publish & Session, ID, ID & - & Unpublished\allowbreak ContentError \\
+passed\_checks & Session, ID & set of String & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item content: set of tuple of (content\_id: ID, item: Explanation or
+  KnowledgeCheck with its answers, author: ID, reviewer: ID or None,
+  published: $\mathbb{B}$), kept on the server so administrators can change it
+  without a new release of the app (FR58).
+\item attempts: set of tuple of (user\_id: ID, check\_id: ID, result:
+  CheckResult)
+\item viewed: set of tuple of (user\_id: ID, concept: String)
+\item last\_viewed\_value: tuple of (user\_id: ID, value: Decimal), each
+  user's portfolio value when they last viewed their portfolio.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Trading (M12) gives read-only copies of a user's holdings, trades and
+  their values, so Learning can't change them.
+\item Only users Users (M8) marks as administrators reach save\_content and
+  publish.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent explanation(session, concept):
+\begin{itemize}
+\item transition: viewed gains (the signed-in user, concept)
+\item output: $out :=$ the published Explanation of concept (FR50)
+\item exception: $exc :=$ (no published explanation of concept
+  $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent knowledge\_check(session, concept):
+\begin{itemize}
+\item output: $out :=$ the published knowledge check of concept, without its
+  answers (FR55)
+\item exception: $exc :=$ (none is published $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent submit\_answers(session, user\_id, check\_id, answers):
+\begin{itemize}
+\item transition: attempts gains (user\_id, check\_id, $out$)
+\item output: $out :=$ the CheckResult, where passed is true exactly when at
+  least KNOWLEDGE\_CHECK\_PASS\_MARK of the answers are correct (FR56, FR57)
+\item exception: $exc :=$ (no such check $\Rightarrow$ NoResultFound $|$
+  $|$answers$|$ differs from the number of questions $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent progress(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the concepts the user has viewed and those whose check
+  they have passed (FR57)
+\item exception: None
+\end{itemize}
+
+\noindent portfolio\_feedback(session, user\_id), with $v$ the portfolio's
+value now and $v_0$ its last\_viewed\_value:
+\begin{itemize}
+\item transition: last\_viewed\_value of user\_id $:= v$
+\item output: $out :=$ a value\_change Feedback naming the holdings that
+  changed the value most, when $v_0 > 0$ and $|v - v_0| / v_0 >$
+  FEEDBACK\_THRESHOLD (FR52), and a concentration Feedback explaining
+  diversification, when one holding is more than CONCENTRATION\_LIMIT of $v$
+  (FR54). Feedback never recommends buying or selling an asset (FR49).
+\item exception: None
+\end{itemize}
+
+\noindent trade\_feedback(session, user\_id, trade\_id):
+\begin{itemize}
+\item output: $out :=$ a trade\_effect Feedback giving each holding's share of
+  the portfolio's value before and after the trade (FR53)
+\item exception: $exc :=$ (the user has no such trade $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent save\_content(session, author, item):
+\begin{itemize}
+\item transition: content gains item, unpublished, with author and no
+  reviewer. Editing published content saves a new unpublished version, so
+  only reviewed content is shown.
+\item output: $out :=$ the new content\_id
+\item exception: $exc :=$ (an Explanation has no source $\Rightarrow$
+  ValueError)
+\end{itemize}
+
+\noindent publish(session, reviewer, content\_id):
+\begin{itemize}
+\item transition: the content is published, with reviewer and today as its
+  review date.
+\item exception: $exc :=$ (reviewer is its author $\Rightarrow$
+  UnpublishedContentError) (FR59)
+\end{itemize}
+
+\noindent passed\_checks(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the concepts whose knowledge check the user has
+  passed, the only updates from Learning that Social (M15) may share (FR65)
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Social} \label{MisSocial}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Social (M15 in the MG), on the server. It is built after the proof of concept
+(\textsuperscript{\dag}), so this is the interface planned for Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Clock (M2), Users (M8), Activity (M11), Goals (M13), Learning
+(M14), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent UpdateKind $=$ \{activity\_total, streak, fitness\_milestone,
+learning\_milestone\}, the kinds of shared update in the SRS (FR65). There is
+no kind that holds a balance, a portfolio value, a body measurement or a
+single activity record (FR68).
+
+\medskip
+\noindent Update = tuple of (update\_id: ID, author: String, kind:
+UpdateKind, content: String, shared\_at: DateTime), an update as a friend sees
+it. author is a username, never a profile.
+
+\medskip
+\noindent FriendRequest = tuple of (request\_id: ID, from: String, to:
+String, sent\_at: DateTime)
+
+\medskip
+\noindent NotFriendsError, a DomainError raised when an update is shared with
+someone who isn't the user's friend (FR66).
+
+\medskip
+\noindent UnknownUserError, a DomainError raised when no user has the
+username given.
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``social'', router: this module's routes,
+lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+send\_request & Session, ID, String & FriendRequest & UnknownUserError,
+ValueError \\
+answer\_request & Session, ID, ID, $\mathbb{B}$ & - & NoResultFound \\
+remove\_friend & Session, ID, String & - & - \\
+shareable & Session, ID & seq of tuple of (kind: UpdateKind, content: String)
+& - \\
+preview & Session, ID, UpdateKind, $\mathbb{N}$ & Update & ValueError \\
+share & Session, ID, Update, set of String & ID & NotFriendsError,
+ValueError \\
+delete\_update & Session, ID, ID & - & - \\
+feed & Session, ID & seq of Update & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item requests: set of FriendRequest, the pending friend requests.
+\item friends: set of set of ID, each pair of users who are friends. A pair
+  is added only when the user asked accepts (FR62).
+\item updates: set of tuple of (update: Update, audience: set of ID), each
+  shared update and the friends who may see it. Each update is kept once.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Activity (M11), Goals (M13) and Learning (M14) give Social only the
+  updates each one may share. Social uses neither Wallet (M9) nor Trading
+  (M12), so a balance or a portfolio value can't reach an update.
+\item A route acts only for the signed-in user, given by Users (M8).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent send\_request(session, user\_id, username):
+\begin{itemize}
+\item transition: requests gains a request from user\_id to username (FR61)
+\item output: $out :=$ the new FriendRequest
+\item exception: $exc :=$ (no user has username $\Rightarrow$
+  UnknownUserError $|$ username is the user's own, or they are already friends
+  $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent answer\_request(session, user\_id, request\_id, accept):
+\begin{itemize}
+\item transition: the request is removed from requests, and when accept is
+  true, friends gains \{the sender, user\_id\} (FR62, FR63).
+\item exception: $exc :=$ (no pending request with request\_id was sent to
+  user\_id $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent remove\_friend(session, user\_id, username):
+\begin{itemize}
+\item transition: the pair is removed from friends. Since the audience is
+  checked each time a feed is served, neither user sees the other's updates
+  from then on (FR64, SEC-13).
+\item exception: None
+\end{itemize}
+
+\noindent shareable(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ every update the user may share now, built from what
+  Activity, Goals and Learning give Social (FR65)
+\item exception: None
+\end{itemize}
+
+\noindent preview(session, user\_id, kind, $i$):
+\begin{itemize}
+\item output: $out :=$ the $i$th update of that kind in shareable, exactly as
+  friends will see it (FR67)
+\item exception: $exc :=$ (there is no such update $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent share(session, user\_id, $u$, usernames):
+\begin{itemize}
+\item transition: updates gains ($u$, the IDs of usernames). The update saved
+  is the one the user previewed, so friends see what the user agreed to share
+  (FR66, FR67).
+\item output: $out := u$.update\_id
+\item exception: $exc :=$ (a username isn't the user's friend $\Rightarrow$
+  NotFriendsError $|$ $u$ isn't an update preview gave the user, or usernames
+  is empty $\Rightarrow$ ValueError)
+\end{itemize}
+
+\noindent delete\_update(session, user\_id, update\_id):
+\begin{itemize}
+\item transition: the update, if user\_id shared it, is removed from updates,
+  so no feed shows it again (FR70, SEC-13).
+\item exception: None
+\end{itemize}
+
+\noindent feed(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ every update whose audience holds user\_id and whose
+  author is still user\_id's friend, newest first (FR69). The feed isn't
+  ranked, and no routine orders users against each other (FR71).
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Scenarios} \label{MisScenarios}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Scenarios (M16 in the MG), on the server. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0.
+
+\subsection{Uses}
+
+Database (M1), Constants (M7), Users (M8), Wallet (M9), Market (M10), Trading
+(M12), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Scenario = tuple of (scenario\_id: ID, name: String, first\_day:
+Date, last\_day: Date), a past period the user can replay, such as a market
+downturn.
+
+\medskip
+\noindent ScenarioState = tuple of (run\_id: ID, scenario: Scenario, day:
+Date, cash\_balance: Decimal, value: Decimal), where a user's run of a
+scenario is up to. Every screen that shows one also shows that it is a
+scenario and its dates (FR48).
+
+\medskip
+\noindent ScenarioEndedError, a DomainError raised when the user continues a
+run that has reached its last day.
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``scenarios'', router: this module's
+routes, lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+list\_scenarios & Session & seq of Scenario & - \\
+start & Session, ID, ID & ScenarioState & NoResultFound \\
+state & Session, ID, ID & ScenarioState & NoResultFound \\
+continue\_run & Session, ID, ID & ScenarioState & ScenarioEndedError,
+NoResultFound \\
+buy & Session, ID, ID, String, $\mathbb{N}$, ID & ScenarioState &
+InsufficientFundsError, NoResultFound \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item scenarios: set of tuple of (scenario: Scenario, prices: (String
+  $\times$ Date) $\rightarrow$ Decimal), each scenario with the closing price
+  of each asset on each trading day it replays.
+\item runs: set of tuple of (run\_id: ID, user\_id: ID, scenario\_id: ID,
+  portfolio\_id: ID, day: Date), each run and the Wallet (M9) portfolio of its
+  own that it trades in.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item A scenario is in scenarios only once it has a price for every asset on
+  every trading day between first\_day and last\_day (SEC-32), so a replay
+  never stops on a missing day.
+\item Its assets are ones Market (M10) keeps, including assets removed from
+  the live market (FR31).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent list\_scenarios(session):
+\begin{itemize}
+\item output: $out :=$ every Scenario in scenarios
+\item exception: None
+\end{itemize}
+
+\noindent start(session, user\_id, scenario\_id):
+\begin{itemize}
+\item transition: Wallet makes a new scenario portfolio for user\_id with
+  SCENARIO\_START\_BALANCE and no holdings (FR46), and runs gains a run on it
+  at first\_day. The user's live balance and holdings don't change (FR45).
+\item output: $out :=$ the run's ScenarioState
+\item exception: $exc :=$ (no such scenario $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent state(session, user\_id, run\_id):
+\begin{itemize}
+\item output: $out :=$ the run's ScenarioState, valued at that day's closing
+  prices
+\item exception: $exc :=$ (user\_id has no such run $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\noindent continue\_run(session, user\_id, run\_id):
+\begin{itemize}
+\item transition: the run's day $:=$ the next trading day of its scenario
+  (FR47)
+\item output: $out :=$ the new ScenarioState
+\item exception: $exc :=$ (the day is last\_day $\Rightarrow$
+  ScenarioEndedError $|$ no such run $\Rightarrow$ NoResultFound)
+\end{itemize}
+
+\noindent buy(session, user\_id, run\_id, symbol, shares, request\_id):
+\begin{itemize}
+\item transition: Trading (M12) buys shares of symbol in the run's portfolio
+  at the run's day's closing price, under the lock that Wallet gives only for
+  a scenario portfolio. The same trade rules as the live market apply, such as
+  whole shares, no spending past the balance (FR37) and one trade per
+  request\_id (FR38). Market hours and price age aren't checked, since they
+  apply only to the live market. The live portfolio is never touched
+  (SEC-29, SEC-31).
+\item output: $out :=$ the run's new ScenarioState
+\item exception: $exc :=$ (the cost is more than the run's balance
+  $\Rightarrow$ InsufficientFundsError $|$ no such run or asset $\Rightarrow$
+  NoResultFound)
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Privacy} \label{MisPrivacy}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Privacy (M17 in the MG), on the server. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It never names another module or reads another module's tables.
+Each module's plug-in says what personal data it keeps and how to export and
+delete it, and Control (M6) hands Privacy the plug-ins (the plug-in pattern).
+
+\subsection{Uses}
+
+Database (M1), Users (M8), Plugins (M22), JSON Format (M23)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent PersonalDataHandler = tuple of (export: (Session, ID)
+$\rightarrow$ String, delete: (Session, ID) $\rightarrow$ -), what each
+plug-in gives Privacy. export gives the module's data about the user as JSON
+text, written with JSON Format (M23). A module that keeps no
+personal data gives an export with no entries and a delete that does nothing,
+so no module can be left out by mistake.
+
+\medskip
+\noindent DeletionNotConfirmedError, a DomainError raised when the user asks
+to delete their account without confirming that it can't be undone (FR10).
+
+\subsubsection{Exported Constants}
+
+\noindent PLUGIN: Plugin $=$ (name: ``privacy'', router: this module's
+routes, lifespan: None, health: None)
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+set\_handlers & seq of tuple of (String, PersonalDataHandler) & - & ValueError \\
+give\_consent & Session, ID & - & - \\
+withdraw\_consent & Session, ID & - & - \\
+has\_consent & Session, ID & $\mathbb{B}$ & - \\
+export\_data & Session, ID & String $\rightarrow$ String & - \\
+delete\_account & Session, ID, $\mathbb{B}$ & - &
+DeletionNot\allowbreak ConfirmedError \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item handlers: String $\rightarrow$ PersonalDataHandler, one for each
+  module, by its plug-in's name.
+\item consent: set of tuple of (user\_id: ID, given: $\mathbb{B}$, at:
+  DateTime), each consent and withdrawal, newest last.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\noindent backups: the database backups kept by the hosting, which can't be
+changed once made.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item Control (M6) calls set\_handlers once, when it builds the server, with
+  a handler from every plug-in.
+\item The hosting keeps each backup for no longer than
+  DATA\_DELETION\_PERIOD (SEC-26).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent set\_handlers($hs$):
+\begin{itemize}
+\item transition: handlers $:= hs$
+\item exception: $exc :=$ (a plug-in has no handler, or two have the same
+  name $\Rightarrow$ ValueError), so the server won't start with a module
+  left out.
+\end{itemize}
+
+\noindent give\_consent(session, user\_id) and withdraw\_consent(session,
+user\_id):
+\begin{itemize}
+\item transition: consent gains (user\_id, true or false, now) (FR76,
+  SEC-9). On the phone, Sync Service (M20) stops reading at once when consent
+  is withdrawn, without waiting for the server.
+\item exception: None
+\end{itemize}
+
+\noindent has\_consent(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ the given of user\_id's newest consent, or false if
+  there is none
+\item exception: None
+\end{itemize}
+
+\noindent export\_data(session, user\_id):
+\begin{itemize}
+\item output: $out :=$ for each name $n$ in handlers,
+  handlers($n$).export(session, user\_id): the profile, activity totals,
+  balance, holdings, trades and shared updates stored about the user (FR9)
+\item exception: None
+\end{itemize}
+
+\noindent delete\_account(session, user\_id, confirmed):
+\begin{itemize}
+\item transition: for each handler, handler.delete(session, user\_id), with
+  Users (M8) last, all in one transaction, so the account and all its data are
+  deleted together or not at all. The user can no longer sign in, and
+  friends no longer see their updates (FR11). The deletion reaches backups
+  within DATA\_DELETION\_PERIOD as old backups expire (SEC-18).
+\item exception: $exc :=$ ($\neg$ confirmed $\Rightarrow$
+  DeletionNotConfirmedError) (FR10)
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Navigation} \label{MisNavigation}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Navigation (M18 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. The proof of concept has one screen and doesn't use it yet. It
+decides which screen comes next, and Screens (M19) decides what each screen
+shows, so usability testing can change the order of screens without changing
+a screen (NFR2, NFR3).
+
+\subsection{Uses}
+
+Screens (M19)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent Section $=$ \{home, market, portfolio\}, the three main sections of
+the bottom navigation bar.
+
+\medskip
+\noindent Destination $=$ \{home, market, portfolio, stockDetails, buyStock,
+reviewPurchase, purchaseSuccessful, account, activityAndGoals, learning,
+social, scenarios, reminderSettings, privacySettings\}, every screen the user
+can reach. stockDetails, buyStock and reviewPurchase also take the stock's
+symbol, and reviewPurchase and purchaseSuccessful the number of shares.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+switchSection & Section & - & - \\
+navigate & Destination & - & - \\
+goBack & - & $\mathbb{B}$ & - \\
+current & - & Destination & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent stacks: Section $\rightarrow$ seq of Destination, the screens the
+user has opened in each section, the last one shown. active: Section, the
+section shown now.
+
+\subsubsection{Environment Variables}
+
+\noindent display: the phone's screen, which shows Screens' layout of the
+destination at the top of stacks(active).
+
+\subsubsection{Assumptions}
+
+The phone's back button or gesture calls goBack.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent switchSection($s$):
+\begin{itemize}
+\item transition: active $:= s$. Each section keeps its own stack, so
+  switching back returns the user to where they were.
+\item exception: None
+\end{itemize}
+
+\noindent navigate($d$):
+\begin{itemize}
+\item transition: ($d$ is purchaseSuccessful $\Rightarrow$ stacks(active) $:=
+  \langle$market, $d\rangle$, so going back can't repeat a purchase $|$
+  otherwise $\Rightarrow$ stacks(active) $:=$ stacks(active) $\|\ \langle d
+  \rangle$)
+\item exception: None
+\end{itemize}
+
+\noindent goBack():
+\begin{itemize}
+\item transition: ($|$stacks(active)$| > 1 \Rightarrow$ the last destination is
+  removed from stacks(active))
+\item output: $out :=$ true when there was an earlier screen to return to
+\item exception: None
+\end{itemize}
+
+\noindent current():
+\begin{itemize}
+\item output: $out :=$ the last destination in stacks(active)
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
+\section{MIS of Screens} \label{MisScreens}
+
+\subsection{Module}
+
+Screens (M19 in the MG)
+
+\subsection{Uses}
+
+Sync Service (M20), and the API Service (M24) calls for the balance, prices,
+buying and the portfolio, to be added for this screen. The MG's uses of
+Constants (M7), for the app's copy of MAX\_TEXT\_SCALE (NFR8), and Reminder
+Service (M21), for the user's reminder periods (FR72), come at Revision~0.
+Today's steps come through Sync Service, so Screens never reads the health
+platform itself.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent None. A component's output has no type name in the code, so the
+table below writes it as Screen, what a React component gives React Native to
+draw (a React element). It is drawn again each time the component's state, or
+a value from a hook it calls, changes.
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm} p{2cm} p{3cm} p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+DemoScreen & - & Screen & - \\
+App & - & Screen & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\noindent Each DemoScreen shown has its own copy, which React keeps while it
+is shown.
+
+\medskip
+{\raggedright
+\noindent quantityText: String, what the user typed as the number of shares,
+``'' at first.\\
+buying: $\mathbb{B}$, whether a buy is in progress, false at first.\\
+message: String or None, the last message about a request, None at first.\\
+retryBuy: tuple of (request\_id: String, quantityText: String,
+expected\_price: String) or None, the last buy that failed, None at first.\\
+balance: String or None, the latest cash\_balance the server sent.\\
+asset: an element of assets in the Out of GET /v1/assets of Market (M10),
+with that Out's market\_open, or None. It is the entry for DEMO\_SYMBOL in the
+latest reply.\\
+portfolio: the Out of GET /v1/me/portfolio of Trading (M12), or None, from
+its latest reply.\\
+Each is None until it first arrives. Only the server's
+replies set them, and the phone never works out a reward, a balance or a
+holding (SEC-24), since the server holds every rule about currency (MG
+Section~6).\par}
+
+\subsubsection{Environment Variables}
+
+\noindent textScale: $\mathbb{R}$, the phone's text size setting, as a
+multiple of its default size.
+
+\subsubsection{Assumptions}
+
+The server has the demo user, so each request acts for DEMO\_USER\_ID of Users
+(M8) without a sign-in. It runs the price poller of Market (M10), so new
+prices arrive while the market is open. A failed API Service call fails with
+an Error. For a refusal, its message is the server's, worded for a user by
+JSON Format (M23). The app's services write their other messages
+themselves, such as ``Sending steps timed out. Refresh to try again.'' of API
+Service (M24) and the reasons a read fails in Health Service (M4). The proof
+of concept shows them as they are. That goes against the MG's decision that
+what the user sees is in Screens alone, so at Revision~0 Screens words them
+instead.
+
+\subsubsection{Access Routine Semantics}
+
+\noindent DemoScreen():
+\begin{itemize}
+\item transition: when shown, it calls useTodaySteps(true) of Sync Service
+  (M20), and asks API Service for the balance, the asset list and the
+  portfolio. It asks for the asset list and the portfolio again every
+  REFRESH\_INTERVAL while it is shown, so the price and the portfolio value
+  follow the market (FR42). Each reply sets balance, asset or portfolio, and
+  a new syncResult sets balance $:=$ its cash\_balance, so the balance shows
+  what today's steps earned (Development Plan, Section~9).
+  Typing sets quantityText $:=$ the text typed and message $:=$ None. Pressing
+  Buy runs buyShares. A request that fails sets message $:=$ its Error's
+  message and leaves the other values as they were.
+\item output: $out :=$ a Screen with the areas below. Their order and look
+  are not fixed, since usability testing may change them (NFR2, AC19 in the
+  MG).
+  \begin{enumerate}
+  \item Today's steps, from useTodaySteps: ``Loading'' while loading, else
+    steps, which is 0 for a day with no data (FR16), else error's message
+    with a Retry that calls refresh (SEC-21). After a failed read steps is
+    None, so no old count is shown as today's (HA~H47). No other area waits
+    for the steps, so buying and the portfolio stay usable without them
+    (SEC-21).
+  \item balance, as virtual currency (SC5), and what today's steps earned,
+    from syncResult: today's reward and the rate of one unit per
+    steps\_per\_coin steps, so the user sees how steps become currency
+    (FR13, Development Plan, Section~9). A day with counted false says it was
+    not counted (FR17). A syncError's message comes with the same Retry, and balance stays the
+    last one the server sent (SEC-21).
+  \item The asset's symbol, name and price, with its obtained\_at in the
+    phone's time zone, and ``Delayed'' when delayed is true (FR33). It says
+    when the market is closed, so a refused buy is explained (HA~H19), and
+    when there is no price yet. Then quantityText, orderTotal(quantityText,
+    the price) when validQuantity(quantityText), and Buy (FR35). Buy is
+    enabled only when validQuantity(quantityText), there is a price and
+    $\neg$buying.
+  \item The shares held of each holding in portfolio (FR41), so after a buy
+    the new shares show with the new balance from its reply.
+  \item The portfolio value, portfolio.holdings\_value, with ``Simulated''
+    next to it (FR43, HA~SAF-10), and the price it was valued at with its
+    time and ``Delayed'' marker (FR33). Each new portfolio reply shows it at
+    the latest price the server has (FR32, FR42). The reply has no gain or
+    loss yet. At Revision~0 one is shown with its sign or a word, never by
+    colour alone (FR44, HA~H50).
+  \item message, so a failed request, such as a server that can't be reached
+    or too little currency, is told in words and never crashes the screen
+    (NFR2).
+  \end{enumerate}
+  Each amount is shown from the server's text, never as a floating-point
+  number, which can't hold most decimals exactly (NFR1). Showing it to two
+  decimals keeps it within VALUE\_TOLERANCE (SEC-30). Every text and control
+  grows with textScale up to MAX\_TEXT\_SCALE, 200\% (SRS Appendix~C),
+  without being clipped, and the screen scrolls (NFR8). No text is shrunk to
+  fit, which would undo the user's text size.
+\item exception: None. A failed read or request is shown, never raised.
+\end{itemize}
+
+\noindent The wording of the simulation notice before the first trade (FR34,
+HA~SAF-8) and of the health notice before the first read (FR14, HA~SAF-12)
+belongs to Screens (MG Section~6). Both come at Revision~0, the first with
+its check in Trading (M12). Until then the screen calls useTodaySteps(true)
+at once. At Revision~0 it passes false until the user acknowledges the health
+notice.
+
+\medskip
+\noindent App():
+\begin{itemize}
+\item output: $out :=$ DemoScreen(), with the phone's status bar. The proof of
+  concept has one screen, so App shows it alone. At Revision~0, Navigation
+  (M18) shows it among the other screens (AC18 in the MG).
+\item exception: None
+\end{itemize}
+% On main, App.tsx returns null until DemoScreen lands (PR #312).
+
+\subsubsection{Local Functions}
+
+\noindent DEMO\_SYMBOL: String, the one asset the screen shows. The demo user
+starts with no currency, so it is chosen so that a few days of steps can buy a
+whole share (FR35).\\
+REFRESH\_INTERVAL: Duration $=$ 60 seconds, the POLL\_INTERVAL of Market
+(M10), since asking more often would show no new price.
+
+\smallskip
+\noindent validQuantity: String $\rightarrow \mathbb{B}$\\
+validQuantity($s$) $:=$ $s$ is digits only, and its value $n$ has $1 \leq n
+\leq 2^{53} - 1$, so JavaScript holds it exactly. Only whole shares are
+bought (FR35), and the server checks again (SEC-25).
+
+\smallskip
+\noindent orderTotal: String $\times$ String $\rightarrow$ String\\
+orderTotal($s$, price) $:=$ $n \times$ price, exact, worked out from price's
+decimal text, with $n$ the value of $s$ (NFR1). It is only a preview. The
+amount paid is the currency\_amount of the buy's reply, and the server checks
+it against the balance (FR37, SEC-24).
+
+\smallskip
+\noindent buyShares: () $\rightarrow$ Promise of None, one buy
+
+\smallskip
+\noindent buyShares():
+\begin{itemize}
+\item transition: buying $:=$ true and message $:=$ None. It asks API Service
+  to buy $n$ shares of DEMO\_SYMBOL, with $n$ the value of quantityText, at
+  expected\_price $:=$ the price shown, exactly as GET /v1/assets gave it, so
+  the buy runs only at the price the user saw (SEC-29). API Service doesn't
+  retry (AC24 in the MG), so the user retries by pressing Buy again. If
+  retryBuy has the same quantityText and price, the buy reuses its
+  request\_id, so after a lost reply Trading (M12) answers the retry with
+  the first result and records the trade once (FR38, SEC-6). A refused buy
+  saves no trade, so its request\_id can be sent again. Otherwise the buy gets
+  a new request\_id.
+  Buy is disabled while buying, so a double tap makes one buy (HA~H17). On success, balance $:=$ its cash\_balance, message $:=$
+  a confirmation with $n$ and its currency\_amount, quantityText $:=$ ``'',
+  retryBuy $:=$ None, and it asks for the portfolio again. On failure,
+  retryBuy $:=$ this buy, message $:=$ its Error's message, and it asks for
+  the asset list and the portfolio again. It does
+  this for every failure, since the Error holds only a message, not the
+  refusal's code. After price\_changed, the message gives the new price, which
+  the asset area then shows, and the user presses Buy again to confirm it
+  (SEC-29). After a lost reply, the shares held show whether the buy went
+  through (HA~H46). Either way, buying $:=$ false at the end.
+\item output: $out :=$ None, once the buy ends
+\item exception: None. The screen doesn't check the balance, since no app
+  module holds a trade rule (MG Section~6). It shows the server's refusal
+  instead (FR37).
+\end{itemize}
+
+\newpage
+
+\section{MIS of Sync Service} \label{MisSync}
+
+\subsection{Module}
+
+Sync Service (M20 in the MG)
+
+\medskip
+\noindent Sync Service decides when the app reads the day's activity and sends
+it to the server, which may change with what the health platforms allow (AC20
+in the MG, SRS LC1). In the proof of concept it is one React hook,
+useTodaySteps, in app/services/health/\allowbreak useTodaySteps.ts. The file
+sits in Health Service's folder, but it is Sync Service, since it holds when to
+read and send, not how the phone is read.
+
+\subsection{Uses}
+
+Health Service (M4), API Service (M24)
+
+\medskip
+\noindent The MG's uses of Device Service (M5) and Constants (M7) come at
+Revision~0, for the app's state, the time and the time zone, and for
+SYNC\_LOOKBACK\_PERIOD (SEC-20).
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+None. The hook's output has no type name in the code, so the table below
+writes it out. DailyTotalsResponse, the server's reply to a sync, is a type of
+API Service (M24).
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so the hook's output fits its column.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.8cm}
+  >{\raggedright\arraybackslash}p{1.2cm}
+  >{\raggedright\arraybackslash}p{8.6cm}
+  >{\raggedright\arraybackslash}p{2.2cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+useTodaySteps & $\mathbb{B}$ & tuple of (steps: $\mathbb{Z}$ or None, loading:
+  $\mathbb{B}$, error: Error or None, refresh: () $\rightarrow$ Promise of
+  None, syncing: $\mathbb{B}$, syncError: Error or None, syncResult:
+  DailyTotalsResponse or None) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+Each screen that calls useTodaySteps has its own copy of these, which React
+keeps between the screen's renders.
+
+\begin{itemize}
+\item steps: $\mathbb{Z}$ or None, today's count as the phone read it, 0 or
+  more, or None before the first read and after a failed one
+\item loading, syncing: $\mathbb{B}$, true while the phone is read and while
+  the count is sent. loading starts as enabled, and syncing as false.
+\item error, syncError: Error or None, why the last read or the last send
+  failed
+\item syncResult: DailyTotalsResponse or None, the server's reply to the last
+  send
+\item pending: Promise of None or None, the read and send in progress
+\item cancelled: $\mathbb{B}$, true once enabled has become false or the screen
+  has gone. Each time enabled becomes true, cancelled and pending start again
+  as false and None, so refresh works again.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+\begin{itemize}
+\item appState: String, the app's state from React Native's AppState. It is
+  ``active'' while the app is in the foreground.
+\item now: the phone's local date and time, from its clock.
+\item timeZone: String, the phone's IANA time zone name, such as
+  ``America/Toronto'', from JavaScript's Intl.
+\end{itemize}
+
+\noindent At Revision~0, appState, now and timeZone come through Device
+Service (M5), so the app reaches the phone's operating system only through it
+(NFR4). Then no module reads the system time itself, as the MG decides (MG
+Section~6), and a test can set the time.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The screen passes enabled $=$ false until the user has acknowledged the
+  health notice (FR14) and consented to reading their health data, and again
+  as soon as consent is withdrawn (SEC-9, FR76). The proof of concept has no
+  notice or consent yet, so its screen leaves enabled true. Both come at
+  Revision~0.
+\item The user stays in one time zone for the day that is read. The HA does
+  not assume this (HA~H9), so at Revision~0 each record is put on its day in
+  the time zone where it took place (SEC-23).
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent useTodaySteps(enabled), with enabled true by default:
+\begin{itemize}
+\item transition: (enabled $\Rightarrow$ refresh() runs when the screen first
+  shows or enabled becomes true, and again each time appState becomes
+  ``active'' from another state
+  $|$ $\neg$enabled $\Rightarrow$ steps, error, syncError, syncResult $:=$ None,
+  loading, syncing $:=$ false, and nothing is read or sent).\\
+  The app reads when it opens or comes back to the foreground, not in the
+  background, which the health platforms may not allow reliably (SRS LC1,
+  AC20). The user still needn't open the app while exercising, since the
+  platform records the activity and the next read that day gets every step
+  since midnight (FR15, HA~H11).\\
+  When enabled becomes false or the screen goes away, cancelled $:=$ true, the
+  send in progress is cancelled through its AbortSignal, refresh does nothing
+  from then on, and appState is no longer watched. A read already started
+  still finishes, but its count is dropped. So once consent is withdrawn, no
+  new read starts and a count that comes in late is neither shown nor sent,
+  without waiting for the server (SEC-9).
+\item output: $out :=$ (steps, loading, error, refresh, syncing, syncError,
+  syncResult). refresh stays the same function while the screen stays, so a
+  button can keep it.
+\item exception: None. A failure is kept in error or syncError, never raised,
+  so the screen can say activity could not be read or sent and stay usable
+  (SEC-21). In the proof of concept, the words are each Error's message, set
+  by the module that raised it, as Health Service (M4) says. At Revision~0,
+  Screens (M19) chooses them, by the MG's decision that what the user sees is
+  in Screens alone.
+\end{itemize}
+
+\noindent refresh(), the function in the output of useTodaySteps:
+\begin{itemize}
+\item transition: (cancelled or $\neg$enabled $\Rightarrow$ nothing $|$
+  pending $\neq$ None $\Rightarrow$ nothing new starts $|$ pending $=$ None
+  $\Rightarrow$ pending $:=$ readSteps(), and pending $:=$ None once it ends).
+  Reusing the read in progress means a tap and a return to the foreground at
+  once read and send only once. A second send would be harmless, since the app
+  sends the day's total, not an increase, and the server pays only what is
+  still owed (SEC-19, HA~H4), but it costs a request.
+\item output: $out :=$ pending, which gives None once the read and send are
+  done, whether or not they worked, or None at once when nothing starts
+\item exception: None
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent readSteps: () $\rightarrow$ Promise of None, one read and one send
+
+\medskip
+\noindent readSteps():
+\begin{itemize}
+\item transition: these steps in order. After each wait, nothing more changes
+  if cancelled has become true.
+\begin{enumerate}
+\item loading $:=$ true, and error, syncError, syncResult $:=$ None, so an
+  earlier reply isn't shown as today's.
+\item $t :=$ now, $d :=$ the local date of $t$, and $z :=$ timeZone, taken
+  before the read. The read can wait on a permission prompt past midnight, and
+  its total must stay on the day it was asked for (SEC-23, HA~H9).
+\item total $:=$ getTodaysSteps($t$) of Health Service (M4), the steps from
+  local midnight to $t$. A day with no data gives 0, which is sent as 0
+  (FR16). If the read fails with $e$, then steps $:=$ None, error $:= e$,
+  loading $:=$ false, and nothing is sent. No old count is left on screen as
+  today's, and the currency already earned is untouched (SEC-21).
+\item steps $:=$ total, loading $:=$ false, syncing $:=$ true. The count shows
+  before the send, since it doesn't need the network, and the HA does not
+  assume the network is available.
+\item $r :=$ sendTodaysSteps((activity\_date: $d$, activity\_type:
+  ``steps'', step\_count: total), $z$, signal) of API Service (M24), with
+  signal the AbortSignal that cancels it. The app sends one daily total for
+  one activity type, never a record, a reward or a balance (SEC-10, SEC-24).
+  Activity (M11) works out the reward, by the MG's decision that the server
+  holds every rule about currency. The time zone lets the server refuse a
+  date after its own date in the user's time zone, even if the phone's clock
+  is wrong (SEC-24, HA~H51). Only today's total is sent. At Revision~0 each
+  day of the last SYNC\_LOOKBACK\_PERIOD is sent, so activity recorded late
+  is still paid (SEC-20, HA~H5).
+\item If $r$ comes, syncResult $:= r$. It holds the reward, balance and rate
+  as the server worked them out (SEC-24). By step 1, syncResult is None while
+  a later refresh runs and after a failed send, so it is not a lasting record
+  of the balance. If the send fails with $e$, syncError $:= e$, and steps
+  keeps its count, since the read was right.
+  API Service doesn't retry (AC24), so the next refresh sends it again. Either
+  way, syncing $:=$ false.
+\end{enumerate}
+\item output: $out :=$ None, once the send ends, the read fails, or
+  cancelled stops it after the read
+\item exception: None. Every failure is kept in error or syncError, and one
+  that is not an Error becomes Error(``Could not read today's steps.'') for
+  the read, or Error(``Could not sync today's steps.'') for the send.
+\end{itemize}
+
+\newpage
+
+\section{MIS of Reminder Service} \label{MisReminders}
+
+\begingroup\raggedright
+\subsection{Module}
+
+Reminder Service (M21 in the MG), in the app. It is built after the proof of
+concept (\textsuperscript{\dag}), so this is the interface planned for
+Revision~0. It decides which reminders to send and when, and Device Service
+(M5) shows them. Reminders are made on the phone, with no push notification
+service.
+
+\subsection{Uses}
+
+Device Service (M5), Constants (M7), API Service (M24)
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent ReminderType $=$ \{activity, milestone, portfolio, learning,
+social\}, the reminder types in the SRS's Reminders and Settings requirements.
+
+\medskip
+\noindent ReminderSettings = tuple of (enabled: set of ReminderType, periods:
+seq of tuple of (from: Time, to: Time), includeDetails: $\mathbb{B}$), what the
+user has chosen, where Time is a time of day. periods are in the user's time zone, and includeDetails is
+false until the user turns it on.
+
+\medskip
+\noindent ReminderEvent = tuple of (eventId: String, type: ReminderType,
+occurredAt: DateTime, details: String), an event that may lead to a reminder,
+such as a friend's new update. details holds only what the reminder may show
+when includeDetails is true.
+
+\subsubsection{Exported Constants}
+
+None. It reads DEFAULT\_REMINDER\_PERIOD from Constants (M7), which adds it
+from SRS Appendix~C at Revision~0.
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.9cm}
+  >{\raggedright\arraybackslash}p{3.7cm}
+  >{\raggedright\arraybackslash}p{3.4cm}
+  >{\raggedright\arraybackslash}p{4.3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+getSettings & - & Promise of ReminderSettings & Error \\
+saveSettings & ReminderSettings & Promise of - & Error, ValueError \\
+handleEvents & seq of ReminderEvent & Promise of $\mathbb{N}$ & - \\
+checkNow & - & Promise of $\mathbb{N}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+\begin{itemize}
+\item settings: ReminderSettings, the user's settings, saved on the server
+  through API Service (M24) and cached here.
+\item handled: set of String, the eventIds already turned into a reminder, so
+  the same event never sends two reminders.
+\item scheduled: set of tuple of (eventId: String, notificationId: ID), the
+  reminders Device Service has scheduled and not yet shown.
+\end{itemize}
+
+\subsubsection{Environment Variables}
+
+None. Device Service holds the phone's notifications.
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The app calls checkNow each time it opens, and registers it as a
+  background task with Device Service, so a reminder can be sent after its
+  event the next time the app runs (FR75).
+\item The server gives the events since the last check through API Service.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+\noindent getSettings():
+\begin{itemize}
+\item output: $out :=$ settings, from the server when it can be reached, and
+  the cached copy otherwise
+\item exception: $exc :=$ (no settings are cached and the server can't be
+  reached $\Rightarrow$ Error)
+\end{itemize}
+
+\noindent saveSettings($s$):
+\begin{itemize}
+\item transition: settings $:= s$ on the server and here (FR72, FR74). Each
+  reminder in scheduled whose type is no longer enabled, or whose time is no
+  longer in a period, is cancelled or moved to the start of the next period.
+\item exception: $exc :=$ (a period's from is not before its to
+  $\Rightarrow$ ValueError $|$ the server can't be reached $\Rightarrow$
+  Error)
+\end{itemize}
+
+\noindent handleEvents($es$), with $P$ = settings.periods, or
+DEFAULT\_REMINDER\_PERIOD when the user has chosen none:
+\begin{itemize}
+\item transition: for each $e$ in $es$ with $e$.type in settings.enabled and
+  $e$.eventId not in handled, Device Service schedules a reminder at the
+  first time from now that is in $P$ (FR73), scheduled gains it and handled
+  gains $e$.eventId. Its text holds no health data, balance or portfolio value
+  unless settings.includeDetails is true (SEC-34).
+\item output: $out :=$ the number of reminders scheduled
+\item exception: None. A reminder Device Service can't schedule, because the
+  permission was refused, is skipped and its event is not marked handled.
+\end{itemize}
+
+\noindent checkNow():
+\begin{itemize}
+\item transition: as handleEvents(the events API Service gives since the last
+  check)
+\item output: $out :=$ the number of reminders scheduled
+\item exception: None. If the server can't be reached, nothing is scheduled
+  and the next check tries again.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+None
+
+\par\endgroup
+
+\newpage
+
 \section{MIS of Plugins} \label{MisPlugins}
 
 \subsection{Module}
@@ -2010,7 +4201,214 @@ point, such as ``84.0000'' for 84. A zero is always ``0.0000'', never
 
 \newpage
 
-% M24 API Service (app): #250
+\section{MIS of API Service} \label{MisAPI}
+
+\subsection{Module}
+
+API Service (M24 in the MG)
+
+\subsection{Uses}
+
+None. The MG also lists Device Service (M5), which keeps the session token in
+the phone's secure storage (SEC-39). That use comes at Revision~0 with sign-in
+(FR4). The proof of concept has no sign-in (Development Plan, Section~9).
+Users (M8) answers every request as its demo user, so API Service sends no
+token yet.
+
+\subsection{Syntax}
+
+\subsubsection{Exported Types}
+
+\noindent DailyStepTotal = tuple of (activity\_date: String, activity\_type:
+\{steps\}, step\_count: $\mathbb{Z}$), one day's steps as the phone read them
+through Health Service (M4). activity\_date is the day on the phone's calendar,
+written YYYY-MM-DD, since the phone puts each record on the user's day
+(SEC-23). step\_count is 0 or more. It is the day's whole total, not the steps
+since the last sync, so sending the same total again earns nothing twice
+(SEC-19).
+
+\medskip
+\noindent DailyTotalsRequest = tuple of (time\_zone: String, totals: seq of
+DailyStepTotal), the JSON body that sendTodaysSteps sends. time\_zone is the
+phone's IANA time zone name, such as ``America/Toronto''. The server uses it to
+find the user's date, so it can refuse a total dated in the future (SEC-24).
+Its activity data is daily totals only, never single records (SEC-10). It
+has no reward or balance, since the server alone decides those (SEC-24).
+This is the MG's decision that the server holds every rule about currency.
+
+\medskip
+\noindent DailyTotalResult = tuple of (activity\_date: String,
+activity\_type: \{steps\}, step\_count: $\mathbb{Z}$, counted: $\mathbb{B}$,
+reward: String, credited\_now: String), the server's result for one total it
+was sent. counted is false when the server found the total implausible (FR17).
+reward is what the day earns in all, and credited\_now is what this sync added
+to the balance. credited\_now is ``0.0000'' when the day was already paid
+(SEC-19).
+
+\medskip
+\noindent DailyTotalsResponse = tuple of (totals: seq of DailyTotalResult,
+cash\_balance: String, steps\_per\_coin: $\mathbb{N}$), the server's reply. It
+has the results in the order the totals were sent, the balance after the sync,
+and the earning rate, in steps per coin. The server sends the rate, so a screen
+can show how steps turn into currency (FR13) without the app holding the rule.
+
+\medskip
+\noindent reward, credited\_now and cash\_balance are Money of JSON Format
+(M23), a String holding a decimal with exactly four places. API Service hands
+them on as text and does no arithmetic with them, since a JavaScript number
+can't hold most decimals exactly (NFR1).
+
+\subsubsection{Exported Constants}
+
+None
+
+\subsubsection{Exported Access Programs}
+
+\begin{center}
+% Small, with less space between columns, so the types fit their columns.
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.2cm}
+  >{\raggedright\arraybackslash}p{4.6cm}
+  >{\raggedright\arraybackslash}p{4.4cm}
+  >{\raggedright\arraybackslash}p{2.6cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+sendTodaysSteps & DailyStepTotal, String, AbortSignal or None & Promise of
+  DailyTotalsResponse & Error \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent The demonstration also needs the balance, the price of one asset, a
+buy and the portfolio's value (Development Plan, Section 9). Calls for
+GET /v1/me/balance of Wallet (M9), GET /v1/assets of Market (M10), and
+POST /v1/me/trades and GET /v1/me/portfolio of Trading (M12) are to be added
+here for the demo screen. They are not in the code yet, so they are specified
+once they are written. They are expected to share the address, time limit,
+refusal message and reply check of sendTodaysSteps, so a screen handles every
+failure the same way.
+
+\subsection{Semantics}
+
+\subsubsection{State Variables}
+
+None. Each call stands alone. API Service keeps no session, cache or queue of
+calls to retry.
+
+\subsubsection{Environment Variables}
+
+{\raggedright
+\noindent EXPO\_PUBLIC\_API\_URL: String or None, the server's address, such as
+http://localhost:8000 in src/frontend/.env.example. Expo puts it into the app
+when it bundles it. The address is set outside the code, so moving the server
+changes no code (AC24 of the MG). It depends on how the phone reaches the
+computer that runs the server, over USB or Wi-Fi.\par}
+
+\medskip
+\noindent server: the \progname{} server, reached over the phone's network
+connection, which may be slow or missing. sendTodaysSteps calls its route
+PUT /v1/me/activity/daily-totals of Activity (M11).
+
+\subsubsection{Assumptions}
+
+\begin{itemize}
+\item The caller gives a total for today in time zone timeZone, with a
+  step\_count that is a whole number, 0 or more. sendTodaysSteps doesn't check
+  it, since the server refuses a step\_count that doesn't fit (SEC-25) and a
+  date after today (SEC-24), and the refusal reaches the caller as an Error.
+\item The server runs with DEMO\_USER\_ENABLED of Users (M8) on, so it answers
+  for the demo user without a session token. At Revision~0, each call sends the
+  session token instead, so only a signed-in user's requests are answered
+  (SEC-15). The token is read from secure storage through Device Service (M5)
+  (SEC-39).
+\item The demonstration reaches the server over HTTP on a local network. At
+  Revision~0 the address is an HTTPS one, so data is encrypted on the way
+  (SEC-16), as the MG's unlikely change on HTTPS and JSON assumes.
+\end{itemize}
+
+\subsubsection{Access Routine Semantics}
+
+{\raggedright
+\noindent sendTodaysSteps(total, timeZone, signal), with signal None when left
+out, and $a :=$ EXPO\_PUBLIC\_API\_URL without spaces at either end or slashes
+at its end, so an address written with a final slash gives the same path:\par}
+\begin{itemize}
+\item transition: the server saves total and pays what its day still owes, if
+  anything. sendTodaysSteps sends one request, PUT
+  $a$/v1/me/activity/daily-totals, with the JSON body
+  DailyTotalsRequest(timeZone, $\langle$total$\rangle$). It sends only the
+  day's total, and the server alone works out the reward and the balance
+  (SEC-10, SEC-24). It doesn't retry by itself. Sync Service (M20) sends it
+  again on the next refresh, or when the app comes back to the foreground.
+  That is safe even if an earlier call's reply was lost, since the server pays
+  nothing twice (SEC-19, HA~H46).
+\item output: $out :=$ a Promise that gives the reply's body as a
+  DailyTotalsResponse. It gives it only when the reply's status is 2xx and
+  isDailyTotalsResponse(body) holds, within 10 seconds of the call. Checking
+  the body means a changed or broken server, or another program at the
+  address, can't put a value of the wrong form on screen, such as an amount
+  sent as a number, which may have lost its exact value (NFR1, SEC-30).
+\item exception: the Promise fails with the first of these that holds:\\
+  \hspace*{1em}$exc :=$ ($a$ is None or empty $\Rightarrow$ Error(``Set
+  EXPO\_PUBLIC\_API\_URL in the frontend .env file to sync steps.'')\\
+  \hspace*{1em}$|$ the call is still waiting for the reply 10 seconds after
+  it began $\Rightarrow$
+  Error(``Sending steps timed out. Refresh to try again.'')\\
+  \hspace*{1em}$|$ signal is aborted before the reply $\Rightarrow$ the Error
+  that fetch fails with when it is cancelled\\
+  \hspace*{1em}$|$ the server can't be reached $\Rightarrow$ the Error that
+  fetch fails with, such as a TypeError\\
+  \hspace*{1em}$|$ the status is not 2xx and the body is a Refusal of JSON
+  Format (M23) $\Rightarrow$ Error($m$), with $m$ the Refusal's
+  detail.message\\
+  \hspace*{1em}$|$ the status $s$ is not 2xx otherwise $\Rightarrow$
+  Error(``Could not sync steps (HTTP $s$).'')\\
+  \hspace*{1em}$|$ $\neg$isDailyTotalsResponse(body) $\Rightarrow$
+  Error(``The server returned an invalid step-sync response.''))\\
+  With no address, nothing is sent, and the message says what to set. The
+  time limit means a server that never answers can't leave the screen
+  waiting, so it can say the steps weren't sent and keep showing them
+  (HA~H46). Cancelling through signal lets the caller stop waiting when it no
+  longer needs the reply, such as when the screen closes, so a late reply
+  changes nothing. A refusal shows the server's own message, such as
+  ``Activity dates must be today or one of the preceding six days.'' of
+  Activity (M11). JSON Format (M23) words each refusal for a
+  user and gives every module's refusals one shape, so one check handles them
+  all. A 422 for a request that doesn't fit (SEC-25) has a list of field
+  errors as its detail, with no message for a user, so only its status is
+  shown. The messages above are written for a user, and the demo screen is to
+  show them as they are (issue \#253). That differs from the MG's decision that
+  what the user sees is in Screens alone, which the proof of concept doesn't
+  follow yet.
+\end{itemize}
+
+\subsubsection{Local Functions}
+
+\noindent isMoney: unknown $\rightarrow \mathbb{B}$, with unknown TypeScript's
+type for a value not yet checked
+
+\noindent isMoney($v$) $:=$ $v$ is a String of one or more digits, a point and
+exactly four digits, such as ``84.0000'', the form Money of JSON Format (M23)
+takes. A minus sign isn't allowed, since no amount in this reply can be below 0
+(FR13, FR37). A later call whose reply holds a loss (FR44) will need one.
+
+\medskip
+\noindent isDailyTotalsResponse: unknown $\rightarrow \mathbb{B}$
+
+{\raggedright
+\noindent isDailyTotalsResponse($d$) $:=$ $d$ is a JSON object, not an array,
+with isMoney($d$.cash\_balance), $d$.steps\_per\_coin a whole number above 0,
+and $d$.totals an array in which every element $t$ is an object, not an array,
+with $t$.activity\_date a String, $t$.activity\_type $=$ ``steps'',
+$t$.step\_count a whole number of 0 or more, $t$.counted a boolean, and
+isMoney($t$.reward) and isMoney($t$.credited\_now). It checks each field's
+type, not its value against the request. Other fields are allowed, so the
+server can add one without breaking an app already on a phone (NFR3).\par}
+
+\newpage
+
 
 \bibliographystyle {plainnat}
 \bibliography {../../../refs/References}
@@ -2020,77 +4418,302 @@ point, such as ``84.0000'' for 84. A zero is always ``0.0000'', never
 \newpage{}
 
 \section{Appendix --- Generative AI Use Disclosure}
-
-\wss{ChatGPT (version 5) was used to brainstorm ideas for the template for this disclose section.}
+This section summarizes the team's reported AI use in the contributions described below. It identifies the tools and model versions used, the parts of the Module Interface Specification affected, and how the content was checked.
 
 \subsection{AI Tools Used}
-
-\wss{Give the name of the AI tool(s) used and the version.}
+The following AI tools and models were used: 
+\begin{itemize}
+  \item ChatGPT (OpenAI): GPT-6.
+  \item Codex (OpenAI): GPT-6.1 Sol.
+  \item Claude Code (Anthropic): Claude Opus 5.5.
+\end{itemize}
 
 \subsection{How and Where Used}
+ChatGPT helped review contributions for consistency with the intended design, the MG, and other project documents. It also helped identify gaps and inconsistencies and assisted with LaTeX formatting. The reported MIS work included Section~\ref{MisDB} (MIS of Database). 
 
-\wss{Explain what the tool(s) were used for.  Examples include: brainstorming,
-explaining a technical concept, reviewing the document, generating or modifying
-text, generating or modifying diagrams, identifying errors or omissions or
-inconsistencies.}
+\medskip\noindent
+Codex helped improve wording, check grammar, and format existing content in LaTeX. This assistance covered Section~\ref{MisActivity} (MIS of Activity). The content was written first, then revised with AI assistance.
 
-\wss{For each of the uses, identify which parts of the document were affected.}
+\medskip\noindent
+Claude Code helped draft access programs, state descriptions, and semantics in LaTeX using the MG, the SRS, and the backend and frontend code. The team member established the design decisions before using the tool. These included treating Market Providers as a template module and marking Device Service and Navigation as planned after the proof of concept. Claude Code also helped review the document for gaps and differences from the code and the SRS. 
 
-\wss{You do not need to report every interaction, but you should disclose the 
-uses that materially contributed to your work}
+\medskip\noindent
+This assistance covered Section 1 (Revision History), Section 2 (Symbols, Abbreviations and Acronyms), Section 3 (Introduction), Section 4 (Notation), and Section 5 (Module Decomposition). It also covered Section~\ref{MisDB} (MIS of Database), Section~\ref{MisClock} (MIS of Clock), Section~\ref{MisProviders} (MIS of Market Providers), Section~\ref{MisHealth} (MIS of Health Service), Section~\ref{MisControl} (MIS of Control), Section~\ref{MisConstants} (MIS of Constants), Section~\ref{MisUsers} (MIS of Users), Section~\ref{MisWallet} (MIS of Wallet), Section~\ref{MisMarket} (MIS of Market), Section~\ref{MisTrading} (MIS of Trading), Section~\ref{MisScreens} (MIS of Screens), Section~\ref{MisSync} (MIS of Sync Service), Section~\ref{MisPlugins} (MIS of Plugins), Section~\ref{MisJSON} (MIS of JSON Format) and Section~\ref{MisAPI} (MIS of API Service).
 
 \subsection{Verification of AI-Generated Content}
+For the contributions reviewed with ChatGPT, the suggested changes were checked against the intended design, the MG, the MIS, and other project documents. The rendered LaTeX output was also reviewed. 
 
-\wss{\begin{itemize}
-    \item Describe how the team checked AI-generated or AI-assisted material
-    before including it in the document.
-    \item In particular, verify factual claims, technical assertions,
-    requirements, calculations, references, and other information for which an
-    AI system may produce incorrect or fabricated results.
-    \item \textbf{The team is responsible for the accuracy, completeness,
-consistency, and appropriateness of the submitted document, regardless of
-whether material was generated by a human or an AI system.}
-\end{itemize}}
+\medskip\noindent
+For the Activity section revised with Codex, the team member reread the revised text to check that it still expressed the original ideas and intended meaning. 
+
+\medskip\noindent
+For the contributions drafted or revised with Claude Code, the rendered PDF pages were reviewed before committing each change. Each access program was checked against the code it described, and each cited SRS requirement identifier was checked against the SRS. 
+
+\medskip\noindent
+For the app-module work, a team member ran the app on a physical iPhone and confirmed that recorded steps reached the server and the app received the corresponding coin reward. This checked the behaviour described in the Health Service and Sync Service sections.
+
+\medskip\noindent
+The team remains responsible for the accuracy, completeness, consistency, and appropriateness of the MIS, including any content drafted or revised with AI assistance.
+
 
 \newpage{}
 
 \section{Appendix --- Reflection}
-
-\wss{Not required for CAS 741 projects}
 
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Problem Analysis and Design.
 
 \input{../../Reflection.text}
 
-\begin{enumerate}
-  \item What went well while writing this deliverable? 
-  \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
-  \item Which of your design decisions stemmed from speaking to your client(s)
-  or a proxy (e.g. your peers, stakeholders, potential users)? For those that
-  were not, why, and where did they come from?
-  \item While creating the design doc, what parts of your other documents (e.g.
-  requirements, hazard analysis, etc), it any, needed to be changed, and why?
-  \item What are the limitations of your solution?  Put another way, given
-  unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
-  \item Give a brief overview of other design solutions you considered.  What
-  are the benefits and tradeoffs of those other designs compared with the chosen
-  design?  From all the potential options, why did you select the documented design?
-  (LO\_Explores)
-  \item (After you have implemented another team's module, which means this
-  isn't filled in until after the original deadline). What did you learn by
-  implementing another team's module? Were all the details you needed in the
-  documentation, or did you need to make assumptions, or ask the other team
-  questions?  If your team also had another team implement one of your modules,
-  what was this experience like?  Are there things in your documentation you
-  could have changed to make the process go more smoothly for when an
-  ``outsider'' completes some of the implementation?
+\subsubsection*{1. What went well while writing this deliverable?}
 
-  Your reflection should be about concepts learned in your SE education, such as modular decomposition, cohesion, coupling, information hiding, etc.  You should critique the quality and utility of the specification you received.
+\noindent\textbf{Davis:} What went well for me was writing the MG and the MIS
+while I was building the backend for the proof of concept. I wrote the MIS of
+each server module right after its code, so each access program, exception and
+route in those sections is what the code really does, and a reviewer can check
+every line against it. Giving each module one secret also made me check where
+each rule lives. Every currency rule ended up on the server, so the app never
+works out a reward or a balance (SEC-24), and Trading alone decides whether a
+request ID was already used, so a retried buy is recorded once (FR38). The
+plug-in design paid off for the team too. Preston built Activity as its own
+module, and adding it to the server took two lines in \texttt{registry.py},
+with no change to the code that builds the server. \\
 
-  You should create a PR for your implemented module.  A link to the PR should be part of your reflection.
+\noindent\textbf{Farid:} What went well for me was tying each part I
+wrote to one module and to the requirements behind it. In Section 4 of the MG,
+each anticipated change names the module that hides it, and the trace table
+maps all 25 of them to their modules. A reader can then check that a change
+such as a new market data provider (AC3) touches only Market Providers.
+Writing the changes first also made the secrets in Section 7 easier to agree
+on, since a module's secret is the decision behind the change it hides. For the
+database design (MG Section 12), I worked from the SQLAlchemy models and the
+Alembic migrations rather than from the SRS alone, so the table list and the
+diagram show the tables the proof of concept really creates, and each rule the
+database checks is one the code relies on. Keeping one branch and one pull
+request per section (\#230, \#310 and \#318) also worked well. Each was small
+enough for a teammate to review against the SRS in one sitting.
 
-\end{enumerate}
+\subsubsection*{2. What pain points did you experience during this deliverable,
+and how did you resolve them?}
+
+\noindent\textbf{Davis:} My main pain point was keeping the design, the proof
+of concept and five people's work in sync. Both documents changed while the
+code they describe was still being written. Preston's step rewards (PR \#313)
+changed Activity's reply after its MIS was drafted, and the MIS of Screens
+describes a demo screen that is still in Zaid's open PR (\#312). Notes such as
+``PR \#313 adds Activity'' were true when I wrote them and wrong a few days
+later. The documents were a second problem. Five of us wrote sections of the
+same two files at the same time, so we hit merge conflicts in the revision
+history, two rows ended up with the same version number, and adding Health
+Service moved every later MIS section, which broke the section numbers typed
+into the AI disclosure. Sync Service was still a placeholder comment in the MG
+when the peer review found it (\#323).
+
+I resolved these in a few ways. I split the work into one GitHub issue per
+section or module, each with an owner, and kept my pull requests small and
+stacked, so each could be reviewed on its own. I marked the modules built after
+the proof of concept with a dagger and kept their entries short, so the team
+agreed on what each one hides without fixing details that feedback on the proof
+of concept may change. I replaced typed section numbers with references, so
+they stay right when a section moves. Before the deadline, I merged
+\texttt{main} into my branch and reviewed both documents against the code and
+against each other, which found the stale notes and the missing Sync Service
+entry. Next time I would make one person responsible for the module list and
+the revision history, and check the documents against the code each time a
+feature PR merges, not only at the end. \\
+
+\noindent\textbf{Farid:} My main pain point was that the design kept
+changing while I wrote about it. Section 6 of the MG had a decision about how
+the code gets the time, and Davis's PR \#308 changed that design a few days
+later, so my decision was out of date before it merged, and I rewrote it. I
+also wrote one claim that was too strong. I said the social feed could not
+reach health data, but Social uses Users, and Users stores height and weight.
+Checking the claim against the uses hierarchy (MG Section 9) caught it, and I
+narrowed it to what is true: Social cannot reach a balance or a portfolio's
+value.
+
+My second pain point was tooling. Several of us edited the revision history at
+the same time, so my branch conflicted with \texttt{main}. My first attempt to
+merge \texttt{main} made an ordinary commit instead of a merge, and I redid it
+with \texttt{git pull origin main} and resolved the conflict properly. For the
+database diagram, PlantUML drew some arrow labels on top of each other,
+pdflatex cannot include an SVG, and the repository's \texttt{.gitignore} skips
+every PDF, so the figure was missing from my first commit. I removed the arrow
+labels and moved the deletion rule into the legend, converted the diagram to a
+vector PDF, and added it with \texttt{git add -f}. Next time I would check each
+claim against the code and the uses table before I write it, not after, and
+compile the result of merging \texttt{main} into my branch before I open a pull
+request.
+
+\subsubsection*{3. Which of your design decisions stemmed from speaking to your
+client(s) or a proxy (e.g.\ your peers, stakeholders, potential users)? For
+those that were not, why, and where did they come from?}
+
+\noindent\textbf{Davis:} Our supervisor, who is also a stakeholder, set the
+core loop: steps become currency, and the user invests it. So the proof of
+concept covers that whole loop, from Health Service and Sync Service reading
+the day's steps, through Activity paying for them, to Trading spending the
+currency, and the demo screen shows each step of it. Planning the usability
+study with potential users in mind also changed the design. At 100 steps a
+coin, a user could save for days before affording one share of our starting
+stocks, so we added cheaper stocks, and the demo screen's asset is chosen so
+that a few days of steps can buy a whole share (FR35).
+
+Most of the module decomposition did not come from the client, since the
+client sees what the app does, not how it is split. It came from the SRS, the
+Hazard Analysis and what we learned about modular design. Each module hides
+one decision that may change (information hiding), so the market data
+provider, the health platforms and the email service each sit behind one
+interface. The server works out every reward and balance because the Hazard
+Analysis found that a modified app could send false ones (SEC-24, HA~H43).\\
+
+\noindent\textbf{Farid:} Several of my decisions came from our Design
+Thinking interviews with P01 (our supervisor and TA) and P02 (a financial
+services representative at a credit union). P01 forgets to stop a bike
+tracking app and asked for tracking that is ``as touchless as possible'', and
+P02 keeps track of workouts only as ``a mental check''. So activity comes from
+the phone's health platform rather than being logged by hand, Health Service
+hides which platform that is (AC4), and the phone sends only daily totals
+(SEC-10). Both said they share data with an app only when it has a clear reason
+to ask, and P01 turns off a step app's network access. That supports the
+unlikely change that the user controls what they share and that a balance or
+raw health data is never shared (UC3), and keeping the privacy rules in one
+module. P02 said comparing with others is ``only ever bad when you're
+really far behind'', which is one more reason the social feed cannot reach a
+balance. Both learn best by doing, which supports practising with simulated
+currency in a market that follows real prices, with no real money (UC1).
+
+The database decisions did not come from users, since no user sees a table.
+They came from the SRS: money as exact decimals (NFR1), every time stored with
+its time zone (FR33), UUIDs so the phone can make a trade's request ID itself
+(FR38), and history that is added to and never edited (SEC-22). The database
+checks the most important rules again, such as a balance never going below
+zero (FR37), so that a bug in one module cannot save a row that breaks them.
+
+\subsubsection*{4. While creating the design doc, what parts of your other
+documents (e.g.\ requirements, hazard analysis, etc), if any, needed to be
+changed, and why?}
+
+\noindent\textbf{Davis:} Writing the design did not change the SRS or the
+Hazard Analysis text yet, but it showed where the proof of concept differs from
+them, and where they need updating. SC2 asks for activity only through the
+phone's health platform, but the proof of concept reads the iPhone's steps from
+Core Motion through Expo Pedometer, since the Development Plan demonstrates
+HealthKit only if time allows. We recorded this as a proof of concept exception
+in both documents instead of weakening SC2. The SRS data dictionary also gives
+each activity record its reward, but the design stores a reward once, in
+Wallet's balance changes, so a day is never paid twice (SEC-19). That entry
+should change. Tracing every requirement to a module also found requirements
+that no module handled yet, such as stock splits (SEC-28), which we then placed
+in Market and Trading.\\
+
+\noindent\textbf{Farid:} Writing the database design showed where the
+SRS data dictionary (SRS Section~7.2) no longer matches the design. It gives a
+portfolio its holdings, trades and balance changes as lists inside the
+portfolio, while the design stores each as its own table with one row per item,
+so the database can check every row. It also gives each activity record its
+reward, while the design stores a reward once, in Wallet's balance changes, so
+a day is never paid twice (SEC-19). The data dictionary should be updated to
+describe the data as it is stored. The design also found a gap in the
+requirements. SEC-18 lets a user delete their account, but a user's portfolio
+is not deleted with the user, so in the proof of concept a user who has a
+portfolio cannot be deleted. Before Revision~0 we need to decide what happens
+to a deleted user's portfolio and trade history, and the SRS should state it.
+
+\subsubsection*{5. What are the limitations of your solution? Put another way,
+given unlimited resources, what could you do to make the project better?
+(LO\_ProbSolutions)}
+
+\noindent\textbf{Davis:} The biggest limits come from the proof of concept's
+shortcuts. The app reads steps only when it is opened, since background reads
+are not reliable on either platform (SRS LC1), so a day's steps reach the
+server only when the user opens the app. On iPhone, Core Motion misses steps
+from an Apple Watch worn without the phone. Prices come from one provider's
+free plan, polled once a minute, so prices can be up to a minute old, and the
+request limit caps how many assets we can offer (SC4). The proof of concept
+lists 15 assets, below the 50 that FR28 asks for. There is also no sign-in
+yet, so every request acts as the demo user. With unlimited resources, I would
+read HealthKit and Health Connect in the background, pay for a market data
+feed that sends prices as they change instead of polling, offer far more
+assets, and bind each session to a key in the phone's hardware (DPoP), so a
+copied session token would be useless on its own. \\
+
+\noindent\textbf{Farid:} The database design has limits. The balance is
+stored as well as calculated, so a trade can check it quickly, but it must
+always equal the sum of the balance changes (SEC-22), and it is the code that
+keeps the two equal. There is one database, so if it is down, nobody can earn
+or trade. The server saves a price each minute it polls, and nothing removes
+old prices yet, so the price table grows without limit. Account deletion is not
+supported yet (SEC-18). Our user research is also small: two people, one of
+them our supervisor, so the decisions that came from it rest on little
+evidence. With unlimited resources, I would run the database as a replicated
+service with backups and point-in-time recovery, keep every price for recent
+days and only a daily price for older ones, add tests that try to save each
+kind of bad row and check that the database refuses it, and interview and
+observe many more users, including people who have never invested.
+
+\subsubsection*{6. Give a brief overview of other design solutions you
+considered. What are the benefits and tradeoffs of those other designs compared
+with the chosen design? From all the potential options, why did you select the
+documented design? (LO\_Explores)}
+
+\noindent\textbf{Davis:} For the server, we considered separate services, one
+for each feature. That would let each one be deployed and scaled on its own.
+But a buy changes both the balance and the shares, which two modules own, so a
+buy would need a transaction across services, and a failure halfway could
+charge the user without giving them the shares. We chose a modular monolith:
+one process and one database, so a trade is one transaction (FR37), split into
+modules that each own their tables and plug into Control, which keeps most of
+the separation. For sign-in, we considered self-contained tokens, which the
+server can check without a lookup. We chose sessions stored on the server,
+since the server must be able to end a session at once on sign-out, on sign
+out of all devices or after a password reset (SEC-17), which a self-contained
+token can't do before it expires. For rewards, the phone could have worked out
+its own coins, which is simpler and works offline, but a modified app could
+then send any reward, so the server works out every reward from the daily
+totals (SEC-24). For prices, asking the provider on each request would always
+be fresh, but it would use up the request limit as users grow, so the server
+polls once a minute and every user sees the same price (SC4). \\
+
+\noindent\textbf{Farid:} For the database I compared several designs.
+The balance could be calculated from the balance changes every time it is
+needed, so it could never disagree with them, but every trade would then add up
+the whole history. We store it and keep it equal to the sum (SEC-22), which is
+faster but leaves a second copy that a bug could get out of step. Each module
+could have its own database, which would match each module owning its tables,
+but a trade changes both Wallet's balance and Trading's holdings, and that
+would need a transaction across two databases. One database, with each module
+owning its tables, keeps a trade in one transaction (FR37). A document store
+could keep a portfolio as one document with lists, the way the SRS data
+dictionary describes it. That makes reading a portfolio simple, but every trade
+would rewrite the document, and the database could not check each row, such as
+one trade per request ID (FR38). Storing the reward on the daily total, as the
+SRS describes, would be simpler to query, but a repeated sync could pay a day
+twice. Keeping rewards in Wallet means a sync pays only the difference
+(SEC-19). Last, whole-number IDs are smaller and faster than UUIDs, but the
+phone could not make a trade's request ID without asking the server, so we use
+UUIDs and keep counters only for prices and provider requests, which nothing
+outside the server refers to.
+
+In Section 4, I could have listed the anticipated changes by feature. I listed
+them by the module that hides each one, so that the trace table checks the
+information hiding directly: if a change needed more than one module, the
+decomposition would be wrong.
+
+\subsubsection*{7. (After you have implemented another team's module, which
+means this isn't filled in until after the original deadline). What did you
+learn by implementing another team's module? Were all the details you needed in
+the documentation, or did you need to make assumptions, or ask the other team
+questions? If your team also had another team implement one of your modules,
+what was this experience like? Are there things in your documentation you could
+have changed to make the process go more smoothly for when an ``outsider''
+completes some of the implementation?}
+
+Your reflection should be about concepts learned in your SE education, such as
+modular decomposition, cohesion, coupling, information hiding, etc. You should
+critique the quality and utility of the specification you received.
+
+You should create a PR for your implemented module. A link to the PR should be
+part of your reflection.
 
 \end{document}
