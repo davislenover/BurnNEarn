@@ -28,23 +28,9 @@ function toCents(text: string) {
   return Number(whole) * 100 + Number((fraction + '00').slice(0, 2));
 }
 
-// Reward fields used by this screen; the shared response type is still generic.
-type StepSyncResult = {
-  cash_balance: string;
-  steps_per_coin: number;
-  totals: {
-    step_count: number;
-    reward: string;
-    counted: boolean;
-  }[];
-};
-
 export default function DemoScreen() {
    // Today's steps from the phone (null if not read yet or unavailable), and whether it is still loading.
-  const { steps, loading, syncError, syncResult: result } = useTodaySteps();
-
-  // Describe the reward fields returned by the server.
-  const syncResult = result as StepSyncResult | null;
+  const { steps, loading, syncError, syncResult } = useTodaySteps();
   // Today's result is unavailable until the first sync succeeds.
   const todayResult = syncResult?.totals?.[0];
 
@@ -182,7 +168,7 @@ export default function DemoScreen() {
       return;
     }
     // Stop if the price has not loaded yet
-    if (sharePrice === null || priceText === null) {
+    if (priceText === null) {
       setError('Price is not loaded yet.');
       return;
     }
@@ -333,7 +319,6 @@ export default function DemoScreen() {
           {/* Total cost for the entered quantity */}
           <View style={styles.orderTotal}>
             <Text style={styles.label}>Order total</Text>
-            {/* display the total cost of the order in dollars as $0.00 */}
             <Text style={styles.totalText}>
               ${formatMoney(orderTotal)}
             </Text>
