@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTodaySteps } from '../../services/health/useTodaySteps';
 import { getBalance } from '../../services/api/balance';
-
-// Sample share price stored in cents: 12023 = $120.23
-const sharePrice = 12023;
+import { getAssets } from '../../services/api/market';
 
 // Turns cents into dollars for display. 100000 -> "1,000.00"
 // show the 2 decimal places even if they are 0, and use commas for thousands
@@ -63,6 +61,31 @@ export default function DemoScreen() {
       .catch(() => setBalanceFailed(true));
   }, []);
 
+  // AAPL price from the server, e.g. "120.2300", null until it arrives
+  const [priceText, setPriceText] = useState<string | null>(null);
+
+  // True if the price could not be loaded from the server
+  const [priceFailed, setPriceFailed] = useState(false);
+
+  // Get the AAPL price now, then again every 60 seconds
+  useEffect(() => {
+    function loadPrice() {
+      getAssets()
+        .then(data => {
+          const aapl = data.assets.find(asset => asset.symbol === 'AAPL');
+          setPriceText(aapl?.price ?? null);
+          setPriceFailed(false);
+        })
+        .catch(() => setPriceFailed(true));
+    }
+    loadPrice();
+    const timer = setInterval(loadPrice, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Price in cents, null until it arrives
+  const sharePrice = priceText !== null ? toCents(priceText) : null;
+
   // Show the server's balance after each successful step sync.
   // Local purchases can be overwritten until purchases also use the backend.
   useEffect(() => {
@@ -93,10 +116,10 @@ export default function DemoScreen() {
     shareCount > 0;
 
   // Calculate the total in cents when the quantity is valid
-  const orderTotal = validQuantity ? shareCount * sharePrice : 0;
+  const orderTotal = validQuantity && sharePrice !== null ? shareCount * sharePrice : 0;
 
   // Value of the shares owned in cents (shares × price). Does not include the balance.
-  const holdingsValue = sharesHeld * sharePrice;
+  const holdingsValue = sharePrice !== null ? sharesHeld * sharePrice : 0;
 
   // Runs when Buy is pressed. Checks the order first, then completes it.
   // Each check stops the purchase and shows a message if it fails.
@@ -111,6 +134,12 @@ export default function DemoScreen() {
       setError('The quantity is too large.');
       return;
     }
+    // Stop if the price has not loaded yet
+    if (sharePrice === null) {
+      setError('Price is not loaded yet.');
+      return;
+    }
+
     // Stop if the balance has not loaded yet
     if (balance === null) {
       setError('Balance is not loaded yet.');
@@ -193,11 +222,13 @@ export default function DemoScreen() {
         <View style={styles.row}>
           <View>
             <Text style={styles.symbol}>AAPL</Text>
-            <Text style={styles.caption}>Apple Inc. Sample price per share</Text>
+            <Text style={styles.caption}>Apple Inc.</Text>
           </View>
           <Text style={styles.currency}>USD</Text>
         </View>
-        <Text style={styles.price}>${formatMoney(sharePrice)}</Text>
+        <Text style={[styles.price, sharePrice === null && styles.label]}>
+          {sharePrice !== null ? `$${formatMoney(sharePrice)}` : priceFailed ? 'Unavailable' : 'Loading…'}
+        </Text>
 
         <View style={styles.row}>
           <Text style={styles.label}>Quantity</Text>
