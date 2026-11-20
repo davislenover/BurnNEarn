@@ -102,12 +102,13 @@ Zaid Alsaadi & 2\\
 \end{table}
 
 Sections 2 to 6 cover September 8, 2026 (the start of classes) to November 19,
-2026. These counts come from the attendance list in each team meeting issue:
+2026. The counts in this table come from the attendance list in each team
+meeting issue:
 \href{https://github.com/davislenover/BurnNEarn/issues/30}{\#30} (September 11), \href{https://github.com/davislenover/BurnNEarn/issues/31}{\#31} (September 17) and \href{https://github.com/davislenover/BurnNEarn/issues/257}{\#257}
 (November 5). We only count meetings that have an issue.
 
-The whole team also met at the four TA discussions in Section 5, and the first
-of those was also the supervisor meeting in Section 3. Our day-to-day
+The whole team also met at the four TA document discussions in Section 5, and
+the first of those was the supervisor meeting in Section 3. Our day-to-day
 discussion happens on Microsoft Teams and in GitHub issues and pull requests
 (Development Plan, Section 5), which this table does not count.
 
@@ -132,14 +133,16 @@ Zaid Alsaadi & 1\\
 \end{table}
 
 This count comes from the supervisor meeting issue \href{https://github.com/davislenover/BurnNEarn/issues/33}{\#33} (September 23).
-Chris Schankula is our supervisor, our TA and one of our stakeholders. So that
-meeting was also our first TA document discussion, which means it is counted
-in Section 5 too.
+Chris Schankula is our supervisor, our TA and one of our stakeholders. That
+meeting was also our first TA document discussion, so it is counted in
+Section 5 too.
 
-We met him three more times, at the later TA discussions. Those are only
-counted in Section 5. At the last one (November 11), we also showed him the
+We met him three more times, at the later TA document discussions. Those are
+only counted in Section 5. At the last one (November 11), we also showed him the
 proposed app screens to get his feedback as a stakeholder (\href{https://github.com/davislenover/BurnNEarn/issues/311}{\#311}).
-\href{https://github.com/davislenover/BurnNEarn/issues/34}{\#34} is an unused copy of the meeting template, so it is not counted.
+
+Issue \href{https://github.com/davislenover/BurnNEarn/issues/34}{\#34} is an unused copy of the meeting template, so it is not
+counted.
 
 \section{Lecture Attendance}
 
@@ -172,9 +175,9 @@ comes from the attendance lists in those issues:
 \end{itemize}
 
 The course calendar lists 11 lectures between the start of classes and the POC
-demos, so five lectures have no issue and are not counted. Four of them
-(September 9, 10, 16 and 17) were before we opened our first issues on
-September 21. The fifth was a guest lecture on September 23.
+demos. Five of them have no lecture issue, so we do not count them. Four of
+those (September 9, 10, 16 and 17) were before we started making lecture
+issues on September 21. The fifth was a guest lecture on September 23.
 
 \section{TA Document Discussion Attendance}
 
@@ -206,7 +209,7 @@ attendance lists in their issues:
 \item \href{https://github.com/davislenover/BurnNEarn/issues/311}{\#311} (November 11): the Design Document Revision $-1$ and POC plans
 \end{itemize}
 
-All five of us attended each one. \href{https://github.com/davislenover/BurnNEarn/issues/33}{\#33} is titled as a supervisor
+All five of us attended each one. Issue \href{https://github.com/davislenover/BurnNEarn/issues/33}{\#33} is titled as a supervisor
 meeting because Chris Schankula is both our TA and our supervisor, so that one
 meeting is counted here and in Section 3.
 
@@ -231,12 +234,12 @@ Zaid Alsaadi & 70 & 10.5\% & 6,916 & 309 & 14\\
 
 \paragraph{When these were pulled.} We pulled these numbers on November 19,
 2026 at 8:00 PM, from commit \texttt{a9f1cc6} of \texttt{main}. The command
-was \texttt{git log --no-merges --numstat}. They will likely change before the POC
-demo, since we are still making adjustments to the POC before presenting it.
+was \texttt{git log --no-merges --numstat}. The numbers will likely change
+before the POC demo, since we are still making adjustments to the POC.
 
 \paragraph{Commits.} We merge pull requests with merge commits, so every
 commit on a merged branch ends up on \texttt{main} and counts for its author.
-Three kinds of commit are left out:
+We leave out three kinds of commit:
 
 \begin{itemize}
 \item the merge commits themselves
@@ -247,38 +250,43 @@ Three kinds of commit are left out:
   removed the unused SRS templates
 \end{itemize}
 
-Text we wrote over the template still counts, since only the lines a commit
-adds count for its author. No commit has more than one author.
+Text we wrote over the template still counts, because those lines were added
+in our own commits. No commit has more than one author.
 
 \paragraph{Percent.} This is each member's commits divided by the team's 666
 commits, rounded to one decimal place. For example, 300 of 666 commits is
 45.0\%. It is a share of commits only, not of lines or pull requests.
 
-\paragraph{Lines.} Binary files (the PDFs and the figures) add no lines. Two
-generated lock files do add lines: 16,992 from the app's
-\texttt{package-lock.json} and 1,081 from the server's \texttt{uv.lock}. These
-count for whoever committed them. By kind of file, 23,311 of the lines added
-are in the \LaTeX{} documents, 18,073 in the lock files, 5,693 in backend
-tests, 3,798 in backend code, 2,164 in figure sources, 1,567 in Markdown notes,
-995 in frontend code, 712 in backend migrations and 205 in CI and other files.
-Section 11 gives the same split for each member, along with each member's net
-lines.
+\paragraph{Lines.} Binary files (such as the PDFs and the figure images) add
+no lines. Two lock files do add lines: 16,992 from the app's
+\texttt{package-lock.json} and 1,081 from the server's \texttt{uv.lock}. A
+lock file is a list of dependencies that the package manager writes on its
+own, so nobody typed these lines. They count for whoever committed them.
 
-\paragraph{Why the line counts are high.} Documents are counted by source
-line. Most of our text is wrapped at about 80 characters, so one paragraph is
-six to eight lines and every table row is its own line. A line that gets
-revised counts again as a line added, and the old one counts as a line
-deleted. The same goes for a line that is only indented differently or pasted
-again. Net of the lines deleted, the team added 45,127 lines. So these numbers
-show how much each member committed, not how hard it was to write.
+By kind of file, most of the lines added are in the \LaTeX{} documents
+(23,311) and the lock files (18,073). The rest are in backend tests (5,693),
+backend code (3,798), figure sources (2,164), Markdown notes (1,567), frontend
+code (995), backend migrations (712) and CI and other files (205).
+Section~\ref{SecLinesByKind} gives the same split for each member, along with
+each member's net lines (lines added minus lines deleted).
+
+\paragraph{Why the line counts are high.} Line counts run high for documents.
+They are counted by source line, and most of their text is wrapped at about 80
+characters, so one paragraph is six to eight lines and every table row is its
+own line. A line that gets revised counts again as a line added, and the old
+one counts as a line deleted. The same goes for a line that is only
+re-indented or pasted in a second time. After subtracting the lines deleted,
+we added 45,127 lines. These numbers show how much each member committed, not
+how hard the work was.
 
 \paragraph{Pull requests.} This column counts every pull request a member
-opened. 104 are merged, four were closed without merging and two are still
-open: \href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312} (the POC demo screen) and \href{https://github.com/davislenover/BurnNEarn/pull/348}{\#348} (which adds
-these sections to this report). The commits on those two are not in the counts
-above yet. When we pulled these numbers, \#312 had 26 commits by Zaid Alsaadi,
-which add 688 lines of frontend code and delete 152. Section 11 shows the
-lines added with that pull request included.
+opened. Of those, 104 are merged, four were closed without merging and two are
+still open: \href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312} (the POC demo screen) and \href{https://github.com/davislenover/BurnNEarn/pull/348}{\#348} (which
+adds these sections to this report). The commits on those two are not in the
+counts above yet. When we pulled these numbers, \#312 had 26 commits by Zaid
+Alsaadi, which added 688 lines of frontend code and deleted 152.
+Section~\ref{SecLinesByKind} shows the lines added with that pull request
+included.
 
 \section{Issue Tracker}
 
@@ -448,12 +456,12 @@ Zaid Alsaadi & 2 & 2 & 0\\
 \end{tabular}
 \end{table}
 
-\subsection{Lines Added by Kind of File}
+\subsection{Lines Added by Kind of File} \label{SecLinesByKind}
 
 Section 6 gives each member's lines added. This table splits those lines by
-the kind of file they are in. It is counted the same way and from the same
-commit, so it was also pulled on November 19, 2026 at 8:00 PM and will likely
-change before the POC demo.
+the kind of file they are in. We counted them the same way and from the same
+commit. So these numbers were also pulled on November 19, 2026 at 8:00 PM, and
+they will likely change before the POC demo.
 
 \begin{table}[H]
 \centering
@@ -477,33 +485,39 @@ CI and other files & 200 & 0 & 0 & 5 & 0 & 205\\
 \midrule
 All lines added & 23,779 & 3,858 & 13,515 & 8,450 & 6,916 & 56,518\\
 Lines deleted & 5,568 & 526 & 2,809 & 2,179 & 309 & 11,391\\
-Net lines (added less deleted) & 18,211 & 3,332 & 10,706 & 6,271 & 6,607 & 45,127\\
+Net lines & 18,211 & 3,332 & 10,706 & 6,271 & 6,607 & 45,127\\
 \midrule
-Open PR \#312, frontend (POC) & 0 & 0 & 0 & 0 & 688 & 688\\
-Lines added with the open PR & 23,779 & 3,858 & 13,515 & 8,450 & 7,604 & 57,206\\
+Open pull request \#312 & 0 & 0 & 0 & 0 & 688 & 688\\
+Lines added with \#312 & 23,779 & 3,858 & 13,515 & 8,450 & 7,604 & 57,206\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-What each row means:
+Notes on the rows:
 
 \begin{itemize}
+% Less space between the notes, so they stay on the page with their table.
+\setlength{\itemsep}{0pt}
+\item \textbf{Generated lock files:} \texttt{package-lock.json} and
+  \texttt{uv.lock}, which the package managers write on their own.
 \item \textbf{Backend rows:} the POC server. Backend code is everything under
   \texttt{src/backend} (its code, README and configuration), apart from its
-  migrations and its lock file. Backend tests are under \texttt{test/backend}.
+  lock file and its database migrations. The migrations have their own row.
+  Backend tests are under \texttt{test/backend}.
 \item \textbf{Frontend code:} the POC app under \texttt{src/frontend},
   including its test scripts but not its lock file.
 \item \textbf{Figure sources:} the PlantUML and DOT files our diagrams are
   drawn from. The drawn figures and the PDFs are binary files, which git
-  counts as no lines. One drawn SVG, since replaced by a PNG, adds two lines to
-  this row.
+  counts as no lines. One drawn SVG adds two lines to this row. We later
+  replaced it with a PNG.
 \item \textbf{Markdown notes:} the architecture notes, \texttt{CONTRIBUTING.md}
   and the README files outside \texttt{src/}.
 \item \textbf{Net lines:} lines added minus lines deleted.
-\item \textbf{Open PR \#312:} the POC demo screen is still in the open pull
-  request \href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}, so it is not on \texttt{main} and not in the
-  frontend row. This row adds its 26 commits, counted the same way. The last
-  row gives each member's lines added with it included.
+\item \textbf{Open pull request \#312:} the POC demo screen is still in this
+  open pull request (\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}), so it is not on \texttt{main} and not in
+  the frontend row. This row gives the 688 lines that its 26 commits add,
+  counted the same way. The last row gives each member's lines added with
+  \#312 included.
 \end{itemize}
 
 \end{document}
