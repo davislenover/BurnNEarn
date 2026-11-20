@@ -4,6 +4,7 @@
 \restylefloat{table}
 
 \usepackage{booktabs}
+\usepackage{tabularx}
 
 \title{Team Productivity: POC\\\progname}
 
@@ -317,15 +318,52 @@ check:
 
 \section{Team Charter Trigger Items}
 
-\wss{Provide a summary of the quantified triggers identified in the team's
-charter.}
+The Team Charter in the
+\href{https://github.com/davislenover/BurnNEarn/blob/main/docs/DevelopmentPlan/DevelopmentPlan.tex}{Development Plan}
+sets five triggers.
 
-\wss{Provide a list of any violations of the triggers.  If the team wishes, the
-violations can be summarized on aggregate, instead of naming specific team
-members.}
+\begin{itemize}
+  \item \textbf{Meeting attendance.} Attend fewer than 80\% of team meetings
+    in a deliverable period, or miss two in a row without an excuse.
+  \item \textbf{Missed team deadlines.} Miss two or more team deadlines in a term.
+  \item \textbf{Review turnaround.} Take more than 72 hours from the review
+    request to complete a review, two or more times in a deliverable period.
+  \item \textbf{Responsiveness.} Miss the deadline to acknowledge a GitHub or
+    Teams mention three or more times in a deliverable period. The deadline
+    is 12 hours, or 24 hours on weekends.
+  \item \textbf{Contribution.} Go two consecutive weeks without closing an
+    assigned issue, contributing a merged pull request, or submitting a
+    pull request review.
+\end{itemize}
 
-\wss{Provide a plan to address the violations.  This could include revising the
-triggers, if they are found to be too weak, strong or ambiguous.}
+\begin{table}[H]
+\caption{Team charter findings through November 18, 2026}
+\centering
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.22\linewidth}
+  >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Trigger} & \textbf{Finding}\\
+\midrule
+Meeting attendance &
+  Three members attended 3 of 3 recorded meetings and two attended 2 of 3
+  (67\%). No member missed two recorded meetings in a row, absences were excused.
+  (\href{https://github.com/davislenover/BurnNEarn/issues/30}{\#30},
+  \href{https://github.com/davislenover/BurnNEarn/issues/31}{\#31},
+  \href{https://github.com/davislenover/BurnNEarn/issues/257}{\#257})\\
+\addlinespace
+Missed team deadlines & N/A\\
+\addlinespace
+Review turnaround & N/A\\
+\addlinespace
+Responsiveness & N/A\\
+\addlinespace
+Contribution & N/A\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Follow-up:}
+No violations currently to address.
 
 \section{Additional Productivity Metrics}
 
