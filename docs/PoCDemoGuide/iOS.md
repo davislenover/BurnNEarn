@@ -105,6 +105,14 @@ bundler, and one for everything else.
    | `FINNHUB_API_KEY`    | your Finnhub key     | not needed              |
    | `MARKET_ALWAYS_OPEN` | `false`              | `true`                  |
 
+   - **Real prices** only allow buying while the market is open: 9:30 AM to
+     4:00 PM Eastern on trading days. The server refuses
+     `MARKET_ALWAYS_OPEN=true` with real prices, so real prices are never
+     shown as live while the market is closed.
+   - **Made-up prices** allow buying at any time. They change every minute.
+     Use them to practise, and as the backup if the market is closed or
+     Finnhub is down.
+
    Keep these two settings on either way:
 
    - `DEMO_USER_ENABLED=true`: the PoC has no sign-in yet, so while this is
@@ -115,14 +123,6 @@ bundler, and one for everything else.
    - `MARKET_POLLER_ENABLED=true`: the server fetches new prices every minute
      while the market is open. If it is off, the server never fetches prices,
      so the price stays missing or out of date.
-
-   - **Real prices** only allow buying while the market is open: 9:30 AM to
-     4:00 PM Eastern on trading days. The server refuses
-     `MARKET_ALWAYS_OPEN=true` with real prices, so real prices are never
-     shown as live while the market is closed.
-   - **Made-up prices** allow buying at any time. They change every minute.
-     Use them to practise, and as the backup if the market is closed or
-     Finnhub is down.
 
 3. Start the server so the phone can reach it:
 
