@@ -32,12 +32,25 @@ bundler, and one for everything else.
    sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
    ```
 
+   This tells the terminal's build tools to use the full Xcode app, not the
+   smaller Command Line Tools package, which can't build for an iPhone.
+   `sudo` runs it as an administrator, so it asks for your Mac's password.
+
 2. Install Node.js 24, CocoaPods, uv and OrbStack:
 
    ```bash
    brew install node@24 cocoapods uv orbstack
    brew link --force node@24
    ```
+
+   - `brew install` installs four tools with Homebrew:
+     - **Node.js 24** runs the app's build tools and its bundler.
+     - **CocoaPods** installs the iOS libraries the app uses.
+     - **uv** runs the server's Python and installs its packages.
+     - **OrbStack** runs Docker, which runs the server's database.
+   - `brew link --force node@24` puts Node.js 24 on your path, so the `node`,
+     `npm` and `npx` commands find it. Homebrew leaves versioned tools like
+     `node@24` off the path until you link them.
 
    Open OrbStack once from Applications, so Docker is running. Docker Desktop
    also works.
@@ -66,8 +79,23 @@ bundler, and one for everything else.
    uv run python -m app.scripts.seed_demo reset
    ```
 
-   The last command creates the demo user with a fresh portfolio and a
-   balance of 0. Run it again whenever you want to start over.
+   What the commands do:
+
+   - `cd src/backend` moves into the server's folder.
+   - `cp .env.example .env` copies the example settings into `.env`, the file
+     the server reads its settings from. Skip it if you already have a
+     `.env`, since it would replace yours.
+   - `uv sync` installs the Python version and the packages the server needs,
+     exactly as listed in `uv.lock`.
+   - `docker compose up -d --wait` starts the PostgreSQL database in Docker.
+     `-d` runs it in the background, and `--wait` waits until it accepts
+     connections, so the next command doesn't fail.
+   - `uv run alembic upgrade head` creates the database's tables, or updates
+     them to the latest version. It does nothing if they are already up to
+     date.
+   - `uv run python -m app.scripts.seed_demo reset` creates the demo user with
+     a fresh portfolio and a balance of 0. Run it again whenever you want to
+     start over.
 
 2. Choose where prices come from, in `src/backend/.env`. Never commit `.env`.
 
@@ -93,7 +121,10 @@ bundler, and one for everything else.
    uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
    ```
 
-   `--host 0.0.0.0` lets other devices on the network connect. Leave out
+   `uvicorn` is the web server that runs the server's code, and
+   `app.main:app` is the app it runs, in `app/main.py`. `--host 0.0.0.0` lets
+   other devices on the network connect, and `--port 8000` is the port the app
+   connects to. Leave out
    `--reload`, so saving a file can't restart the server while the app is
    using it. If macOS asks whether to accept incoming connections, choose
    **Allow**. Leave this terminal open.
@@ -107,8 +138,9 @@ bundler, and one for everything else.
    ipconfig getifaddr en0
    ```
 
-   It prints something like `172.17.133.103`. The steps below call this
-   `<mac address>`.
+   This prints the Mac's address on its Wi-Fi connection (`en0` is the Wi-Fi
+   on most Macs). It looks like `172.17.133.103`. The steps below call this
+   `<mac address>`. If it prints nothing, try `ipconfig getifaddr en1`.
 
 2. On the iPhone, open Safari and go to `http://<mac address>:8000/v1/health`.
    It should show `"status":"ok"`.
@@ -177,6 +209,14 @@ echo 'EXPO_PUBLIC_API_URL=http://<mac address>:8000' > .env
 Use the address from step 4, for example
 `EXPO_PUBLIC_API_URL=http://172.17.133.103:8000`.
 
+What the commands do:
+
+- `cd src/frontend` moves into the app's folder.
+- `npm ci` installs the app's packages exactly as listed in
+  `package-lock.json`, into a `node_modules` folder.
+- `echo '...' > .env` writes one line into `.env`: the address the app uses
+  to reach the server. `>` replaces the file if it already exists.
+
 ## 7. Build the app and put it on the iPhone
 
 1. Make the iOS project, from `src/frontend`:
@@ -184,6 +224,12 @@ Use the address from step 4, for example
    ```bash
    LANG=en_US.UTF-8 npx expo prebuild --platform ios
    ```
+
+   `npx` runs the Expo command-line tool that `npm ci` installed. `prebuild`
+   makes the native iOS project (the `ios` folder) from `app.json` and the
+   app's packages, and runs CocoaPods to install the iOS libraries.
+   `LANG=en_US.UTF-8` sets the text encoding for this one command, since
+   CocoaPods fails without it.
 
    If it asks for an iOS bundle identifier, give one of your own, such as
    `com.yourname.fitfolio`. It is saved in `app.json`. Don't commit that
@@ -218,7 +264,10 @@ address only need the bundler (step 8).
    npx expo start --dev-client
    ```
 
-   Leave it running. It serves the app's code to the phone.
+   This starts the bundler on port 8081. It turns the app's TypeScript into
+   JavaScript and sends it to the phone, and reloads the app when the code
+   changes. `--dev-client` tells it to serve the app you built in step 7, not
+   Expo's generic Expo Go app. Leave it running.
 
 2. Open **frontend** on the iPhone. It shows the development servers it finds
    on the network. Tap the one with the Mac's address. If none appears, tap
@@ -250,23 +299,28 @@ Once the app is on the phone, starting the demo only needs:
 
 1. Open OrbStack, and join the Mac and the iPhone to the same Wi-Fi. If the
    app was built more than seven days ago, build it again (step 7).
-2. From `src/backend`: `docker compose up -d --wait`, then
-   `uv run python -m app.scripts.seed_demo reset` if you want to start over.
+2. From `src/backend`, start the database with `docker compose up -d --wait`.
+   Run `uv run python -m app.scripts.seed_demo reset` too if you want to start
+   over (both are explained in step 3.1).
 3. Start the server (step 3.3).
 4. Check the Mac's address and the health page (step 4). If the address
    changed, update `src/frontend/.env` (step 6).
 5. Top up the balance if you reset (step 5).
 6. Start the bundler (step 8). If you changed `.env`, start it with
-   `npx expo start --dev-client --clear` so it picks up the new address.
+   `npx expo start --dev-client --clear`. `--clear` empties the bundler's
+   cache, so it reads the new address from `.env`.
 7. Open the app and pick the server.
 
 ## Shut down
 
-1. Press Ctrl+C in the server's terminal and in the bundler's terminal.
+1. Press Ctrl+C in the server's terminal and in the bundler's terminal. This
+   stops the command running in that window.
 2. Stop the database, from `src/backend`:
 
    ```bash
    docker compose down
    ```
 
-   Your data is kept. Add `-v` to delete it too.
+   This stops the database and removes its container. The data is kept in a
+   Docker volume, so it is still there next time. Add `-v`
+   (`docker compose down -v`) to delete the data too.
