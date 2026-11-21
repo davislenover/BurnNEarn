@@ -302,6 +302,103 @@ away, so press **Buy** again.
 In the server's terminal, every request from the phone's address should end in
 `200 OK` or `201 Created`.
 
+## Look under the hood
+
+While you use the app, you can watch what it sends and what the server stores.
+
+### The server's log
+
+The server's terminal (step 3.3) prints one line for each request the app
+sends: who sent it, the route, and the result. Requests from the app start
+with the phone's address on the Wi-Fi. For example:
+
+```text
+INFO:     127.0.0.1:53987 - "POST /v1/me/trades HTTP/1.1" 201 Created
+```
+
+| Route                              | When the app sends it                                    |
+| ---------------------------------- | -------------------------------------------------------- |
+| `PUT /v1/me/activity/daily-totals` | When it opens or comes back to the front, to sync today's steps |
+| `GET /v1/me/balance`               | When it opens, to show the balance                        |
+| `GET /v1/assets`                   | Every minute, and after a refused buy, to show the price  |
+| `POST /v1/me/trades`               | When you press **Buy**. `201` means it bought, `409` means it was refused, such as when the price changed |
+| `GET /v1/me/portfolio`             | Every minute, and after a buy, to show the portfolio      |
+
+### Try the server's routes
+
+Open <http://127.0.0.1:8000/docs> in the Mac's browser. It lists every route
+the server has. Click one, then **Try it out** and **Execute** to send it and
+see the reply. For example, `GET /v1/me/balance` shows the demo user's
+balance, and `GET /v1/health` shows whether the database and the price updates
+are working. A `PUT` or `POST` here changes the demo user's data, just like
+the app does.
+
+### Look inside the database
+
+From `src/backend`:
+
+```bash
+docker compose exec db psql -U fitfolio -d fitfolio
+```
+
+`docker compose exec db` runs a command inside the database's container.
+`psql` is PostgreSQL's command-line tool, and `-U fitfolio -d fitfolio` picks
+the user and the database, both set in `compose.yaml`. It shows a
+`fitfolio=#` prompt. Type a query, ending with a semicolon, and press Enter.
+Type `\q` to quit. Only read the data here, since changing rows by hand can
+leave the balance out of step with its history.
+
+Some queries to try:
+
+- The tables the server keeps:
+
+  ```sql
+  \dt
+  ```
+
+- The demo user's balance:
+
+  ```sql
+  SELECT cash_balance FROM portfolios;
+  ```
+
+- Each day's steps, and whether the day counted (`t` for true). A day over
+  the plausibility limit doesn't count:
+
+  ```sql
+  SELECT activity_date, step_count, counted FROM activity_daily_totals ORDER BY activity_date;
+  ```
+
+- Every change to the balance. `activity_reward` is credits from a day's
+  steps, and `trade_purchase` is the cost of a buy, shown as a negative
+  amount. The balance always equals the sum of these changes, which
+  `SELECT sum(amount) FROM balance_changes;` shows:
+
+  ```sql
+  SELECT created_at, reason, amount, activity_date FROM balance_changes ORDER BY created_at;
+  ```
+
+- Every trade, with the price paid and the balance after it:
+
+  ```sql
+  SELECT a.symbol, t.quantity, t.unit_price, t.currency_amount, t.cash_balance_after
+  FROM trades t JOIN assets a USING (asset_id) ORDER BY t.created_at;
+  ```
+
+- The newest prices, and the result of each request for a price (`ok`,
+  `rate_limited`, `unknown_symbol` or `error`):
+
+  ```sql
+  SELECT a.symbol, p.price, p.quoted_at FROM prices p JOIN assets a USING (asset_id)
+  ORDER BY p.quoted_at DESC LIMIT 5;
+  SELECT outcome, count(*) FROM provider_requests GROUP BY outcome;
+  ```
+
+Times are shown in UTC, which is what `+00` means. You can also open the
+database in an app such as TablePlus or pgAdmin: connect to `localhost` on
+port 5432, with the user, password and database name from
+`src/backend/compose.yaml`.
+
 ## Every time you run the demo
 
 Once the app is on the phone, starting the demo only needs:

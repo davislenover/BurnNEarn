@@ -14,7 +14,8 @@ There is one step by step guide for each kind of phone:
 
 Both guides set up the server the same way (steps 3 and 5 are the same in
 each). They differ in how the app is built, how it reaches the server, and how
-it reads steps.
+it reads steps. Each guide also has a **Look under the hood** section, on
+reading the server's log, trying its routes and looking inside the database.
 
 ## How each version works
 
