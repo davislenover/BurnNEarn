@@ -72,7 +72,7 @@ All on one Mac, on November 20, 2026:
 
 | Device | OS | How it was built | What worked |
 | ------ | -- | ---------------- | ----------- |
-| iPhone 16 Pro (a real phone) | iOS, version not recorded | `xcodebuild` from the terminal, then installed with `devicectl` | Reached the server over a public Wi-Fi network. Balance, price, buying a share, and buying again after the price changed. Earlier the same week, real steps synced and 100 steps became one credit. |
+| iPhone 16 Pro (a real phone) | iOS 27.2.1 | `xcodebuild` from the terminal, then installed with `devicectl` | Reached the server over a public Wi-Fi network. Balance, price, buying a share, and buying again after the price changed. Earlier the same week, real steps synced and 100 steps became one credit. |
 | iPhone 16 Pro simulator | iOS 18.5 | `npx expo run:ios` | Balance, price, buying, and buying again after the price changed. Steps showed "Unavailable", since the simulator has no motion sensor. |
 | Android emulator, Pixel 8 profile | Android 15 (API 35), Google Play image, `arm64-v8a` | `npx expo run:android` | Health Connect asked for and got access to steps, the sync went through with 0 steps (the emulator has no step data), and balance, price and buying two shares worked. |
 
