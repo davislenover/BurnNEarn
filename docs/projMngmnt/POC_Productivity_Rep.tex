@@ -101,7 +101,7 @@ Zaid Alsaadi & 2\\
 \end{tabular}
 \end{table}
 
-Sections 2 to 6 cover September 8, 2026 (the start of classes) to November 19,
+Sections 2 to 6 cover September 8, 2026 (the start of classes) to November 20,
 2026. The counts in this table come from the attendance list in each team
 meeting issue:
 \href{https://github.com/davislenover/BurnNEarn/issues/30}{\#30} (September 11), \href{https://github.com/davislenover/BurnNEarn/issues/31}{\#31} (September 17) and \href{https://github.com/davislenover/BurnNEarn/issues/257}{\#257}
@@ -222,18 +222,18 @@ meeting is counted here and in Section 3.
 \textbf{Student} & \textbf{Commits} & \textbf{Percent} & \textbf{Lines Added} &
 \textbf{Lines Deleted} & \textbf{Pull Requests}\\
 \midrule
-Total & 666 & 100\% & 56,518 & 11,391 & 110\\
-Davis Lenover & 300 & 45.0\% & 23,779 & 5,568 & 39\\
-Preston Grewal & 60 & 9.0\% & 3,858 & 526 & 12\\
-Angad Chhabra & 37 & 5.6\% & 13,515 & 2,809 & 9\\
-Farid Bastoros & 199 & 29.9\% & 8,450 & 2,179 & 36\\
-Zaid Alsaadi & 70 & 10.5\% & 6,916 & 309 & 14\\
+Total & 724 & 100\% & 58,030 & 12,018 & 112\\
+Davis Lenover & 321 & 44.3\% & 24,253 & 5,920 & 39\\
+Preston Grewal & 60 & 8.3\% & 3,858 & 526 & 12\\
+Angad Chhabra & 37 & 5.1\% & 13,515 & 2,809 & 9\\
+Farid Bastoros & 201 & 27.8\% & 8,508 & 2,186 & 38\\
+Zaid Alsaadi & 105 & 14.5\% & 7,896 & 577 & 14\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{When these were pulled.} We pulled these numbers on November 19,
-2026 at 8:00 PM, from commit \texttt{a9f1cc6} of \texttt{main}. The command
+\paragraph{When these were pulled.} We pulled these numbers on November 20,
+2026 at 7:45 PM, from commit \texttt{8de12a2} of \texttt{main}. The command
 was \texttt{git log --no-merges --numstat}. The numbers will likely change
 before the POC demo, since we are still making adjustments to the POC.
 
@@ -243,7 +243,7 @@ We leave out three kinds of commit:
 
 \begin{itemize}
 \item the merge commits themselves
-\item the 96 commits our CI bot made to rebuild the PDFs
+\item the 99 commits our CI bot made to rebuild the PDFs
 \item three commits that only add or remove the course template's text: the
   initial commit (which created the repository from the course template), the
   commit that added the course's IEEE SRS template, and the commit that
@@ -253,9 +253,9 @@ We leave out three kinds of commit:
 Text we wrote over the template still counts, because those lines were added
 in our own commits. No commit has more than one author.
 
-\paragraph{Percent.} This is each member's commits divided by the team's 666
-commits, rounded to one decimal place. For example, 300 of 666 commits is
-45.0\%. It is a share of commits only, not of lines or pull requests.
+\paragraph{Percent.} This is each member's commits divided by the team's 724
+commits, rounded to one decimal place. For example, 321 of 724 commits is
+44.3\%. It is a share of commits only, not of lines or pull requests.
 
 \paragraph{Lines.} Binary files (such as the PDFs and the figure images) add
 no lines. Two lock files do add lines: 16,992 from the app's
@@ -264,9 +264,9 @@ lock file is a list of dependencies that the package manager writes on its
 own, so nobody typed these lines. They count for whoever committed them.
 
 By kind of file, most of the lines added are in the \LaTeX{} documents
-(23,311) and the lock files (18,073). The rest are in backend tests (5,693),
-backend code (3,798), figure sources (2,164), Markdown notes (1,567), frontend
-code (995), backend migrations (712) and CI and other files (205).
+(23,829) and the lock files (18,073). The rest are in backend tests (5,693),
+backend code (3,798), figure sources (2,164), frontend code (1,989), Markdown
+notes (1,567), backend migrations (712) and CI and other files (205).
 Section~\ref{SecLinesByKind} gives the same split for each member, along with
 each member's net lines (lines added minus lines deleted).
 
@@ -276,17 +276,14 @@ characters, so one paragraph is six to eight lines and every table row is its
 own line. A line that gets revised counts again as a line added, and the old
 one counts as a line deleted. The same goes for a line that is only
 re-indented or pasted in a second time. After subtracting the lines deleted,
-we added 45,127 lines. These numbers show how much each member committed, not
+we added 46,012 lines. These numbers show how much each member committed, not
 how hard the work was.
 
 \paragraph{Pull requests.} This column counts every pull request a member
-opened. Of those, 104 are merged, four were closed without merging and two are
-still open: \href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312} (the POC demo screen) and \href{https://github.com/davislenover/BurnNEarn/pull/348}{\#348} (which
-adds these sections to this report). The commits on those two are not in the
-counts above yet. When we pulled these numbers, \#312 had 26 commits by Zaid
-Alsaadi, which added 688 lines of frontend code and deleted 152.
-Section~\ref{SecLinesByKind} shows the lines added with that pull request
-included.
+opened. Of those, 108 are merged and four were closed without merging. None
+were open when we pulled these numbers. The POC demo screen
+(\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}) merged on
+November 20, so its commits are now in the counts above.
 
 \section{Issue Tracker}
 
@@ -511,7 +508,7 @@ Zaid Alsaadi & 2 & 2 & 0\\
 
 Section 6 gives each member's lines added. This table splits those lines by
 the kind of file they are in. We counted them the same way and from the same
-commit. So these numbers were also pulled on November 19, 2026 at 8:00 PM, and
+commit. So these numbers were also pulled on November 20, 2026 at 7:45 PM, and
 they will likely change before the POC demo.
 
 \begin{table}[H]
@@ -524,22 +521,19 @@ they will likely change before the POC demo.
 \textbf{Kind of file} & \textbf{Davis} & \textbf{Preston} & \textbf{Angad} &
 \textbf{Farid} & \textbf{Zaid} & \textbf{Team}\\
 \midrule
-Documents (\LaTeX{}) & 10,780 & 1,770 & 2,535 & 7,695 & 531 & 23,311\\
+Documents (\LaTeX{}) & 11,240 & 1,770 & 2,535 & 7,753 & 531 & 23,829\\
 Generated lock files & 977 & 196 & 10,633 & 104 & 6,163 & 18,073\\
 Backend tests (POC) & 4,635 & 806 & 0 & 252 & 0 & 5,693\\
 Backend code (POC) & 3,252 & 302 & 0 & 244 & 0 & 3,798\\
 Figure sources & 1,904 & 116 & 0 & 144 & 0 & 2,164\\
+Frontend code (POC) & 14 & 426 & 347 & 0 & 1,202 & 1,989\\
 Markdown notes & 1,375 & 186 & 0 & 6 & 0 & 1,567\\
 Backend migrations (POC) & 656 & 56 & 0 & 0 & 0 & 712\\
-Frontend code (POC) & 0 & 426 & 347 & 0 & 222 & 995\\
 CI and other files & 200 & 0 & 0 & 5 & 0 & 205\\
 \midrule
-All lines added & 23,779 & 3,858 & 13,515 & 8,450 & 6,916 & 56,518\\
-Lines deleted & 5,568 & 526 & 2,809 & 2,179 & 309 & 11,391\\
-Net lines & 18,211 & 3,332 & 10,706 & 6,271 & 6,607 & 45,127\\
-\midrule
-Open pull request \#312 & 0 & 0 & 0 & 0 & 688 & 688\\
-Lines added with \#312 & 23,779 & 3,858 & 13,515 & 8,450 & 7,604 & 57,206\\
+All lines added & 24,253 & 3,858 & 13,515 & 8,508 & 7,896 & 58,030\\
+Lines deleted & 5,920 & 526 & 2,809 & 2,186 & 577 & 12,018\\
+Net lines & 18,333 & 3,332 & 10,706 & 6,322 & 7,319 & 46,012\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -564,11 +558,6 @@ Notes on the rows:
 \item \textbf{Markdown notes:} the architecture notes, \texttt{CONTRIBUTING.md}
   and the README files outside \texttt{src/}.
 \item \textbf{Net lines:} lines added minus lines deleted.
-\item \textbf{Open pull request \#312:} the POC demo screen is still in this
-  open pull request (\href{https://github.com/davislenover/BurnNEarn/pull/312}{\#312}), so it is not on \texttt{main} and not in
-  the frontend row. This row gives the 688 lines that its 26 commits add,
-  counted the same way. The last row gives each member's lines added with
-  \#312 included.
 \end{itemize}
 
 \end{document}
