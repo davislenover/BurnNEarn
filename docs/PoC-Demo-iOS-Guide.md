@@ -105,7 +105,16 @@ bundler, and one for everything else.
    | `FINNHUB_API_KEY`    | your Finnhub key     | not needed              |
    | `MARKET_ALWAYS_OPEN` | `false`              | `true`                  |
 
-   Keep `DEMO_USER_ENABLED=true` and `MARKET_POLLER_ENABLED=true` either way.
+   Keep these two settings on either way:
+
+   - `DEMO_USER_ENABLED=true`: the PoC has no sign-in yet, so while this is
+     on, the server treats every request as coming from the built-in demo
+     user (the one step 3.1 creates). The app never sends who the user is.
+     If it is off, the server refuses every request that needs a user with
+     `401 Unauthorized`, and the app shows "Unavailable".
+   - `MARKET_POLLER_ENABLED=true`: the server fetches new prices every minute
+     while the market is open. If it is off, the server never fetches prices,
+     so the price stays missing or out of date.
 
    - **Real prices** only allow buying while the market is open: 9:30 AM to
      4:00 PM Eastern on trading days. The server refuses
