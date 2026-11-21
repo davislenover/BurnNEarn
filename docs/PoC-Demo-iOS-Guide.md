@@ -67,7 +67,7 @@ bundler, and one for everything else.
    ```
 
    The last command creates the demo user with a fresh portfolio and a
-   balance of 0. Run it again whenever you want to start the demo over.
+   balance of 0. Run it again whenever you want to start over.
 
 2. Choose where prices come from, in `src/backend/.env`. Never commit `.env`.
 
@@ -94,8 +94,8 @@ bundler, and one for everything else.
    ```
 
    `--host 0.0.0.0` lets other devices on the network connect. Leave out
-   `--reload`, so saving a file can't restart the server in the middle of the
-   demo. If macOS asks whether to accept incoming connections, choose
+   `--reload`, so saving a file can't restart the server while the app is
+   using it. If macOS asks whether to accept incoming connections, choose
    **Allow**. Leave this terminal open.
 
 ## 4. Check the phone can reach the Mac
@@ -120,7 +120,7 @@ bundler, and one for everything else.
 ## 5. Give the demo user a starting balance
 
 A share costs a few hundred credits, and a day of steps earns at most 300. So
-before the demo, give the demo user a balance. The server only pays for
+give the demo user a balance first. The server only pays for
 steps, so this sends 30,000 steps for each of the last five days, which pays
 300 a day.
 
@@ -177,7 +177,7 @@ echo 'EXPO_PUBLIC_API_URL=http://<mac address>:8000' > .env
 Use the address from step 4, for example
 `EXPO_PUBLIC_API_URL=http://172.17.133.103:8000`.
 
-## 7. Build the app and put it on the iPhone (once a week)
+## 7. Build the app and put it on the iPhone
 
 1. Make the iOS project, from `src/frontend`:
 
@@ -204,8 +204,7 @@ Use the address from step 4, for example
 app won't open on the iPhone. To fix it, connect the phone, open the
 workspace in Xcode and press **Run** again (steps 7.2 to 7.4). You don't need
 to run `prebuild` again or change any settings, and the server's data is
-kept. If the iPhone asks, trust the developer again (step 7.5). So build again
-a day or two before the demo, so it can't expire in the middle of it.
+kept. If the iPhone asks, trust the developer again (step 7.5).
 
 Otherwise, you only need to build again when the app's native setup changes,
 such as new packages or a change to `app.json`. Code changes and a new server
