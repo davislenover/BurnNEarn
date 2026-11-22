@@ -113,6 +113,12 @@
     "docs/HazardAnalysis/HazardAnalysis.tex",
     "docs/Reflection.text"
   ],
+  "docs/PoCDemoGuide/Android.md": [
+    "docs/PoCDemoGuide/Android.md"
+  ],
+  "docs/PoCDemoGuide/iOS.md": [
+    "docs/PoCDemoGuide/iOS.md"
+  ],
   "docs/ProblemStatementAndGoals/ProblemStatement.tex": [
     "docs/Comments.text",
     "docs/Common.text",
