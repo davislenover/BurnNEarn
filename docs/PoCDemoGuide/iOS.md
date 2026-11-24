@@ -212,19 +212,30 @@ In the second terminal window, from the repository root:
 ```bash
 cd src/frontend
 npm ci
-echo 'EXPO_PUBLIC_API_URL=http://<mac address>:8000' > .env
+echo "EXPO_PUBLIC_API_URL=http://$(ipconfig getifaddr en0 || ipconfig getifaddr en1):8000" > .env
+cat .env
 ```
 
-Use the address from step 4, for example
-`EXPO_PUBLIC_API_URL=http://172.17.133.103:8000`.
+The last command should print the address from step 4, for example
+`EXPO_PUBLIC_API_URL=http://172.17.133.103:8000`. If it prints
+`http://:8000`, the Mac has no Wi-Fi address, so go back to step 4.
 
 What the commands do:
 
 - `cd src/frontend` moves into the app's folder.
 - `npm ci` installs the app's packages exactly as listed in
   `package-lock.json`, into a `node_modules` folder.
-- `echo '...' > .env` writes one line into `.env`: the address the app uses
-  to reach the server. `>` replaces the file if it already exists.
+- `echo "..." > .env` writes one line into `.env`: the address the app uses
+  to reach the server. `$(...)` runs the command inside it and puts what it
+  prints into the line, so the Mac's address is filled in for you.
+  `ipconfig getifaddr en0 || ipconfig getifaddr en1` prints the address from
+  step 4, and tries `en1` if `en0` has none. `>` replaces the file if it
+  already exists. Keep the double quotes, since single quotes would write
+  `$(...)` as plain text.
+- `cat .env` prints the file, so you can check the address.
+
+The bundler reads `.env` only when it starts. If you change `.env` while the
+bundler is running, stop it and start it again with `--clear` (step 8).
 
 ## 7. Build the app and put it on the iPhone
 
@@ -278,8 +289,10 @@ address only need the bundler (step 8).
    changes. `--dev-client` tells it to serve the app you built in step 7, not
    Expo's generic Expo Go app. Leave it running.
 
-2. Open **frontend** on the iPhone. It shows the development servers it finds
-   on the network. Tap the one with the Mac's address. If none appears, tap
+2. Open **frontend** on the iPhone. If it asks to find and connect to devices
+   on your local network, tap **Allow**, since the app can't reach the Mac
+   without it. It then shows the development servers it finds on the network.
+   Tap the one with the Mac's address. If none appears, tap
    **Enter URL manually** and type `http://<mac address>:8081`.
 
 3. When the phone asks to access **Motion & Fitness**, tap **Allow**, so the
@@ -410,7 +423,8 @@ Once the app is on the phone, starting the demo only needs:
    over (both are explained in step 3.1).
 3. Start the server (step 3.3).
 4. Check the Mac's address and the health page (step 4). If the address
-   changed, update `src/frontend/.env` (step 6).
+   changed, run the `echo` and `cat` lines from step 6 again, from
+   `src/frontend`.
 5. Top up the balance if you reset (step 5).
 6. Start the bundler (step 8). If you changed `.env`, start it with
    `npx expo start --dev-client --clear`. `--clear` empties the bundler's
